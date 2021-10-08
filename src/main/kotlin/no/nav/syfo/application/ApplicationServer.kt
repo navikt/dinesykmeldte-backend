@@ -7,6 +7,7 @@ class ApplicationServer(private val applicationServer: ApplicationEngine, privat
     init {
         Runtime.getRuntime().addShutdownHook(
             Thread {
+                this.applicationState.ready = false
                 this.applicationServer.stop(TimeUnit.SECONDS.toMillis(10), TimeUnit.SECONDS.toMillis(10))
             }
         )
