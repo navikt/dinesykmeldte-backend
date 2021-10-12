@@ -14,7 +14,7 @@ data class Sykmeldt(
     val soknader: List<Soknad>
 )
 
-// skulle vi angitt type i stedet for grad? Dvs, bytte ut grad med type som kan være "100%", "50%", "avventende", ++?
+// Type kan være "100%", "50%", "avventende", ++
 data class PreviewSykmelding(
     val id: String,
     val fom: LocalDate,

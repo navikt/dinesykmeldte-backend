@@ -27,7 +27,7 @@ fun Application.setupAuth(jwkProviderTokenX: JwkProvider, tokenXIssuer: String, 
             verifier(jwkProviderTokenX, tokenXIssuer)
             validate { credentials ->
                 when {
-                    harDineSykmeldteBackendAudience(credentials, env.narmestelederTokenXClientId) && erNiva4(credentials) -> JWTPrincipal(credentials.payload)
+                    harDineSykmeldteBackendAudience(credentials, env.dineSykmeldteBackendTokenXClientId) && erNiva4(credentials) -> JWTPrincipal(credentials.payload)
                     else -> unauthorized(credentials)
                 }
             }
