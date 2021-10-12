@@ -36,5 +36,14 @@ spec:
   vault:
     enabled: false
   ingresses:
-    - "https://dinesykmeldte-backend.intern.nav.no"
+    - "https://dinesykmeldte-backend.nav.no"
   webproxy: true
+  tokenx:
+    enabled: true
+  accessPolicy:
+    inbound:
+      rules:
+        - application: dinesykmeldte
+  env:
+    - name: ALLOWED_ORIGIN
+      value: tjenester.nav.no,www.nav.no

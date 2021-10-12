@@ -1,5 +1,6 @@
 package no.nav.syfo.application
 
+import com.auth0.jwk.JwkProvider
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -7,10 +8,13 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.auth.authenticate
+import io.ktor.features.CORS
 import io.ktor.features.CallId
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.response.respond
@@ -22,10 +26,14 @@ import no.nav.syfo.Environment
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.application.metrics.monitorHttpRequests
 import no.nav.syfo.log
+import no.nav.syfo.minesykmeldte.MineSykmeldteService
+import no.nav.syfo.minesykmeldte.api.registerMineSykmeldteApi
 import java.util.UUID
 
 fun createApplicationEngine(
     env: Environment,
+    jwkProviderTokenX: JwkProvider,
+    tokenXIssuer: String,
     applicationState: ApplicationState
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
@@ -37,7 +45,11 @@ fun createApplicationEngine(
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
-
+        setupAuth(
+            jwkProviderTokenX = jwkProviderTokenX,
+            tokenXIssuer = tokenXIssuer,
+            env = env
+        )
         install(CallId) {
             generate { UUID.randomUUID().toString() }
             verify { callId: String -> callId.isNotEmpty() }
@@ -49,9 +61,22 @@ fun createApplicationEngine(
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
             }
         }
+        install(CORS) {
+            method(HttpMethod.Get)
+            env.allowedOrigin.forEach {
+                hosts.add("https://$it")
+            }
+            header("nav_csrf_protection")
+            header("Sykmeldt-Fnr")
+            allowCredentials = true
+            allowNonSimpleContentTypes = true
+        }
 
         routing {
             registerNaisApi(applicationState)
+            authenticate("tokenx") {
+                registerMineSykmeldteApi(MineSykmeldteService())
+            }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
     }
