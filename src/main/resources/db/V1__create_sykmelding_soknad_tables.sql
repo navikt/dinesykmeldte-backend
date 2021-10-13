@@ -3,7 +3,7 @@ CREATE TABLE narmesteleder (
     pasient_fnr VARCHAR not null,
     leder_fnr VARCHAR not null,
     orgnummer VARCHAR not null
-)
+);
 
 CREATE TABLE sykmelding (
     sykmelding_id VARCHAR primary key not null,
@@ -16,7 +16,7 @@ CREATE TABLE sykmelding (
     lest BOOLEAN not null,
     timestamp TIMESTAMP with time zone not null,
     latest_tom DATE not null
-)
+);
 
 CREATE TABLE soknad (
     soknad_id VARCHAR primary key not null,
@@ -28,7 +28,7 @@ CREATE TABLE soknad (
     lest BOOLEAN not null,
     timestamp TIMESTAMP with time zone not null,
     latest_tom DATE not null
-)
+);
 
 create index sykmelding_fnr_idx on sykmelding(pasient_fnr);
 create index soknad_fnr_idx on soknad(pasient_fnr);
