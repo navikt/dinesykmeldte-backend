@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
+import no.nav.syfo.application.database.Database
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URL
@@ -29,6 +30,7 @@ fun main() {
     val env = Environment()
     DefaultExports.initialize()
     val applicationState = ApplicationState()
+    val database = Database(env)
 
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(JsonFeature) {
