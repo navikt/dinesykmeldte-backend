@@ -50,6 +50,8 @@ spec:
   ingresses:
     - "https://dinesykmeldte-backend.nav.no"
   webproxy: true
+  kafka:
+    pool: nav-prod
   tokenx:
     enabled: true
   accessPolicy:

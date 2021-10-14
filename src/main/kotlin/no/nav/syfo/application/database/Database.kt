@@ -9,6 +9,7 @@ import org.flywaydb.core.Flyway
 import java.net.ConnectException
 import java.net.SocketException
 import java.sql.Connection
+import java.sql.ResultSet
 
 class Database(private val env: Environment, retries: Long = 30, sleepTime: Long = 1_000) : DatabaseInterface {
     private val dataSource: HikariDataSource
@@ -58,5 +59,11 @@ class Database(private val env: Environment, retries: Long = 30, sleepTime: Long
         locations("db")
         dataSource(env.jdbcUrl(), env.databaseUsername, env.databasePassword)
         load().migrate()
+    }
+}
+
+fun <T> ResultSet.toList(mapper: ResultSet.() -> T) = mutableListOf<T>().apply {
+    while (next()) {
+        add(mapper())
     }
 }

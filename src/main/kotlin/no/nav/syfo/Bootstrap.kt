@@ -14,11 +14,27 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.get
 import io.prometheus.client.hotspot.DefaultExports
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.database.Database
+import no.nav.syfo.application.metrics.ERROR_COUNTER
+import no.nav.syfo.kafka.aiven.KafkaUtils
+import no.nav.syfo.kafka.toConsumerConfig
+import no.nav.syfo.narmesteleder.NarmestelederService
+import no.nav.syfo.narmesteleder.db.NarmestelederDb
+import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
+import no.nav.syfo.util.JacksonKafkaDeserializer
+import no.nav.syfo.util.Unbounded
+import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URL
@@ -26,6 +42,7 @@ import java.util.concurrent.TimeUnit
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.dinesykmeldte-backend")
 
+@DelicateCoroutinesApi
 fun main() {
     val env = Environment()
     DefaultExports.initialize()
@@ -50,6 +67,16 @@ fun main() {
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
 
+    val kafkaConsumer = KafkaConsumer(
+        KafkaUtils.getAivenKafkaConfig().also {
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
+            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+        }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
+        StringDeserializer(),
+        JacksonKafkaDeserializer(NarmestelederLeesahKafkaMessage::class)
+    )
+    val narmestelederService = NarmestelederService(kafkaConsumer, NarmestelederDb(database), applicationState, env.narmestelederLeesahTopic)
+
     val applicationEngine = createApplicationEngine(
         env,
         jwkProviderTokenX,
@@ -59,6 +86,24 @@ fun main() {
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
     applicationState.ready = true
+
+    startBackgroundJob(applicationState) {
+        narmestelederService.start()
+    }
+}
+
+@DelicateCoroutinesApi
+fun startBackgroundJob(applicationState: ApplicationState, block: suspend CoroutineScope.() -> Unit) {
+    GlobalScope.launch(Dispatchers.Unbounded) {
+        try {
+            block()
+        } catch (ex: Exception) {
+            ERROR_COUNTER.labels("background-task").inc()
+            log.error("Error in background task, restarting application", ex)
+            applicationState.ready = false
+            applicationState.alive = false
+        }
+    }
 }
 
 fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) =
