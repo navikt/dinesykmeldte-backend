@@ -20,8 +20,8 @@ spec:
         insights:
           enabled: true
   replicas:
-    min: 2
-    max: 6
+    min: 1
+    max: 2
     cpuThresholdPercentage: 90
   port: 8080
   liveness:
@@ -48,14 +48,17 @@ spec:
   vault:
     enabled: false
   ingresses:
-    - "https://dinesykmeldte-backend.nav.no"
+    - "https://dinesykmeldte-backend.dev.nav.no"
   webproxy: true
+  kafka:
+    pool: nav-dev
   tokenx:
     enabled: true
   accessPolicy:
     inbound:
       rules:
         - application: dinesykmeldte
+        - application: dinesykmeldte-backend
   env:
     - name: ALLOWED_ORIGIN
-      value: tjenester.nav.no,www.nav.no
+      value: tjenester-q1.nav.no,www-gcp.dev.nav.no,dinesykmeldte-backend.dev.nav.no
