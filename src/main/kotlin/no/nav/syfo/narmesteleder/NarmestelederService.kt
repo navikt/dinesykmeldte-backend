@@ -18,7 +18,7 @@ class NarmestelederService(
         kafkaConsumer.subscribe(listOf(narmestelederLeesahTopic))
         log.info("Starting consuming topic $narmestelederLeesahTopic")
         while (applicationState.ready) {
-            kafkaConsumer.poll(Duration.ZERO).forEach {
+            kafkaConsumer.poll(Duration.ofSeconds(1)).forEach {
                 try {
                     updateNl(it.value())
                 } catch (e: Exception) {
