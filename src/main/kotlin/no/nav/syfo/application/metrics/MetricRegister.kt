@@ -18,6 +18,13 @@ val NL_TOPIC_COUNTER: Counter = Counter.build()
     .help("Counts NL-messages from kafka (new or deleted)")
     .register()
 
+val SYKMELDING_TOPIC_COUNTER: Counter = Counter.build()
+    .labelNames("status")
+    .name("sykmelding_topic_counter")
+    .namespace(METRICS_NS)
+    .help("Counts sendte sykmeldinger from kafka (new or deleted)")
+    .register()
+
 val ERROR_COUNTER: Counter = Counter.build()
     .labelNames("error")
     .name("error")
