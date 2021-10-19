@@ -9,10 +9,8 @@ import java.time.OffsetDateTime
 data class SykmeldingDbModel(
     val sykmeldingId: String,
     val pasientFnr: String,
-    val pasientNavn: String,
     val orgnummer: String,
     val orgnavn: String?,
-    val startdatoSykefravaer: LocalDate,
     val sykmelding: ArbeidsgiverSykmelding,
     val lest: Boolean,
     val timestamp: OffsetDateTime,

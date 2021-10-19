@@ -26,12 +26,15 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.metrics.ERROR_COUNTER
+import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
 import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage
+import no.nav.syfo.sykmelding.pdl.client.PdlClient
+import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
 import no.nav.syfo.util.JacksonKafkaDeserializer
 import no.nav.syfo.util.Unbounded
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -69,6 +72,14 @@ fun main() {
         }
     }
     val httpClient = HttpClient(Apache, config)
+
+    val accessTokenClient = AccessTokenClient(env.aadAccessTokenUrl, env.clientId, env.clientSecret, httpClient)
+    val pdlClient = PdlClient(
+        httpClient,
+        env.pdlGraphqlPath,
+        PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
+    )
+    val pdlPersonService = PdlPersonService(pdlClient, accessTokenClient, env.pdlScope)
 
     val wellKnownTokenX = getWellKnownTokenX(httpClient, env.tokenXWellKnownUrl)
     val jwkProviderTokenX = JwkProviderBuilder(URL(wellKnownTokenX.jwks_uri))

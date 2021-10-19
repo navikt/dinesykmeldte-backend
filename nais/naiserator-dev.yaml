@@ -63,6 +63,13 @@ spec:
       rules:
         - application: dinesykmeldte
         - application: dinesykmeldte-backend
+    outbound:
+      external:
+        - host: https://pdl-api.dev-fss-pub.nais.io
   env:
     - name: ALLOWED_ORIGIN
       value: tjenester-q1.nav.no,www-gcp.dev.nav.no,dinesykmeldte-backend.dev.nav.no
+    - name: PDL_GRAPHQL_PATH
+      value: https://pdl-api.dev-fss-pub.nais.io/pdl-api/graphql
+    - name: PDL_SCOPE
+      value: api://dev-fss.pdl.pdl-api/.default
