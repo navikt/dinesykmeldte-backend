@@ -4,6 +4,7 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_COUNTER
 import no.nav.syfo.log
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
+import no.nav.syfo.sykmelding.client.SyfoSyketilfelleClient
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
@@ -21,7 +22,8 @@ class SykmeldingService(
     private val sykmeldingDb: SykmeldingDb,
     private val applicationState: ApplicationState,
     private val sendtSykmeldingTopic: String,
-    private val pdlPersonService: PdlPersonService
+    private val pdlPersonService: PdlPersonService,
+    private val syfoSyketilfelleClient: SyfoSyketilfelleClient
 ) {
     suspend fun start() {
         kafkaConsumer.subscribe(listOf(sendtSykmeldingTopic))
@@ -49,6 +51,7 @@ class SykmeldingService(
                     throw IllegalStateException("Mottatt sendt sykmelding uten arbeidsgiver, $sykmeldingId")
                 }
                 val person = pdlPersonService.getPerson(fnr = sykmelding.kafkaMetadata.fnr, callId = sykmeldingId)
+                val startdato = syfoSyketilfelleClient.finnStartdato(aktorId = person.aktorId!!, sykmeldingId = sykmeldingId)
                 // hent navn fra PDL
                 // hent startdato fra syfosyketilfelle
                 // hente lest fra SS?
@@ -67,7 +70,7 @@ class SykmeldingService(
                     SykmeldtDbModel(
                         pasientFnr = sykmelding.kafkaMetadata.fnr,
                         pasientNavn = person.navn.toFormattedNameString(),
-                        startdatoSykefravaer = LocalDate.now(), // fra syfosyketilfelle
+                        startdatoSykefravaer = startdato,
                         latestTom = sisteTom
                     )
                 )

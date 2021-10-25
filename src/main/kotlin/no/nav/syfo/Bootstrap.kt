@@ -32,6 +32,7 @@ import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
+import no.nav.syfo.sykmelding.client.SyfoSyketilfelleClient
 import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage
 import no.nav.syfo.sykmelding.pdl.client.PdlClient
 import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
@@ -80,6 +81,12 @@ fun main() {
         PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
     )
     val pdlPersonService = PdlPersonService(pdlClient, accessTokenClient, env.pdlScope)
+    val syfoSyketilfelleClient = SyfoSyketilfelleClient(
+        syketilfelleEndpointURL = env.syketilfelleEndpointURL,
+        accessTokenClient = accessTokenClient,
+        syketilfelleScope = env.syketilfelleScope,
+        httpClient = httpClient
+    )
 
     val wellKnownTokenX = getWellKnownTokenX(httpClient, env.tokenXWellKnownUrl)
     val jwkProviderTokenX = JwkProviderBuilder(URL(wellKnownTokenX.jwks_uri))

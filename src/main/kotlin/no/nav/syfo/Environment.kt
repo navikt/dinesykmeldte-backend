@@ -17,7 +17,9 @@ data class Environment(
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val aadAccessTokenUrl: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
     val clientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
-    val clientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET")
+    val clientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
+    val syketilfelleEndpointURL: String = getEnvVar("SYKETILLFELLE_ENDPOINT_URL"),
+    val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE")
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"

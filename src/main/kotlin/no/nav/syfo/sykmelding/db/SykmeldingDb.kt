@@ -12,18 +12,27 @@ class SykmeldingDb(private val database: DatabaseInterface) {
             connection.prepareStatement(
                 """
                insert into sykmelding(
-                    sykmelding_id, 
-                    pasient_fnr, 
-                    orgnummer, 
-                    orgnavn, 
-                    sykmelding, 
-                    lest, 
-                    timestamp, 
-                    latest_tom) 
-               values (?, ?, ?, ?, ?, ?, ?, ?) on conflict (sykmelding_id) do update ;
+                        sykmelding_id, 
+                        pasient_fnr, 
+                        orgnummer, 
+                        orgnavn, 
+                        sykmelding, 
+                        lest, 
+                        timestamp, 
+                        latest_tom) 
+                    values (?, ?, ?, ?, ?, ?, ?, ?) 
+               on conflict (sykmelding_id) do update 
+                    set pasient_fnr = ?,
+                        orgnummer = ?,
+                        orgnavn = ?,
+                        sykmelding = ?,
+                        lest = ?,
+                        timestamp = ?,
+                        latest_tom = ?;
             """
             ).use { preparedStatement ->
                 preparedStatement.setString(1, sykmeldingDbModel.sykmeldingId)
+                // insert
                 preparedStatement.setString(2, sykmeldingDbModel.pasientFnr)
                 preparedStatement.setString(3, sykmeldingDbModel.orgnummer)
                 preparedStatement.setString(4, sykmeldingDbModel.orgnavn)
@@ -31,6 +40,14 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 preparedStatement.setBoolean(6, sykmeldingDbModel.lest)
                 preparedStatement.setTimestamp(7, Timestamp.from(sykmeldingDbModel.timestamp.toInstant()))
                 preparedStatement.setObject(8, sykmeldingDbModel.latestTom)
+                // update
+                preparedStatement.setString(9, sykmeldingDbModel.pasientFnr)
+                preparedStatement.setString(10, sykmeldingDbModel.orgnummer)
+                preparedStatement.setString(11, sykmeldingDbModel.orgnavn)
+                preparedStatement.setObject(12, sykmeldingDbModel.sykmelding.toPGObject())
+                preparedStatement.setBoolean(13, sykmeldingDbModel.lest)
+                preparedStatement.setTimestamp(14, Timestamp.from(sykmeldingDbModel.timestamp.toInstant()))
+                preparedStatement.setObject(15, sykmeldingDbModel.latestTom)
                 preparedStatement.executeUpdate()
             }
             connection.commit()
@@ -55,13 +72,22 @@ class SykmeldingDb(private val database: DatabaseInterface) {
         this.prepareStatement(
             """
                insert into sykmeldt(pasient_fnr, pasient_navn, startdato_sykefravaer, latest_tom) 
-               values (?, ?, ?, ?) on conflict (pasient_fnr) do update ;
+                    values (?, ?, ?, ?) on conflict (pasient_fnr) 
+               on conflict (pasient_fnr) do update
+                set pasient_navn = ?,
+                    startdato_sykefravaer = ?,
+                    latest_tom = ?;
             """
         ).use { preparedStatement ->
             preparedStatement.setString(1, sykmeldt.pasientFnr)
+            // insert
             preparedStatement.setString(2, sykmeldt.pasientNavn)
             preparedStatement.setObject(3, sykmeldt.startdatoSykefravaer)
             preparedStatement.setObject(4, sykmeldt.latestTom)
+            // update
+            preparedStatement.setString(5, sykmeldt.pasientNavn)
+            preparedStatement.setObject(6, sykmeldt.startdatoSykefravaer)
+            preparedStatement.setObject(7, sykmeldt.latestTom)
             preparedStatement.executeUpdate()
         }
     }
