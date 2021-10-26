@@ -151,7 +151,7 @@ object SyfoSyketilfelleClientTest : Spek({
             }
         }
         it("Kaster feil hvis sykmelding ikke er knyttet til syketilfelle") {
-            assertFailsWith<RuntimeException> {
+            assertFailsWith<SyketilfelleNotFoundException> {
                 runBlocking {
                     syfoSyketilfelleClient.finnStartdato(aktorId2, sykmeldingUUID.toString())
                 }

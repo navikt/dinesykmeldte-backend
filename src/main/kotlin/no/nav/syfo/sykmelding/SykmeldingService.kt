@@ -10,6 +10,7 @@ import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_COUNTER
 import no.nav.syfo.log
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.sykmelding.client.SyfoSyketilfelleClient
+import no.nav.syfo.sykmelding.client.SyketilfelleNotFoundException
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
@@ -67,6 +68,12 @@ class SykmeldingService(
                         throw ex
                     } else {
                         log.info("Ignoring sykmelding when person is not found in pdl for sykmelding: ${it.key()}")
+                    }
+                } catch (ex: SyketilfelleNotFoundException) {
+                    if (cluster != "dev-gcp") {
+                        throw ex
+                    } else {
+                        log.info("Ignoring sykmelding when syketilfelle is not found in syfosyketilfelle for sykmelding: ${it.key()}")
                     }
                 } catch (e: Exception) {
                     log.error("Noe gikk galt ved mottak av sendt sykmelding med id ${it.key()}")

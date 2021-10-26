@@ -24,7 +24,7 @@ class SyfoSyketilfelleClient(
 
         if (aktueltSykeforloep == null) {
             log.error("Fant ikke sykeforløp for sykmelding med id $sykmeldingId")
-            throw RuntimeException("Fant ikke sykeforløp for sykmelding med id $sykmeldingId")
+            throw SyketilfelleNotFoundException("Fant ikke sykeforløp for sykmelding med id $sykmeldingId")
         } else {
             return aktueltSykeforloep.oppfolgingsdato
         }
@@ -50,3 +50,5 @@ data class SimpleSykmelding(
     val fom: LocalDate,
     val tom: LocalDate
 )
+
+class SyketilfelleNotFoundException(override val message: String?) : Exception(message)
