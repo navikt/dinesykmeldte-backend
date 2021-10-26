@@ -52,10 +52,6 @@ class SykmeldingService(
                 }
                 val person = pdlPersonService.getPerson(fnr = sykmelding.kafkaMetadata.fnr, callId = sykmeldingId)
                 val startdato = syfoSyketilfelleClient.finnStartdato(aktorId = person.aktorId!!, sykmeldingId = sykmeldingId)
-                // hent navn fra PDL
-                // hent startdato fra syfosyketilfelle
-                // hente lest fra SS?
-                // lagre i db
                 sykmeldingDb.insertOrUpdate(
                     SykmeldingDbModel(
                         sykmeldingId = sykmeldingId,
@@ -74,12 +70,13 @@ class SykmeldingService(
                         latestTom = sisteTom
                     )
                 )
+                log.info("lagret sendt sykmelding med id $sykmeldingId")
             }
         }
         SYKMELDING_TOPIC_COUNTER.inc()
     }
 
-    fun finnSisteTom(perioder: List<SykmeldingsperiodeAGDTO>): LocalDate {
+    private fun finnSisteTom(perioder: List<SykmeldingsperiodeAGDTO>): LocalDate {
         return perioder.maxByOrNull { it.tom }?.tom ?: throw IllegalStateException("Skal ikke kunne ha periode uten tom")
     }
 }

@@ -72,7 +72,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
         this.prepareStatement(
             """
                insert into sykmeldt(pasient_fnr, pasient_navn, startdato_sykefravaer, latest_tom) 
-                    values (?, ?, ?, ?) on conflict (pasient_fnr) 
+                    values (?, ?, ?, ?) 
                on conflict (pasient_fnr) do update
                 set pasient_navn = ?,
                     startdato_sykefravaer = ?,
