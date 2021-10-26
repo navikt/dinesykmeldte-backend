@@ -40,7 +40,7 @@ class SykmeldingServiceTest : Spek({
     val sendtSykmeldingTopic = "topic"
     val pdlPersonService = mockk<PdlPersonService>()
     val syfoSyketilfelleClient = mockk<SyfoSyketilfelleClient>()
-    val sykmeldingService = SykmeldingService(kafkaConsumer, database, applicationState, sendtSykmeldingTopic, pdlPersonService, syfoSyketilfelleClient)
+    val sykmeldingService = SykmeldingService(kafkaConsumer, database, applicationState, sendtSykmeldingTopic, pdlPersonService, syfoSyketilfelleClient, "prod-gcp")
 
     beforeEachTest {
         TestDb.clearAllData()

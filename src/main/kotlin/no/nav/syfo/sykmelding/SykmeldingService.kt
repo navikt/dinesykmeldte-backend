@@ -1,5 +1,10 @@
 package no.nav.syfo.sykmelding
 
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_COUNTER
 import no.nav.syfo.log
@@ -9,10 +14,13 @@ import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage
+import no.nav.syfo.sykmelding.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.sykmelding.pdl.model.toFormattedNameString
 import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
+import no.nav.syfo.util.Unbounded
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -23,20 +31,51 @@ class SykmeldingService(
     private val applicationState: ApplicationState,
     private val sendtSykmeldingTopic: String,
     private val pdlPersonService: PdlPersonService,
-    private val syfoSyketilfelleClient: SyfoSyketilfelleClient
+    private val syfoSyketilfelleClient: SyfoSyketilfelleClient,
+    private val cluster: String
 ) {
+    private var lastLogTime = Instant.now().toEpochMilli()
+    private val logTimer = 60_000L
+    private var ignoredSykmeldinger = 0
+
+    @DelicateCoroutinesApi
+    fun startConsumer() {
+        GlobalScope.launch(Dispatchers.Unbounded) {
+            while (applicationState.ready) {
+                try {
+                    log.info("Starting consuming topic $sendtSykmeldingTopic")
+                    kafkaConsumer.subscribe(listOf(sendtSykmeldingTopic))
+                    start()
+                } catch (ex: Exception) {
+                    log.error("Error running kafka consumer, unsubscribing and waiting 10 seconds for retry", ex)
+                    kafkaConsumer.unsubscribe()
+                    delay(10_000)
+                }
+            }
+        }
+    }
+
     suspend fun start() {
-        kafkaConsumer.subscribe(listOf(sendtSykmeldingTopic))
-        log.info("Starting consuming topic $sendtSykmeldingTopic")
+        var processedMessages = 0
         while (applicationState.ready) {
-            kafkaConsumer.poll(Duration.ofSeconds(1)).forEach {
+            val sykmeldinger = kafkaConsumer.poll(Duration.ZERO)
+            sykmeldinger.forEach {
                 try {
                     handleSendtSykmelding(it.key(), it.value())
+                } catch (ex: NameNotFoundInPdlException) {
+                    if (cluster != "dev-gcp") {
+                        throw ex
+                    } else {
+                        log.info("Ignoring sykmelding when person is not found in pdl for sykmelding: ${it.key()}")
+                    }
                 } catch (e: Exception) {
                     log.error("Noe gikk galt ved mottak av sendt sykmelding med id ${it.key()}")
                     throw e
                 }
             }
+            processedMessages += sykmeldinger.count()
+            processedMessages = logProcessedMessages(processedMessages)
+            delay(1)
         }
     }
 
@@ -70,7 +109,6 @@ class SykmeldingService(
                         latestTom = sisteTom
                     )
                 )
-                log.info("lagret sendt sykmelding med id $sykmeldingId")
             }
         }
         SYKMELDING_TOPIC_COUNTER.inc()
@@ -78,5 +116,15 @@ class SykmeldingService(
 
     private fun finnSisteTom(perioder: List<SykmeldingsperiodeAGDTO>): LocalDate {
         return perioder.maxByOrNull { it.tom }?.tom ?: throw IllegalStateException("Skal ikke kunne ha periode uten tom")
+    }
+
+    private fun logProcessedMessages(processedMessages: Int): Int {
+        var currentLogTime = Instant.now().toEpochMilli()
+        if (processedMessages > 0 && currentLogTime - lastLogTime > logTimer) {
+            log.info("Processed $processedMessages messages, ignored sykmeldinger $ignoredSykmeldinger")
+            lastLogTime = currentLogTime
+            return 0
+        }
+        return processedMessages
     }
 }

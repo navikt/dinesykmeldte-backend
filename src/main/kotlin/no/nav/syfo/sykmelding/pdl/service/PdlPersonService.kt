@@ -4,6 +4,7 @@ import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.log
 import no.nav.syfo.sykmelding.pdl.client.PdlClient
 import no.nav.syfo.sykmelding.pdl.client.model.GetPersonResponse
+import no.nav.syfo.sykmelding.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.sykmelding.pdl.model.Navn
 import no.nav.syfo.sykmelding.pdl.model.PdlPerson
 import java.lang.RuntimeException
@@ -38,7 +39,7 @@ class PdlPersonService(
         }
 
         if (navn == null) {
-            throw RuntimeException("Fant ikke navn i PDL $callId")
+            throw NameNotFoundInPdlException("Fant ikke navn i PDL $callId")
         }
         if (aktorId == null) {
             throw RuntimeException("Fant ikke aktorId i PDL $callId")
