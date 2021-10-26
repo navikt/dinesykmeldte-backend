@@ -55,7 +55,7 @@ class SykmeldingService(
         }
     }
 
-    suspend fun start() {
+    private suspend fun start() {
         var processedMessages = 0
         while (applicationState.ready) {
             val sykmeldinger = kafkaConsumer.poll(Duration.ZERO)

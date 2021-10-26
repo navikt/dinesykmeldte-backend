@@ -19,7 +19,8 @@ data class Environment(
     val clientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
     val clientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val syketilfelleEndpointURL: String = getEnvVar("SYKETILLFELLE_ENDPOINT_URL"),
-    val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE")
+    val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),
+    val cluster: String = getEnvVar("NAIS_CLUSTER_NAME")
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"

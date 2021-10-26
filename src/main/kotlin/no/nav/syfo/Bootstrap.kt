@@ -32,7 +32,9 @@ import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
+import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.client.SyfoSyketilfelleClient
+import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage
 import no.nav.syfo.sykmelding.pdl.client.PdlClient
 import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
@@ -112,6 +114,8 @@ fun main() {
         JacksonKafkaDeserializer(SendtSykmeldingKafkaMessage::class)
     )
 
+    val sykmeldingService = SykmeldingService(kafkaConsumerSykmelding, SykmeldingDb(database), applicationState, env.sendtSykmeldingTopic, pdlPersonService, syfoSyketilfelleClient, env.cluster)
+
     val applicationEngine = createApplicationEngine(
         env,
         jwkProviderTokenX,
@@ -124,6 +128,9 @@ fun main() {
 
     startBackgroundJob(applicationState) {
         narmestelederService.start()
+    }
+    startBackgroundJob(applicationState) {
+        sykmeldingService.startConsumer()
     }
 }
 
