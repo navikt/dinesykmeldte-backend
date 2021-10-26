@@ -62,6 +62,18 @@ spec:
     inbound:
       rules:
         - application: dinesykmeldte
+    outbound:
+      external:
+        - host: https://pdl-api.prod-fss-pub.nais.io
+        - host: https://teamsykmelding-auth-fss-proxy.prod-fss-pub.nais.io
   env:
     - name: ALLOWED_ORIGIN
       value: tjenester.nav.no,www.nav.no
+    - name: PDL_GRAPHQL_PATH
+      value: https://pdl-api.prod-fss-pub.nais.io/graphql
+    - name: PDL_SCOPE
+      value: api://prod-fss.pdl.pdl-api/.default
+    - name: SYKETILLFELLE_ENDPOINT_URL
+      value: https://teamsykmelding-auth-fss-proxy.prod-fss-pub.nais.io
+    - name: SYKETILLFELLE_SCOPE
+      value: api://prod-fss.teamsykmelding.teamsykmelding-auth-fss-proxy/.default

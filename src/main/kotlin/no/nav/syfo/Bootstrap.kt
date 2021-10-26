@@ -3,6 +3,7 @@ package no.nav.syfo
 import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -25,11 +26,18 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.metrics.ERROR_COUNTER
+import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
+import no.nav.syfo.sykmelding.SykmeldingService
+import no.nav.syfo.sykmelding.client.SyfoSyketilfelleClient
+import no.nav.syfo.sykmelding.db.SykmeldingDb
+import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage
+import no.nav.syfo.sykmelding.pdl.client.PdlClient
+import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
 import no.nav.syfo.util.JacksonKafkaDeserializer
 import no.nav.syfo.util.Unbounded
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -41,6 +49,13 @@ import java.net.URL
 import java.util.concurrent.TimeUnit
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.dinesykmeldte-backend")
+
+val objectMapper: ObjectMapper = ObjectMapper().apply {
+    registerKotlinModule()
+    registerModule(JavaTimeModule())
+    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+}
 
 @DelicateCoroutinesApi
 fun main() {
@@ -61,21 +76,45 @@ fun main() {
     }
     val httpClient = HttpClient(Apache, config)
 
+    val accessTokenClient = AccessTokenClient(env.aadAccessTokenUrl, env.clientId, env.clientSecret, httpClient)
+    val pdlClient = PdlClient(
+        httpClient,
+        env.pdlGraphqlPath,
+        PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
+    )
+    val pdlPersonService = PdlPersonService(pdlClient, accessTokenClient, env.pdlScope)
+    val syfoSyketilfelleClient = SyfoSyketilfelleClient(
+        syketilfelleEndpointURL = env.syketilfelleEndpointURL,
+        accessTokenClient = accessTokenClient,
+        syketilfelleScope = env.syketilfelleScope,
+        httpClient = httpClient
+    )
+
     val wellKnownTokenX = getWellKnownTokenX(httpClient, env.tokenXWellKnownUrl)
     val jwkProviderTokenX = JwkProviderBuilder(URL(wellKnownTokenX.jwks_uri))
         .cached(10, 24, TimeUnit.HOURS)
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
 
-    val kafkaConsumer = KafkaConsumer(
+    val kafkaConsumerNarmesteleder = KafkaConsumer(
+        KafkaUtils.getAivenKafkaConfig().also {
+            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+        }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
+        StringDeserializer(),
+        JacksonKafkaDeserializer(NarmestelederLeesahKafkaMessage::class)
+    )
+    val narmestelederService = NarmestelederService(kafkaConsumerNarmesteleder, NarmestelederDb(database), applicationState, env.narmestelederLeesahTopic)
+
+    val kafkaConsumerSykmelding = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also {
             it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
             it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
         }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
         StringDeserializer(),
-        JacksonKafkaDeserializer(NarmestelederLeesahKafkaMessage::class)
+        JacksonKafkaDeserializer(SendtSykmeldingKafkaMessage::class)
     )
-    val narmestelederService = NarmestelederService(kafkaConsumer, NarmestelederDb(database), applicationState, env.narmestelederLeesahTopic)
+
+    val sykmeldingService = SykmeldingService(kafkaConsumerSykmelding, SykmeldingDb(database), applicationState, env.sendtSykmeldingTopic, pdlPersonService, syfoSyketilfelleClient, env.cluster)
 
     val applicationEngine = createApplicationEngine(
         env,
@@ -90,6 +129,8 @@ fun main() {
     startBackgroundJob(applicationState) {
         narmestelederService.start()
     }
+
+    sykmeldingService.startConsumer()
 }
 
 @DelicateCoroutinesApi

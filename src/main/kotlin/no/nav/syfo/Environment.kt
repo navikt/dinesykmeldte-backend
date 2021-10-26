@@ -11,7 +11,16 @@ data class Environment(
     val dbHost: String = getEnvVar("NAIS_DATABASE_HOST"),
     val dbPort: String = getEnvVar("NAIS_DATABASE_PORT"),
     val dbName: String = getEnvVar("NAIS_DATABASE_DATABASE"),
-    val narmestelederLeesahTopic: String = "teamsykmelding.syfo-narmesteleder-leesah"
+    val narmestelederLeesahTopic: String = "teamsykmelding.syfo-narmesteleder-leesah",
+    val sendtSykmeldingTopic: String = "teamsykmelding.syfo-sendt-sykmelding",
+    val pdlScope: String = getEnvVar("PDL_SCOPE"),
+    val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
+    val aadAccessTokenUrl: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
+    val clientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
+    val clientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
+    val syketilfelleEndpointURL: String = getEnvVar("SYKETILLFELLE_ENDPOINT_URL"),
+    val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),
+    val cluster: String = getEnvVar("NAIS_CLUSTER_NAME")
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
