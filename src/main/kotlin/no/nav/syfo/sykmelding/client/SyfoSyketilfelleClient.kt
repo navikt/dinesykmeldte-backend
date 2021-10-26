@@ -31,7 +31,7 @@ class SyfoSyketilfelleClient(
     }
 
     private suspend fun hentSykeforloep(aktorId: String): List<Sykeforloep> =
-        httpClient.get<List<Sykeforloep>>("$syketilfelleEndpointURL/sparenaproxy/$aktorId/sykeforloep") {
+        httpClient.get<List<Sykeforloep>>("$syketilfelleEndpointURL/syfosyketilfelle/sparenaproxy/$aktorId/sykeforloep") {
             accept(ContentType.Application.Json)
             val token = accessTokenClient.getAccessToken(syketilfelleScope)
             headers {

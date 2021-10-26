@@ -127,6 +127,29 @@ class SykmeldingServiceTest : Spek({
                 sykmeldtOppdatert?.latestTom shouldBeEqualTo LocalDate.now().plusDays(20)
             }
         }
+        it("Ignorerer sendt sykmelding der tom er eldre enn fire måneder tilbake i tid") {
+            val sykmeldingId = UUID.randomUUID().toString()
+            val sendtSykmelding = opprettSendtSykmeldingKafkaMessage(
+                sykmeldingId,
+                perioder = listOf(
+                    SykmeldingsperiodeAGDTO(
+                        LocalDate.now().minusMonths(8),
+                        LocalDate.now().minusMonths(5),
+                        null,
+                        null,
+                        null,
+                        PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                        AktivitetIkkeMuligAGDTO(null),
+                        false
+                    )
+                )
+            )
+            runBlocking {
+                sykmeldingService.handleSendtSykmelding(sykmeldingId, sendtSykmelding)
+
+                TestDb.getSykmelding(sykmeldingId) shouldBeEqualTo null
+            }
+        }
         it("Sletter tombstonet sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
             val sendtSykmelding = opprettSendtSykmeldingKafkaMessage(sykmeldingId)

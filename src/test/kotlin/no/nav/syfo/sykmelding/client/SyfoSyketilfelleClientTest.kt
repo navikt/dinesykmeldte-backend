@@ -63,7 +63,7 @@ object SyfoSyketilfelleClientTest : Spek({
             }
         }
         routing {
-            get("/sparenaproxy/$aktorId1/sykeforloep") {
+            get("/syfosyketilfelle/sparenaproxy/$aktorId1/sykeforloep") {
                 call.respond(
                     listOf(
                         Sykeforloep(
@@ -99,7 +99,7 @@ object SyfoSyketilfelleClientTest : Spek({
                     )
                 )
             }
-            get("/sparenaproxy/$aktorId2/sykeforloep") {
+            get("/syfosyketilfelle/sparenaproxy/$aktorId2/sykeforloep") {
                 call.respond(
                     listOf(
                         Sykeforloep(

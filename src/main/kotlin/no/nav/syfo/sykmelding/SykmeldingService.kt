@@ -85,7 +85,7 @@ class SykmeldingService(
             sykmeldingDb.remove(sykmeldingId)
         } else {
             val sisteTom = finnSisteTom(sykmelding.sykmelding.sykmeldingsperioder)
-            if (sisteTom.isAfter(LocalDate.now().minusWeeks(4))) {
+            if (sisteTom.isAfter(LocalDate.now().minusMonths(4))) {
                 if (sykmelding.event.arbeidsgiver == null) {
                     throw IllegalStateException("Mottatt sendt sykmelding uten arbeidsgiver, $sykmeldingId")
                 }

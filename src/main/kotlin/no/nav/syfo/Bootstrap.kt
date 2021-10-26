@@ -129,9 +129,8 @@ fun main() {
     startBackgroundJob(applicationState) {
         narmestelederService.start()
     }
-    startBackgroundJob(applicationState) {
-        sykmeldingService.startConsumer()
-    }
+
+    sykmeldingService.startConsumer()
 }
 
 @DelicateCoroutinesApi
