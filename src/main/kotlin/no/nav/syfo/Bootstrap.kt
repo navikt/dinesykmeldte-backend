@@ -28,10 +28,13 @@ import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.metrics.ERROR_COUNTER
 import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.kafka.aiven.KafkaUtils
+import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
+import no.nav.syfo.soknad.SoknadService
+import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.client.SyfoSyketilfelleClient
 import no.nav.syfo.sykmelding.db.SykmeldingDb
@@ -107,14 +110,22 @@ fun main() {
 
     val kafkaConsumerSykmelding = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also {
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
-            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
         }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
         StringDeserializer(),
         JacksonKafkaDeserializer(SendtSykmeldingKafkaMessage::class)
     )
-
     val sykmeldingService = SykmeldingService(kafkaConsumerSykmelding, SykmeldingDb(database), applicationState, env.sendtSykmeldingTopic, pdlPersonService, syfoSyketilfelleClient, env.cluster)
+
+    val kafkaConsumerSoknad = KafkaConsumer(
+        KafkaUtils.getAivenKafkaConfig().also {
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
+            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+        }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
+        StringDeserializer(),
+        JacksonKafkaDeserializer(SykepengesoknadDTO::class)
+    )
+    val soknadService = SoknadService(kafkaConsumerSoknad, SoknadDb(database), applicationState, env.sykepengesoknadTopic)
 
     val applicationEngine = createApplicationEngine(
         env,

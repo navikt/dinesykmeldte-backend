@@ -24,6 +24,12 @@ val SYKMELDING_TOPIC_COUNTER: Counter = Counter.build()
     .help("Counts sendte sykmeldinger from kafka (new or deleted)")
     .register()
 
+val SOKNAD_TOPIC_COUNTER: Counter = Counter.build()
+    .name("soknad_topic_counter")
+    .namespace(METRICS_NS)
+    .help("Counts sendte soknader from kafka (new or deleted)")
+    .register()
+
 val ERROR_COUNTER: Counter = Counter.build()
     .labelNames("error")
     .name("error")

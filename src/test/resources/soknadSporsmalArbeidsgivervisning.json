@@ -1,0 +1,386 @@
+[
+  {
+    "id": "1",
+    "tag": "ANSVARSERKLARING",
+    "sporsmalstekst": "Jeg vet at jeg kan miste retten til sykepenger hvis opplysningene jeg gir ikke er riktige eller fullstendige. Jeg vet også at NAV kan holde igjen eller kreve tilbake penger, og at å gi feil opplysninger kan være straffbart.",
+    "undertekst": null,
+    "min": null,
+    "max": null,
+    "svartype": "CHECKBOX_PANEL",
+    "kriterieForVisningAvUndersporsmal": null,
+    "svar": [
+      {
+        "verdi": "CHECKED"
+      }
+    ],
+    "undersporsmal": []
+  },
+  {
+    "id": "28",
+    "tag": "FRAVAR_FOR_SYKMELDINGEN",
+    "sporsmalstekst": "Var du syk og borte fra jobb mellom 23. september - 8. oktober 2021?",
+    "undertekst": null,
+    "min": null,
+    "max": null,
+    "svartype": "JA_NEI",
+    "kriterieForVisningAvUndersporsmal": "JA",
+    "svar": [
+      {
+        "verdi": "JA"
+      }
+    ],
+    "undersporsmal": [
+      {
+        "id": "29",
+        "tag": "FRAVAR_FOR_SYKMELDINGEN_NAR",
+        "sporsmalstekst": "Hvilke dager var du syk og borte fra jobb? Du trenger bare oppgi dager før 9. oktober 2021.",
+        "undertekst": null,
+        "min": "2021-04-09",
+        "max": "2021-10-08",
+        "svartype": "PERIODER",
+        "kriterieForVisningAvUndersporsmal": null,
+        "svar": [
+          {
+            "verdi": "{\"fom\":\"2021-09-25\",\"tom\":\"2021-10-02\"}"
+          }
+        ],
+        "undersporsmal": []
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "tag": "TILBAKE_I_ARBEID",
+    "sporsmalstekst": "Var du tilbake i fullt arbeid hos Kebabbiten i løpet av perioden 9. - 26. oktober 2021?",
+    "undertekst": null,
+    "min": null,
+    "max": null,
+    "svartype": "JA_NEI",
+    "kriterieForVisningAvUndersporsmal": "JA",
+    "svar": [
+      {
+        "verdi": "NEI"
+      }
+    ],
+    "undersporsmal": [
+      {
+        "id": "3",
+        "tag": "TILBAKE_NAR",
+        "sporsmalstekst": "Når begynte du å jobbe igjen?",
+        "undertekst": null,
+        "min": "2021-10-09",
+        "max": "2021-10-26",
+        "svartype": "DATO",
+        "kriterieForVisningAvUndersporsmal": null,
+        "svar": [],
+        "undersporsmal": []
+      }
+    ]
+  },
+  {
+    "id": "4",
+    "tag": "FERIE_V2",
+    "sporsmalstekst": "Hadde du ferie i tidsrommet 9. - 26. oktober 2021?",
+    "undertekst": null,
+    "min": null,
+    "max": null,
+    "svartype": "JA_NEI",
+    "kriterieForVisningAvUndersporsmal": "JA",
+    "svar": [
+      {
+        "verdi": "NEI"
+      }
+    ],
+    "undersporsmal": [
+      {
+        "id": "5",
+        "tag": "FERIE_NAR_V2",
+        "sporsmalstekst": "Når tok du ut ferie?",
+        "undertekst": null,
+        "min": "2021-10-09",
+        "max": "2021-10-26",
+        "svartype": "PERIODER",
+        "kriterieForVisningAvUndersporsmal": null,
+        "svar": [],
+        "undersporsmal": []
+      }
+    ]
+  },
+  {
+    "id": "6",
+    "tag": "PERMISJON_V2",
+    "sporsmalstekst": "Tok du permisjon mens du var sykmeldt 9. - 26. oktober 2021?",
+    "undertekst": null,
+    "min": null,
+    "max": null,
+    "svartype": "JA_NEI",
+    "kriterieForVisningAvUndersporsmal": "JA",
+    "svar": [
+      {
+        "verdi": "NEI"
+      }
+    ],
+    "undersporsmal": [
+      {
+        "id": "7",
+        "tag": "PERMISJON_NAR_V2",
+        "sporsmalstekst": "Når tok du permisjon?",
+        "undertekst": null,
+        "min": "2021-10-09",
+        "max": "2021-10-26",
+        "svartype": "PERIODER",
+        "kriterieForVisningAvUndersporsmal": null,
+        "svar": [],
+        "undersporsmal": []
+      }
+    ]
+  },
+  {
+    "id": "8",
+    "tag": "UTLAND_V2",
+    "sporsmalstekst": "Var du på reise utenfor EØS mens du var sykmeldt 9. - 26. oktober 2021?",
+    "undertekst": null,
+    "min": null,
+    "max": null,
+    "svartype": "JA_NEI",
+    "kriterieForVisningAvUndersporsmal": "JA",
+    "svar": [
+      {
+        "verdi": "NEI"
+      }
+    ],
+    "undersporsmal": [
+      {
+        "id": "9",
+        "tag": "UTLAND_NAR_V2",
+        "sporsmalstekst": "Når var du utenfor EØS?",
+        "undertekst": null,
+        "min": "2021-10-09",
+        "max": "2021-10-26",
+        "svartype": "PERIODER",
+        "kriterieForVisningAvUndersporsmal": null,
+        "svar": [],
+        "undersporsmal": []
+      }
+    ]
+  },
+  {
+    "id": "35",
+    "tag": "JOBBET_DU_100_PROSENT_0",
+    "sporsmalstekst": "I perioden 9. - 26. oktober 2021 var du 100 % sykmeldt fra Kebabbiten. Jobbet du noe i denne perioden?",
+    "undertekst": null,
+    "min": null,
+    "max": null,
+    "svartype": "JA_NEI",
+    "kriterieForVisningAvUndersporsmal": "JA",
+    "svar": [
+      {
+        "verdi": "NEI"
+      }
+    ],
+    "undersporsmal": [
+      {
+        "id": "36",
+        "tag": "HVOR_MANGE_TIMER_PER_UKE_0",
+        "sporsmalstekst": "Hvor mange timer i uken jobber du vanligvis når du er frisk? Varierer det, kan du oppgi gjennomsnittet.",
+        "undertekst": "timer per uke",
+        "min": "1",
+        "max": "150",
+        "svartype": "TALL",
+        "kriterieForVisningAvUndersporsmal": null,
+        "svar": [],
+        "undersporsmal": []
+      },
+      {
+        "id": "37",
+        "tag": "HVOR_MYE_HAR_DU_JOBBET_0",
+        "sporsmalstekst": "Hvor mye jobbet du tilsammen 9. - 26. oktober 2021?",
+        "undertekst": "Velg timer eller prosent",
+        "min": null,
+        "max": null,
+        "svartype": "RADIO_GRUPPE_TIMER_PROSENT",
+        "kriterieForVisningAvUndersporsmal": null,
+        "svar": [],
+        "undersporsmal": [
+          {
+            "id": "38",
+            "tag": "HVOR_MYE_TIMER_0",
+            "sporsmalstekst": "Timer",
+            "undertekst": null,
+            "min": null,
+            "max": null,
+            "svartype": "RADIO",
+            "kriterieForVisningAvUndersporsmal": "CHECKED",
+            "svar": [],
+            "undersporsmal": [
+              {
+                "id": "39",
+                "tag": "HVOR_MYE_TIMER_VERDI_0",
+                "sporsmalstekst": null,
+                "undertekst": "timer totalt",
+                "min": "1",
+                "max": "386",
+                "svartype": "TALL",
+                "kriterieForVisningAvUndersporsmal": null,
+                "svar": [],
+                "undersporsmal": []
+              }
+            ]
+          },
+          {
+            "id": "40",
+            "tag": "HVOR_MYE_PROSENT_0",
+            "sporsmalstekst": "Prosent",
+            "undertekst": null,
+            "min": null,
+            "max": null,
+            "svartype": "RADIO",
+            "kriterieForVisningAvUndersporsmal": "CHECKED",
+            "svar": [],
+            "undersporsmal": [
+              {
+                "id": "41",
+                "tag": "HVOR_MYE_PROSENT_VERDI_0",
+                "sporsmalstekst": null,
+                "undertekst": "prosent",
+                "min": "1",
+                "max": "99",
+                "svartype": "TALL",
+                "kriterieForVisningAvUndersporsmal": null,
+                "svar": [],
+                "undersporsmal": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "23",
+    "tag": "UTDANNING",
+    "sporsmalstekst": "Har du vært under utdanning i løpet av perioden 9. - 26. oktober 2021?",
+    "undertekst": null,
+    "min": null,
+    "max": null,
+    "svartype": "JA_NEI",
+    "kriterieForVisningAvUndersporsmal": "JA",
+    "svar": [
+      {
+        "verdi": "NEI"
+      }
+    ],
+    "undersporsmal": [
+      {
+        "id": "24",
+        "tag": "UTDANNING_START",
+        "sporsmalstekst": "Når startet du på utdanningen?",
+        "undertekst": null,
+        "min": null,
+        "max": "2021-10-26",
+        "svartype": "DATO",
+        "kriterieForVisningAvUndersporsmal": null,
+        "svar": [],
+        "undersporsmal": []
+      },
+      {
+        "id": "25",
+        "tag": "FULLTIDSSTUDIUM",
+        "sporsmalstekst": "Er utdanningen et fulltidsstudium?",
+        "undertekst": null,
+        "min": null,
+        "max": null,
+        "svartype": "JA_NEI",
+        "kriterieForVisningAvUndersporsmal": null,
+        "svar": [],
+        "undersporsmal": []
+      }
+    ]
+  },
+  {
+    "id": "31",
+    "tag": "PERMITTERT_NAA",
+    "sporsmalstekst": "Var du permittert av arbeidsgiveren din da du ble sykmeldt 9. oktober 2021?",
+    "undertekst": null,
+    "min": null,
+    "max": null,
+    "svartype": "JA_NEI",
+    "kriterieForVisningAvUndersporsmal": "JA",
+    "svar": [
+      {
+        "verdi": "NEI"
+      }
+    ],
+    "undersporsmal": [
+      {
+        "id": "32",
+        "tag": "PERMITTERT_NAA_NAR",
+        "sporsmalstekst": "Velg første dag i permitteringen",
+        "undertekst": null,
+        "min": "2020-02-01",
+        "max": "2021-10-26",
+        "svartype": "DATO",
+        "kriterieForVisningAvUndersporsmal": null,
+        "svar": [],
+        "undersporsmal": []
+      }
+    ]
+  },
+  {
+    "id": "33",
+    "tag": "PERMITTERT_PERIODE",
+    "sporsmalstekst": "Har du vært permittert av arbeidsgiveren din i mer enn 14 sammenhengende dager mellom 9. september - 9. oktober 2021?",
+    "undertekst": null,
+    "min": null,
+    "max": null,
+    "svartype": "JA_NEI",
+    "kriterieForVisningAvUndersporsmal": "JA",
+    "svar": [
+      {
+        "verdi": "NEI"
+      }
+    ],
+    "undersporsmal": [
+      {
+        "id": "34",
+        "tag": "PERMITTERT_PERIODE_NAR",
+        "sporsmalstekst": null,
+        "undertekst": null,
+        "min": "2021-09-09",
+        "max": "2021-10-09",
+        "svartype": "PERIODER",
+        "kriterieForVisningAvUndersporsmal": null,
+        "svar": [],
+        "undersporsmal": []
+      }
+    ]
+  },
+  {
+    "id": "26",
+    "tag": "VAER_KLAR_OVER_AT",
+    "sporsmalstekst": "Viktig å være klar over:",
+    "undertekst": "<ul><li>Du kan bare få sykepenger hvis det er din egen sykdom eller skade som hindrer deg i å jobbe. Sosiale eller økonomiske problemer gir ikke rett til sykepenger.</li><li>Du kan miste retten til sykepenger hvis du nekter å opplyse om din egen arbeidsevne, eller hvis du ikke tar imot behandling eller tilrettelegging.</li><li>Retten til sykepenger gjelder bare inntekt du har mottatt som lønn og betalt skatt av på sykmeldingstidspunktet.</li><li>NAV kan innhente opplysninger som er nødvendige for å behandle søknaden.</li><li>Du må melde fra til NAV hvis du satt i varetekt, sonet straff eller var under forvaring i sykmeldingsperioden.</li><li>Fristen for å søke sykepenger er som hovedregel 3 måneder</li></ul><p>Du kan lese mer om rettigheter og plikter på <a href=\"https://www.nav.no/sykepenger\" target=\"_blank\">nav.no/sykepenger</a>.</p>",
+    "min": null,
+    "max": null,
+    "svartype": "IKKE_RELEVANT",
+    "kriterieForVisningAvUndersporsmal": null,
+    "svar": [],
+    "undersporsmal": []
+  },
+  {
+    "id": "27",
+    "tag": "BEKREFT_OPPLYSNINGER",
+    "sporsmalstekst": "Jeg har lest all informasjonen jeg har fått i søknaden og bekrefter at opplysningene jeg har gitt er korrekte.",
+    "undertekst": null,
+    "min": null,
+    "max": null,
+    "svartype": "CHECKBOX_PANEL",
+    "kriterieForVisningAvUndersporsmal": null,
+    "svar": [
+      {
+        "verdi": "CHECKED"
+      }
+    ],
+    "undersporsmal": []
+  }
+]
