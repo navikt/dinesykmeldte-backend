@@ -142,6 +142,7 @@ fun main() {
     }
 
     sykmeldingService.startConsumer()
+    soknadService.startConsumer()
 }
 
 @DelicateCoroutinesApi
