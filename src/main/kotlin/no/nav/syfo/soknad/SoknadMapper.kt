@@ -29,8 +29,6 @@ private fun fjernSporsmalHjelper(tag: String, sporsmal: List<SporsmalDTO>): List
         .filterNot { it.tag == tag }
         .map {
             it.copy(
-                undersporsmal = if (it.undersporsmal != null) {
-                    fjernSporsmalHjelper(tag, it.undersporsmal!!)
-                } else null
+                undersporsmal = it.undersporsmal?.let { us -> fjernSporsmalHjelper(tag, us) }
             )
         }
