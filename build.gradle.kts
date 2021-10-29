@@ -21,6 +21,7 @@ val flywayVersion = "7.15.0"
 val postgresVersion = "42.2.24"
 val testContainerVersion = "1.16.0"
 val kotlinVersion = "1.5.30"
+val syfoKafkaVersion = "2021.07.20-09.39-6be2c52c"
 
 tasks.withType<Jar> {
     manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
@@ -71,6 +72,7 @@ dependencies {
 
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
+    implementation("no.nav.syfo.kafka:felles:$syfoKafkaVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")

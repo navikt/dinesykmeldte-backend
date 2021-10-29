@@ -6,9 +6,11 @@ import no.nav.syfo.Environment
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
+import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
 import no.nav.syfo.objectMapper
+import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import org.testcontainers.containers.PostgreSQLContainer
@@ -41,9 +43,10 @@ class TestDb {
             return database.connection.use {
                 it.prepareStatement(
                     """
-                    delete from narmesteleder;
-                    delete from sykmelding;
-                    delete from sykmeldt;
+                    DELETE FROM narmesteleder;
+                    DELETE FROM sykmelding;
+                    DELETE FROM sykmeldt;
+                    DELETE FROM soknad;
                 """
                 ).use { ps ->
                     ps.executeUpdate()
@@ -56,7 +59,7 @@ class TestDb {
             return database.connection.use {
                 it.prepareStatement(
                     """
-                    select * from narmesteleder where pasient_fnr = ?;
+                    SELECT * FROM narmesteleder WHERE pasient_fnr = ?;
                 """
                 ).use { ps ->
                     ps.setString(1, pasientFnr)
@@ -77,7 +80,7 @@ class TestDb {
             return database.connection.use {
                 it.prepareStatement(
                     """
-                    select * from sykmeldt where pasient_fnr = ?;
+                    SELECT * FROM sykmeldt WHERE pasient_fnr = ?;
                 """
                 ).use { ps ->
                     ps.setString(1, fnr)
@@ -98,7 +101,7 @@ class TestDb {
             return database.connection.use {
                 it.prepareStatement(
                     """
-                    select * from sykmelding where sykmelding_id = ?;
+                    SELECT * FROM sykmelding WHERE sykmelding_id = ?;
                 """
                 ).use { ps ->
                     ps.setString(1, sykmeldingId)
@@ -117,6 +120,32 @@ class TestDb {
                 lest = getBoolean("lest"),
                 timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
                 latestTom = getObject("latest_tom", LocalDate::class.java)
+            )
+
+        fun getSoknad(soknadId: String): SoknadDbModel? {
+            return database.connection.use {
+                it.prepareStatement(
+                    """
+                    SELECT * FROM soknad WHERE soknad_id = ?;
+                """
+                ).use { ps ->
+                    ps.setString(1, soknadId)
+                    ps.executeQuery().toList { toSoknadDbModel() }.firstOrNull()
+                }
+            }
+        }
+
+        private fun ResultSet.toSoknadDbModel(): SoknadDbModel =
+            SoknadDbModel(
+                soknadId = getString("soknad_id"),
+                sykmeldingId = getString("sykmelding_id"),
+                pasientFnr = getString("pasient_fnr"),
+                orgnummer = getString("orgnummer"),
+                soknad = objectMapper.readValue(getString("soknad"), SykepengesoknadDTO::class.java),
+                sendtDato = getObject("sendt_dato", LocalDate::class.java),
+                lest = getBoolean("lest"),
+                timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
+                tom = getObject("tom", LocalDate::class.java)
             )
     }
 }
