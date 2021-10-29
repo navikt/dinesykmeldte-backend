@@ -49,8 +49,8 @@ class SoknadService(
     private suspend fun start() {
         var processedMessages = 0
         while (applicationState.ready) {
-            val sykmeldinger = kafkaConsumer.poll(Duration.ZERO)
-            sykmeldinger.forEach {
+            val soknader = kafkaConsumer.poll(Duration.ZERO)
+            soknader.forEach {
                 try {
                     handleSykepengesoknad(it.value())
                 } catch (e: Exception) {
@@ -58,7 +58,7 @@ class SoknadService(
                     throw e
                 }
             }
-            processedMessages += sykmeldinger.count()
+            processedMessages += soknader.count()
             processedMessages = logProcessedMessages(processedMessages)
             delay(1)
         }

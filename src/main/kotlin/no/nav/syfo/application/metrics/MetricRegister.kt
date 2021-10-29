@@ -27,7 +27,7 @@ val SYKMELDING_TOPIC_COUNTER: Counter = Counter.build()
 val SOKNAD_TOPIC_COUNTER: Counter = Counter.build()
     .name("soknad_topic_counter")
     .namespace(METRICS_NS)
-    .help("Counts sendte soknader from kafka (new or deleted)")
+    .help("Counts sendte soknader from kafka")
     .register()
 
 val ERROR_COUNTER: Counter = Counter.build()
