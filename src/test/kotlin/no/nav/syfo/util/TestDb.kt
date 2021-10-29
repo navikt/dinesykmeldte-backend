@@ -145,7 +145,7 @@ class TestDb {
                 sendtDato = getObject("sendt_dato", LocalDate::class.java),
                 lest = getBoolean("lest"),
                 timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
-                latestTom = getObject("latest_tom", LocalDate::class.java)
+                tom = getObject("tom", LocalDate::class.java)
             )
     }
 }

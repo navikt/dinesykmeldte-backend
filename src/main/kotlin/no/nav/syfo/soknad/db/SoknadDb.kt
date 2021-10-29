@@ -18,7 +18,7 @@ class SoknadDb(private val database: DatabaseInterface) {
                         sendt_dato, 
                         lest, 
                         timestamp, 
-                        latest_tom) 
+                        tom) 
                     values (?, ?, ?, ?, ?, ?, ?, ?, ?) on CONFLICT DO NOTHING;
             """
             ).use { preparedStatement ->
@@ -30,7 +30,7 @@ class SoknadDb(private val database: DatabaseInterface) {
                 preparedStatement.setObject(6, soknadDbModel.sendtDato)
                 preparedStatement.setBoolean(7, soknadDbModel.lest)
                 preparedStatement.setTimestamp(8, Timestamp.from(soknadDbModel.timestamp.toInstant()))
-                preparedStatement.setObject(9, soknadDbModel.latestTom)
+                preparedStatement.setObject(9, soknadDbModel.tom)
                 preparedStatement.executeUpdate()
             }
             connection.commit()

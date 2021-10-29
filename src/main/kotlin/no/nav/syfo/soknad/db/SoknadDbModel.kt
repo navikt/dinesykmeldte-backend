@@ -15,7 +15,7 @@ data class SoknadDbModel(
     val sendtDato: LocalDate?,
     val lest: Boolean,
     val timestamp: OffsetDateTime,
-    val latestTom: LocalDate
+    val tom: LocalDate
 )
 
 fun SykepengesoknadDTO.toPGObject() = PGobject().also {

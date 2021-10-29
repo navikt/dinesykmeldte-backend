@@ -55,7 +55,7 @@ class SoknadServiceTest : Spek({
             soknadFraDb?.sendtDato shouldBeEqualTo LocalDate.now().minusWeeks(1)
             soknadFraDb?.lest shouldBeEqualTo false
             soknadFraDb?.timestamp?.toLocalDate() shouldBeEqualTo LocalDate.now()
-            soknadFraDb?.latestTom shouldBeEqualTo LocalDate.now().minusWeeks(2)
+            soknadFraDb?.tom shouldBeEqualTo LocalDate.now().minusWeeks(2)
             val arbeidsgiverSoknadFraDb = soknadFraDb!!.soknad
             val sporsmalArbeidsgivervisning: List<SporsmalDTO> = objectMapper.readValue(
                 getFileAsString("src/test/resources/soknadSporsmalArbeidsgivervisning.json")

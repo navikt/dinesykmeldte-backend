@@ -79,7 +79,7 @@ class SoknadService(
                     sendtDato = sykepengesoknad.sendtArbeidsgiver!!.toLocalDate(),
                     lest = false, // oppdateres fra strangler
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    latestTom = sykepengesoknad.tom!!
+                    tom = sykepengesoknad.tom!!
                 )
             )
         }
