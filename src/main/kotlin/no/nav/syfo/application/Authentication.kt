@@ -27,7 +27,13 @@ fun Application.setupAuth(jwkProviderTokenX: JwkProvider, tokenXIssuer: String, 
             verifier(jwkProviderTokenX, tokenXIssuer)
             validate { credentials ->
                 when {
-                    harDineSykmeldteBackendAudience(credentials, env.dineSykmeldteBackendTokenXClientId) && erNiva4(credentials) -> JWTPrincipal(credentials.payload)
+                    harDineSykmeldteBackendAudience(credentials, env.dineSykmeldteBackendTokenXClientId) && erNiva4(credentials) -> {
+                        val principal = JWTPrincipal(credentials.payload)
+                        BrukerPrincipal(
+                            fnr = finnFnrFraToken(principal),
+                            principal = principal
+                        )
+                    }
                     else -> unauthorized(credentials)
                 }
             }
@@ -68,3 +74,8 @@ fun harDineSykmeldteBackendAudience(credentials: JWTCredential, clientId: String
 fun erNiva4(credentials: JWTCredential): Boolean {
     return "Level4" == credentials.payload.getClaim("acr").asString()
 }
+
+data class BrukerPrincipal(
+    val fnr: String,
+    val principal: JWTPrincipal
+) : Principal

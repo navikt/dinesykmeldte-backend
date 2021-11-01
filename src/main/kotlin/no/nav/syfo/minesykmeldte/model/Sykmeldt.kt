@@ -1,5 +1,6 @@
 package no.nav.syfo.minesykmeldte.model
 
+import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import java.time.LocalDate
 
 // Når er man friskmeldt? 16 dager etter siste tom?
@@ -23,13 +24,13 @@ data class PreviewSykmelding(
     val lest: Boolean
 )
 
-// siden søknaden visstnok har lite info kan vi kanskje hente hele søknaden med en gang?
 data class Soknad(
     val id: String,
-    val sykmeldingId: String,
-    val fom: LocalDate,
+    val sykmeldingId: String?,
+    val fom: LocalDate?,
     val tom: LocalDate,
     val status: String,
-    val sendtDato: LocalDate?,
-    val sporsmalOgSvar: List<String>? // her skal det være et spørsmål/svar-format, men hvordan det ser ut kan vi vente med til apiet er klart fra flex
+    val sendtDato: LocalDate,
+    val soknadDTO: SykepengesoknadDTO,
+    val lest: Boolean
 )
