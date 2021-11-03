@@ -40,19 +40,30 @@ class SykmeldingServiceTest : Spek({
     val sendtSykmeldingTopic = "topic"
     val pdlPersonService = mockk<PdlPersonService>()
     val syfoSyketilfelleClient = mockk<SyfoSyketilfelleClient>()
-    val sykmeldingService = SykmeldingService(kafkaConsumer, database, applicationState, sendtSykmeldingTopic, pdlPersonService, syfoSyketilfelleClient, "prod-gcp")
+    val sykmeldingService = SykmeldingService(
+        kafkaConsumer,
+        database,
+        applicationState,
+        sendtSykmeldingTopic,
+        pdlPersonService,
+        syfoSyketilfelleClient,
+        "prod-gcp"
+    )
 
     beforeEachTest {
         TestDb.clearAllData()
         clearMocks(pdlPersonService, syfoSyketilfelleClient)
-        coEvery { pdlPersonService.getPerson(any(), any()) } returns PdlPerson(Navn("Syk", null, "Sykesen"), "321654987")
+        coEvery { pdlPersonService.getPerson(any(), any()) } returns PdlPerson(
+            Navn("Syk", null, "Sykesen"),
+            "321654987"
+        )
         coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns LocalDate.now().minusMonths(1)
     }
 
     describe("SykmeldingService") {
         it("Lagrer ny sendt sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
-            val sendtSykmelding = opprettSendtSykmeldingKafkaMessage(sykmeldingId)
+            val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
             runBlocking {
                 sykmeldingService.handleSendtSykmelding(sykmeldingId, sendtSykmelding)
 
@@ -73,7 +84,7 @@ class SykmeldingServiceTest : Spek({
         }
         it("Oppdaterer allerede mottatt sendt sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
-            val sendtSykmelding = opprettSendtSykmeldingKafkaMessage(sykmeldingId)
+            val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
             runBlocking {
                 sykmeldingService.handleSendtSykmelding(sykmeldingId, sendtSykmelding)
                 val sykmelding = TestDb.getSykmelding(sykmeldingId)
@@ -92,8 +103,8 @@ class SykmeldingServiceTest : Spek({
         it("Oppdaterer navn og startdato ved mottak av neste sendte sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
             val sykmeldingId2 = UUID.randomUUID().toString()
-            val sendtSykmelding = opprettSendtSykmeldingKafkaMessage(sykmeldingId)
-            val sendtSykmelding2 = opprettSendtSykmeldingKafkaMessage(
+            val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
+            val sendtSykmelding2 = getSendtSykmeldingKafkaMessage(
                 sykmeldingId2,
                 perioder = listOf(
                     SykmeldingsperiodeAGDTO(
@@ -116,7 +127,10 @@ class SykmeldingServiceTest : Spek({
                 sykmeldt?.startdatoSykefravaer shouldBeEqualTo LocalDate.now().minusMonths(1)
                 sykmeldt?.latestTom shouldBeEqualTo LocalDate.now().plusDays(10)
 
-                coEvery { pdlPersonService.getPerson(any(), any()) } returns PdlPerson(Navn("Per", null, "Persen"), "321654987")
+                coEvery { pdlPersonService.getPerson(any(), any()) } returns PdlPerson(
+                    Navn("Per", null, "Persen"),
+                    "321654987"
+                )
                 coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns LocalDate.now().minusMonths(2)
 
                 sykmeldingService.handleSendtSykmelding(sykmeldingId2, sendtSykmelding2)
@@ -129,7 +143,7 @@ class SykmeldingServiceTest : Spek({
         }
         it("Ignorerer sendt sykmelding der tom er eldre enn fire måneder tilbake i tid") {
             val sykmeldingId = UUID.randomUUID().toString()
-            val sendtSykmelding = opprettSendtSykmeldingKafkaMessage(
+            val sendtSykmelding = getSendtSykmeldingKafkaMessage(
                 sykmeldingId,
                 perioder = listOf(
                     SykmeldingsperiodeAGDTO(
@@ -152,7 +166,7 @@ class SykmeldingServiceTest : Spek({
         }
         it("Sletter tombstonet sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
-            val sendtSykmelding = opprettSendtSykmeldingKafkaMessage(sykmeldingId)
+            val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
             runBlocking {
                 sykmeldingService.handleSendtSykmelding(sykmeldingId, sendtSykmelding)
                 sykmeldingService.handleSendtSykmelding(sykmeldingId, null)
@@ -163,7 +177,7 @@ class SykmeldingServiceTest : Spek({
     }
 })
 
-private fun opprettSendtSykmeldingKafkaMessage(
+fun getSendtSykmeldingKafkaMessage(
     sykmeldingId: String,
     perioder: List<SykmeldingsperiodeAGDTO> = listOf(
         SykmeldingsperiodeAGDTO(
@@ -178,23 +192,7 @@ private fun opprettSendtSykmeldingKafkaMessage(
         )
     )
 ) = SendtSykmeldingKafkaMessage(
-    ArbeidsgiverSykmelding(
-        id = sykmeldingId,
-        mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
-        syketilfelleStartDato = null,
-        behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
-        arbeidsgiver = ArbeidsgiverAGDTO(null, null),
-        sykmeldingsperioder = perioder,
-        prognose = null,
-        tiltakArbeidsplassen = null,
-        meldingTilArbeidsgiver = null,
-        kontaktMedPasient = KontaktMedPasientAGDTO(null),
-        behandler = BehandlerAGDTO("Fornavn", null, "Etternavn", null, AdresseDTO(null, null, null, null, null), null),
-        egenmeldt = false,
-        papirsykmelding = false,
-        harRedusertArbeidsgiverperiode = false,
-        merknader = null
-    ),
+    getArbeidsgiverSykmelding(sykmeldingId, perioder),
     KafkaMetadataDTO(sykmeldingId, OffsetDateTime.now(ZoneOffset.UTC), "12345678910", "user"),
     SykmeldingStatusKafkaEventDTO(
         sykmeldingId,
@@ -203,4 +201,36 @@ private fun opprettSendtSykmeldingKafkaMessage(
         ArbeidsgiverStatusDTO("88888888", null, "Bedriften AS"),
         null
     )
+)
+
+fun getArbeidsgiverSykmelding(
+    sykmeldingId: String,
+    perioder: List<SykmeldingsperiodeAGDTO> = listOf(
+        SykmeldingsperiodeAGDTO(
+            LocalDate.now().minusDays(2),
+            LocalDate.now().plusDays(10),
+            null,
+            null,
+            null,
+            PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+            AktivitetIkkeMuligAGDTO(null),
+            false
+        )
+    )
+) = ArbeidsgiverSykmelding(
+    id = sykmeldingId,
+    mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
+    syketilfelleStartDato = null,
+    behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
+    arbeidsgiver = ArbeidsgiverAGDTO(null, null),
+    sykmeldingsperioder = perioder,
+    prognose = null,
+    tiltakArbeidsplassen = null,
+    meldingTilArbeidsgiver = null,
+    kontaktMedPasient = KontaktMedPasientAGDTO(null),
+    behandler = BehandlerAGDTO("Fornavn", null, "Etternavn", null, AdresseDTO(null, null, null, null, null), null),
+    egenmeldt = false,
+    papirsykmelding = false,
+    harRedusertArbeidsgiverperiode = false,
+    merknader = null
 )

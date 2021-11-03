@@ -12,9 +12,9 @@ import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.sykmelding.client.SyfoSyketilfelleClient
 import no.nav.syfo.sykmelding.client.SyketilfelleNotFoundException
 import no.nav.syfo.sykmelding.db.SykmeldingDb
-import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage
+import no.nav.syfo.sykmelding.mapper.SykmeldingMapper.Companion.toSykmeldingDbModel
 import no.nav.syfo.sykmelding.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.sykmelding.pdl.model.toFormattedNameString
 import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
@@ -23,8 +23,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 class SykmeldingService(
     private val kafkaConsumer: KafkaConsumer<String, SendtSykmeldingKafkaMessage>,
@@ -99,16 +97,7 @@ class SykmeldingService(
                 val person = pdlPersonService.getPerson(fnr = sykmelding.kafkaMetadata.fnr, callId = sykmeldingId)
                 val startdato = syfoSyketilfelleClient.finnStartdato(aktorId = person.aktorId!!, sykmeldingId = sykmeldingId)
                 sykmeldingDb.insertOrUpdate(
-                    SykmeldingDbModel(
-                        sykmeldingId = sykmeldingId,
-                        pasientFnr = sykmelding.kafkaMetadata.fnr,
-                        orgnummer = sykmelding.event.arbeidsgiver!!.orgnummer,
-                        orgnavn = sykmelding.event.arbeidsgiver!!.orgNavn,
-                        sykmelding = sykmelding.sykmelding,
-                        lest = false, // fra strangler
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                        latestTom = sisteTom
-                    ),
+                    toSykmeldingDbModel(sykmelding, sisteTom),
                     SykmeldtDbModel(
                         pasientFnr = sykmelding.kafkaMetadata.fnr,
                         pasientNavn = person.navn.toFormattedNameString(),

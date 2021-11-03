@@ -31,7 +31,7 @@ class NarmestelederServiceTest : Spek({
 
             nlKobling.pasientFnr shouldBeEqualTo "12345678910"
             nlKobling.lederFnr shouldBeEqualTo "01987654321"
-            nlKobling.orgnummer shouldBeEqualTo "1"
+            nlKobling.orgnummer shouldBeEqualTo "88888888"
             nlKobling.narmestelederId shouldBeEqualTo id.toString()
         }
         it("Sletter deaktivert NL-kobling") {
@@ -48,7 +48,7 @@ fun getNarmestelederLeesahKafkaMessage(id: UUID, aktivTom: LocalDate? = null): N
     NarmestelederLeesahKafkaMessage(
         narmesteLederId = id,
         fnr = "12345678910",
-        orgnummer = "1",
+        orgnummer = "88888888",
         narmesteLederEpost = "test@nav.no",
         narmesteLederFnr = "01987654321",
         narmesteLederTelefonnummer = "12345678",

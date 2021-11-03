@@ -13,7 +13,6 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
     get("api/minesykmeldte") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val lederFnr = principal.fnr
-        val callId = UUID.randomUUID()
-        call.respond(mineSykmeldteService.getMineSykmeldte(lederFnr, callId))
+        call.respond(mineSykmeldteService.getMineSykmeldte(lederFnr))
     }
 }

@@ -4,7 +4,7 @@ import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import java.time.LocalDate
 
 // Når er man friskmeldt? 16 dager etter siste tom?
-data class Sykmeldt(
+data class PreviewSykmeldt(
     val narmestelederId: String,
     val orgnummer: String,
     val fnr: String,
@@ -12,7 +12,7 @@ data class Sykmeldt(
     val startdatoSykefravaer: LocalDate,
     val friskmeldt: Boolean,
     val previewSykmeldinger: List<PreviewSykmelding>,
-    val soknader: List<Soknad>
+    val previewSoknader: List<PreviewSoknad>
 )
 
 // Type kan være "100%", "50%", "avventende", ++
@@ -24,13 +24,12 @@ data class PreviewSykmelding(
     val lest: Boolean
 )
 
-data class Soknad(
+data class PreviewSoknad(
     val id: String,
     val sykmeldingId: String?,
     val fom: LocalDate?,
-    val tom: LocalDate,
+    val tom: LocalDate?,
     val status: String,
-    val sendtDato: LocalDate,
-    val soknadDTO: SykepengesoknadDTO,
+    val sendtDato: LocalDate?,
     val lest: Boolean
 )

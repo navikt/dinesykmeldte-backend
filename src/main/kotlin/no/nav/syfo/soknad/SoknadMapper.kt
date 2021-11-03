@@ -2,9 +2,27 @@ package no.nav.syfo.soknad
 
 import no.nav.syfo.kafka.felles.SporsmalDTO
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
+import no.nav.syfo.soknad.db.SoknadDbModel
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 const val ARBEID_UTENFOR_NORGE = "ARBEID_UTENFOR_NORGE"
 const val ANDRE_INNTEKTSKILDER = "ANDRE_INNTEKTSKILDER"
+
+fun SykepengesoknadDTO.toSoknadDbModel(): SoknadDbModel {
+    return SoknadDbModel(
+        soknadId = id,
+        sykmeldingId = sykmeldingId,
+        pasientFnr = fnr,
+        orgnummer = arbeidsgiver?.orgnummer
+            ?: throw IllegalStateException("Har mottatt sendt søknad uten orgnummer: $id"),
+        soknad = tilArbeidsgiverSoknad(),
+        sendtDato = sendtArbeidsgiver!!.toLocalDate(),
+        lest = false, // oppdateres fra strangler
+        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+        tom = tom!!
+    )
+}
 
 fun SykepengesoknadDTO.tilArbeidsgiverSoknad(): SykepengesoknadDTO =
     copy(

@@ -11,14 +11,11 @@ import no.nav.syfo.kafka.felles.SoknadsstatusDTO
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.log
 import no.nav.syfo.soknad.db.SoknadDb
-import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.util.Unbounded
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 class SoknadService(
     private val kafkaConsumer: KafkaConsumer<String, SykepengesoknadDTO>,
@@ -68,20 +65,7 @@ class SoknadService(
         if ((sykepengesoknad.status == SoknadsstatusDTO.SENDT && sykepengesoknad.sendtArbeidsgiver != null) &&
             sykepengesoknad.tom?.isAfter(LocalDate.now().minusMonths(4)) == true
         ) {
-            soknadDb.insert(
-                SoknadDbModel(
-                    soknadId = sykepengesoknad.id,
-                    sykmeldingId = sykepengesoknad.sykmeldingId,
-                    pasientFnr = sykepengesoknad.fnr,
-                    orgnummer = sykepengesoknad.arbeidsgiver?.orgnummer
-                        ?: throw IllegalStateException("Har mottatt sendt søknad uten orgnummer: ${sykepengesoknad.id}"),
-                    soknad = sykepengesoknad.tilArbeidsgiverSoknad(),
-                    sendtDato = sykepengesoknad.sendtArbeidsgiver!!.toLocalDate(),
-                    lest = false, // oppdateres fra strangler
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    tom = sykepengesoknad.tom!!
-                )
-            )
+            soknadDb.insert(sykepengesoknad.toSoknadDbModel())
         }
         SOKNAD_TOPIC_COUNTER.inc()
     }
