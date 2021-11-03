@@ -1,6 +1,5 @@
 package no.nav.syfo.minesykmeldte.model
 
-import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import java.time.LocalDate
 
 // Når er man friskmeldt? 16 dager etter siste tom?

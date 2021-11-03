@@ -1,7 +1,7 @@
 package no.nav.syfo.minesykmeldte
 
-import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSykmelding
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSoknad
+import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSykmelding
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.SykmeldtDbModel
 import no.nav.syfo.minesykmeldte.model.MinSykmeldtKey
@@ -28,11 +28,11 @@ class MineSykmeldteService(private val mineSykmeldteDb: MineSykmeldteDb) {
     private fun mapNullableSoknad(sykmeldtDbModel: SykmeldtDbModel) =
         sykmeldtDbModel.soknad?.let { toPreviewSoknad(it, sykmeldtDbModel.lestSoknad) }
 
-    private fun toMinSykmeldtKey(sykmeldtDbModle: SykmeldtDbModel) : MinSykmeldtKey = MinSykmeldtKey(
+    private fun toMinSykmeldtKey(sykmeldtDbModle: SykmeldtDbModel): MinSykmeldtKey = MinSykmeldtKey(
         narmestelederId = sykmeldtDbModle.narmestelederId,
         orgnummer = sykmeldtDbModle.orgnummer,
         navn = sykmeldtDbModle.sykmeldtNavn,
         fnr = sykmeldtDbModle.sykmeldtFnr,
-        startDatoSykefravaer =  sykmeldtDbModle.startDatoSykefravar,
+        startDatoSykefravaer = sykmeldtDbModle.startDatoSykefravar,
     )
 }
