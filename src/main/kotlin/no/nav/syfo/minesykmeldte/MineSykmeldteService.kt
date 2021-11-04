@@ -6,9 +6,10 @@ import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.SykmeldtDbModel
 import no.nav.syfo.minesykmeldte.model.MinSykmeldtKey
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 class MineSykmeldteService(private val mineSykmeldteDb: MineSykmeldteDb) {
-
     fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> =
         mineSykmeldteDb.getMineSykmeldte(lederFnr).groupBy { toMinSykmeldtKey(it) }.map { it ->
             PreviewSykmeldt(
@@ -17,13 +18,21 @@ class MineSykmeldteService(private val mineSykmeldteDb: MineSykmeldteDb) {
                 fnr = it.key.fnr,
                 navn = it.key.navn,
                 startdatoSykefravaer = it.key.startDatoSykefravaer,
-                friskmeldt = false, // TODO: Check if latest tom > 16 dager siden
+                friskmeldt = isFriskmeldt(it),
                 previewSykmeldinger = it.value.distinctBy { it.sykmeldingId }.map { sykmeldtDbModel ->
                     toPreviewSykmelding(sykmeldtDbModel)
                 },
                 previewSoknader = it.value.mapNotNull { mapNullableSoknad(it) }
             )
         }
+
+    private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<SykmeldtDbModel>>): Boolean {
+        val latestTom: LocalDate = it.value
+            .flatMap { it.sykmelding.sykmeldingsperioder }
+            .maxOf { it.tom }
+
+        return ChronoUnit.DAYS.between(latestTom, LocalDate.now()) > 16
+    }
 
     private fun mapNullableSoknad(sykmeldtDbModel: SykmeldtDbModel) =
         sykmeldtDbModel.soknad?.let { toPreviewSoknad(it, sykmeldtDbModel.lestSoknad) }

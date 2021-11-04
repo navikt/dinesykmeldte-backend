@@ -11,6 +11,7 @@ import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.sykmelding.getArbeidsgiverSykmelding
+import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldHaveSize
 import org.spekframework.spek2.Spek
@@ -64,6 +65,64 @@ class MineSykmeldteServiceTest : Spek({
             val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
 
             mineSykmeldte shouldHaveSize 5
+        }
+
+        describe("sykmeldt") {
+            it("should not be friskmeldt if the latest sykmeldt period is less than 16 days ago") {
+                every { db.getMineSykmeldte("1") } returns getSykmeldtData(
+                    1,
+                    listOf(
+                        getArbeidsgiverSykmelding(
+                            UUID.randomUUID().toString(),
+                            listOf(
+                                SykmeldingsperiodeAGDTO(
+                                    aktivitetIkkeMulig = null,
+                                    behandlingsdager = 0,
+                                    fom = LocalDate.now().minusDays(24),
+                                    tom = LocalDate.now().minusDays(16),
+                                    type = PeriodetypeDTO.GRADERT,
+                                    gradert = GradertDTO(50, false),
+                                    innspillTilArbeidsgiver = null,
+                                    reisetilskudd = false,
+                                )
+                            )
+                        )
+                    ),
+                    sykmeldtFnrPrefix = "prefix"
+                )
+
+                val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+                mineSykmeldte shouldHaveSize 1
+                mineSykmeldte.first().friskmeldt shouldBe false
+            }
+
+            it("should be friskmeldt if the latest sykmeldt period is more than 16 days ago") {
+                every { db.getMineSykmeldte("1") } returns getSykmeldtData(
+                    1,
+                    listOf(
+                        getArbeidsgiverSykmelding(
+                            UUID.randomUUID().toString(),
+                            listOf(
+                                SykmeldingsperiodeAGDTO(
+                                    aktivitetIkkeMulig = null,
+                                    behandlingsdager = 0,
+                                    fom = LocalDate.now().minusDays(24),
+                                    tom = LocalDate.now().minusDays(17),
+                                    type = PeriodetypeDTO.GRADERT,
+                                    gradert = GradertDTO(50, false),
+                                    innspillTilArbeidsgiver = null,
+                                    reisetilskudd = false,
+                                )
+                            )
+                        )
+                    ),
+                    sykmeldtFnrPrefix = "prefix"
+                )
+
+                val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+                mineSykmeldte shouldHaveSize 1
+                mineSykmeldte.first().friskmeldt shouldBe true
+            }
         }
 
         describe("given different types") {

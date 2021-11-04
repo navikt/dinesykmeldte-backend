@@ -2,7 +2,6 @@ package no.nav.syfo.minesykmeldte.model
 
 import java.time.LocalDate
 
-// Når er man friskmeldt? 16 dager etter siste tom?
 data class PreviewSykmeldt(
     val narmestelederId: String,
     val orgnummer: String,
@@ -14,7 +13,6 @@ data class PreviewSykmeldt(
     val previewSoknader: List<PreviewSoknad>
 )
 
-// Type kan være "100%", "50%", "avventende", ++
 data class PreviewSykmelding(
     val id: String,
     val fom: LocalDate,
