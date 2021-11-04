@@ -19,10 +19,10 @@ fun Application.setupAuth(jwkProviderTokenX: JwkProvider, tokenXIssuer: String, 
     install(Authentication) {
         jwt(name = "tokenx") {
             authHeader {
-                if (it.getToken() == null) {
-                    return@authHeader null
+                when (val token: String? = it.getToken()) {
+                    null -> return@authHeader null
+                    else -> return@authHeader HttpAuthHeader.Single("Bearer", token)
                 }
-                return@authHeader HttpAuthHeader.Single("Bearer", it.getToken()!!)
             }
             verifier(jwkProviderTokenX, tokenXIssuer)
             validate { credentials ->
@@ -42,10 +42,10 @@ fun Application.setupAuth(jwkProviderTokenX: JwkProvider, tokenXIssuer: String, 
 }
 
 fun ApplicationCall.getToken(): String? {
-    if (request.header("Authorization") != null) {
-        return request.header("Authorization")!!.removePrefix("Bearer ")
+    return when (val authHeader = request.header("Authorization")) {
+        null -> request.cookies.get(name = "selvbetjening-idtoken")
+        else -> authHeader.removePrefix("Bearer ")
     }
-    return request.cookies.get(name = "selvbetjening-idtoken")
 }
 
 fun finnFnrFraToken(principal: JWTPrincipal): String {
