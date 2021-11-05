@@ -30,6 +30,8 @@ import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.kafka.toConsumerConfig
+import no.nav.syfo.minesykmeldte.MineSykmeldteService
+import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
@@ -119,8 +121,7 @@ fun main() {
 
     val kafkaConsumerSoknad = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also {
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
-            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
         }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
         StringDeserializer(),
         JacksonKafkaDeserializer(SykepengesoknadDTO::class)
@@ -131,7 +132,8 @@ fun main() {
         env,
         jwkProviderTokenX,
         wellKnownTokenX.issuer,
-        applicationState
+        applicationState,
+        MineSykmeldteService(MineSykmeldteDb(database))
     )
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()

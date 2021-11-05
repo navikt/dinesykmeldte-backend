@@ -34,7 +34,8 @@ fun createApplicationEngine(
     env: Environment,
     jwkProviderTokenX: JwkProvider,
     tokenXIssuer: String,
-    applicationState: ApplicationState
+    applicationState: ApplicationState,
+    mineSykmeldteService: MineSykmeldteService
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -75,7 +76,7 @@ fun createApplicationEngine(
         routing {
             registerNaisApi(applicationState)
             authenticate("tokenx") {
-                registerMineSykmeldteApi(MineSykmeldteService())
+                registerMineSykmeldteApi(mineSykmeldteService)
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())

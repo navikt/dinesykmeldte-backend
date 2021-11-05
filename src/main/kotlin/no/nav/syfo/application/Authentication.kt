@@ -19,15 +19,21 @@ fun Application.setupAuth(jwkProviderTokenX: JwkProvider, tokenXIssuer: String, 
     install(Authentication) {
         jwt(name = "tokenx") {
             authHeader {
-                if (it.getToken() == null) {
-                    return@authHeader null
+                when (val token: String? = it.getToken()) {
+                    null -> return@authHeader null
+                    else -> return@authHeader HttpAuthHeader.Single("Bearer", token)
                 }
-                return@authHeader HttpAuthHeader.Single("Bearer", it.getToken()!!)
             }
             verifier(jwkProviderTokenX, tokenXIssuer)
             validate { credentials ->
                 when {
-                    harDineSykmeldteBackendAudience(credentials, env.dineSykmeldteBackendTokenXClientId) && erNiva4(credentials) -> JWTPrincipal(credentials.payload)
+                    harDineSykmeldteBackendAudience(credentials, env.dineSykmeldteBackendTokenXClientId) && erNiva4(credentials) -> {
+                        val principal = JWTPrincipal(credentials.payload)
+                        BrukerPrincipal(
+                            fnr = finnFnrFraToken(principal),
+                            principal = principal
+                        )
+                    }
                     else -> unauthorized(credentials)
                 }
             }
@@ -36,10 +42,10 @@ fun Application.setupAuth(jwkProviderTokenX: JwkProvider, tokenXIssuer: String, 
 }
 
 fun ApplicationCall.getToken(): String? {
-    if (request.header("Authorization") != null) {
-        return request.header("Authorization")!!.removePrefix("Bearer ")
+    return when (val authHeader = request.header("Authorization")) {
+        null -> request.cookies.get(name = "selvbetjening-idtoken")
+        else -> authHeader.removePrefix("Bearer ")
     }
-    return request.cookies.get(name = "selvbetjening-idtoken")
 }
 
 fun finnFnrFraToken(principal: JWTPrincipal): String {
@@ -68,3 +74,8 @@ fun harDineSykmeldteBackendAudience(credentials: JWTCredential, clientId: String
 fun erNiva4(credentials: JWTCredential): Boolean {
     return "Level4" == credentials.payload.getClaim("acr").asString()
 }
+
+data class BrukerPrincipal(
+    val fnr: String,
+    val principal: JWTPrincipal
+) : Principal
