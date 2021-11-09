@@ -87,6 +87,7 @@ object MineSykmeldteApiKtTest : Spek({
             }
 
             it("should get data in list") {
+                val startdato = LocalDate.now().minusDays(14)
                 every { env.dineSykmeldteBackendTokenXClientId } returns "dummy-client-id"
                 every { mineSykmeldteService.getMineSykmeldte("08086912345") } returns listOf(
                     PreviewSykmeldt(
@@ -120,7 +121,7 @@ object MineSykmeldteApiKtTest : Spek({
                           "orgnummer": "orgnummer",
                           "fnr": "fnr",
                           "navn": "navn",
-                          "startdatoSykefravaer": "2021-10-21",
+                          "startdatoSykefravaer": "$startdato",
                           "friskmeldt": false,
                           "previewSykmeldinger": [],
                           "previewSoknader": []
