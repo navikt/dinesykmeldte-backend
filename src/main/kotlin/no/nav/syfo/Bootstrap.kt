@@ -104,6 +104,8 @@ fun main() {
     val kafkaConsumerNarmesteleder = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also {
             it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
+            it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
         }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
         StringDeserializer(),
         JacksonKafkaDeserializer(NarmestelederLeesahKafkaMessage::class)
@@ -113,6 +115,8 @@ fun main() {
     val kafkaConsumerSykmelding = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also {
             it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
+            it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
         }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
         StringDeserializer(),
         JacksonKafkaDeserializer(SendtSykmeldingKafkaMessage::class)
@@ -122,6 +126,8 @@ fun main() {
     val kafkaConsumerSoknad = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also {
             it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
+            it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
         }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
         StringDeserializer(),
         JacksonKafkaDeserializer(SykepengesoknadDTO::class)

@@ -55,6 +55,7 @@ class SoknadService(
                     throw e
                 }
             }
+            kafkaConsumer.commitSync()
             processedMessages += soknader.count()
             processedMessages = logProcessedMessages(processedMessages)
             delay(1)

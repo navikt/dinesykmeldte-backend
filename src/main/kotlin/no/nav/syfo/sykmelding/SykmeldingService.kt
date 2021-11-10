@@ -78,6 +78,7 @@ class SykmeldingService(
                     throw e
                 }
             }
+            kafkaConsumer.commitSync()
             processedMessages += sykmeldinger.count()
             processedMessages = logProcessedMessages(processedMessages)
             delay(1)
