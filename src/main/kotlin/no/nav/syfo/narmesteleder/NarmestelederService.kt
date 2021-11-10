@@ -26,6 +26,7 @@ class NarmestelederService(
                     throw e
                 }
             }
+            kafkaConsumer.commitSync()
         }
     }
 
