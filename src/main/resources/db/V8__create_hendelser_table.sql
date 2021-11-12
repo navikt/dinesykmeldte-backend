@@ -1,7 +1,4 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 CREATE TABLE hendelser(
-    hendelse_id           UUID DEFAULT uuid_generate_v4 () PRIMARY KEY,
     id                    VARCHAR                  NOT NULL,
     pasient_fnr           VARCHAR                  NOT NULL,
     orgnummer             VARCHAR                  NOT NULL,
@@ -11,8 +8,8 @@ CREATE TABLE hendelser(
     timestamp             TIMESTAMP WITH TIME ZONE NOT NULL,
     utlopstidspunkt       TIMESTAMP WITH TIME ZONE NULL,
     ferdigstilt           BOOLEAN                  NULL,
-    ferdigstilt_timestamp TIMESTAMP WITH TIME ZONE NULL
+    ferdigstilt_timestamp TIMESTAMP WITH TIME ZONE NULL,
+    PRIMARY KEY (id, oppgavetype)
 );
 
 CREATE INDEX hendelser_fnr_orgnr_idx ON hendelser (pasient_fnr, orgnummer);
-CREATE INDEX hendelser_id_oppgt_idx ON hendelser (id, oppgavetype);
