@@ -119,7 +119,7 @@ fun getSykepengesoknadDto(
     fom = LocalDate.now().minusMonths(1),
     tom = LocalDate.now().minusWeeks(2),
     sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
-    sykmeldingId = sykmeldingId.toString()
+    sykmeldingId = sykmeldingId
 )
 
 fun getSykmeldt(): SykmeldtDbModel {

@@ -23,11 +23,15 @@ import io.mockk.verify
 import no.nav.syfo.Environment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.setupAuth
+import no.nav.syfo.kafka.felles.SoknadsstatusDTO
+import no.nav.syfo.kafka.felles.SoknadstypeDTO
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.Behandler
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
+import no.nav.syfo.minesykmeldte.model.Soknad
+import no.nav.syfo.minesykmeldte.model.SoknadDetails
 import no.nav.syfo.minesykmeldte.model.Sykmelding
 import no.nav.syfo.objectMapper
 import no.nav.syfo.testutils.generateJWTLoginservice
@@ -74,7 +78,7 @@ object MineSykmeldteApiKtTest : Spek({
             }
         }
 
-        describe("MineSykmeldteApi") {
+        describe("/api/mineSykmeldte") {
             it("should get empty list") {
                 every { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
                 with(
@@ -167,7 +171,7 @@ object MineSykmeldteApiKtTest : Spek({
             }
         }
 
-        describe("Min sykmeldt api") {
+        describe("/api/sykmelding/{id}") {
             it("should respond with 404 Not Found if not found in the database ") {
                 every {
                     mineSykmeldteService.getSykmelding(
@@ -186,14 +190,14 @@ object MineSykmeldteApiKtTest : Spek({
                 verify(exactly = 1) { mineSykmeldteService.getSykmelding(any(), any()) }
             }
 
-            it("should respond with 404 Not Found if not found in the database ") {
+            it("should respond with the correct content if found") {
                 every {
                     mineSykmeldteService.getSykmelding(
                         "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
                         any()
                     )
                 } returns createSykmeldingTestData(
-                    sykmeldingId = "63929834-c7e5-4ce5-8742-ee2ff795bfcb",
+                    sykmeldingId = "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
                     startdatoSykefravar = LocalDate.parse("2021-01-01"),
                     kontaktDato = LocalDate.parse("2021-01-01"),
                 )
@@ -205,7 +209,7 @@ object MineSykmeldteApiKtTest : Spek({
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     response.content shouldBeEqualTo """
                         {
-                          "sykmeldingId": "63929834-c7e5-4ce5-8742-ee2ff795bfcb",
+                          "sykmeldingId": "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
                           "startdatoSykefravar": "2021-01-01",
                           "kontaktDato": "2021-01-01",
                           "navn": "navn",
@@ -232,8 +236,91 @@ object MineSykmeldteApiKtTest : Spek({
                 verify(exactly = 1) { mineSykmeldteService.getSykmelding(any(), any()) }
             }
         }
+
+        describe("/api/soknad/{id}") {
+            it("should respond with 404 Not Found if not found in the database ") {
+                every {
+                    mineSykmeldteService.getSoknad(
+                        "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
+                        any()
+                    )
+                } returns null
+                with(
+                    handleRequest(HttpMethod.Get, "/api/soknad/7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657") {
+                        addAuthorizationHeader()
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.NotFound
+                    response.content shouldBeEqualTo """{ "message": "Søknaden finnes ikke" }""".minifyApiResponse()
+                }
+                verify(exactly = 1) { mineSykmeldteService.getSoknad(any(), any()) }
+            }
+
+            it("should respond with the correct content if found") {
+                every {
+                    mineSykmeldteService.getSoknad(
+                        "d9ca08ca-bdbf-4571-ba4f-109c3642047b",
+                        any()
+                    )
+                } returns createSoknadTestData(
+                    soknadId = "d9ca08ca-bdbf-4571-ba4f-109c3642047b",
+                    sykmeldingId = "772e674d-0422-4a5e-b779-a8819abf5959",
+                    tom = LocalDate.parse("2021-01-01"),
+                    sendtDato = LocalDate.parse("2021-01-01"),
+                )
+                with(
+                    handleRequest(HttpMethod.Get, "/api/soknad/d9ca08ca-bdbf-4571-ba4f-109c3642047b") {
+                        addAuthorizationHeader()
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.content shouldBeEqualTo """                      
+                       {
+                         "soknadId": "d9ca08ca-bdbf-4571-ba4f-109c3642047b",
+                         "sykmeldingId": "772e674d-0422-4a5e-b779-a8819abf5959",
+                         "navn": "Navn N. Navnessen",
+                         "fnr": "08088012345",
+                         "lest": false,
+                         "orgnummer": "123456789",
+                         "sendtDato": "2021-01-01",
+                         "tom": "2021-01-01",
+                         "details": {
+                           "type": "ARBEIDSLEDIG",
+                           "status": "NY"
+                         }
+                      }
+                    """.minifyApiResponse()
+                }
+                verify(exactly = 1) { mineSykmeldteService.getSoknad(any(), any()) }
+            }
+        }
     }
 })
+
+fun createSoknadTestData(
+    soknadId: String = UUID.randomUUID().toString(),
+    sykmeldingId: String = UUID.randomUUID().toString(),
+    navn: String = "Navn N. Navnessen",
+    fnr: String = "08088012345",
+    lest: Boolean = false,
+    orgnummer: String = "123456789",
+    sendtDato: LocalDate = LocalDate.now(),
+    tom: LocalDate = LocalDate.now(),
+    details: SoknadDetails = SoknadDetails(
+        type = SoknadstypeDTO.ARBEIDSLEDIG,
+        status = SoknadsstatusDTO.NY,
+    ),
+) = Soknad(
+    soknadId = soknadId,
+    sykmeldingId = sykmeldingId,
+    navn = navn,
+    fnr = fnr,
+    lest = lest,
+    orgnummer = orgnummer,
+    sendtDato = sendtDato,
+    tom = tom,
+    details = details,
+)
 
 fun createSykmeldingTestData(
     sykmeldingId: String = UUID.randomUUID().toString(),
