@@ -1,5 +1,7 @@
-CREATE TABLE hendelser (
-    hendelse_id           INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE hendelser(
+    hendelse_id           UUID DEFAULT uuid_generate_v4 () PRIMARY KEY,
     id                    VARCHAR                  NOT NULL,
     pasient_fnr           VARCHAR                  NOT NULL,
     orgnummer             VARCHAR                  NOT NULL,
