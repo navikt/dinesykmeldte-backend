@@ -87,6 +87,17 @@ class MineSykmeldteDbTest : Spek({
 
             sykmeldtDbModel.filter { it.soknad == null }.size shouldBeEqualTo 1
         }
+        it("Should get sykmelding") {
+            val nl = getNarmestelederLeesahKafkaMessage(UUID.randomUUID())
+            narmestelederDb.insertOrUpdate(nl)
+            val sykmeldingDbModel =
+                toSykmeldingDbModel(getSendtSykmeldingKafkaMessage(UUID.randomUUID().toString()), LocalDate.now())
+            sykmeldingDb.insertOrUpdate(sykmeldingDbModel, getSykmeldt())
+
+            val sykmelding = minesykmeldteDb.getSykmelding(sykmeldingId = sykmeldingDbModel.sykmeldingId, nl.narmesteLederFnr)
+
+            sykmelding shouldNotBeEqualTo null
+        }
     }
 })
 

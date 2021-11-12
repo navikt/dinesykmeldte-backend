@@ -6,6 +6,8 @@ import java.sql.Timestamp
 
 class SykmeldingDb(private val database: DatabaseInterface) {
 
+
+
     fun insertOrUpdate(sykmeldingDbModel: SykmeldingDbModel, sykmeldt: SykmeldtDbModel) {
         database.connection.use { connection ->
             connection.insertOrUpdateSykmeldt(sykmeldt)

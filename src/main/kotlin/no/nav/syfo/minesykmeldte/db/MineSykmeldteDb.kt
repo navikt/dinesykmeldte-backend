@@ -2,6 +2,7 @@ package no.nav.syfo.minesykmeldte.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.minesykmeldte.model.Sykmelding
 import no.nav.syfo.objectMapper
 import java.sql.ResultSet
 
@@ -35,6 +36,14 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
         }
     }
 
+    fun getSykmelding(sykmeldingId: String, lederFnr: String): Sykmelding {
+        return database.connection.use { connection ->
+            connection.prepareStatement("""
+                select sykmelding from sykmelding where pasient_fnr = ? 
+            """)
+        }
+    }
+
     fun ResultSet.toSykmeldtDbModel(): SykmeldtDbModel {
         return SykmeldtDbModel(
             narmestelederId = getString("narmeste_leder_id"),
@@ -50,6 +59,8 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
             lestSoknad = getBoolean("soknad_lest")
         )
     }
+
+
 }
 
 fun <T> ResultSet.toList(mapper: ResultSet.() -> T): List<T> = mutableListOf<T>().apply {

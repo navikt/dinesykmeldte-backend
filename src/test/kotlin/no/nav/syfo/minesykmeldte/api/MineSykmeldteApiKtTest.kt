@@ -95,7 +95,7 @@ object MineSykmeldteApiKtTest : Spek({
                         orgnummer = "orgnummer",
                         fnr = "fnr",
                         navn = "navn",
-                        startdatoSykefravaer = LocalDate.now().minusDays(14),
+                        startdatoSykefravar = LocalDate.now().minusDays(14),
                         friskmeldt = false,
                         previewSykmeldinger = emptyList(),
                         previewSoknader = emptyList(),

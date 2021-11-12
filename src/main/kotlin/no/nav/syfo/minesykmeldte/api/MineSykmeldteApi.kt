@@ -2,6 +2,7 @@ package no.nav.syfo.minesykmeldte.api
 
 import io.ktor.application.call
 import io.ktor.auth.authentication
+import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
@@ -13,5 +14,17 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val lederFnr = principal.fnr
         call.respond(mineSykmeldteService.getMineSykmeldte(lederFnr))
+    }
+
+    get("api/sykmelding/{sykmeldingId}") {
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val lederFnr = principal.fnr
+        val sykmeldingId = call.parameters["sykmeldingId"]
+        when(sykmeldingId) {
+            null -> call.respond(HttpStatusCode.NotFound)
+            else -> call.respond(mineSykmeldteService.getSykmelding(sykmeldingId, lederFnr))
+        }
+
+
     }
 }
