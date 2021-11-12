@@ -14,7 +14,7 @@ class MineSykmeldteMapper private constructor() {
     companion object {
         fun toPreviewSykmelding(sykmeldingDbModel: SykmeldtDbModel): PreviewSykmelding {
             return PreviewSykmelding(
-                id = sykmeldingDbModel.sykmeldingId,
+                id = sykmeldingDbModel.sykmeldingId.toString(),
                 fom = sykmeldingDbModel.sykmelding.sykmeldingsperioder.minOf { it.fom },
                 tom = sykmeldingDbModel.sykmelding.sykmeldingsperioder.maxOf { it.tom },
                 type = getTypeSykmelding(sykmeldingDbModel.sykmelding),

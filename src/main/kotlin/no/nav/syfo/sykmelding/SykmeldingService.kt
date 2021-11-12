@@ -16,7 +16,7 @@ import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage
 import no.nav.syfo.sykmelding.mapper.SykmeldingMapper.Companion.toSykmeldingDbModel
 import no.nav.syfo.sykmelding.pdl.exceptions.NameNotFoundInPdlException
-import no.nav.syfo.sykmelding.pdl.model.toFormattedNameString
+import no.nav.syfo.sykmelding.pdl.model.formatName
 import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
 import no.nav.syfo.util.Unbounded
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -101,7 +101,7 @@ class SykmeldingService(
                     toSykmeldingDbModel(sykmelding, sisteTom),
                     SykmeldtDbModel(
                         pasientFnr = sykmelding.kafkaMetadata.fnr,
-                        pasientNavn = person.navn.toFormattedNameString(),
+                        pasientNavn = person.navn.formatName(),
                         startdatoSykefravaer = startdato,
                         latestTom = sisteTom
                     )

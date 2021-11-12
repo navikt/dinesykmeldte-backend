@@ -8,6 +8,7 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
+import java.util.UUID
 
 fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
     get("api/minesykmeldte") {
@@ -19,12 +20,12 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
     get("api/sykmelding/{sykmeldingId}") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val lederFnr = principal.fnr
-        val sykmeldingId = call.parameters["sykmeldingId"]
-        when(sykmeldingId) {
+        when (val sykmeldingId = call.parameters["sykmeldingId"]) {
             null -> call.respond(HttpStatusCode.NotFound)
-            else -> call.respond(mineSykmeldteService.getSykmelding(sykmeldingId, lederFnr))
+            else -> {
+                val sykmelding = mineSykmeldteService.getSykmelding(UUID.fromString(sykmeldingId), lederFnr)
+                if (sykmelding != null) call.respond(sykmelding) else call.respond(HttpStatusCode.NotFound)
+            }
         }
-
-
     }
 }

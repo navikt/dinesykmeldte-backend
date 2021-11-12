@@ -101,13 +101,13 @@ class MineSykmeldteDbTest : Spek({
     }
 })
 
-fun getSoknad(sykmeldingId: String = UUID.randomUUID().toString(), soknadId: String = UUID.randomUUID().toString()): SoknadDbModel {
+fun getSoknad(sykmeldingId: UUID = UUID.randomUUID(), soknadId: String = UUID.randomUUID().toString()): SoknadDbModel {
     return getSykepengesoknadDto(soknadId, sykmeldingId).toSoknadDbModel()
 }
 
 fun getSykepengesoknadDto(
     soknadId: String,
-    sykmeldingId: String
+    sykmeldingId: UUID
 ) = objectMapper.readValue<SykepengesoknadDTO>(
     getFileAsString("src/test/resources/soknad.json")
 ).copy(
@@ -115,7 +115,7 @@ fun getSykepengesoknadDto(
     fom = LocalDate.now().minusMonths(1),
     tom = LocalDate.now().minusWeeks(2),
     sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
-    sykmeldingId = sykmeldingId
+    sykmeldingId = sykmeldingId.toString()
 )
 
 fun getSykmeldt(): SykmeldtDbModel {
