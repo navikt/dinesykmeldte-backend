@@ -7,7 +7,7 @@ data class PreviewSykmeldt(
     val orgnummer: String,
     val fnr: String,
     val navn: String,
-    val startdatoSykefravaer: LocalDate,
+    val startdatoSykefravar: LocalDate,
     val friskmeldt: Boolean,
     val previewSykmeldinger: List<PreviewSykmelding>,
     val previewSoknader: List<PreviewSoknad>

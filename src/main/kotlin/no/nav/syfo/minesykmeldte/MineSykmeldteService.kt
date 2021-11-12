@@ -6,6 +6,7 @@ import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.SykmeldtDbModel
 import no.nav.syfo.minesykmeldte.model.MinSykmeldtKey
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
+import no.nav.syfo.minesykmeldte.model.Sykmelding
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -17,7 +18,7 @@ class MineSykmeldteService(private val mineSykmeldteDb: MineSykmeldteDb) {
                 orgnummer = it.key.orgnummer,
                 fnr = it.key.fnr,
                 navn = it.key.navn,
-                startdatoSykefravaer = it.key.startDatoSykefravaer,
+                startdatoSykefravar = it.key.startDatoSykefravaer,
                 friskmeldt = isFriskmeldt(it),
                 previewSykmeldinger = it.value.distinctBy { it.sykmeldingId }.map { sykmeldtDbModel ->
                     toPreviewSykmelding(sykmeldtDbModel)
@@ -26,6 +27,9 @@ class MineSykmeldteService(private val mineSykmeldteDb: MineSykmeldteDb) {
             )
         }
 
+    fun getSykmelding(sykmeldingId: String, lederFnr: String): Sykmelding {
+        return mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr)
+    }
     private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<SykmeldtDbModel>>): Boolean {
         val latestTom: LocalDate = it.value
             .flatMap { it.sykmelding.sykmeldingsperioder }
@@ -44,4 +48,6 @@ class MineSykmeldteService(private val mineSykmeldteDb: MineSykmeldteDb) {
         fnr = sykmeldtDbModle.sykmeldtFnr,
         startDatoSykefravaer = sykmeldtDbModle.startDatoSykefravar,
     )
+
+
 }
