@@ -18,6 +18,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.util.UUID
 
 class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
 
@@ -114,14 +115,15 @@ class TestDb {
 
         private fun ResultSet.toSykmeldingDbModel(): SykmeldingDbModel =
             SykmeldingDbModel(
-                sykmeldingId = getString("sykmelding_id"),
+                sykmeldingId = UUID.fromString(getString("sykmelding_id")),
                 pasientFnr = getString("pasient_fnr"),
                 orgnummer = getString("orgnummer"),
                 orgnavn = getString("orgnavn"),
                 sykmelding = objectMapper.readValue(getString("sykmelding"), ArbeidsgiverSykmelding::class.java),
                 lest = getBoolean("lest"),
                 timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
-                latestTom = getObject("latest_tom", LocalDate::class.java)
+                latestTom = getObject("latest_tom", LocalDate::class.java),
+                pasientNavn = getString("pasient_navn")
             )
 
         fun getSoknad(soknadId: String): SoknadDbModel? {

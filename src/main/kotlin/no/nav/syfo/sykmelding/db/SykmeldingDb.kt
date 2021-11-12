@@ -33,7 +33,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                         latest_tom = ?;
             """
             ).use { preparedStatement ->
-                preparedStatement.setString(1, sykmeldingDbModel.sykmeldingId)
+                preparedStatement.setString(1, sykmeldingDbModel.sykmeldingId.toString())
                 // insert
                 preparedStatement.setString(2, sykmeldingDbModel.pasientFnr)
                 preparedStatement.setString(3, sykmeldingDbModel.orgnummer)

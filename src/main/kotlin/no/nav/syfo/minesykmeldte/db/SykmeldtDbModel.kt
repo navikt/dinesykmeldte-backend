@@ -3,6 +3,7 @@ package no.nav.syfo.minesykmeldte.db
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import java.time.LocalDate
+import java.util.UUID
 
 data class SykmeldtDbModel(
     val narmestelederId: String,
@@ -10,7 +11,7 @@ data class SykmeldtDbModel(
     val orgnummer: String,
     val sykmeldtNavn: String,
     val startDatoSykefravar: LocalDate,
-    val sykmeldingId: String,
+    val sykmeldingId: UUID,
     val orgNavn: String,
     val sykmelding: ArbeidsgiverSykmelding,
     val lestSykmelding: Boolean,

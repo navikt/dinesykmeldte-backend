@@ -161,11 +161,12 @@ components:
     Sykmelding:
       type: object
       required:
-        - id
-        - fom
-        - tom
-        - type
+        - sykmeldingId
         - lest
+        - startdatoSykefravar
+        - arbeidsgiver
+        - perioder
+        - arbeidsforEtterPeriode
       properties:
         startdatoSykefravar:
           type: string
