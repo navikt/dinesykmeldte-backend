@@ -4,7 +4,6 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
 
 class NarmestelederDb(private val database: DatabaseInterface) {
-
     fun insertOrUpdate(narmesteleder: NarmestelederLeesahKafkaMessage) {
         database.connection.use { connection ->
             connection.prepareStatement(

@@ -21,10 +21,10 @@ import java.util.UUID
 
 class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
 
-class TestDb {
+class TestDb private constructor() {
     companion object {
         val database: DatabaseInterface
-        val psqlContainer = PsqlContainer()
+        private val psqlContainer: PsqlContainer = PsqlContainer()
             .withExposedPorts(5432)
             .withUsername("username")
             .withPassword("password")
@@ -121,7 +121,6 @@ class TestDb {
                 lest = getBoolean("lest"),
                 timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
                 latestTom = getObject("latest_tom", LocalDate::class.java),
-                pasientNavn = getString("pasient_navn")
             )
 
         fun getSoknad(soknadId: String): SoknadDbModel? {

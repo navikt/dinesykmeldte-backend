@@ -42,7 +42,7 @@ class MineSykmeldteDbTest : Spek({
             narmestelederDb.insertOrUpdate(nl)
             sykmeldingDb.insertOrUpdate(
                 toSykmeldingDbModel(
-                    sykmelding = getSendtSykmeldingKafkaMessage("1"), LocalDate.now()
+                    sykmelding = getSendtSykmeldingKafkaMessage("0615720a-b1a0-47e6-885c-8d927c35ef4c"), LocalDate.now()
                 ),
                 sykmeldt = getSykmeldt()
             )

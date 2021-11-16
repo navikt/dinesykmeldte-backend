@@ -4,12 +4,13 @@ import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
-import no.nav.syfo.minesykmeldte.db.SykmeldtDbModel
+import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.getSykepengesoknadDto
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.getArbeidsgiverSykmelding
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
@@ -20,28 +21,28 @@ import java.time.LocalDate
 import java.util.UUID
 
 class MineSykmeldteServiceTest : Spek({
-    val db = mockk<MineSykmeldteDb>()
-    val minesykmeldtService = MineSykmeldteService(db)
+    val mineSykmeldteDb = mockk<MineSykmeldteDb>()
+    val minesykmeldtService = MineSykmeldteService(mineSykmeldteDb)
 
     afterEachTest {
-        clearMocks(db)
+        clearMocks(mineSykmeldteDb)
     }
 
     describe("Test minesykmeldteservice") {
         it("Should get empty list") {
-            every { db.getMineSykmeldte("1") } returns emptyList()
+            every { mineSykmeldteDb.getMineSykmeldte("1") } returns emptyList()
             minesykmeldtService.getMineSykmeldte("1").size shouldBeEqualTo 0
         }
 
         it("should get one sykmeldt") {
-            every { db.getMineSykmeldte("1") } returns getSykmeldtData(1, sykmeldtFnrPrefix = "prefix")
+            every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(1, sykmeldtFnrPrefix = "prefix")
             val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
             mineSykmeldte.size shouldBeEqualTo 1
             mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "100%"
         }
 
         it("should group sykmeldinger and søknader by sykmeldt") {
-            every { db.getMineSykmeldte("1") } returns
+            every { mineSykmeldteDb.getMineSykmeldte("1") } returns
                 getSykmeldtData(
                     sykmeldte = 3,
                     sykmeldinger = listOf(
@@ -69,7 +70,7 @@ class MineSykmeldteServiceTest : Spek({
 
         describe("sykmeldt") {
             it("should not be friskmeldt if the latest sykmeldt period is less than 16 days ago") {
-                every { db.getMineSykmeldte("1") } returns getSykmeldtData(
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         getArbeidsgiverSykmelding(
@@ -97,7 +98,7 @@ class MineSykmeldteServiceTest : Spek({
             }
 
             it("should be friskmeldt if the latest sykmeldt period is more than 16 days ago") {
-                every { db.getMineSykmeldte("1") } returns getSykmeldtData(
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         getArbeidsgiverSykmelding(
@@ -127,7 +128,7 @@ class MineSykmeldteServiceTest : Spek({
 
         describe("given different types") {
             it("should get one sykmeldt with 50% type") {
-                every { db.getMineSykmeldte("1") } returns getSykmeldtData(
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         getArbeidsgiverSykmelding(
@@ -155,7 +156,7 @@ class MineSykmeldteServiceTest : Spek({
             }
 
             it("should get one sykmeldt with 20% type") {
-                every { db.getMineSykmeldte("1") } returns getSykmeldtData(
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         getArbeidsgiverSykmelding(
@@ -183,7 +184,7 @@ class MineSykmeldteServiceTest : Spek({
             }
 
             it("should get one sykmeldt with avventende") {
-                every { db.getMineSykmeldte("1") } returns getSykmeldtData(
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         getArbeidsgiverSykmelding(
@@ -211,7 +212,7 @@ class MineSykmeldteServiceTest : Spek({
             }
 
             it("should get one sykmeldt with behandlingsdager") {
-                every { db.getMineSykmeldte("1") } returns getSykmeldtData(
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         getArbeidsgiverSykmelding(
@@ -239,7 +240,7 @@ class MineSykmeldteServiceTest : Spek({
             }
 
             it("should get one sykmeldt with reisetilskudd") {
-                every { db.getMineSykmeldte("1") } returns getSykmeldtData(
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         getArbeidsgiverSykmelding(
@@ -267,7 +268,7 @@ class MineSykmeldteServiceTest : Spek({
             }
 
             it("should pick the correct period when one period is now") {
-                every { db.getMineSykmeldte("1") } returns getSykmeldtData(
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         getArbeidsgiverSykmelding(
@@ -314,7 +315,7 @@ class MineSykmeldteServiceTest : Spek({
             }
 
             it("should pick the correct period when now is end of period") {
-                every { db.getMineSykmeldte("1") } returns getSykmeldtData(
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         getArbeidsgiverSykmelding(
@@ -361,7 +362,7 @@ class MineSykmeldteServiceTest : Spek({
             }
 
             it("should pick the correct period when now is start of period") {
-                every { db.getMineSykmeldte("1") } returns getSykmeldtData(
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         getArbeidsgiverSykmelding(
@@ -408,7 +409,7 @@ class MineSykmeldteServiceTest : Spek({
             }
 
             it("should pick latest period when there are periods in the past, but one in the future") {
-                every { db.getMineSykmeldte("1") } returns getSykmeldtData(
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         getArbeidsgiverSykmelding(
@@ -455,7 +456,7 @@ class MineSykmeldteServiceTest : Spek({
             }
 
             it("should pick the nearest future period, if all in the future") {
-                every { db.getMineSykmeldte("1") } returns getSykmeldtData(
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         getArbeidsgiverSykmelding(
@@ -513,7 +514,7 @@ fun getSykmeldtData(
     ),
     soknader: Int = 0,
     sykmeldtFnrPrefix: String = "prefix"
-): List<SykmeldtDbModel> =
+): List<MinSykmeldtDbModel> =
     (0 until sykmeldte).flatMap {
         val sykmeldtFnr = "$sykmeldtFnrPrefix-$it"
         val narmestelederId = UUID.randomUUID().toString()
@@ -522,18 +523,18 @@ fun getSykmeldtData(
         val startDatoSykefravar = LocalDate.now()
         val orgnavn = "orgnavn"
         sykmeldinger.mapIndexed { index, arbeigsgiverSykmelding ->
-            SykmeldtDbModel(
+            MinSykmeldtDbModel(
                 sykmeldtFnr = sykmeldtFnr,
                 narmestelederId = narmestelederId,
                 orgnummer = orgnummer,
                 sykmeldtNavn = sykmeldtNavn,
                 startDatoSykefravar = startDatoSykefravar,
-                sykmeldingId = arbeigsgiverSykmelding.id,
+                sykmeldingId = UUID.fromString(arbeigsgiverSykmelding.id),
                 orgNavn = orgnavn,
                 sykmelding = arbeigsgiverSykmelding,
                 soknad = if (soknader != 0 && index < soknader) getSykepengesoknadDto(
                     UUID.randomUUID().toString(),
-                    arbeigsgiverSykmelding.id
+                    UUID.fromString(arbeigsgiverSykmelding.id),
                 ) else null,
                 lestSoknad = false,
                 lestSykmelding = false,

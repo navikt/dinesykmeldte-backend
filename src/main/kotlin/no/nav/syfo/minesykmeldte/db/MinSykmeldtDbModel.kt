@@ -5,7 +5,7 @@ import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import java.time.LocalDate
 import java.util.UUID
 
-data class SykmeldtDbModel(
+data class MinSykmeldtDbModel(
     val narmestelederId: String,
     val sykmeldtFnr: String,
     val orgnummer: String,
