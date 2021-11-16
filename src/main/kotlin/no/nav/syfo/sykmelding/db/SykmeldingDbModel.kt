@@ -16,7 +16,6 @@ data class SykmeldingDbModel(
     val lest: Boolean,
     val timestamp: OffsetDateTime,
     val latestTom: LocalDate,
-    val pasientNavn: String,
 )
 
 fun ArbeidsgiverSykmelding.toPGObject() = PGobject().also {

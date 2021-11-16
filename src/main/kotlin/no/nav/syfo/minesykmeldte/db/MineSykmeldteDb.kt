@@ -4,12 +4,13 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
+import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import java.sql.ResultSet
 import java.time.ZoneOffset
 import java.util.UUID
 
 class MineSykmeldteDb(private val database: DatabaseInterface) {
-    fun getMineSykmeldte(lederFnr: String): List<SykmeldtDbModel> {
+    fun getMineSykmeldte(lederFnr: String): List<MinSykmeldtDbModel> {
         return database.connection.use { connection ->
             connection.prepareStatement(
                 """
@@ -33,16 +34,17 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 """
             ).use { ps ->
                 ps.setString(1, lederFnr)
-                ps.executeQuery().toList { toSykmeldtDbModel() }
+                ps.executeQuery().toList { toMinSykmeldtDbModel() }
             }
         }
     }
 
-    fun getSykmelding(sykmeldingId: UUID, lederFnr: String): SykmeldingDbModel? {
+    fun getSykmelding(sykmeldingId: UUID, lederFnr: String): Pair<SykmeldtDbModel, SykmeldingDbModel>? {
         return database.connection.use { connection ->
             connection.prepareStatement(
                 """
-                select s.sykmelding_id, s.pasient_fnr, s.orgnummer, s.orgnavn, s.sykmelding, s.lest, s.timestamp, s.latest_tom, sm.pasient_navn from sykmelding as s
+                select s.sykmelding_id, s.pasient_fnr, s.orgnummer, s.orgnavn, s.sykmelding, s.lest, s.timestamp, s.latest_tom, sm.pasient_navn, sm.startdato_sykefravaer, sm.latest_tom
+                  from sykmelding as s
                     iNnEr JoIn narmesteleder ON narmesteleder.pasient_fnr = s.pasient_fnr
                     iNnEr JoIn sykmeldt sm on narmesteleder.pasient_fnr = sm.pasient_fnr
                 where s.sykmelding_id = ? AND narmesteleder.leder_fnr = ?
@@ -50,13 +52,14 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
             ).use { ps ->
                 ps.setString(1, sykmeldingId.toString())
                 ps.setString(2, lederFnr)
-                ps.executeQuery().toSykmeldingDbModel()
+                ps.executeQuery().toSykmeldtSykmelding()
             }
         }
     }
+
 }
 
-private fun ResultSet.toSykmeldtDbModel(): SykmeldtDbModel = SykmeldtDbModel(
+private fun ResultSet.toMinSykmeldtDbModel(): MinSykmeldtDbModel = MinSykmeldtDbModel(
     narmestelederId = getString("narmeste_leder_id"),
     sykmeldtFnr = getString("pasient_fnr"),
     orgnummer = getString("orgnummer"),
@@ -70,18 +73,22 @@ private fun ResultSet.toSykmeldtDbModel(): SykmeldtDbModel = SykmeldtDbModel(
     lestSoknad = getBoolean("soknad_lest")
 )
 
-private fun ResultSet.toSykmeldingDbModel(): SykmeldingDbModel? =
+private fun ResultSet.toSykmeldtSykmelding(): Pair<SykmeldtDbModel, SykmeldingDbModel>? =
     when (next()) {
-        true -> SykmeldingDbModel(
-            sykmeldingId = UUID.fromString(getString("sykmeldingId")),
-            pasientFnr = getString("pasientFnr"),
+        true -> SykmeldtDbModel(
+            pasientFnr = getString("pasient_fnr"),
+            pasientNavn = getString("pasient_navn"),
+            startdatoSykefravaer = getDate("startdato_sykefravaer").toLocalDate(),
+            latestTom = getDate("latest_tom").toLocalDate(),
+        ) to SykmeldingDbModel(
+            sykmeldingId = UUID.fromString(getString("sykmelding_id")),
+            pasientFnr = getString("pasient_fnr"),
             orgnummer = getString("orgnummer"),
             orgnavn = getString("orgnavn"),
             sykmelding = objectMapper.readValue(getString("sykmelding")),
             lest = getBoolean("lest"),
             timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
-            latestTom = getDate("latestTom").toLocalDate(),
-            pasientNavn = getString("pasient_navn"),
+            latestTom = getDate("latest_tom").toLocalDate(),
         )
         false -> null
     }

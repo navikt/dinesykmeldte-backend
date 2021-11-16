@@ -3,7 +3,7 @@ package no.nav.syfo.minesykmeldte
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSoknad
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSykmelding
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
-import no.nav.syfo.minesykmeldte.db.SykmeldtDbModel
+import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.model.AktivitetIkkeMulig
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsak
@@ -17,13 +17,17 @@ import no.nav.syfo.minesykmeldte.model.Sykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.BehandlerAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
+import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
-class MineSykmeldteService(private val mineSykmeldteDb: MineSykmeldteDb) {
+class MineSykmeldteService(
+    private val mineSykmeldteDb: MineSykmeldteDb,
+) {
     fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> =
         mineSykmeldteDb.getMineSykmeldte(lederFnr).groupBy { it.toMinSykmeldtKey() }.map { it ->
             PreviewSykmeldt(
@@ -45,7 +49,7 @@ class MineSykmeldteService(private val mineSykmeldteDb: MineSykmeldteDb) {
     }
 }
 
-private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<SykmeldtDbModel>>): Boolean {
+private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>): Boolean {
     val latestTom: LocalDate = it.value
         .flatMap { it.sykmelding.sykmeldingsperioder }
         .maxOf { it.tom }
@@ -53,10 +57,10 @@ private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<SykmeldtDbModel>>): 
     return ChronoUnit.DAYS.between(latestTom, LocalDate.now()) > 16
 }
 
-private fun mapNullableSoknad(sykmeldtDbModel: SykmeldtDbModel) =
+private fun mapNullableSoknad(sykmeldtDbModel: MinSykmeldtDbModel) =
     sykmeldtDbModel.soknad?.let { toPreviewSoknad(it, sykmeldtDbModel.lestSoknad) }
 
-private fun SykmeldtDbModel.toMinSykmeldtKey(): MinSykmeldtKey = MinSykmeldtKey(
+private fun MinSykmeldtDbModel.toMinSykmeldtKey(): MinSykmeldtKey = MinSykmeldtKey(
     narmestelederId = this.narmestelederId,
     orgnummer = this.orgnummer,
     navn = this.sykmeldtNavn,
@@ -64,31 +68,35 @@ private fun SykmeldtDbModel.toMinSykmeldtKey(): MinSykmeldtKey = MinSykmeldtKey(
     startDatoSykefravaer = this.startDatoSykefravar,
 )
 
-private fun SykmeldingDbModel.toSykmelding(): Sykmelding = Sykmelding(
-    sykmeldingId = this.sykmeldingId,
-    kontaktDato = this.sykmelding.kontaktMedPasient.kontaktDato,
-    navn = this.pasientNavn,
-    fnr = this.pasientFnr,
-    lest = this.lest,
-    arbeidsgiver = Arbeidsgiver(
-        navn = this.orgnavn,
-        orgnummer = this.orgnummer,
-        yrke = this.sykmelding.arbeidsgiver.yrkesbetegnelse
-    ),
-    perioder = this.sykmelding.sykmeldingsperioder.map { it.toSykmeldingPeriode() },
-    arbeidsforEtterPeriode = this.sykmelding.prognose?.arbeidsforEtterPeriode,
-    hensynArbeidsplassen = this.sykmelding.prognose?.hensynArbeidsplassen,
-    tiltakArbeidsplassen = this.sykmelding.tiltakArbeidsplassen,
-    innspillArbeidsplassen = this.sykmelding.meldingTilArbeidsgiver,
-    behandler = this.sykmelding.behandler.let {
-        Behandler(
-            navn = it.formatName(),
-            hprNummer = it.hpr,
-            telefon = it.tlf,
-        )
-    },
-    startdatoSykefravar = TODO()
-)
+private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding {
+    val (sykmeldt, sykmelding) = this
+
+    return Sykmelding(
+        sykmeldingId = sykmelding.sykmeldingId,
+        kontaktDato = sykmelding.sykmelding.kontaktMedPasient.kontaktDato,
+        fnr = sykmelding.pasientFnr,
+        lest = sykmelding.lest,
+        arbeidsgiver = Arbeidsgiver(
+            navn = sykmelding.orgnavn,
+            orgnummer = sykmelding.orgnummer,
+            yrke = sykmelding.sykmelding.arbeidsgiver.yrkesbetegnelse
+        ),
+        perioder = sykmelding.sykmelding.sykmeldingsperioder.map { it.toSykmeldingPeriode() },
+        arbeidsforEtterPeriode = sykmelding.sykmelding.prognose?.arbeidsforEtterPeriode,
+        hensynArbeidsplassen = sykmelding.sykmelding.prognose?.hensynArbeidsplassen,
+        tiltakArbeidsplassen = sykmelding.sykmelding.tiltakArbeidsplassen,
+        innspillArbeidsplassen = sykmelding.sykmelding.meldingTilArbeidsgiver,
+        behandler = sykmelding.sykmelding.behandler.let {
+            Behandler(
+                navn = it.formatName(),
+                hprNummer = it.hpr,
+                telefon = it.tlf,
+            )
+        },
+        startdatoSykefravar = sykmeldt.startdatoSykefravaer,
+        navn = sykmeldt.pasientNavn,
+    )
+}
 
 private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
     when (this.type) {

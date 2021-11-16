@@ -6,7 +6,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.sykmelding.pdl.client.PdlClient
 import no.nav.syfo.sykmelding.pdl.exceptions.NameNotFoundInPdlException
-import no.nav.syfo.sykmelding.pdl.model.toFormattedNameString
+import no.nav.syfo.sykmelding.pdl.model.formatName
 import no.nav.syfo.util.HttpClientTest
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -36,9 +36,10 @@ class PdlPersonServiceTest : Spek({
                 val person = pdlPersonService.getPerson(fnr, sykmeldingId)
 
                 person.aktorId shouldBeEqualTo "99999999999"
-                person.navn.toFormattedNameString() shouldBeEqualTo "Rask Saks"
+                person.navn.formatName() shouldBeEqualTo "Rask Saks"
             }
         }
+
         it("Feiler hvis navn mangler i PDL") {
             httpClient.respond(getTestDataUtenNavn())
             assertFailsWith<NameNotFoundInPdlException> {
@@ -55,6 +56,7 @@ class PdlPersonServiceTest : Spek({
                 }
             }
         }
+
         it("Feiler hvis PDL returnerer feilmelding") {
             httpClient.respond(getErrorResponse())
             assertFailsWith<NameNotFoundInPdlException> {
