@@ -39,7 +39,7 @@ class NarmestelederService(
 
     private fun start() {
         while (applicationState.ready) {
-            val nlskjemas = kafkaConsumer.poll(Duration.ZERO)
+            val nlskjemas = kafkaConsumer.poll(Duration.ofSeconds(10))
             nlskjemas.forEach {
                 try {
                     updateNl(it.value())

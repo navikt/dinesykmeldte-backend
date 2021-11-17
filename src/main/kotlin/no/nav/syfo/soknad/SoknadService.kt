@@ -46,7 +46,7 @@ class SoknadService(
     private fun start() {
         var processedMessages = 0
         while (applicationState.ready) {
-            val soknader = kafkaConsumer.poll(Duration.ZERO)
+            val soknader = kafkaConsumer.poll(Duration.ofSeconds(10))
             soknader.forEach {
                 try {
                     handleSykepengesoknad(it.value())
