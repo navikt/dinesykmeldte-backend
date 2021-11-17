@@ -136,7 +136,7 @@ fun main() {
             it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
             it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
             it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
-        }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
+        }.toConsumerConfig("dinesykmeldte-backend-hendelser", JacksonKafkaDeserializer::class),
         StringDeserializer(),
         JacksonKafkaDeserializer(DineSykmeldteHendelse::class)
     )
