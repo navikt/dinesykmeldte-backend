@@ -15,18 +15,16 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.get
 import io.prometheus.client.hotspot.DefaultExports
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.database.Database
-import no.nav.syfo.application.metrics.ERROR_COUNTER
 import no.nav.syfo.azuread.AccessTokenClient
+import no.nav.syfo.hendelser.HendelserService
+import no.nav.syfo.hendelser.db.HendelserDb
+import no.nav.syfo.hendelser.kafka.model.DineSykmeldteHendelse
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.kafka.toConsumerConfig
@@ -44,7 +42,6 @@ import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage
 import no.nav.syfo.sykmelding.pdl.client.PdlClient
 import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
 import no.nav.syfo.util.JacksonKafkaDeserializer
-import no.nav.syfo.util.Unbounded
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -134,6 +131,17 @@ fun main() {
     )
     val soknadService = SoknadService(kafkaConsumerSoknad, SoknadDb(database), applicationState, env.sykepengesoknadTopic)
 
+    val kafkaConsumerHendelser = KafkaConsumer(
+        KafkaUtils.getAivenKafkaConfig().also {
+            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
+            it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
+        }.toConsumerConfig("dinesykmeldte-backend-hendelser", JacksonKafkaDeserializer::class),
+        StringDeserializer(),
+        JacksonKafkaDeserializer(DineSykmeldteHendelse::class)
+    )
+    val hendelserService = HendelserService(kafkaConsumerHendelser, HendelserDb(database), applicationState, env.hendelserTopic)
+
     val applicationEngine = createApplicationEngine(
         env,
         jwkProviderTokenX,
@@ -145,26 +153,10 @@ fun main() {
     applicationServer.start()
     applicationState.ready = true
 
-    startBackgroundJob(applicationState) {
-        narmestelederService.start()
-    }
-
+    narmestelederService.startConsumer()
     sykmeldingService.startConsumer()
     soknadService.startConsumer()
-}
-
-@DelicateCoroutinesApi
-fun startBackgroundJob(applicationState: ApplicationState, block: suspend CoroutineScope.() -> Unit) {
-    GlobalScope.launch(Dispatchers.Unbounded) {
-        try {
-            block()
-        } catch (ex: Exception) {
-            ERROR_COUNTER.labels("background-task").inc()
-            log.error("Error in background task, restarting application", ex)
-            applicationState.ready = false
-            applicationState.alive = false
-        }
-    }
+    hendelserService.startConsumer()
 }
 
 fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) =

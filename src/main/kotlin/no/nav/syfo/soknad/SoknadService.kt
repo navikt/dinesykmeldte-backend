@@ -35,7 +35,7 @@ class SoknadService(
                     kafkaConsumer.subscribe(listOf(sykepengesoknadTopic))
                     start()
                 } catch (ex: Exception) {
-                    log.error("Error running kafka consumer, unsubscribing and waiting 10 seconds for retry", ex)
+                    log.error("Error running kafka consumer for søknad, unsubscribing and waiting 10 seconds for retry", ex)
                     kafkaConsumer.unsubscribe()
                     delay(10_000)
                 }
