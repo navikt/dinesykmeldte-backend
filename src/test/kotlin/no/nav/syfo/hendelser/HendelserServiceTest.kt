@@ -28,7 +28,6 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
-import kotlin.test.assertFailsWith
 
 class HendelserServiceTest : Spek({
     val sykmeldingDb = SykmeldingDb(TestDb.database)
@@ -42,9 +41,32 @@ class HendelserServiceTest : Spek({
     }
 
     describe("HendelseService") {
-        it("Oppretter hendelse for les av sykmelding hvis sykmelding finnes fra før") {
+        it("Oppretter hendelse for hendelse X") {
+            val hendelseId = UUID.randomUUID().toString()
+            val dineSykmeldteHendelse = DineSykmeldteHendelse(
+                id = hendelseId,
+                opprettHendelse = OpprettHendelse(
+                    id = hendelseId,
+                    ansattFnr = "12345678910",
+                    orgnummer = "orgnummer",
+                    oppgavetype = "HENDELSE_X",
+                    lenke = null,
+                    tekst = null,
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                    utlopstidspunkt = null
+                ),
+                ferdigstillHendelse = null
+            )
+
+            hendelserService.handleHendelse(dineSykmeldteHendelse)
+
+            val hendelse = TestDb.getHendelse(hendelseId)
+            hendelse shouldNotBeEqualTo null
+            hendelse?.oppgavetype shouldBeEqualTo "HENDELSE_X"
+            hendelse?.ferdigstilt shouldBeEqualTo false
+        }
+        it("Oppretter ikke hendelse for les av sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
-            sykmeldingDb.insertOrUpdate(getSykmeldingDbModel(sykmeldingId), getSykmeldtDbModel())
             val dineSykmeldteHendelse = DineSykmeldteHendelse(
                 id = sykmeldingId,
                 opprettHendelse = OpprettHendelse(
@@ -62,56 +84,10 @@ class HendelserServiceTest : Spek({
 
             hendelserService.handleHendelse(dineSykmeldteHendelse)
 
-            val hendelse = TestDb.getHendelse(sykmeldingId, OPPGAVETYPE_LES_SYKMELDING)
-            hendelse shouldNotBeEqualTo null
-            hendelse?.ferdigstilt shouldBeEqualTo false
+            val hendelse = TestDb.getHendelse(sykmeldingId)
+            hendelse shouldBeEqualTo null
         }
-        it("Feiler ved oppretting av hendelse for les av sykmelding hvis sykmelding ikke finnes fra før") {
-            val sykmeldingId = UUID.randomUUID().toString()
-            val dineSykmeldteHendelse = DineSykmeldteHendelse(
-                id = sykmeldingId,
-                opprettHendelse = OpprettHendelse(
-                    id = sykmeldingId,
-                    ansattFnr = null,
-                    orgnummer = null,
-                    oppgavetype = OPPGAVETYPE_LES_SYKMELDING,
-                    lenke = null,
-                    tekst = null,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    utlopstidspunkt = null
-                ),
-                ferdigstillHendelse = null
-            )
-
-            assertFailsWith<IllegalStateException> {
-                hendelserService.handleHendelse(dineSykmeldteHendelse)
-            }
-        }
-        it("Oppretter hendelse for les av søknad hvis søknad finnes fra før") {
-            val soknadId = UUID.randomUUID().toString()
-            soknadDb.insert(getSoknadDbModel(soknadId))
-            val dineSykmeldteHendelse = DineSykmeldteHendelse(
-                id = soknadId,
-                opprettHendelse = OpprettHendelse(
-                    id = soknadId,
-                    ansattFnr = null,
-                    orgnummer = null,
-                    oppgavetype = OPPGAVETYPE_LES_SOKNAD,
-                    lenke = null,
-                    tekst = null,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    utlopstidspunkt = null
-                ),
-                ferdigstillHendelse = null
-            )
-
-            hendelserService.handleHendelse(dineSykmeldteHendelse)
-
-            val hendelse = TestDb.getHendelse(soknadId, OPPGAVETYPE_LES_SOKNAD)
-            hendelse shouldNotBeEqualTo null
-            hendelse?.ferdigstilt shouldBeEqualTo false
-        }
-        it("Feiler ved oppretting av hendelse for les av søknad hvis søknad ikke finnes fra før") {
+        it("Oppretter ikke hendelse for les av søknad") {
             val soknadId = UUID.randomUUID().toString()
             val dineSykmeldteHendelse = DineSykmeldteHendelse(
                 id = soknadId,
@@ -128,28 +104,14 @@ class HendelserServiceTest : Spek({
                 ferdigstillHendelse = null
             )
 
-            assertFailsWith<IllegalStateException> {
-                hendelserService.handleHendelse(dineSykmeldteHendelse)
-            }
+            hendelserService.handleHendelse(dineSykmeldteHendelse)
+
+            val hendelse = TestDb.getHendelse(soknadId)
+            hendelse shouldBeEqualTo null
         }
-        it("Ferdigstiller åpen les sykmelding-hendelse og setter sykmelding som lest") {
+        it("Ferdigstilling av les sykmelding-hendelse setter sykmelding som lest") {
             val sykmeldingId = UUID.randomUUID().toString()
             sykmeldingDb.insertOrUpdate(getSykmeldingDbModel(sykmeldingId), getSykmeldtDbModel())
-            val dineSykmeldteHendelse = DineSykmeldteHendelse(
-                id = sykmeldingId,
-                opprettHendelse = OpprettHendelse(
-                    id = sykmeldingId,
-                    ansattFnr = null,
-                    orgnummer = null,
-                    oppgavetype = OPPGAVETYPE_LES_SYKMELDING,
-                    lenke = null,
-                    tekst = null,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    utlopstidspunkt = null
-                ),
-                ferdigstillHendelse = null
-            )
-            hendelserService.handleHendelse(dineSykmeldteHendelse)
             val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
                 id = sykmeldingId,
                 opprettHendelse = null,
@@ -162,30 +124,14 @@ class HendelserServiceTest : Spek({
 
             hendelserService.handleHendelse(dineSykmeldteHendelseFerdigstill)
 
-            val hendelse = TestDb.getHendelse(sykmeldingId, OPPGAVETYPE_LES_SYKMELDING)
-            hendelse shouldNotBeEqualTo null
-            hendelse?.ferdigstilt shouldBeEqualTo true
+            val hendelse = TestDb.getHendelse(sykmeldingId)
+            hendelse shouldBeEqualTo null
             val sykmelding = TestDb.getSykmelding(sykmeldingId)
             sykmelding?.lest shouldBeEqualTo true
         }
-        it("Ferdigstiller åpen les sykmelding-hendelse og setter sykmelding som lest hvis oppgavetype mangler") {
+        it("Ferdigstilling av les sykmelding-hendelse setter sykmelding som lest hvis oppgavetype mangler") {
             val sykmeldingId = UUID.randomUUID().toString()
             sykmeldingDb.insertOrUpdate(getSykmeldingDbModel(sykmeldingId), getSykmeldtDbModel())
-            val dineSykmeldteHendelse = DineSykmeldteHendelse(
-                id = sykmeldingId,
-                opprettHendelse = OpprettHendelse(
-                    id = sykmeldingId,
-                    ansattFnr = null,
-                    orgnummer = null,
-                    oppgavetype = OPPGAVETYPE_LES_SYKMELDING,
-                    lenke = null,
-                    tekst = null,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    utlopstidspunkt = null
-                ),
-                ferdigstillHendelse = null
-            )
-            hendelserService.handleHendelse(dineSykmeldteHendelse)
             val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
                 id = sykmeldingId,
                 opprettHendelse = null,
@@ -198,30 +144,14 @@ class HendelserServiceTest : Spek({
 
             hendelserService.handleHendelse(dineSykmeldteHendelseFerdigstill)
 
-            val hendelse = TestDb.getHendelse(sykmeldingId, OPPGAVETYPE_LES_SYKMELDING)
-            hendelse shouldNotBeEqualTo null
-            hendelse?.ferdigstilt shouldBeEqualTo true
+            val hendelse = TestDb.getHendelse(sykmeldingId)
+            hendelse shouldBeEqualTo null
             val sykmelding = TestDb.getSykmelding(sykmeldingId)
             sykmelding?.lest shouldBeEqualTo true
         }
-        it("Ferdigstiller åpen les søknad-hendelse og setter søknad som lest") {
+        it("Ferdigstilling av les søknad-hendelse setter søknad som lest") {
             val soknadId = UUID.randomUUID().toString()
             soknadDb.insert(getSoknadDbModel(soknadId))
-            val dineSykmeldteHendelse = DineSykmeldteHendelse(
-                id = soknadId,
-                opprettHendelse = OpprettHendelse(
-                    id = soknadId,
-                    ansattFnr = null,
-                    orgnummer = null,
-                    oppgavetype = OPPGAVETYPE_LES_SOKNAD,
-                    lenke = null,
-                    tekst = null,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    utlopstidspunkt = null
-                ),
-                ferdigstillHendelse = null
-            )
-            hendelserService.handleHendelse(dineSykmeldteHendelse)
             val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
                 id = soknadId,
                 opprettHendelse = null,
@@ -234,30 +164,14 @@ class HendelserServiceTest : Spek({
 
             hendelserService.handleHendelse(dineSykmeldteHendelseFerdigstill)
 
-            val hendelse = TestDb.getHendelse(soknadId, OPPGAVETYPE_LES_SOKNAD)
-            hendelse shouldNotBeEqualTo null
-            hendelse?.ferdigstilt shouldBeEqualTo true
+            val hendelse = TestDb.getHendelse(soknadId)
+            hendelse shouldBeEqualTo null
             val soknad = TestDb.getSoknad(soknadId)
             soknad?.lest shouldBeEqualTo true
         }
-        it("Ferdigstiller åpen les søknad-hendelse og setter søknad som lest hvis oppgavetype mangler") {
+        it("Ferdigstilling av les søknad-hendelse setter søknad som lest hvis oppgavetype mangler") {
             val soknadId = UUID.randomUUID().toString()
             soknadDb.insert(getSoknadDbModel(soknadId))
-            val dineSykmeldteHendelse = DineSykmeldteHendelse(
-                id = soknadId,
-                opprettHendelse = OpprettHendelse(
-                    id = soknadId,
-                    ansattFnr = null,
-                    orgnummer = null,
-                    oppgavetype = OPPGAVETYPE_LES_SOKNAD,
-                    lenke = null,
-                    tekst = null,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    utlopstidspunkt = null
-                ),
-                ferdigstillHendelse = null
-            )
-            hendelserService.handleHendelse(dineSykmeldteHendelse)
             val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
                 id = soknadId,
                 opprettHendelse = null,
@@ -270,21 +184,54 @@ class HendelserServiceTest : Spek({
 
             hendelserService.handleHendelse(dineSykmeldteHendelseFerdigstill)
 
-            val hendelse = TestDb.getHendelse(soknadId, OPPGAVETYPE_LES_SOKNAD)
-            hendelse shouldNotBeEqualTo null
-            hendelse?.ferdigstilt shouldBeEqualTo true
+            val hendelse = TestDb.getHendelse(soknadId)
+            hendelse shouldBeEqualTo null
             val soknad = TestDb.getSoknad(soknadId)
             soknad?.lest shouldBeEqualTo true
         }
-        it("Ferdigstiller ikke hendelse som allerede er ferdigstilt") {
-            val sykmeldingId = UUID.randomUUID().toString()
+        it("Ferdigstiller hendelse X") {
+            val hendelseId = UUID.randomUUID().toString()
             val ferdigstiltTimestamp = OffsetDateTime.now(ZoneOffset.UTC)
             hendelserDb.insertHendelse(
                 HendelseDbModel(
-                    id = sykmeldingId,
+                    id = hendelseId,
                     pasientFnr = "12345678910",
                     orgnummer = "orgnummer",
-                    oppgavetype = OPPGAVETYPE_LES_SYKMELDING,
+                    oppgavetype = "HENDELSE_X",
+                    lenke = null,
+                    tekst = null,
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusDays(3),
+                    utlopstidspunkt = null,
+                    ferdigstilt = false,
+                    ferdigstiltTimestamp = null
+                )
+            )
+            val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
+                id = hendelseId,
+                opprettHendelse = null,
+                ferdigstillHendelse = FerdigstillHendelse(
+                    id = hendelseId,
+                    timestamp = ferdigstiltTimestamp,
+                    oppgavetype = "HENDELSE_X"
+                )
+            )
+
+            hendelserService.handleHendelse(dineSykmeldteHendelseFerdigstill)
+
+            val hendelse = TestDb.getHendelse(hendelseId)
+            hendelse shouldNotBeEqualTo null
+            hendelse?.ferdigstilt shouldBeEqualTo true
+            hendelse?.ferdigstiltTimestamp shouldBeEqualTo ferdigstiltTimestamp
+        }
+        it("Ferdigstiller ikke hendelse som allerede er ferdigstilt") {
+            val hendelseId = UUID.randomUUID().toString()
+            val ferdigstiltTimestamp = OffsetDateTime.now(ZoneOffset.UTC)
+            hendelserDb.insertHendelse(
+                HendelseDbModel(
+                    id = hendelseId,
+                    pasientFnr = "12345678910",
+                    orgnummer = "orgnummer",
+                    oppgavetype = "HENDELSE_X",
                     lenke = null,
                     tekst = null,
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusDays(3),
@@ -294,18 +241,18 @@ class HendelserServiceTest : Spek({
                 )
             )
             val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
-                id = sykmeldingId,
+                id = hendelseId,
                 opprettHendelse = null,
                 ferdigstillHendelse = FerdigstillHendelse(
-                    id = sykmeldingId,
+                    id = hendelseId,
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
-                    oppgavetype = OPPGAVETYPE_LES_SYKMELDING
+                    oppgavetype = "HENDELSE_X"
                 )
             )
 
             hendelserService.handleHendelse(dineSykmeldteHendelseFerdigstill)
 
-            val hendelse = TestDb.getHendelse(sykmeldingId, OPPGAVETYPE_LES_SYKMELDING)
+            val hendelse = TestDb.getHendelse(hendelseId)
             hendelse shouldNotBeEqualTo null
             hendelse?.ferdigstilt shouldBeEqualTo true
             hendelse?.ferdigstiltTimestamp shouldBeEqualTo ferdigstiltTimestamp

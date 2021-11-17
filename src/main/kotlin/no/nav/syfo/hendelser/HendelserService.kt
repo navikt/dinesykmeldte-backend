@@ -62,7 +62,11 @@ class HendelserService(
 
     fun handleHendelse(dineSykmeldteHendelse: DineSykmeldteHendelse) {
         if (dineSykmeldteHendelse.opprettHendelse != null) {
-            hendelserDb.insertHendelse(opprettHendelseTilHendelseDbModel(dineSykmeldteHendelse.opprettHendelse))
+            if (!(dineSykmeldteHendelse.opprettHendelse.oppgavetype == OPPGAVETYPE_LES_SYKMELDING || dineSykmeldteHendelse.opprettHendelse.oppgavetype == OPPGAVETYPE_LES_SOKNAD)) {
+                hendelserDb.insertHendelse(opprettHendelseTilHendelseDbModel(dineSykmeldteHendelse.opprettHendelse))
+            } else {
+                log.info("Oppretter ikke hendelse for sykmelding/søknad med id ${dineSykmeldteHendelse.id}")
+            }
         } else if (dineSykmeldteHendelse.ferdigstillHendelse != null) {
             hendelserDb.ferdigstillHendelse(dineSykmeldteHendelse.ferdigstillHendelse.id, dineSykmeldteHendelse.ferdigstillHendelse.oppgavetype, dineSykmeldteHendelse.ferdigstillHendelse.timestamp)
         } else {
@@ -73,56 +77,14 @@ class HendelserService(
 
     private fun opprettHendelseTilHendelseDbModel(opprettHendelse: OpprettHendelse): HendelseDbModel {
         if (opprettHendelse.orgnummer == null || opprettHendelse.ansattFnr == null) {
-            when (opprettHendelse.oppgavetype) {
-                OPPGAVETYPE_LES_SYKMELDING -> {
-                    val sykmelding = hendelserDb.getSykmelding(opprettHendelse.id)
-                    if (sykmelding == null) {
-                        log.error("Fant ikke sykmelding som hører til hendelse med id ${opprettHendelse.id}")
-                        throw IllegalStateException("Fant ikke sykmelding som hører til mottatt hendelse")
-                    }
-                    return HendelseDbModel(
-                        id = opprettHendelse.id,
-                        pasientFnr = sykmelding.pasientFnr,
-                        orgnummer = sykmelding.orgnummer,
-                        oppgavetype = opprettHendelse.oppgavetype,
-                        lenke = opprettHendelse.lenke,
-                        tekst = opprettHendelse.tekst,
-                        timestamp = opprettHendelse.timestamp,
-                        utlopstidspunkt = opprettHendelse.utlopstidspunkt,
-                        ferdigstilt = false,
-                        ferdigstiltTimestamp = null
-                    )
-                }
-                OPPGAVETYPE_LES_SOKNAD -> {
-                    val soknad = hendelserDb.getSoknad(opprettHendelse.id)
-                    if (soknad == null) {
-                        log.error("Fant ikke søknad som hører til hendelse med id ${opprettHendelse.id}")
-                        throw IllegalStateException("Fant ikke søknad som hører til mottatt hendelse")
-                    }
-                    return HendelseDbModel(
-                        id = opprettHendelse.id,
-                        pasientFnr = soknad.pasientFnr,
-                        orgnummer = soknad.orgnummer,
-                        oppgavetype = opprettHendelse.oppgavetype,
-                        lenke = opprettHendelse.lenke,
-                        tekst = opprettHendelse.tekst,
-                        timestamp = opprettHendelse.timestamp,
-                        utlopstidspunkt = opprettHendelse.utlopstidspunkt,
-                        ferdigstilt = false,
-                        ferdigstiltTimestamp = null
-                    )
-                }
-                else -> {
-                    log.error("Fnr og/eller orgnummer mangler for hendelse med id ${opprettHendelse.id}")
-                    throw IllegalStateException("Fnr og/eller orgnummer mangler for mottatt hendelse")
-                }
-            }
+            log.error("Fnr og/eller orgnummer mangler for hendelse med id ${opprettHendelse.id}")
+            throw IllegalStateException("Fnr og/eller orgnummer mangler for mottatt hendelse")
         } else {
             return HendelseDbModel(
                 id = opprettHendelse.id,
                 pasientFnr = opprettHendelse.ansattFnr,
                 orgnummer = opprettHendelse.orgnummer,
-                oppgavetype = opprettHendelse.id,
+                oppgavetype = opprettHendelse.oppgavetype,
                 lenke = opprettHendelse.lenke,
                 tekst = opprettHendelse.tekst,
                 timestamp = opprettHendelse.timestamp,
