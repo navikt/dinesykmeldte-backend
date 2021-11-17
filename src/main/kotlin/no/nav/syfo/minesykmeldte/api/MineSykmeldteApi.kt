@@ -2,7 +2,6 @@ package no.nav.syfo.minesykmeldte.api
 
 import io.ktor.application.call
 import io.ktor.auth.authentication
-import io.ktor.http.HttpMessage
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route

@@ -56,7 +56,6 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
             }
         }
     }
-
 }
 
 private fun ResultSet.toMinSykmeldtDbModel(): MinSykmeldtDbModel = MinSykmeldtDbModel(
@@ -92,7 +91,6 @@ private fun ResultSet.toSykmeldtSykmelding(): Pair<SykmeldtDbModel, SykmeldingDb
         )
         false -> null
     }
-
 
 fun <T> ResultSet.toList(mapper: ResultSet.() -> T): List<T> = mutableListOf<T>().apply {
     while (next()) {

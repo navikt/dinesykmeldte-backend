@@ -2,22 +2,24 @@ package no.nav.syfo.minesykmeldte
 
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSoknad
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSykmelding
-import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
+import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.model.AktivitetIkkeMulig
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsak
 import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsakEnum
 import no.nav.syfo.minesykmeldte.model.Avventende
 import no.nav.syfo.minesykmeldte.model.Behandler
+import no.nav.syfo.minesykmeldte.model.Behandlingsdager
+import no.nav.syfo.minesykmeldte.model.Gradert
 import no.nav.syfo.minesykmeldte.model.MinSykmeldtKey
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
+import no.nav.syfo.minesykmeldte.model.Reisetilskudd
 import no.nav.syfo.minesykmeldte.model.Sykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.BehandlerAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
-import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
@@ -117,9 +119,27 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
             this.tom,
             tilrettelegging = this.innspillTilArbeidsgiver,
         )
-        PeriodetypeDTO.BEHANDLINGSDAGER -> TODO()
-        PeriodetypeDTO.GRADERT -> TODO()
-        PeriodetypeDTO.REISETILSKUDD -> TODO()
+        PeriodetypeDTO.BEHANDLINGSDAGER -> Behandlingsdager(
+            this.fom,
+            this.tom,
+        )
+        PeriodetypeDTO.GRADERT -> {
+            val gradering = this.gradert
+            requireNotNull(gradering) {
+                "Gradert periode uten gradert-data burde ikke eksistere"
+            }
+
+            Gradert(
+                this.fom,
+                this.tom,
+                gradering.grad,
+                gradering.reisetilskudd,
+            )
+        }
+        PeriodetypeDTO.REISETILSKUDD -> Reisetilskudd(
+            this.fom,
+            this.tom,
+        )
     }
 
 private fun BehandlerAGDTO.formatName(): String = toFormattedNameString(fornavn, mellomnavn, etternavn)
