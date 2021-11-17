@@ -6,6 +6,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
+import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
@@ -47,6 +48,7 @@ class TestDb {
                     DELETE FROM sykmelding;
                     DELETE FROM sykmeldt;
                     DELETE FROM soknad;
+                    DELETE FROM hendelser;
                 """
                 ).use { ps ->
                     ps.executeUpdate()
@@ -146,6 +148,34 @@ class TestDb {
                 lest = getBoolean("lest"),
                 timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
                 tom = getObject("tom", LocalDate::class.java)
+            )
+
+        fun getHendelse(id: String, oppgavetype: String): HendelseDbModel? {
+            return database.connection.use {
+                it.prepareStatement(
+                    """
+                    SELECT * FROM hendelser WHERE id=? AND oppgavetype=?;
+                """
+                ).use { ps ->
+                    ps.setString(1, id)
+                    ps.setString(2, oppgavetype)
+                    ps.executeQuery().toList { toHendelseDbModel() }.firstOrNull()
+                }
+            }
+        }
+
+        private fun ResultSet.toHendelseDbModel(): HendelseDbModel =
+            HendelseDbModel(
+                id = getString("id"),
+                pasientFnr = getString("pasient_fnr"),
+                orgnummer = getString("orgnummer"),
+                oppgavetype = getString("oppgavetype"),
+                lenke = getString("lenke"),
+                tekst = getString("tekst"),
+                timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
+                utlopstidspunkt = getTimestamp("utlopstidspunkt")?.toInstant()?.atOffset(ZoneOffset.UTC),
+                ferdigstilt = getBoolean("ferdigstilt"),
+                ferdigstiltTimestamp = getTimestamp("ferdigstilt_timestamp")?.toInstant()?.atOffset(ZoneOffset.UTC)
             )
     }
 }

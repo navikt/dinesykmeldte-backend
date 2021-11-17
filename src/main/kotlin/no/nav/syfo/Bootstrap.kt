@@ -27,6 +27,9 @@ import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.metrics.ERROR_COUNTER
 import no.nav.syfo.azuread.AccessTokenClient
+import no.nav.syfo.hendelser.HendelserService
+import no.nav.syfo.hendelser.db.HendelserDb
+import no.nav.syfo.hendelser.kafka.model.DineSykmeldteHendelse
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.kafka.toConsumerConfig
@@ -133,6 +136,17 @@ fun main() {
         JacksonKafkaDeserializer(SykepengesoknadDTO::class)
     )
     val soknadService = SoknadService(kafkaConsumerSoknad, SoknadDb(database), applicationState, env.sykepengesoknadTopic)
+
+    val kafkaConsumerHendelser = KafkaConsumer(
+        KafkaUtils.getAivenKafkaConfig().also {
+            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
+            it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
+        }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
+        StringDeserializer(),
+        JacksonKafkaDeserializer(DineSykmeldteHendelse::class)
+    )
+    val hendelserService = HendelserService(kafkaConsumerHendelser, HendelserDb(database), applicationState, env.hendelserTopic)
 
     val applicationEngine = createApplicationEngine(
         env,

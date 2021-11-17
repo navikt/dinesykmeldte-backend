@@ -21,7 +21,8 @@ data class Environment(
     val syketilfelleEndpointURL: String = getEnvVar("SYKETILLFELLE_ENDPOINT_URL"),
     val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
-    val sykepengesoknadTopic: String = "flex.sykepengesoknad"
+    val sykepengesoknadTopic: String = "flex.sykepengesoknad",
+    val hendelserTopic: String = "teamsykmelding.dinesykmeldte-hendelser"
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
