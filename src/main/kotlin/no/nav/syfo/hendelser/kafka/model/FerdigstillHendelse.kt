@@ -5,5 +5,5 @@ import java.time.OffsetDateTime
 data class FerdigstillHendelse(
     val id: String,
     val timestamp: OffsetDateTime,
-    val oppgavetype: String
+    val oppgavetype: String?
 )

@@ -45,8 +45,14 @@ class HendelserDb(private val database: DatabaseInterface) {
         }
     }
 
-    fun ferdigstillHendelse(id: String, oppgavetype: String, ferdigstiltTimestamp: OffsetDateTime) {
+    fun ferdigstillHendelse(id: String, maybeOppgavetype: String?, ferdigstiltTimestamp: OffsetDateTime) {
         database.connection.use { connection ->
+            val oppgavetype = maybeOppgavetype
+                ?: (
+                    connection.finnApenHendelse(id)?.oppgavetype
+                        ?: throw IllegalStateException("Fant ingen hendelse for id $id")
+                    )
+
             if (connection.hendelseFinnesOgErIkkeFerdigstilt(id, oppgavetype)) {
                 connection.ferdigstillHendelse(id, oppgavetype, ferdigstiltTimestamp)
                 if (oppgavetype == OPPGAVETYPE_LES_SYKMELDING) {
@@ -72,6 +78,17 @@ class HendelserDb(private val database: DatabaseInterface) {
             it.setString(2, oppgavetype)
             it.executeQuery().next()
         }
+
+    private fun Connection.finnApenHendelse(id: String): HendelseDbModel? {
+        return this.prepareStatement(
+            """
+                SELECT * FROM hendelser WHERE id=? AND ferdigstilt != true;
+                """
+        ).use {
+            it.setString(1, id)
+            it.executeQuery().toList { toHendelseDbModel() }.firstOrNull()
+        }
+    }
 
     private fun Connection.ferdigstillHendelse(id: String, oppgavetype: String, ferdigstiltTimestamp: OffsetDateTime) {
         this.prepareStatement(
@@ -160,5 +177,19 @@ class HendelserDb(private val database: DatabaseInterface) {
             lest = getBoolean("lest"),
             timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
             tom = getObject("tom", LocalDate::class.java)
+        )
+
+    private fun ResultSet.toHendelseDbModel(): HendelseDbModel =
+        HendelseDbModel(
+            id = getString("id"),
+            pasientFnr = getString("pasient_fnr"),
+            orgnummer = getString("orgnummer"),
+            oppgavetype = getString("oppgavetype"),
+            lenke = getString("lenke"),
+            tekst = getString("tekst"),
+            timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
+            utlopstidspunkt = getTimestamp("utlopstidspunkt")?.toInstant()?.atOffset(ZoneOffset.UTC),
+            ferdigstilt = getBoolean("ferdigstilt"),
+            ferdigstiltTimestamp = getTimestamp("ferdigstilt_timestamp")?.toInstant()?.atOffset(ZoneOffset.UTC)
         )
 }

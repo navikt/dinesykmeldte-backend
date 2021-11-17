@@ -168,6 +168,42 @@ class HendelserServiceTest : Spek({
             val sykmelding = TestDb.getSykmelding(sykmeldingId)
             sykmelding?.lest shouldBeEqualTo true
         }
+        it("Ferdigstiller åpen les sykmelding-hendelse og setter sykmelding som lest hvis oppgavetype mangler") {
+            val sykmeldingId = UUID.randomUUID().toString()
+            sykmeldingDb.insertOrUpdate(getSykmeldingDbModel(sykmeldingId), getSykmeldtDbModel())
+            val dineSykmeldteHendelse = DineSykmeldteHendelse(
+                id = sykmeldingId,
+                opprettHendelse = OpprettHendelse(
+                    id = sykmeldingId,
+                    ansattFnr = null,
+                    orgnummer = null,
+                    oppgavetype = OPPGAVETYPE_LES_SYKMELDING,
+                    lenke = null,
+                    tekst = null,
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                    utlopstidspunkt = null
+                ),
+                ferdigstillHendelse = null
+            )
+            hendelserService.handleHendelse(dineSykmeldteHendelse)
+            val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
+                id = sykmeldingId,
+                opprettHendelse = null,
+                ferdigstillHendelse = FerdigstillHendelse(
+                    id = sykmeldingId,
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                    oppgavetype = null
+                )
+            )
+
+            hendelserService.handleHendelse(dineSykmeldteHendelseFerdigstill)
+
+            val hendelse = TestDb.getHendelse(sykmeldingId, OPPGAVETYPE_LES_SYKMELDING)
+            hendelse shouldNotBeEqualTo null
+            hendelse?.ferdigstilt shouldBeEqualTo true
+            val sykmelding = TestDb.getSykmelding(sykmeldingId)
+            sykmelding?.lest shouldBeEqualTo true
+        }
         it("Ferdigstiller åpen les søknad-hendelse og setter søknad som lest") {
             val soknadId = UUID.randomUUID().toString()
             soknadDb.insert(getSoknadDbModel(soknadId))
@@ -193,6 +229,42 @@ class HendelserServiceTest : Spek({
                     id = soknadId,
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                     oppgavetype = OPPGAVETYPE_LES_SOKNAD
+                )
+            )
+
+            hendelserService.handleHendelse(dineSykmeldteHendelseFerdigstill)
+
+            val hendelse = TestDb.getHendelse(soknadId, OPPGAVETYPE_LES_SOKNAD)
+            hendelse shouldNotBeEqualTo null
+            hendelse?.ferdigstilt shouldBeEqualTo true
+            val soknad = TestDb.getSoknad(soknadId)
+            soknad?.lest shouldBeEqualTo true
+        }
+        it("Ferdigstiller åpen les søknad-hendelse og setter søknad som lest hvis oppgavetype mangler") {
+            val soknadId = UUID.randomUUID().toString()
+            soknadDb.insert(getSoknadDbModel(soknadId))
+            val dineSykmeldteHendelse = DineSykmeldteHendelse(
+                id = soknadId,
+                opprettHendelse = OpprettHendelse(
+                    id = soknadId,
+                    ansattFnr = null,
+                    orgnummer = null,
+                    oppgavetype = OPPGAVETYPE_LES_SOKNAD,
+                    lenke = null,
+                    tekst = null,
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                    utlopstidspunkt = null
+                ),
+                ferdigstillHendelse = null
+            )
+            hendelserService.handleHendelse(dineSykmeldteHendelse)
+            val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
+                id = soknadId,
+                opprettHendelse = null,
+                ferdigstillHendelse = FerdigstillHendelse(
+                    id = soknadId,
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                    oppgavetype = null
                 )
             )
 
