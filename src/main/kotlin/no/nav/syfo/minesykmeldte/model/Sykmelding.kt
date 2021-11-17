@@ -65,7 +65,6 @@ data class Gradert(
 data class Behandlingsdager(
     override val fom: LocalDate,
     override val tom: LocalDate,
-    val antallDager: Int = 1
 ) : Periode {
     override val type = PeriodeEnum.BEHANDLINGSDAGER
 }
@@ -94,20 +93,3 @@ data class ArbeidsrelatertArsak(
     val arsak: List<ArbeidsrelatertArsakEnum>,
     val beskrivelse: String?
 )
-
-/*
-    Sykmelding:
-      properties:
-        behandler:
-          type: object
-          properties:
-            navn:
-              type: string
-            hprNummer:
-              type: string
-            telefon:
-              type: string
-            adresse:
-              type: string
-
-* */

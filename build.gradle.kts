@@ -20,7 +20,7 @@ val hikariVersion = "5.0.0"
 val flywayVersion = "7.15.0"
 val postgresVersion = "42.2.24"
 val testContainerVersion = "1.16.0"
-val kotlinVersion = "1.5.30"
+val kotlinVersion = "1.6.0"
 val syfoKafkaVersion = "2021.07.20-09.39-6be2c52c"
 
 tasks.withType<Jar> {
@@ -86,14 +86,14 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
-    testImplementation("org.amshove.kluent:kluent:$kluentVersion") 
+    testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
-        exclude(group = "org.eclipse.jetty") 
+        exclude(group = "org.eclipse.jetty")
     }
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
         exclude(group = "org.jetbrains.kotlin")

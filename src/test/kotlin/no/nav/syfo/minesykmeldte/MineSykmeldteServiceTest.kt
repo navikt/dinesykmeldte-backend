@@ -3,23 +3,40 @@ package no.nav.syfo.minesykmeldte
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
+import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.getSykepengesoknadDto
+import no.nav.syfo.minesykmeldte.model.AktivitetIkkeMulig
+import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsakEnum
+import no.nav.syfo.minesykmeldte.model.Avventende
+import no.nav.syfo.minesykmeldte.model.Behandlingsdager
+import no.nav.syfo.minesykmeldte.model.Gradert
+import no.nav.syfo.minesykmeldte.model.Periode
+import no.nav.syfo.minesykmeldte.model.PeriodeEnum
+import no.nav.syfo.minesykmeldte.model.Reisetilskudd
+import no.nav.syfo.model.sykmelding.arbeidsgiver.AktivitetIkkeMuligAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
-import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
+import no.nav.syfo.model.sykmelding.model.ArbeidsrelatertArsakDTO
+import no.nav.syfo.model.sykmelding.model.ArbeidsrelatertArsakTypeDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
-import no.nav.syfo.sykmelding.db.SykmeldingDb
-import no.nav.syfo.sykmelding.getArbeidsgiverSykmelding
+import no.nav.syfo.sykmelding.db.SykmeldingDbModel
+import no.nav.syfo.sykmelding.db.SykmeldtDbModel
+import no.nav.syfo.util.createArbeidsgiverSykmelding
+import no.nav.syfo.util.createSykmeldingsperiode
+import no.nav.syfo.util.shouldBeInstance
+import org.amshove.kluent.`should not be null`
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldHaveSize
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
+import kotlin.contracts.ExperimentalContracts
 
+@ExperimentalContracts
 class MineSykmeldteServiceTest : Spek({
     val mineSykmeldteDb = mockk<MineSykmeldteDb>()
     val minesykmeldtService = MineSykmeldteService(mineSykmeldteDb)
@@ -28,7 +45,7 @@ class MineSykmeldteServiceTest : Spek({
         clearMocks(mineSykmeldteDb)
     }
 
-    describe("Test minesykmeldteservice") {
+    describe("getMineSykmeldte") {
         it("Should get empty list") {
             every { mineSykmeldteDb.getMineSykmeldte("1") } returns emptyList()
             minesykmeldtService.getMineSykmeldte("1").size shouldBeEqualTo 0
@@ -46,8 +63,8 @@ class MineSykmeldteServiceTest : Spek({
                 getSykmeldtData(
                     sykmeldte = 3,
                     sykmeldinger = listOf(
-                        getArbeidsgiverSykmelding(UUID.randomUUID().toString()),
-                        getArbeidsgiverSykmelding(UUID.randomUUID().toString()),
+                        createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
+                        createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
                     ),
                     sykmeldtFnrPrefix = "avdeling-1",
                     soknader = 1
@@ -55,9 +72,9 @@ class MineSykmeldteServiceTest : Spek({
                     getSykmeldtData(
                         sykmeldte = 2,
                         sykmeldinger = listOf(
-                            getArbeidsgiverSykmelding(UUID.randomUUID().toString()),
-                            getArbeidsgiverSykmelding(UUID.randomUUID().toString()),
-                            getArbeidsgiverSykmelding(UUID.randomUUID().toString()),
+                            createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
+                            createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
+                            createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
                         ),
                         sykmeldtFnrPrefix = "avdeling-2",
                         soknader = 0
@@ -73,18 +90,16 @@ class MineSykmeldteServiceTest : Spek({
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
-                        getArbeidsgiverSykmelding(
+                        createArbeidsgiverSykmelding(
                             UUID.randomUUID().toString(),
                             listOf(
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().minusDays(24),
                                     tom = LocalDate.now().minusDays(16),
                                     type = PeriodetypeDTO.GRADERT,
                                     gradert = GradertDTO(50, false),
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 )
                             )
                         )
@@ -101,18 +116,16 @@ class MineSykmeldteServiceTest : Spek({
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
-                        getArbeidsgiverSykmelding(
+                        createArbeidsgiverSykmelding(
                             UUID.randomUUID().toString(),
                             listOf(
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().minusDays(24),
                                     tom = LocalDate.now().minusDays(17),
                                     type = PeriodetypeDTO.GRADERT,
                                     gradert = GradertDTO(50, false),
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 )
                             )
                         )
@@ -131,18 +144,16 @@ class MineSykmeldteServiceTest : Spek({
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
-                        getArbeidsgiverSykmelding(
+                        createArbeidsgiverSykmelding(
                             UUID.randomUUID().toString(),
                             listOf(
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now(),
                                     tom = LocalDate.now().plusDays(4),
                                     type = PeriodetypeDTO.GRADERT,
                                     gradert = GradertDTO(50, false),
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 )
                             )
                         )
@@ -159,18 +170,16 @@ class MineSykmeldteServiceTest : Spek({
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
-                        getArbeidsgiverSykmelding(
+                        createArbeidsgiverSykmelding(
                             UUID.randomUUID().toString(),
                             listOf(
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now(),
                                     tom = LocalDate.now().plusDays(4),
                                     type = PeriodetypeDTO.GRADERT,
                                     gradert = GradertDTO(20, false),
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 )
                             )
                         )
@@ -187,18 +196,16 @@ class MineSykmeldteServiceTest : Spek({
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
-                        getArbeidsgiverSykmelding(
+                        createArbeidsgiverSykmelding(
                             UUID.randomUUID().toString(),
                             listOf(
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now(),
                                     tom = LocalDate.now().plusDays(4),
                                     type = PeriodetypeDTO.AVVENTENDE,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 )
                             )
                         )
@@ -215,18 +222,16 @@ class MineSykmeldteServiceTest : Spek({
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
-                        getArbeidsgiverSykmelding(
+                        createArbeidsgiverSykmelding(
                             UUID.randomUUID().toString(),
                             listOf(
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now(),
                                     tom = LocalDate.now().plusDays(4),
                                     type = PeriodetypeDTO.BEHANDLINGSDAGER,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 )
                             )
                         )
@@ -243,18 +248,16 @@ class MineSykmeldteServiceTest : Spek({
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
-                        getArbeidsgiverSykmelding(
+                        createArbeidsgiverSykmelding(
                             UUID.randomUUID().toString(),
                             listOf(
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now(),
                                     tom = LocalDate.now().plusDays(4),
                                     type = PeriodetypeDTO.REISETILSKUDD,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 )
                             )
                         )
@@ -271,38 +274,32 @@ class MineSykmeldteServiceTest : Spek({
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
-                        getArbeidsgiverSykmelding(
+                        createArbeidsgiverSykmelding(
                             UUID.randomUUID().toString(),
                             listOf(
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().minusDays(15),
                                     tom = LocalDate.now().minusDays(11),
                                     type = PeriodetypeDTO.AVVENTENDE,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 ),
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().minusDays(1),
                                     tom = LocalDate.now().plusDays(2),
                                     type = PeriodetypeDTO.REISETILSKUDD,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 ),
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().plusDays(5),
                                     tom = LocalDate.now().plusDays(10),
                                     type = PeriodetypeDTO.AVVENTENDE,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 )
                             )
                         )
@@ -318,38 +315,32 @@ class MineSykmeldteServiceTest : Spek({
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
-                        getArbeidsgiverSykmelding(
+                        createArbeidsgiverSykmelding(
                             UUID.randomUUID().toString(),
                             listOf(
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().minusDays(15),
                                     tom = LocalDate.now().minusDays(11),
                                     type = PeriodetypeDTO.AVVENTENDE,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 ),
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().minusDays(3),
                                     tom = LocalDate.now(),
                                     type = PeriodetypeDTO.REISETILSKUDD,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 ),
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().plusDays(5),
                                     tom = LocalDate.now().plusDays(10),
                                     type = PeriodetypeDTO.AVVENTENDE,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 )
                             )
                         )
@@ -365,38 +356,32 @@ class MineSykmeldteServiceTest : Spek({
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
-                        getArbeidsgiverSykmelding(
+                        createArbeidsgiverSykmelding(
                             UUID.randomUUID().toString(),
                             listOf(
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().minusDays(15),
                                     tom = LocalDate.now().minusDays(11),
                                     type = PeriodetypeDTO.AVVENTENDE,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 ),
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now(),
                                     tom = LocalDate.now().plusDays(3),
                                     type = PeriodetypeDTO.REISETILSKUDD,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 ),
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().plusDays(5),
                                     tom = LocalDate.now().plusDays(10),
                                     type = PeriodetypeDTO.AVVENTENDE,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 )
                             )
                         )
@@ -412,38 +397,32 @@ class MineSykmeldteServiceTest : Spek({
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
-                        getArbeidsgiverSykmelding(
+                        createArbeidsgiverSykmelding(
                             UUID.randomUUID().toString(),
                             listOf(
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().minusDays(20),
                                     tom = LocalDate.now().minusDays(15),
                                     type = PeriodetypeDTO.AVVENTENDE,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 ),
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().minusDays(14),
                                     tom = LocalDate.now().minusDays(5),
                                     type = PeriodetypeDTO.AVVENTENDE,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 ),
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().plusDays(1),
                                     tom = LocalDate.now().plusDays(4),
                                     type = PeriodetypeDTO.REISETILSKUDD,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 )
                             )
                         )
@@ -459,38 +438,32 @@ class MineSykmeldteServiceTest : Spek({
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
-                        getArbeidsgiverSykmelding(
+                        createArbeidsgiverSykmelding(
                             UUID.randomUUID().toString(),
                             listOf(
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().plusDays(1),
                                     tom = LocalDate.now().plusDays(4),
                                     type = PeriodetypeDTO.REISETILSKUDD,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 ),
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().plusDays(5),
                                     tom = LocalDate.now().plusDays(14),
                                     type = PeriodetypeDTO.AVVENTENDE,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 ),
-                                SykmeldingsperiodeAGDTO(
+                                createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().plusDays(15),
                                     tom = LocalDate.now().plusDays(20),
                                     type = PeriodetypeDTO.AVVENTENDE,
                                     gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                    reisetilskudd = false,
                                 )
                             )
                         )
@@ -503,12 +476,193 @@ class MineSykmeldteServiceTest : Spek({
             }
         }
     }
+
+    describe("getSykmelding") {
+        it("should map to aktivitetIkkeMulig") {
+            val sykmeldingId = UUID.fromString("c4df78c6-880a-4a47-bc4f-9df63584c009")
+            every {
+                mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
+            } returns (
+                createSykmeldtDbModel() to createSykmeldingDbModel(
+                    sykmeldingId = sykmeldingId,
+                    sykmelding = createArbeidsgiverSykmelding(
+                        sykmeldingId = sykmeldingId.toString(),
+                        perioder = listOf(
+                            createSykmeldingsperiode(
+                                type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                                aktivitetIkkeMulig = AktivitetIkkeMuligAGDTO(
+                                    ArbeidsrelatertArsakDTO(
+                                        "Trenger ståpult",
+                                        listOf(ArbeidsrelatertArsakTypeDTO.MANGLENDE_TILRETTELEGGING)
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+                )
+
+            val result = minesykmeldtService.getSykmelding(sykmeldingId, "red-1")
+            val periode: Periode? = result?.perioder?.first()
+
+            periode.shouldBeInstance<AktivitetIkkeMulig>()
+            periode.type shouldBeEqualTo PeriodeEnum.AKTIVITET_IKKE_MULIG
+            periode.arbeidsrelatertArsak.`should not be null`()
+            periode.arbeidsrelatertArsak?.arsak?.first() shouldBeEqualTo ArbeidsrelatertArsakEnum.MANGLENDE_TILRETTELEGGING
+            periode.arbeidsrelatertArsak?.beskrivelse shouldBeEqualTo "Trenger ståpult"
+        }
+
+        it("should map to avventende") {
+            val sykmeldingId = UUID.fromString("c4df78c6-880a-4a47-bc4f-9df63584c009")
+            every {
+                mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
+            } returns (
+                createSykmeldtDbModel() to createSykmeldingDbModel(
+                    sykmeldingId = sykmeldingId,
+                    sykmelding = createArbeidsgiverSykmelding(
+                        sykmeldingId = sykmeldingId.toString(),
+                        perioder = listOf(
+                            createSykmeldingsperiode(
+                                type = PeriodetypeDTO.AVVENTENDE,
+                                aktivitetIkkeMulig = null,
+                                innspillTilArbeidsgiver = "Vi venter litt"
+                            )
+                        )
+                    )
+                )
+                )
+
+            val result = minesykmeldtService.getSykmelding(sykmeldingId, "red-1")
+            val periode: Periode? = result?.perioder?.first()
+
+            periode.shouldBeInstance<Avventende>()
+            periode.type shouldBeEqualTo PeriodeEnum.AVVENTENDE
+            periode.tilrettelegging shouldBeEqualTo "Vi venter litt"
+        }
+
+        it("should map to behandlingsdager") {
+            val sykmeldingId = UUID.fromString("c4df78c6-880a-4a47-bc4f-9df63584c009")
+            every {
+                mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
+            } returns (
+                createSykmeldtDbModel() to createSykmeldingDbModel(
+                    sykmeldingId = sykmeldingId,
+                    sykmelding = createArbeidsgiverSykmelding(
+                        sykmeldingId = sykmeldingId.toString(),
+                        perioder = listOf(
+                            createSykmeldingsperiode(
+                                type = PeriodetypeDTO.BEHANDLINGSDAGER,
+                                aktivitetIkkeMulig = null,
+                                behandlingsdager = 1
+                            )
+                        )
+                    )
+                )
+                )
+
+            val result = minesykmeldtService.getSykmelding(sykmeldingId, "red-1")
+            val periode: Periode? = result?.perioder?.first()
+
+            periode.shouldBeInstance<Behandlingsdager>()
+            periode.type shouldBeEqualTo PeriodeEnum.BEHANDLINGSDAGER
+        }
+
+        it("should map to gradert") {
+            val sykmeldingId = UUID.fromString("c4df78c6-880a-4a47-bc4f-9df63584c009")
+            every {
+                mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
+            } returns (
+                createSykmeldtDbModel() to createSykmeldingDbModel(
+                    sykmeldingId = sykmeldingId,
+                    sykmelding = createArbeidsgiverSykmelding(
+                        sykmeldingId = sykmeldingId.toString(),
+                        perioder = listOf(
+                            createSykmeldingsperiode(
+                                type = PeriodetypeDTO.GRADERT,
+                                aktivitetIkkeMulig = null,
+                                gradert = GradertDTO(
+                                    45, true
+                                ),
+                            )
+                        )
+                    )
+                )
+                )
+
+            val result = minesykmeldtService.getSykmelding(sykmeldingId, "red-1")
+            val periode: Periode? = result?.perioder?.first()
+
+            periode.shouldBeInstance<Gradert>()
+            periode.type shouldBeEqualTo PeriodeEnum.GRADERT
+            periode.grad shouldBeEqualTo 45
+            periode.reisetilskudd shouldBeEqualTo true
+        }
+
+        it("should map to reisetilskudd") {
+            val sykmeldingId = UUID.fromString("c4df78c6-880a-4a47-bc4f-9df63584c009")
+            every {
+                mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
+            } returns (
+                createSykmeldtDbModel() to createSykmeldingDbModel(
+                    sykmeldingId = sykmeldingId,
+                    sykmelding = createArbeidsgiverSykmelding(
+                        sykmeldingId = sykmeldingId.toString(),
+                        perioder = listOf(
+                            createSykmeldingsperiode(
+                                type = PeriodetypeDTO.REISETILSKUDD,
+                                aktivitetIkkeMulig = null,
+                                reisetilskudd = true
+                            )
+                        )
+                    )
+                )
+                )
+
+            val result = minesykmeldtService.getSykmelding(sykmeldingId, "red-1")
+            val periode: Periode? = result?.perioder?.first()
+
+            periode.shouldBeInstance<Reisetilskudd>()
+            periode.type shouldBeEqualTo PeriodeEnum.REISETILSKUDD
+        }
+    }
 })
+
+private fun createSykmeldingDbModel(
+    sykmeldingId: UUID = UUID.fromString("c4df78c6-880a-4a47-bc4f-9df63584c009"),
+    pasientFnr: String = "08088012345",
+    orgnummer: String = "90909012345",
+    orgnavn: String = "Baker Frank",
+    sykmelding: ArbeidsgiverSykmelding = createArbeidsgiverSykmelding(sykmeldingId.toString()),
+    lest: Boolean = false,
+    timestamp: OffsetDateTime = OffsetDateTime.now(),
+    latestTom: LocalDate = LocalDate.now(),
+) = SykmeldingDbModel(
+    sykmeldingId = sykmeldingId,
+    pasientFnr = pasientFnr,
+    orgnummer = orgnummer,
+    orgnavn = orgnavn,
+    sykmelding = sykmelding,
+    lest = lest,
+    timestamp = timestamp,
+    latestTom = latestTom,
+)
+
+private fun createSykmeldtDbModel(
+    pasientFnr: String = "08088012345",
+    pasientNavn: String = "Ola Normann",
+    startdatoSykefravaer: LocalDate = LocalDate.now(),
+    latestTom: LocalDate = LocalDate.now(),
+) = SykmeldtDbModel(
+    pasientFnr = pasientFnr,
+    pasientNavn = pasientNavn,
+    startdatoSykefravaer = startdatoSykefravaer,
+    latestTom = latestTom,
+)
 
 fun getSykmeldtData(
     sykmeldte: Int,
     sykmeldinger: List<ArbeidsgiverSykmelding> = listOf(
-        getArbeidsgiverSykmelding(
+        createArbeidsgiverSykmelding(
             UUID.randomUUID().toString(),
         )
     ),

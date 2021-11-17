@@ -293,12 +293,12 @@ private fun TestApplicationRequest.addAuthorizationHeader(
     addHeader(
         "Authorization",
         "Bearer ${
-            generateJWTLoginservice(
-                audience = audience,
-                subject = subject,
-                issuer = issuer,
-                level = level
-            )
+        generateJWTLoginservice(
+            audience = audience,
+            subject = subject,
+            issuer = issuer,
+            level = level
+        )
         }"
     )
 }

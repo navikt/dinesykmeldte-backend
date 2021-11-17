@@ -4,7 +4,6 @@ on:
     branches:
       - '**'
       - '!master'
-      - '!sykmelding-api'
 env:
   IMAGE: docker.pkg.github.com/${{ github.repository }}/dinesykmeldte-backend:${{ github.sha }}
 
