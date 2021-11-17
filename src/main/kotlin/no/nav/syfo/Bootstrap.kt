@@ -118,7 +118,7 @@ fun main() {
     val kafkaConsumerSykmelding = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also {
             it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 1
             it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
         }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
         StringDeserializer(),
@@ -129,7 +129,7 @@ fun main() {
     val kafkaConsumerSoknad = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also {
             it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 1
             it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
         }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
         StringDeserializer(),
@@ -140,7 +140,7 @@ fun main() {
     val kafkaConsumerHendelser = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also {
             it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
             it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
         }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
         StringDeserializer(),
