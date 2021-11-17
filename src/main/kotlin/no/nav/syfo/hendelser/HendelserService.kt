@@ -45,8 +45,8 @@ class HendelserService(
     private fun start() {
         var processedMessages = 0
         while (applicationState.ready) {
-            val soknader = kafkaConsumer.poll(Duration.ofSeconds(10))
-            soknader.forEach {
+            val hendelser = kafkaConsumer.poll(Duration.ofSeconds(10))
+            hendelser.forEach {
                 try {
                     handleHendelse(it.value())
                 } catch (e: Exception) {
@@ -54,8 +54,10 @@ class HendelserService(
                     throw e
                 }
             }
-            kafkaConsumer.commitSync()
-            processedMessages += soknader.count()
+            if (!hendelser.isEmpty) {
+                kafkaConsumer.commitSync()
+            }
+            processedMessages += hendelser.count()
             processedMessages = logProcessedMessages(processedMessages)
         }
     }

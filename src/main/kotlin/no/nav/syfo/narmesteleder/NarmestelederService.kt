@@ -37,10 +37,10 @@ class NarmestelederService(
         }
     }
 
-    private suspend fun start() {
+    private fun start() {
         while (applicationState.ready) {
-            val soknader = kafkaConsumer.poll(Duration.ZERO)
-            soknader.forEach {
+            val nlskjemas = kafkaConsumer.poll(Duration.ZERO)
+            nlskjemas.forEach {
                 try {
                     updateNl(it.value())
                 } catch (e: Exception) {
@@ -48,8 +48,10 @@ class NarmestelederService(
                     throw e
                 }
             }
-            kafkaConsumer.commitSync()
-            delay(1)
+
+            if (!nlskjemas.isEmpty) {
+                kafkaConsumer.commitSync()
+            }
         }
     }
 

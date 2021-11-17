@@ -43,7 +43,7 @@ class SoknadService(
         }
     }
 
-    private suspend fun start() {
+    private fun start() {
         var processedMessages = 0
         while (applicationState.ready) {
             val soknader = kafkaConsumer.poll(Duration.ZERO)
@@ -55,10 +55,11 @@ class SoknadService(
                     throw e
                 }
             }
-            kafkaConsumer.commitSync()
+            if (!soknader.isEmpty) {
+                kafkaConsumer.commitSync()
+            }
             processedMessages += soknader.count()
             processedMessages = logProcessedMessages(processedMessages)
-            delay(1)
         }
     }
 
