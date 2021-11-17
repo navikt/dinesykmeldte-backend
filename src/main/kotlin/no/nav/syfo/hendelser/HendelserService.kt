@@ -51,9 +51,7 @@ class HendelserService(
                     handleHendelse(it.value())
                 } catch (e: Exception) {
                     log.error("Noe gikk galt ved mottak av hendelse med id ${it.key()}")
-                    if (it.key() != "0db9080d-b525-4d6b-9bbb-7102f101ad81") {
-                        throw e
-                    }
+                    throw e
                 }
             }
             kafkaConsumer.commitSync()
