@@ -150,15 +150,14 @@ class TestDb {
                 tom = getObject("tom", LocalDate::class.java)
             )
 
-        fun getHendelse(id: String, oppgavetype: String): HendelseDbModel? {
+        fun getHendelse(id: String): HendelseDbModel? {
             return database.connection.use {
                 it.prepareStatement(
                     """
-                    SELECT * FROM hendelser WHERE id=? AND oppgavetype=?;
+                    SELECT * FROM hendelser WHERE id=?;
                 """
                 ).use { ps ->
                     ps.setString(1, id)
-                    ps.setString(2, oppgavetype)
                     ps.executeQuery().toList { toHendelseDbModel() }.firstOrNull()
                 }
             }
