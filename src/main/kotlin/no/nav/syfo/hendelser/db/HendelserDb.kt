@@ -49,7 +49,7 @@ class HendelserDb(private val database: DatabaseInterface) {
         database.connection.use { connection ->
             val oppgavetype = maybeOppgavetype
                 ?: (
-                    connection.finnApenHendelse(id)?.oppgavetype
+                    connection.finnHendelse(id)?.oppgavetype
                         ?: throw IllegalStateException("Fant ingen hendelse for id $id")
                     )
 
@@ -79,10 +79,10 @@ class HendelserDb(private val database: DatabaseInterface) {
             it.executeQuery().next()
         }
 
-    private fun Connection.finnApenHendelse(id: String): HendelseDbModel? {
+    private fun Connection.finnHendelse(id: String): HendelseDbModel? {
         return this.prepareStatement(
             """
-                SELECT * FROM hendelser WHERE id=? AND ferdigstilt != true;
+                SELECT * FROM hendelser WHERE id=?;
                 """
         ).use {
             it.setString(1, id)
