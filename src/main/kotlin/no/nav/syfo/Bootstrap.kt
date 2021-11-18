@@ -24,24 +24,19 @@ import no.nav.syfo.application.database.Database
 import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.hendelser.db.HendelserDb
-import no.nav.syfo.hendelser.kafka.model.DineSykmeldteHendelse
 import no.nav.syfo.kafka.aiven.KafkaUtils
-import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
-import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
 import no.nav.syfo.soknad.SoknadService
 import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.client.SyfoSyketilfelleClient
 import no.nav.syfo.sykmelding.db.SykmeldingDb
-import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage
 import no.nav.syfo.sykmelding.pdl.client.PdlClient
 import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
-import no.nav.syfo.util.JacksonKafkaDeserializer
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -98,49 +93,30 @@ fun main() {
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
 
-    val kafkaConsumerNarmesteleder = KafkaConsumer(
+    val kafkaConsumer = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also {
-            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest" // pga ny consumergroup for hendelser
             it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
             it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
-        }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
+        }.toConsumerConfig("dinesykmeldte-backend", StringDeserializer::class),
         StringDeserializer(),
-        JacksonKafkaDeserializer(NarmestelederLeesahKafkaMessage::class)
+        StringDeserializer()
     )
-    val narmestelederService = NarmestelederService(kafkaConsumerNarmesteleder, NarmestelederDb(database), applicationState, env.narmestelederLeesahTopic)
 
-    val kafkaConsumerSykmelding = KafkaConsumer(
-        KafkaUtils.getAivenKafkaConfig().also {
-            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
-            it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
-        }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
-        StringDeserializer(),
-        JacksonKafkaDeserializer(SendtSykmeldingKafkaMessage::class)
-    )
-    val sykmeldingService = SykmeldingService(kafkaConsumerSykmelding, SykmeldingDb(database), applicationState, env.sendtSykmeldingTopic, pdlPersonService, syfoSyketilfelleClient, env.cluster)
+    val narmestelederService = NarmestelederService(NarmestelederDb(database))
+    val sykmeldingService = SykmeldingService(SykmeldingDb(database), pdlPersonService, syfoSyketilfelleClient, env.cluster)
+    val soknadService = SoknadService(SoknadDb(database))
+    val hendelserService = HendelserService(HendelserDb(database))
 
-    val kafkaConsumerSoknad = KafkaConsumer(
-        KafkaUtils.getAivenKafkaConfig().also {
-            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
-            it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
-        }.toConsumerConfig("dinesykmeldte-backend", JacksonKafkaDeserializer::class),
-        StringDeserializer(),
-        JacksonKafkaDeserializer(SykepengesoknadDTO::class)
+    val commonKafkaService = CommonKafkaService(
+        kafkaConsumer,
+        applicationState,
+        env,
+        narmestelederService,
+        sykmeldingService,
+        soknadService,
+        hendelserService
     )
-    val soknadService = SoknadService(kafkaConsumerSoknad, SoknadDb(database), applicationState, env.sykepengesoknadTopic)
-
-    val kafkaConsumerHendelser = KafkaConsumer(
-        KafkaUtils.getAivenKafkaConfig().also {
-            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
-            it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
-        }.toConsumerConfig("dinesykmeldte-backend-hendelser", JacksonKafkaDeserializer::class),
-        StringDeserializer(),
-        JacksonKafkaDeserializer(DineSykmeldteHendelse::class)
-    )
-    val hendelserService = HendelserService(kafkaConsumerHendelser, HendelserDb(database), applicationState, env.hendelserTopic)
 
     val applicationEngine = createApplicationEngine(
         env,
@@ -153,10 +129,7 @@ fun main() {
     applicationServer.start()
     applicationState.ready = true
 
-    narmestelederService.startConsumer()
-    sykmeldingService.startConsumer()
-    soknadService.startConsumer()
-    hendelserService.startConsumer()
+    commonKafkaService.startConsumer()
 }
 
 fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) =

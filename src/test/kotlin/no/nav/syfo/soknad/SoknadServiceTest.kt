@@ -1,8 +1,6 @@
 package no.nav.syfo.soknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.mockk.mockk
-import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.kafka.felles.SoknadsstatusDTO
 import no.nav.syfo.kafka.felles.SporsmalDTO
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
@@ -11,7 +9,6 @@ import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.util.TestDb
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.charset.StandardCharsets
@@ -22,11 +19,8 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class SoknadServiceTest : Spek({
-    val kafkaConsumer = mockk<KafkaConsumer<String, SykepengesoknadDTO>>(relaxed = true)
     val database = SoknadDb(TestDb.database)
-    val applicationState = ApplicationState(alive = true, ready = true)
-    val sykepengesoknadTopic = "topic"
-    val soknadService = SoknadService(kafkaConsumer, database, applicationState, sykepengesoknadTopic)
+    val soknadService = SoknadService(database)
 
     beforeEachTest {
         TestDb.clearAllData()

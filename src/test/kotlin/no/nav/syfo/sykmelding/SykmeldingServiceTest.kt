@@ -4,7 +4,6 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.model.sykmelding.arbeidsgiver.AktivitetIkkeMuligAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
@@ -25,7 +24,6 @@ import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
 import no.nav.syfo.util.TestDb
 import org.amshove.kluent.shouldBeAfter
 import org.amshove.kluent.shouldBeEqualTo
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
@@ -34,17 +32,11 @@ import java.time.ZoneOffset
 import java.util.UUID
 
 class SykmeldingServiceTest : Spek({
-    val kafkaConsumer = mockk<KafkaConsumer<String, SendtSykmeldingKafkaMessage>>(relaxed = true)
     val database = SykmeldingDb(TestDb.database)
-    val applicationState = ApplicationState(alive = true, ready = true)
-    val sendtSykmeldingTopic = "topic"
     val pdlPersonService = mockk<PdlPersonService>()
     val syfoSyketilfelleClient = mockk<SyfoSyketilfelleClient>()
     val sykmeldingService = SykmeldingService(
-        kafkaConsumer,
         database,
-        applicationState,
-        sendtSykmeldingTopic,
         pdlPersonService,
         syfoSyketilfelleClient,
         "prod-gcp"
