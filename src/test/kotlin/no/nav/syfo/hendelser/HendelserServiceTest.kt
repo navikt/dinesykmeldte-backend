@@ -1,8 +1,6 @@
 package no.nav.syfo.hendelser
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.mockk.mockk
-import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.hendelser.kafka.model.DineSykmeldteHendelse
@@ -21,7 +19,6 @@ import no.nav.syfo.sykmelding.getArbeidsgiverSykmelding
 import no.nav.syfo.util.TestDb
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
@@ -33,8 +30,7 @@ class HendelserServiceTest : Spek({
     val sykmeldingDb = SykmeldingDb(TestDb.database)
     val soknadDb = SoknadDb(TestDb.database)
     val hendelserDb = HendelserDb(TestDb.database)
-    val kafkaConsumer = mockk<KafkaConsumer<String, DineSykmeldteHendelse>>(relaxed = true)
-    val hendelserService = HendelserService(kafkaConsumer, hendelserDb, ApplicationState(alive = true, ready = true), "hendelser-topic")
+    val hendelserService = HendelserService(hendelserDb)
 
     afterEachTest {
         TestDb.clearAllData()

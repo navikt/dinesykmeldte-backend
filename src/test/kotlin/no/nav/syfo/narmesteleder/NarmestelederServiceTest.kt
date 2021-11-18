@@ -1,12 +1,9 @@
 package no.nav.syfo.narmesteleder
 
-import io.mockk.mockk
-import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
 import no.nav.syfo.util.TestDb
 import org.amshove.kluent.shouldBeEqualTo
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
@@ -15,8 +12,7 @@ import java.util.UUID
 
 class NarmestelederServiceTest : Spek({
     val database = NarmestelederDb(TestDb.database)
-    val kafkaConsumer = mockk<KafkaConsumer<String, NarmestelederLeesahKafkaMessage>>(relaxed = true)
-    val narmestelederService = NarmestelederService(kafkaConsumer, database, ApplicationState(alive = true, ready = true), "topic")
+    val narmestelederService = NarmestelederService(database)
 
     beforeEachTest {
         TestDb.clearAllData()

@@ -1,64 +1,23 @@
 package no.nav.syfo.hendelser
 
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import no.nav.syfo.application.ApplicationState
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.hendelser.kafka.model.DineSykmeldteHendelse
 import no.nav.syfo.hendelser.kafka.model.OpprettHendelse
 import no.nav.syfo.log
-import no.nav.syfo.util.Unbounded
-import org.apache.kafka.clients.consumer.KafkaConsumer
-import java.time.Duration
-import java.time.Instant
+import no.nav.syfo.objectMapper
+import org.apache.kafka.clients.consumer.ConsumerRecord
 
 class HendelserService(
-    private val kafkaConsumer: KafkaConsumer<String, DineSykmeldteHendelse>,
-    private val hendelserDb: HendelserDb,
-    private val applicationState: ApplicationState,
-    private val hendelserTopic: String
+    private val hendelserDb: HendelserDb
 ) {
-    private var lastLogTime = Instant.now().toEpochMilli()
-    private val logTimer = 60_000L
-
-    @DelicateCoroutinesApi
-    fun startConsumer() {
-        GlobalScope.launch(Dispatchers.Unbounded) {
-            while (applicationState.ready) {
-                try {
-                    log.info("Starting consuming topic $hendelserTopic")
-                    kafkaConsumer.subscribe(listOf(hendelserTopic))
-                    start()
-                } catch (ex: Exception) {
-                    log.error("Error running kafka consumer for hendelser, unsubscribing and waiting 10 seconds for retry", ex)
-                    kafkaConsumer.unsubscribe()
-                    delay(10_000)
-                }
-            }
-        }
-    }
-
-    private fun start() {
-        var processedMessages = 0
-        while (applicationState.ready) {
-            val hendelser = kafkaConsumer.poll(Duration.ofSeconds(10))
-            hendelser.forEach {
-                try {
-                    handleHendelse(it.value())
-                } catch (e: Exception) {
-                    log.error("Noe gikk galt ved mottak av hendelse med id ${it.key()}")
-                    throw e
-                }
-            }
-            if (!hendelser.isEmpty) {
-                kafkaConsumer.commitSync()
-            }
-            processedMessages += hendelser.count()
-            processedMessages = logProcessedMessages(processedMessages)
+    fun handleHendelse(record: ConsumerRecord<String, String>) {
+        try {
+            handleHendelse(objectMapper.readValue<DineSykmeldteHendelse>(record.value()))
+        } catch (e: Exception) {
+            log.error("Noe gikk galt ved mottak av hendelse med id ${record.key()}")
+            throw e
         }
     }
 
@@ -67,7 +26,7 @@ class HendelserService(
             if (!(dineSykmeldteHendelse.opprettHendelse.oppgavetype == OPPGAVETYPE_LES_SYKMELDING || dineSykmeldteHendelse.opprettHendelse.oppgavetype == OPPGAVETYPE_LES_SOKNAD)) {
                 hendelserDb.insertHendelse(opprettHendelseTilHendelseDbModel(dineSykmeldteHendelse.opprettHendelse))
             } else {
-                log.info("Oppretter ikke hendelse for sykmelding/søknad med id ${dineSykmeldteHendelse.id}")
+                log.debug("Oppretter ikke hendelse for sykmelding/søknad med id ${dineSykmeldteHendelse.id}")
             }
         } else if (dineSykmeldteHendelse.ferdigstillHendelse != null) {
             hendelserDb.ferdigstillHendelse(dineSykmeldteHendelse.ferdigstillHendelse.id, dineSykmeldteHendelse.ferdigstillHendelse.oppgavetype, dineSykmeldteHendelse.ferdigstillHendelse.timestamp)
@@ -95,15 +54,5 @@ class HendelserService(
                 ferdigstiltTimestamp = null
             )
         }
-    }
-
-    private fun logProcessedMessages(processedMessages: Int): Int {
-        var currentLogTime = Instant.now().toEpochMilli()
-        if (processedMessages > 0 && currentLogTime - lastLogTime > logTimer) {
-            log.info("Processed $processedMessages hendelser")
-            lastLogTime = currentLogTime
-            return 0
-        }
-        return processedMessages
     }
 }
