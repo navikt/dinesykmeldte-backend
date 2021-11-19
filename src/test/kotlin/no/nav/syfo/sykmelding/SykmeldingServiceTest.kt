@@ -5,12 +5,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.model.sykmelding.arbeidsgiver.AktivitetIkkeMuligAGDTO
-import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverAGDTO
-import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
-import no.nav.syfo.model.sykmelding.arbeidsgiver.BehandlerAGDTO
-import no.nav.syfo.model.sykmelding.arbeidsgiver.KontaktMedPasientAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
-import no.nav.syfo.model.sykmelding.model.AdresseDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO
 import no.nav.syfo.model.sykmeldingstatus.KafkaMetadataDTO
@@ -22,6 +17,7 @@ import no.nav.syfo.sykmelding.pdl.model.Navn
 import no.nav.syfo.sykmelding.pdl.model.PdlPerson
 import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
 import no.nav.syfo.util.TestDb
+import no.nav.syfo.util.createArbeidsgiverSykmelding
 import org.amshove.kluent.shouldBeAfter
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -184,7 +180,7 @@ fun getSendtSykmeldingKafkaMessage(
         )
     )
 ) = SendtSykmeldingKafkaMessage(
-    getArbeidsgiverSykmelding(sykmeldingId, perioder),
+    createArbeidsgiverSykmelding(sykmeldingId, perioder),
     KafkaMetadataDTO(sykmeldingId, OffsetDateTime.now(ZoneOffset.UTC), "12345678910", "user"),
     SykmeldingStatusKafkaEventDTO(
         sykmeldingId,
@@ -193,36 +189,4 @@ fun getSendtSykmeldingKafkaMessage(
         ArbeidsgiverStatusDTO("88888888", null, "Bedriften AS"),
         null
     )
-)
-
-fun getArbeidsgiverSykmelding(
-    sykmeldingId: String,
-    perioder: List<SykmeldingsperiodeAGDTO> = listOf(
-        SykmeldingsperiodeAGDTO(
-            LocalDate.now().minusDays(2),
-            LocalDate.now().plusDays(10),
-            null,
-            null,
-            null,
-            PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-            AktivitetIkkeMuligAGDTO(null),
-            false
-        )
-    )
-) = ArbeidsgiverSykmelding(
-    id = sykmeldingId,
-    mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
-    syketilfelleStartDato = null,
-    behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
-    arbeidsgiver = ArbeidsgiverAGDTO(null, null),
-    sykmeldingsperioder = perioder,
-    prognose = null,
-    tiltakArbeidsplassen = null,
-    meldingTilArbeidsgiver = null,
-    kontaktMedPasient = KontaktMedPasientAGDTO(null),
-    behandler = BehandlerAGDTO("Fornavn", null, "Etternavn", null, AdresseDTO(null, null, null, null, null), null),
-    egenmeldt = false,
-    papirsykmelding = false,
-    harRedusertArbeidsgiverperiode = false,
-    merknader = null
 )

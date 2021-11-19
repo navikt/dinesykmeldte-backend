@@ -42,7 +42,7 @@ class MineSykmeldteDbTest : Spek({
             narmestelederDb.insertOrUpdate(nl)
             sykmeldingDb.insertOrUpdate(
                 toSykmeldingDbModel(
-                    sykmelding = getSendtSykmeldingKafkaMessage("1"), LocalDate.now()
+                    sykmelding = getSendtSykmeldingKafkaMessage("0615720a-b1a0-47e6-885c-8d927c35ef4c"), LocalDate.now()
                 ),
                 sykmeldt = getSykmeldt()
             )
@@ -87,10 +87,25 @@ class MineSykmeldteDbTest : Spek({
 
             sykmeldtDbModel.filter { it.soknad == null }.size shouldBeEqualTo 1
         }
+        it("Should get sykmelding") {
+            val nl = getNarmestelederLeesahKafkaMessage(UUID.randomUUID())
+            narmestelederDb.insertOrUpdate(nl)
+            val sykmeldingDbModel =
+                toSykmeldingDbModel(getSendtSykmeldingKafkaMessage(UUID.randomUUID().toString()), LocalDate.now())
+            sykmeldingDb.insertOrUpdate(sykmeldingDbModel, getSykmeldt())
+
+            val sykmelding =
+                minesykmeldteDb.getSykmelding(sykmeldingId = sykmeldingDbModel.sykmeldingId, nl.narmesteLederFnr)
+
+            sykmelding shouldNotBeEqualTo null
+        }
     }
 })
 
-fun getSoknad(sykmeldingId: String = UUID.randomUUID().toString(), soknadId: String = UUID.randomUUID().toString()): SoknadDbModel {
+fun getSoknad(
+    sykmeldingId: String = UUID.randomUUID().toString(),
+    soknadId: String = UUID.randomUUID().toString()
+): SoknadDbModel {
     return getSykepengesoknadDto(soknadId, sykmeldingId).toSoknadDbModel()
 }
 
@@ -104,7 +119,7 @@ fun getSykepengesoknadDto(
     fom = LocalDate.now().minusMonths(1),
     tom = LocalDate.now().minusWeeks(2),
     sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
-    sykmeldingId = sykmeldingId
+    sykmeldingId = sykmeldingId.toString()
 )
 
 fun getSykmeldt(): SykmeldtDbModel {

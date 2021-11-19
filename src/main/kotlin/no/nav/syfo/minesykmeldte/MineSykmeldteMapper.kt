@@ -1,7 +1,7 @@
 package no.nav.syfo.minesykmeldte
 
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
-import no.nav.syfo.minesykmeldte.db.SykmeldtDbModel
+import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.model.PreviewSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
@@ -12,9 +12,9 @@ import java.time.LocalDate
 
 class MineSykmeldteMapper private constructor() {
     companion object {
-        fun toPreviewSykmelding(sykmeldingDbModel: SykmeldtDbModel): PreviewSykmelding {
+        fun toPreviewSykmelding(sykmeldingDbModel: MinSykmeldtDbModel): PreviewSykmelding {
             return PreviewSykmelding(
-                id = sykmeldingDbModel.sykmeldingId,
+                id = sykmeldingDbModel.sykmeldingId.toString(),
                 fom = sykmeldingDbModel.sykmelding.sykmeldingsperioder.minOf { it.fom },
                 tom = sykmeldingDbModel.sykmelding.sykmeldingsperioder.maxOf { it.tom },
                 type = getTypeSykmelding(sykmeldingDbModel.sykmelding),

@@ -15,8 +15,8 @@ import no.nav.syfo.soknad.toSoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
-import no.nav.syfo.sykmelding.getArbeidsgiverSykmelding
 import no.nav.syfo.util.TestDb
+import no.nav.syfo.util.createArbeidsgiverSykmelding
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
@@ -262,7 +262,7 @@ fun getSykmeldingDbModel(sykmeldingId: String): SykmeldingDbModel {
         pasientFnr = "12345678910",
         orgnummer = "orgnummer",
         orgnavn = "Navn AS",
-        sykmelding = getArbeidsgiverSykmelding(sykmeldingId = sykmeldingId),
+        sykmelding = createArbeidsgiverSykmelding(sykmeldingId = sykmeldingId),
         lest = false,
         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
         latestTom = LocalDate.now().minusWeeks(2)

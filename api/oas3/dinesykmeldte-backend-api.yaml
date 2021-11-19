@@ -1,0 +1,302 @@
+openapi: 3.0.0
+info:
+  title: Dinesykmeldte api
+  version: 1.0
+  description: Api for dinesykmeldte
+paths:
+  /api/minesykmeldte:
+    get:
+      summary: Getting mine sykmeldte
+      operationId: getMineSykmeldte
+      responses:
+        200:
+          $ref: '#/components/responses/MineSykmeldteResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+  /api/sykmelding/{sykmeldingId}/acknowledge:
+    parameters:
+      - $ref: '#/components/parameters/sykmeldingId'
+    put:
+      summary: Update lest
+      operationId: updateLest
+      responses:
+        200:
+          description: Ok
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+  /api/sykmelding/{sykmeldingId}:
+    parameters:
+      - $ref: '#/components/parameters/sykmeldingId'
+    get:
+      summary: Getting sykmelding by sykmeldingId
+      operationId: getSykmelding
+      responses:
+        200:
+          $ref: '#/components/responses/SykmeldingResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+
+
+components:
+  parameters:
+    sykmeldingId:
+      in: path
+      name: sykmeldingId
+      description: SykmeldingId til sykmelding
+  responses:
+    MineSykmeldteResponse:
+      description: List of sykmeldte
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MineSykmeldteList'
+    SykmeldingResponse:
+      description: Sykmelding
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Sykmelding'
+  schemas:
+    Periode:
+      type: object
+      required:
+        - fom
+        - tom
+      properties:
+        fom:
+          type: string
+          format: date
+        tom:
+          type: string
+          format: date
+        type:
+          type: string
+          enum:
+            - GRADERT
+            - AVVENTENDE
+            - REISETILSKUDD
+            - BEHANDLINGSDAGER
+            - AKTIVITET_IKKE_MULIG
+    Gradert:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Periode'
+      properties:
+        type:
+          type: string
+          enum:
+            - GRADERT
+        grad:
+          type: number
+          maximum: 100
+          minimum: 0
+        reisetilskudd:
+          type: boolean
+    AktivitetIkkeMulig:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Periode'
+      properties:
+        tilrettelegging:
+          type: string
+        type:
+          type: string
+          enum:
+            - AKTIVITET_IKKE_MULIG
+    Behandlingsdager:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Periode'
+      properties:
+        type:
+          type: string
+          enum:
+            - BEHANDLINGSDAGER
+        antallDager:
+          type: number
+          minimum: 1
+          maximum: 1
+    Reisetilskudd:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Periode'
+      properties:
+        type:
+          type: string
+          enum:
+            - REISETILSKUDD
+    Avventende:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Periode'
+      properties:
+        type:
+          type: string
+          enum:
+            - AKTIVITET_IKKE_MULIG
+        tilrettelegging:
+          type: string
+    MineSykmeldteList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Sykmeldt'
+    Sykmelding:
+      type: object
+      required:
+        - sykmeldingId
+        - lest
+        - startdatoSykefravar
+        - arbeidsgiver
+        - perioder
+        - arbeidsforEtterPeriode
+      properties:
+        startdatoSykefravar:
+          type: string
+          format: date
+        navn:
+          type: string
+        fnr:
+          $ref: '#/components/schemas/Fnr'
+        arbeidsgiver:
+          type: object
+          properties:
+            navn:
+              type: string
+            orgnummer:
+              type: string
+            yrke:
+              type: string
+        perioder:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Gradert'
+              - $ref: '#/components/schemas/AktivitetIkkeMulig'
+              - $ref: '#/components/schemas/Behandlingsdager'
+              - $ref: '#/components/schemas/Reisetilskudd'
+              - $ref: '#/components/schemas/Avventende'
+        arbeidsforEtterPeriode:
+          type: boolean
+        hensynArbeidsplassen:
+          type: string
+        tiltakArbeidsplassen:
+          type: string
+        innspillArbeidsplassen:
+          type: string
+        kontaktDato:
+          type: string
+          format: date
+        behandler:
+          type: object
+          properties:
+            navn:
+              type: string
+            hprNummer:
+              type: string
+            telefon:
+              type: string
+            adresse:
+              type: string
+        sykmeldingId:
+          type: string
+          format: uuid
+        lest:
+          type: boolean
+    Sykmeldt:
+      type: object
+      properties:
+        fnr:
+          $ref: '#/components/schemas/Fnr'
+        narmestelederId:
+          type: string
+          format: uuid
+        orgnummer:
+          type: string
+        navn:
+          type: string
+        startdatoSykefravar:
+          type: string
+          format: date
+        friskmeldt:
+          type: boolean
+        previewSykmeldinger:
+          type: array
+          items:
+            $ref: '#/components/schemas/PreviewSykmelding'
+        previewSoknader:
+          type: array
+          items:
+            $ref: '#/components/schemas/PreviewSoknader'
+    PreviewSykmelding:
+      type: object
+      required:
+        - id
+        - fom
+        - tom
+        - type
+        - lest
+      properties:
+        id:
+          type: string
+          format: uuid
+        fom:
+          type: string
+          format: date
+        tom:
+          type: string
+          format: date
+        type:
+          type: string
+          example: '100%'
+        lest:
+          type: boolean
+    PreviewSoknader:
+      required:
+        - id
+        - status
+        - lest
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fom:
+          type: string
+          format: date
+        tom:
+          type: string
+          format: date
+        lest:
+          type: boolean
+        sykmeldingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+        sendtDato:
+          type: string
+          format: date
+    Fnr:
+      type: string
+      minLength: 11
+      maxLength: 11
+      example: '01010112345'
+

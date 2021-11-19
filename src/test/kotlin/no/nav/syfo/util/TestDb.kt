@@ -21,10 +21,10 @@ import java.time.ZoneOffset
 
 class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
 
-class TestDb {
+class TestDb private constructor() {
     companion object {
         val database: DatabaseInterface
-        val psqlContainer = PsqlContainer()
+        private val psqlContainer: PsqlContainer = PsqlContainer()
             .withExposedPorts(5432)
             .withUsername("username")
             .withPassword("password")
@@ -121,7 +121,7 @@ class TestDb {
                 sykmelding = objectMapper.readValue(getString("sykmelding"), ArbeidsgiverSykmelding::class.java),
                 lest = getBoolean("lest"),
                 timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
-                latestTom = getObject("latest_tom", LocalDate::class.java)
+                latestTom = getObject("latest_tom", LocalDate::class.java),
             )
 
         fun getSoknad(soknadId: String): SoknadDbModel? {

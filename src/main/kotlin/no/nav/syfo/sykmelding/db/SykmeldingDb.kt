@@ -5,7 +5,6 @@ import java.sql.Connection
 import java.sql.Timestamp
 
 class SykmeldingDb(private val database: DatabaseInterface) {
-
     fun insertOrUpdate(sykmeldingDbModel: SykmeldingDbModel, sykmeldt: SykmeldtDbModel) {
         database.connection.use { connection ->
             connection.insertOrUpdateSykmeldt(sykmeldt)
@@ -31,7 +30,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                         latest_tom = ?;
             """
             ).use { preparedStatement ->
-                preparedStatement.setString(1, sykmeldingDbModel.sykmeldingId)
+                preparedStatement.setString(1, sykmeldingDbModel.sykmeldingId.toString())
                 // insert
                 preparedStatement.setString(2, sykmeldingDbModel.pasientFnr)
                 preparedStatement.setString(3, sykmeldingDbModel.orgnummer)

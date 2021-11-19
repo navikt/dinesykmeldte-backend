@@ -19,7 +19,7 @@ class SykmeldingMapper private constructor() {
             sykmelding = sykmelding.sykmelding,
             lest = false, // fra strangler
             timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-            latestTom = sisteTom
+            latestTom = sisteTom,
         )
     }
 }

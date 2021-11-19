@@ -4,7 +4,7 @@ import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import java.time.LocalDate
 
-data class SykmeldtDbModel(
+data class MinSykmeldtDbModel(
     val narmestelederId: String,
     val sykmeldtFnr: String,
     val orgnummer: String,
