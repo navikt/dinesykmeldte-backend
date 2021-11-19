@@ -168,21 +168,10 @@ object MineSykmeldteApiKtTest : Spek({
         }
 
         describe("Min sykmeldt api") {
-            it("should respond with bad request if missing sykmeldingId is missing") {
-                with(
-                    handleRequest(HttpMethod.Get, "/api/sykmelding/not-a-uuid") {
-                        addAuthorizationHeader()
-                    }
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                    response.content shouldBeEqualTo """{ "message": "Sykmelding ID is not a valid UUID" }""".minifyApiResponse()
-                }
-            }
-
             it("should respond with 404 Not Found if not found in the database ") {
                 every {
                     mineSykmeldteService.getSykmelding(
-                        UUID.fromString("7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657"),
+                        "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
                         any()
                     )
                 } returns null
@@ -200,11 +189,11 @@ object MineSykmeldteApiKtTest : Spek({
             it("should respond with 404 Not Found if not found in the database ") {
                 every {
                     mineSykmeldteService.getSykmelding(
-                        UUID.fromString("7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657"),
+                        "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
                         any()
                     )
                 } returns createSykmeldingTestData(
-                    sykmeldingId = UUID.fromString("63929834-c7e5-4ce5-8742-ee2ff795bfcb"),
+                    sykmeldingId = "63929834-c7e5-4ce5-8742-ee2ff795bfcb",
                     startdatoSykefravar = LocalDate.parse("2021-01-01"),
                     kontaktDato = LocalDate.parse("2021-01-01"),
                 )
@@ -247,7 +236,7 @@ object MineSykmeldteApiKtTest : Spek({
 })
 
 fun createSykmeldingTestData(
-    sykmeldingId: UUID = UUID.randomUUID(),
+    sykmeldingId: String = UUID.randomUUID().toString(),
     startdatoSykefravar: LocalDate = LocalDate.now(),
     kontaktDato: LocalDate = LocalDate.now(),
     navn: String = "navn",

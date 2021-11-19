@@ -7,7 +7,6 @@ import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import java.sql.ResultSet
 import java.time.ZoneOffset
-import java.util.UUID
 
 class MineSykmeldteDb(private val database: DatabaseInterface) {
     fun getMineSykmeldte(lederFnr: String): List<MinSykmeldtDbModel> {
@@ -39,18 +38,18 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
         }
     }
 
-    fun getSykmelding(sykmeldingId: UUID, lederFnr: String): Pair<SykmeldtDbModel, SykmeldingDbModel>? {
+    fun getSykmelding(sykmeldingId: String, lederFnr: String): Pair<SykmeldtDbModel, SykmeldingDbModel>? {
         return database.connection.use { connection ->
             connection.prepareStatement(
                 """
-                select s.sykmelding_id, s.pasient_fnr, s.orgnummer, s.orgnavn, s.sykmelding, s.lest, s.timestamp, s.latest_tom, sm.pasient_navn, sm.startdato_sykefravaer, sm.latest_tom
-                  from sykmelding as s
-                    iNnEr JoIn narmesteleder ON narmesteleder.pasient_fnr = s.pasient_fnr
-                    iNnEr JoIn sykmeldt sm on narmesteleder.pasient_fnr = sm.pasient_fnr
-                where s.sykmelding_id = ? AND narmesteleder.leder_fnr = ?
+                SELECT s.sykmelding_id, s.pasient_fnr, s.orgnummer, s.orgnavn, s.sykmelding, s.lest, s.timestamp, s.latest_tom, sm.pasient_navn, sm.startdato_sykefravaer, sm.latest_tom
+                  FROM sykmelding AS s
+                    INNER JOIN narmesteleder ON narmesteleder.pasient_fnr = s.pasient_fnr
+                    INNER JOIN sykmeldt sm ON narmesteleder.pasient_fnr = sm.pasient_fnr
+                WHERE s.sykmelding_id = ? AND narmesteleder.leder_fnr = ?
             """
             ).use { ps ->
-                ps.setString(1, sykmeldingId.toString())
+                ps.setString(1, sykmeldingId)
                 ps.setString(2, lederFnr)
                 ps.executeQuery().toSykmeldtSykmelding()
             }
@@ -64,7 +63,7 @@ private fun ResultSet.toMinSykmeldtDbModel(): MinSykmeldtDbModel = MinSykmeldtDb
     orgnummer = getString("orgnummer"),
     sykmeldtNavn = getString("pasient_navn"),
     startDatoSykefravar = getDate("startdato_sykefravaer").toLocalDate(),
-    sykmeldingId = UUID.fromString(getString("sykmelding_id")),
+    sykmeldingId = getString("sykmelding_id"),
     orgNavn = getString("orgnavn"),
     sykmelding = objectMapper.readValue(getString("sykmelding")),
     lestSykmelding = getBoolean("sykmelding_lest"),
@@ -80,7 +79,7 @@ private fun ResultSet.toSykmeldtSykmelding(): Pair<SykmeldtDbModel, SykmeldingDb
             startdatoSykefravaer = getDate("startdato_sykefravaer").toLocalDate(),
             latestTom = getDate("latest_tom").toLocalDate(),
         ) to SykmeldingDbModel(
-            sykmeldingId = UUID.fromString(getString("sykmelding_id")),
+            sykmeldingId = getString("sykmelding_id"),
             pasientFnr = getString("pasient_fnr"),
             orgnummer = getString("orgnummer"),
             orgnavn = getString("orgnavn"),

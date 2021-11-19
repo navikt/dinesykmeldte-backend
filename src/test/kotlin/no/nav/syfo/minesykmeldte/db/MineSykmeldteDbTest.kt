@@ -94,20 +94,24 @@ class MineSykmeldteDbTest : Spek({
                 toSykmeldingDbModel(getSendtSykmeldingKafkaMessage(UUID.randomUUID().toString()), LocalDate.now())
             sykmeldingDb.insertOrUpdate(sykmeldingDbModel, getSykmeldt())
 
-            val sykmelding = minesykmeldteDb.getSykmelding(sykmeldingId = sykmeldingDbModel.sykmeldingId, nl.narmesteLederFnr)
+            val sykmelding =
+                minesykmeldteDb.getSykmelding(sykmeldingId = sykmeldingDbModel.sykmeldingId, nl.narmesteLederFnr)
 
             sykmelding shouldNotBeEqualTo null
         }
     }
 })
 
-fun getSoknad(sykmeldingId: UUID = UUID.randomUUID(), soknadId: String = UUID.randomUUID().toString()): SoknadDbModel {
+fun getSoknad(
+    sykmeldingId: String = UUID.randomUUID().toString(),
+    soknadId: String = UUID.randomUUID().toString()
+): SoknadDbModel {
     return getSykepengesoknadDto(soknadId, sykmeldingId).toSoknadDbModel()
 }
 
 fun getSykepengesoknadDto(
     soknadId: String,
-    sykmeldingId: UUID
+    sykmeldingId: String
 ) = objectMapper.readValue<SykepengesoknadDTO>(
     getFileAsString("src/test/resources/soknad.json")
 ).copy(

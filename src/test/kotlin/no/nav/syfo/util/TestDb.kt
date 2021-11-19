@@ -18,7 +18,6 @@ import org.testcontainers.containers.PostgreSQLContainer
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.util.UUID
 
 class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
 
@@ -115,7 +114,7 @@ class TestDb private constructor() {
 
         private fun ResultSet.toSykmeldingDbModel(): SykmeldingDbModel =
             SykmeldingDbModel(
-                sykmeldingId = UUID.fromString(getString("sykmelding_id")),
+                sykmeldingId = getString("sykmelding_id"),
                 pasientFnr = getString("pasient_fnr"),
                 orgnummer = getString("orgnummer"),
                 orgnavn = getString("orgnavn"),

@@ -25,7 +25,6 @@ import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import java.util.UUID
 
 class MineSykmeldteService(
     private val mineSykmeldteDb: MineSykmeldteDb,
@@ -46,7 +45,7 @@ class MineSykmeldteService(
             )
         }
 
-    fun getSykmelding(sykmeldingId: UUID, lederFnr: String): Sykmelding? {
+    fun getSykmelding(sykmeldingId: String, lederFnr: String): Sykmelding? {
         return mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr)?.toSykmelding()
     }
 }

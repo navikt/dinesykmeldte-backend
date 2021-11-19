@@ -258,7 +258,7 @@ class HendelserServiceTest : Spek({
 
 fun getSykmeldingDbModel(sykmeldingId: String): SykmeldingDbModel {
     return SykmeldingDbModel(
-        sykmeldingId = UUID.fromString(sykmeldingId),
+        sykmeldingId = sykmeldingId,
         pasientFnr = "12345678910",
         orgnummer = "orgnummer",
         orgnavn = "Navn AS",

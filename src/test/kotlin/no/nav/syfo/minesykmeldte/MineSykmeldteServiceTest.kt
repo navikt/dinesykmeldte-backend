@@ -479,7 +479,7 @@ class MineSykmeldteServiceTest : Spek({
 
     describe("getSykmelding") {
         it("should map to aktivitetIkkeMulig") {
-            val sykmeldingId = UUID.fromString("c4df78c6-880a-4a47-bc4f-9df63584c009")
+            val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
             every {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
             } returns (
@@ -513,7 +513,7 @@ class MineSykmeldteServiceTest : Spek({
         }
 
         it("should map to avventende") {
-            val sykmeldingId = UUID.fromString("c4df78c6-880a-4a47-bc4f-9df63584c009")
+            val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
             every {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
             } returns (
@@ -541,7 +541,7 @@ class MineSykmeldteServiceTest : Spek({
         }
 
         it("should map to behandlingsdager") {
-            val sykmeldingId = UUID.fromString("c4df78c6-880a-4a47-bc4f-9df63584c009")
+            val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
             every {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
             } returns (
@@ -568,7 +568,7 @@ class MineSykmeldteServiceTest : Spek({
         }
 
         it("should map to gradert") {
-            val sykmeldingId = UUID.fromString("c4df78c6-880a-4a47-bc4f-9df63584c009")
+            val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
             every {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
             } returns (
@@ -599,7 +599,7 @@ class MineSykmeldteServiceTest : Spek({
         }
 
         it("should map to reisetilskudd") {
-            val sykmeldingId = UUID.fromString("c4df78c6-880a-4a47-bc4f-9df63584c009")
+            val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
             every {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
             } returns (
@@ -628,7 +628,7 @@ class MineSykmeldteServiceTest : Spek({
 })
 
 private fun createSykmeldingDbModel(
-    sykmeldingId: UUID = UUID.fromString("c4df78c6-880a-4a47-bc4f-9df63584c009"),
+    sykmeldingId: String = "c4df78c6-880a-4a47-bc4f-9df63584c009",
     pasientFnr: String = "08088012345",
     orgnummer: String = "90909012345",
     orgnavn: String = "Baker Frank",
@@ -683,12 +683,12 @@ fun getSykmeldtData(
                 orgnummer = orgnummer,
                 sykmeldtNavn = sykmeldtNavn,
                 startDatoSykefravar = startDatoSykefravar,
-                sykmeldingId = UUID.fromString(arbeigsgiverSykmelding.id),
+                sykmeldingId = arbeigsgiverSykmelding.id,
                 orgNavn = orgnavn,
                 sykmelding = arbeigsgiverSykmelding,
                 soknad = if (soknader != 0 && index < soknader) getSykepengesoknadDto(
-                    UUID.randomUUID().toString(),
-                    UUID.fromString(arbeigsgiverSykmelding.id),
+                    soknadId = UUID.randomUUID().toString(),
+                    sykmeldingId = arbeigsgiverSykmelding.id
                 ) else null,
                 lestSoknad = false,
                 lestSykmelding = false,

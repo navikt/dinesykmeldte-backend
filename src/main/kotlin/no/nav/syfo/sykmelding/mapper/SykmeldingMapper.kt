@@ -5,7 +5,6 @@ import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.util.UUID
 
 class SykmeldingMapper private constructor() {
     companion object {
@@ -13,7 +12,7 @@ class SykmeldingMapper private constructor() {
             sykmelding: SendtSykmeldingKafkaMessage,
             sisteTom: LocalDate
         ) = SykmeldingDbModel(
-            sykmeldingId = UUID.fromString(sykmelding.kafkaMetadata.sykmeldingId),
+            sykmeldingId = sykmelding.kafkaMetadata.sykmeldingId,
             pasientFnr = sykmelding.kafkaMetadata.fnr,
             orgnummer = sykmelding.event.arbeidsgiver!!.orgnummer,
             orgnavn = sykmelding.event.arbeidsgiver!!.orgNavn,

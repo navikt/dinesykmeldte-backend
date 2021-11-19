@@ -9,7 +9,6 @@ import io.ktor.routing.get
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.HttpErrorMessage
-import java.util.UUID
 
 fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
     get("api/minesykmeldte") {
@@ -23,25 +22,11 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         val lederFnr = principal.fnr
         val sykmeldingId =
             call.parameters["sykmeldingId"] ?: throw IllegalStateException("Router can't let this happen")
-        when {
-            sykmeldingId.isInvalidUuid() -> call.respond(
-                HttpStatusCode.BadRequest,
-                HttpErrorMessage("Sykmelding ID is not a valid UUID")
-            )
-            else -> {
-                val sykmelding = mineSykmeldteService.getSykmelding(UUID.fromString(sykmeldingId), lederFnr)
-                if (sykmelding != null) call.respond(sykmelding) else call.respond(
-                    HttpStatusCode.NotFound,
-                    HttpErrorMessage("Sykmeldingen finnes ikke")
-                )
-            }
-        }
-    }
-}
 
-private fun String.isInvalidUuid(): Boolean = try {
-    UUID.fromString(this)
-    false
-} catch (e: Throwable) {
-    true
+        val sykmelding = mineSykmeldteService.getSykmelding(sykmeldingId, lederFnr)
+        if (sykmelding != null) call.respond(sykmelding) else call.respond(
+            HttpStatusCode.NotFound,
+            HttpErrorMessage("Sykmeldingen finnes ikke")
+        )
+    }
 }

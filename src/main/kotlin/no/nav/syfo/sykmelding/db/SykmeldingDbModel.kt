@@ -5,10 +5,9 @@ import no.nav.syfo.objectMapper
 import org.postgresql.util.PGobject
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.UUID
 
 data class SykmeldingDbModel(
-    val sykmeldingId: UUID,
+    val sykmeldingId: String,
     val pasientFnr: String,
     val orgnummer: String,
     val orgnavn: String?,

@@ -1,10 +1,9 @@
 package no.nav.syfo.minesykmeldte.model
 
 import java.time.LocalDate
-import java.util.UUID
 
 data class Sykmelding(
-    val sykmeldingId: UUID,
+    val sykmeldingId: String,
     val startdatoSykefravar: LocalDate,
     val kontaktDato: LocalDate?,
     val navn: String,
