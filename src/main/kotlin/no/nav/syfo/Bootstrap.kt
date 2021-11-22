@@ -22,6 +22,9 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.azuread.AccessTokenClient
+import no.nav.syfo.common.CommonKafkaService
+import no.nav.syfo.common.delete.DeleteDataDb
+import no.nav.syfo.common.delete.DeleteDataService
 import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.kafka.aiven.KafkaUtils
@@ -44,6 +47,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URL
 import java.util.concurrent.TimeUnit
+import kotlin.time.ExperimentalTime
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.dinesykmeldte-backend")
 
@@ -54,6 +58,7 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
     configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 }
 
+@ExperimentalTime
 @DelicateCoroutinesApi
 fun main() {
     val env = Environment()
@@ -130,6 +135,8 @@ fun main() {
     applicationState.ready = true
 
     commonKafkaService.startConsumer()
+
+    DeleteDataService(DeleteDataDb(database), applicationState).start()
 }
 
 fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) =

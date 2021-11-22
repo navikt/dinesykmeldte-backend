@@ -1,6 +1,9 @@
 package no.nav.syfo.minesykmeldte.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.syfo.common.delete.DeleteDataDb
+import no.nav.syfo.hendelser.db.HendelseDbModel
+import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.getNarmestelederLeesahKafkaMessage
@@ -20,6 +23,7 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 class MineSykmeldteDbTest : Spek({
@@ -27,9 +31,79 @@ class MineSykmeldteDbTest : Spek({
     val minesykmeldteDb = MineSykmeldteDb(TestDb.database)
     val sykmeldingDb = SykmeldingDb(TestDb.database)
     val soknadDb = SoknadDb(TestDb.database)
+    val hendelse = HendelserDb(TestDb.database)
+    val deleteDataDb = DeleteDataDb(TestDb.database)
 
     afterEachTest {
         TestDb.clearAllData()
+    }
+
+    describe("Delete data from db") {
+        it("Should not delete anything") {
+            val nl = getNarmestelederLeesahKafkaMessage(UUID.randomUUID())
+            narmestelederDb.insertOrUpdate(nl)
+            sykmeldingDb.insertOrUpdate(
+                toSykmeldingDbModel(
+                    sykmelding = getSendtSykmeldingKafkaMessage("1"), LocalDate.now().minusMonths(4)
+                ),
+                sykmeldt = getSykmeldt()
+            )
+            soknadDb.insert(getSoknad(sykmeldingId = "1").copy(tom = LocalDate.now().minusMonths(4)))
+            hendelse.insertHendelse(
+                HendelseDbModel(
+                    id = "2",
+                    pasientFnr = "123",
+                    orgnummer = "123",
+                    oppgavetype = "LES_SYKMELDING",
+                    lenke = null,
+                    tekst = null,
+                    timestamp = OffsetDateTime.now(),
+                    utlopstidspunkt = OffsetDateTime.now().plusDays(1),
+                    ferdigstilt = false,
+                    ferdigstiltTimestamp = null
+                )
+            )
+
+            val result = deleteDataDb.deleteOldData(LocalDate.now().minusMonths(4))
+
+            result.deletedSykmelding shouldBeEqualTo 0
+            result.deletedSykmeldt shouldBeEqualTo 0
+            result.deletedHendelser shouldBeEqualTo 0
+            result.deletedSoknader shouldBeEqualTo 0
+        }
+        it("Should delete") {
+            val nl = getNarmestelederLeesahKafkaMessage(UUID.randomUUID())
+            narmestelederDb.insertOrUpdate(nl)
+            val latestTom = LocalDate.now().minusMonths(4).minusDays(1)
+            sykmeldingDb.insertOrUpdate(
+                toSykmeldingDbModel(
+                    sykmelding = getSendtSykmeldingKafkaMessage("1"), latestTom
+                ),
+                sykmeldt = getSykmeldt(latestTom)
+            )
+            soknadDb.insert(getSoknad(sykmeldingId = "1").copy(tom = latestTom))
+            hendelse.insertHendelse(
+                HendelseDbModel(
+                    id = "2",
+                    pasientFnr = "123",
+                    orgnummer = "123",
+                    oppgavetype = "LES_SYKMELDING",
+                    lenke = null,
+                    tekst = null,
+                    timestamp = OffsetDateTime.now(),
+                    utlopstidspunkt = OffsetDateTime.now().minusDays(1),
+                    ferdigstilt = false,
+                    ferdigstiltTimestamp = null
+                )
+            )
+
+            val result = deleteDataDb.deleteOldData(LocalDate.now().minusMonths(4))
+
+            result.deletedSykmeldt shouldBeEqualTo 1
+            result.deletedHendelser shouldBeEqualTo 1
+            result.deletedSoknader shouldBeEqualTo 1
+            result.deletedSykmelding shouldBeEqualTo 1
+        }
     }
 
     describe("Test getting sykmeldte from database") {
@@ -122,11 +196,11 @@ fun getSykepengesoknadDto(
     sykmeldingId = sykmeldingId
 )
 
-fun getSykmeldt(): SykmeldtDbModel {
+fun getSykmeldt(latestTom: LocalDate = LocalDate.now()): SykmeldtDbModel {
     return SykmeldtDbModel(
         "12345678910",
         "Navn",
         LocalDate.now(),
-        LocalDate.now()
+        latestTom
     )
 }
