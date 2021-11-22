@@ -36,6 +36,7 @@ class AccessTokenClient(
                             accept(ContentType.Application.Json)
                             method = HttpMethod.Post
                             body = FormDataContent(
+
                                 Parameters.build {
                                     append("client_id", clientId)
                                     append("scope", scope)

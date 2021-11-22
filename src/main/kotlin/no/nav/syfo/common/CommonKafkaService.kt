@@ -1,12 +1,14 @@
-package no.nav.syfo
+package no.nav.syfo.common
 
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import no.nav.syfo.Environment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.hendelser.HendelserService
+import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.soknad.SoknadService
 import no.nav.syfo.sykmelding.SykmeldingService
