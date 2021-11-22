@@ -45,7 +45,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 """
                 SELECT s.sykmelding_id, s.pasient_fnr, s.orgnummer, s.orgnavn, s.sykmelding, s.lest, s.timestamp, s.latest_tom, sm.pasient_navn, sm.startdato_sykefravaer, sm.latest_tom
                   FROM sykmelding AS s
-                    INNER JOIN narmesteleder ON narmesteleder.pasient_fnr = s.pasient_fnr
+                    INNER JOIN narmesteleder ON narmesteleder.pasient_fnr = s.pasient_fnr and narmesteleder.orgnummer = s.orgnummer
                     INNER JOIN sykmeldt sm ON narmesteleder.pasient_fnr = sm.pasient_fnr
                 WHERE s.sykmelding_id = ? AND narmesteleder.leder_fnr = ?
             """
@@ -74,7 +74,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                    sm.startdato_sykefravaer,
                    sm.latest_tom
             FROM soknad AS s
-                     INNER JOIN narmesteleder n ON s.pasient_fnr = n.pasient_fnr
+                     INNER JOIN narmesteleder n ON s.pasient_fnr = n.pasient_fnr and n.orgnummer = s.orgnummer
                      INNER JOIN sykmeldt sm ON n.pasient_fnr = sm.pasient_fnr
             WHERE s.soknad_id = ?
               AND n.leder_fnr = ?
