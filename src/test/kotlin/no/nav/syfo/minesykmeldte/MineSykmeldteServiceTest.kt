@@ -3,6 +3,9 @@ package no.nav.syfo.minesykmeldte
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.syfo.kafka.felles.SoknadsstatusDTO
+import no.nav.syfo.kafka.felles.SoknadstypeDTO
+import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.getSykepengesoknadDto
@@ -20,6 +23,7 @@ import no.nav.syfo.model.sykmelding.model.ArbeidsrelatertArsakDTO
 import no.nav.syfo.model.sykmelding.model.ArbeidsrelatertArsakTypeDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.createArbeidsgiverSykmelding
@@ -29,6 +33,7 @@ import org.amshove.kluent.`should not be null`
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldHaveSize
+import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
@@ -625,14 +630,63 @@ class MineSykmeldteServiceTest : Spek({
             periode.type shouldBeEqualTo PeriodeEnum.REISETILSKUDD
         }
     }
+
+    describe("getSoknad") {
+        it("should map to Soknad") {
+            val soknadId = "e94a7c0f-3240-4a0c-8788-c4cc3ebcdac2"
+            every {
+                mineSykmeldteDb.getSoknad(soknadId, "red-2")
+            } returns (
+                createSykmeldtDbModel() to createSoknadDbModel(
+                    soknadId = soknadId.toString(),
+                    sykmeldingId = "31c5b5ca-1248-4280-bc2e-3c6b11c365b9",
+                    tom = LocalDate.parse("2021-04-04"),
+                    sendtDato = LocalDate.parse("2021-04-04"),
+                    timestamp = OffsetDateTime.parse("2021-11-18T14:06:12Z"),
+                )
+                )
+
+            val result = minesykmeldtService.getSoknad(soknadId, "red-2")
+
+            result.shouldNotBeNull()
+            result.soknadId shouldBeEqualTo soknadId
+            result.details.type shouldBeEqualTo SoknadstypeDTO.ARBEIDSLEDIG
+            result.details.status shouldBeEqualTo SoknadsstatusDTO.NY
+        }
+    }
 })
+
+private fun createSoknadDbModel(
+    soknadId: String = "0007c3f0-c401-4124-a7f1-a2faf5fd0ac8",
+    sykmeldingId: String = "31c5b5ca-1248-4280-bc2e-3c6b11c365b9",
+    pasientFnr: String = "09099012345",
+    orgnummer: String = "0102983875",
+    soknad: SykepengesoknadDTO = mockk<SykepengesoknadDTO>().also {
+        every { it.type } returns SoknadstypeDTO.ARBEIDSLEDIG
+        every { it.status } returns SoknadsstatusDTO.NY
+    },
+    sendtDato: LocalDate = LocalDate.now(),
+    tom: LocalDate = LocalDate.now(),
+    lest: Boolean = false,
+    timestamp: OffsetDateTime = OffsetDateTime.now(),
+): SoknadDbModel = SoknadDbModel(
+    soknadId = soknadId,
+    sykmeldingId = sykmeldingId,
+    pasientFnr = pasientFnr,
+    orgnummer = orgnummer,
+    soknad = soknad,
+    sendtDato = sendtDato,
+    tom = tom,
+    lest = lest,
+    timestamp = timestamp,
+)
 
 private fun createSykmeldingDbModel(
     sykmeldingId: String = "c4df78c6-880a-4a47-bc4f-9df63584c009",
     pasientFnr: String = "08088012345",
     orgnummer: String = "90909012345",
     orgnavn: String = "Baker Frank",
-    sykmelding: ArbeidsgiverSykmelding = createArbeidsgiverSykmelding(sykmeldingId.toString()),
+    sykmelding: ArbeidsgiverSykmelding = createArbeidsgiverSykmelding(sykmeldingId),
     lest: Boolean = false,
     timestamp: OffsetDateTime = OffsetDateTime.now(),
     latestTom: LocalDate = LocalDate.now(),

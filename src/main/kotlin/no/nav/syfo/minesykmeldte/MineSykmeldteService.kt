@@ -16,10 +16,13 @@ import no.nav.syfo.minesykmeldte.model.MinSykmeldtKey
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
 import no.nav.syfo.minesykmeldte.model.Reisetilskudd
+import no.nav.syfo.minesykmeldte.model.Soknad
+import no.nav.syfo.minesykmeldte.model.SoknadDetails
 import no.nav.syfo.minesykmeldte.model.Sykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.BehandlerAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
@@ -48,6 +51,10 @@ class MineSykmeldteService(
     fun getSykmelding(sykmeldingId: String, lederFnr: String): Sykmelding? {
         return mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr)?.toSykmelding()
     }
+
+    fun getSoknad(soknadId: String, lederFnr: String): Soknad? {
+        return mineSykmeldteDb.getSoknad(soknadId, lederFnr)?.toSoknad()
+    }
 }
 
 private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>): Boolean {
@@ -68,6 +75,32 @@ private fun MinSykmeldtDbModel.toMinSykmeldtKey(): MinSykmeldtKey = MinSykmeldtK
     fnr = this.sykmeldtFnr,
     startDatoSykefravaer = this.startDatoSykefravar,
 )
+
+private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
+    val (sykmeldt, soknad) = this
+    val details = soknad.soknad
+
+    val sykmeldingId = soknad.sykmeldingId
+
+    requireNotNull(sykmeldingId) {
+        "Søknad kan ikke eksistere uten sykmelding"
+    }
+
+    return Soknad(
+        soknadId = soknad.soknadId,
+        sykmeldingId = sykmeldingId,
+        navn = sykmeldt.pasientNavn,
+        fnr = sykmeldt.pasientFnr,
+        lest = soknad.lest,
+        orgnummer = soknad.orgnummer,
+        sendtDato = soknad.sendtDato,
+        tom = soknad.tom,
+        details = SoknadDetails(
+            type = details.type,
+            status = details.status,
+        ),
+    )
+}
 
 private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding {
     val (sykmeldt, sykmelding) = this
