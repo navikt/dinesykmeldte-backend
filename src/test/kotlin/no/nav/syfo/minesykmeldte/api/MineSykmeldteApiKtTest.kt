@@ -197,7 +197,7 @@ object MineSykmeldteApiKtTest : Spek({
                         any()
                     )
                 } returns createSykmeldingTestData(
-                    sykmeldingId = "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
+                    id = "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
                     startdatoSykefravar = LocalDate.parse("2021-01-01"),
                     kontaktDato = LocalDate.parse("2021-01-01"),
                 )
@@ -209,7 +209,7 @@ object MineSykmeldteApiKtTest : Spek({
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     response.content shouldBeEqualTo """
                         {
-                          "sykmeldingId": "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
+                          "id": "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
                           "startdatoSykefravar": "2021-01-01",
                           "kontaktDato": "2021-01-01",
                           "navn": "navn",
@@ -263,7 +263,7 @@ object MineSykmeldteApiKtTest : Spek({
                         any()
                     )
                 } returns createSoknadTestData(
-                    soknadId = "d9ca08ca-bdbf-4571-ba4f-109c3642047b",
+                    id = "d9ca08ca-bdbf-4571-ba4f-109c3642047b",
                     sykmeldingId = "772e674d-0422-4a5e-b779-a8819abf5959",
                     tom = LocalDate.parse("2021-01-01"),
                     sendtDato = LocalDate.parse("2021-01-01"),
@@ -276,7 +276,7 @@ object MineSykmeldteApiKtTest : Spek({
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     response.content shouldBeEqualTo """                      
                        {
-                         "soknadId": "d9ca08ca-bdbf-4571-ba4f-109c3642047b",
+                         "id": "d9ca08ca-bdbf-4571-ba4f-109c3642047b",
                          "sykmeldingId": "772e674d-0422-4a5e-b779-a8819abf5959",
                          "navn": "Navn N. Navnessen",
                          "fnr": "08088012345",
@@ -298,7 +298,7 @@ object MineSykmeldteApiKtTest : Spek({
 })
 
 fun createSoknadTestData(
-    soknadId: String = UUID.randomUUID().toString(),
+    id: String = UUID.randomUUID().toString(),
     sykmeldingId: String = UUID.randomUUID().toString(),
     navn: String = "Navn N. Navnessen",
     fnr: String = "08088012345",
@@ -311,7 +311,7 @@ fun createSoknadTestData(
         status = SoknadsstatusDTO.NY,
     ),
 ) = Soknad(
-    soknadId = soknadId,
+    id = id,
     sykmeldingId = sykmeldingId,
     navn = navn,
     fnr = fnr,
@@ -323,7 +323,7 @@ fun createSoknadTestData(
 )
 
 fun createSykmeldingTestData(
-    sykmeldingId: String = UUID.randomUUID().toString(),
+    id: String = UUID.randomUUID().toString(),
     startdatoSykefravar: LocalDate = LocalDate.now(),
     kontaktDato: LocalDate = LocalDate.now(),
     navn: String = "navn",
@@ -345,7 +345,7 @@ fun createSykmeldingTestData(
         telefon = "81549300",
     )
 ): Sykmelding = Sykmelding(
-    sykmeldingId = sykmeldingId,
+    id = id,
     startdatoSykefravar = startdatoSykefravar,
     kontaktDato = kontaktDato,
     navn = navn,

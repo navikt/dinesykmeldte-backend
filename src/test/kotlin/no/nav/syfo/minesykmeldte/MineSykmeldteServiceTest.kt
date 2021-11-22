@@ -491,7 +491,7 @@ class MineSykmeldteServiceTest : Spek({
                 createSykmeldtDbModel() to createSykmeldingDbModel(
                     sykmeldingId = sykmeldingId,
                     sykmelding = createArbeidsgiverSykmelding(
-                        sykmeldingId = sykmeldingId.toString(),
+                        sykmeldingId = sykmeldingId,
                         perioder = listOf(
                             createSykmeldingsperiode(
                                 type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
@@ -525,7 +525,7 @@ class MineSykmeldteServiceTest : Spek({
                 createSykmeldtDbModel() to createSykmeldingDbModel(
                     sykmeldingId = sykmeldingId,
                     sykmelding = createArbeidsgiverSykmelding(
-                        sykmeldingId = sykmeldingId.toString(),
+                        sykmeldingId = sykmeldingId,
                         perioder = listOf(
                             createSykmeldingsperiode(
                                 type = PeriodetypeDTO.AVVENTENDE,
@@ -553,7 +553,7 @@ class MineSykmeldteServiceTest : Spek({
                 createSykmeldtDbModel() to createSykmeldingDbModel(
                     sykmeldingId = sykmeldingId,
                     sykmelding = createArbeidsgiverSykmelding(
-                        sykmeldingId = sykmeldingId.toString(),
+                        sykmeldingId = sykmeldingId,
                         perioder = listOf(
                             createSykmeldingsperiode(
                                 type = PeriodetypeDTO.BEHANDLINGSDAGER,
@@ -580,7 +580,7 @@ class MineSykmeldteServiceTest : Spek({
                 createSykmeldtDbModel() to createSykmeldingDbModel(
                     sykmeldingId = sykmeldingId,
                     sykmelding = createArbeidsgiverSykmelding(
-                        sykmeldingId = sykmeldingId.toString(),
+                        sykmeldingId = sykmeldingId,
                         perioder = listOf(
                             createSykmeldingsperiode(
                                 type = PeriodetypeDTO.GRADERT,
@@ -611,7 +611,7 @@ class MineSykmeldteServiceTest : Spek({
                 createSykmeldtDbModel() to createSykmeldingDbModel(
                     sykmeldingId = sykmeldingId,
                     sykmelding = createArbeidsgiverSykmelding(
-                        sykmeldingId = sykmeldingId.toString(),
+                        sykmeldingId = sykmeldingId,
                         perioder = listOf(
                             createSykmeldingsperiode(
                                 type = PeriodetypeDTO.REISETILSKUDD,
@@ -638,7 +638,7 @@ class MineSykmeldteServiceTest : Spek({
                 mineSykmeldteDb.getSoknad(soknadId, "red-2")
             } returns (
                 createSykmeldtDbModel() to createSoknadDbModel(
-                    soknadId = soknadId.toString(),
+                    soknadId = soknadId,
                     sykmeldingId = "31c5b5ca-1248-4280-bc2e-3c6b11c365b9",
                     tom = LocalDate.parse("2021-04-04"),
                     sendtDato = LocalDate.parse("2021-04-04"),
@@ -649,7 +649,7 @@ class MineSykmeldteServiceTest : Spek({
             val result = minesykmeldtService.getSoknad(soknadId, "red-2")
 
             result.shouldNotBeNull()
-            result.soknadId shouldBeEqualTo soknadId
+            result.id shouldBeEqualTo soknadId
             result.details.type shouldBeEqualTo SoknadstypeDTO.ARBEIDSLEDIG
             result.details.status shouldBeEqualTo SoknadsstatusDTO.NY
         }
@@ -721,7 +721,7 @@ fun getSykmeldtData(
         )
     ),
     soknader: Int = 0,
-    sykmeldtFnrPrefix: String = "prefix"
+    sykmeldtFnrPrefix: String = "prefix",
 ): List<MinSykmeldtDbModel> =
     (0 until sykmeldte).flatMap {
         val sykmeldtFnr = "$sykmeldtFnrPrefix-$it"

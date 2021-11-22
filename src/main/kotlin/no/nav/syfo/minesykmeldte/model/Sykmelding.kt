@@ -3,7 +3,7 @@ package no.nav.syfo.minesykmeldte.model
 import java.time.LocalDate
 
 data class Sykmelding(
-    val sykmeldingId: String,
+    val id: String,
     val startdatoSykefravar: LocalDate,
     val kontaktDato: LocalDate?,
     val navn: String,
@@ -90,5 +90,5 @@ enum class ArbeidsrelatertArsakEnum {
 
 data class ArbeidsrelatertArsak(
     val arsak: List<ArbeidsrelatertArsakEnum>,
-    val beskrivelse: String?
+    val beskrivelse: String?,
 )

@@ -87,7 +87,7 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
     }
 
     return Soknad(
-        soknadId = soknad.soknadId,
+        id = soknad.soknadId,
         sykmeldingId = sykmeldingId,
         navn = sykmeldt.pasientNavn,
         fnr = sykmeldt.pasientFnr,
@@ -106,7 +106,7 @@ private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding 
     val (sykmeldt, sykmelding) = this
 
     return Sykmelding(
-        sykmeldingId = sykmelding.sykmeldingId,
+        id = sykmelding.sykmeldingId,
         kontaktDato = sykmelding.sykmelding.kontaktMedPasient.kontaktDato,
         fnr = sykmelding.pasientFnr,
         lest = sykmelding.lest,
