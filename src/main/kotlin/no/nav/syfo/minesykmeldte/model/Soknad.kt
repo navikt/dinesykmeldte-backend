@@ -5,7 +5,7 @@ import no.nav.syfo.kafka.felles.SoknadstypeDTO
 import java.time.LocalDate
 
 data class Soknad(
-    val soknadId: String,
+    val id: String,
     val sykmeldingId: String,
     val navn: String,
     val fnr: String,
