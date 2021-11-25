@@ -8,6 +8,7 @@ import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
+import io.ktor.client.features.HttpResponseValidator
 import io.ktor.client.features.HttpTimeout
 import io.ktor.client.features.defaultRequest
 import io.ktor.client.features.json.JacksonSerializer
@@ -21,15 +22,21 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.jackson.jackson
+import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import no.nav.syfo.common.exception.ServiceUnavailableException
 import java.net.ServerSocket
 
-data class ResponseData(val httpStatusCode: HttpStatusCode, val content: String, val headers: Headers = headersOf("Content-Type", listOf("application/json")))
+data class ResponseData(
+    val httpStatusCode: HttpStatusCode,
+    val content: String,
+    val headers: Headers = headersOf("Content-Type", listOf("application/json"))
+)
 
 class HttpClientTest {
 
@@ -70,14 +77,23 @@ class HttpClientTest {
     suspend fun respond(function: suspend () -> ResponseData?) {
         responseFunction = function
     }
+
     fun respond(data: String) {
         responseFunction = { ResponseData(HttpStatusCode.OK, data) }
     }
+
     val httpClient = HttpClient(Apache) {
         defaultRequest {
             method = HttpMethod.Get
             host = "localhost"
             port = mockHttpServerPort
+        }
+        HttpResponseValidator {
+            handleResponseException { exception ->
+                when (exception) {
+                    is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
+                }
+            }
         }
         install(JsonFeature) {
             serializer = JacksonSerializer {

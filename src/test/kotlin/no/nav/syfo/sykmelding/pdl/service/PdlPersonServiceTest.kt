@@ -5,9 +5,9 @@ import io.mockk.mockk
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.azuread.AccessTokenClient
+import no.nav.syfo.common.exception.ServiceUnavailableException
 import no.nav.syfo.sykmelding.pdl.client.PdlClient
 import no.nav.syfo.sykmelding.pdl.exceptions.NameNotFoundInPdlException
-import no.nav.syfo.sykmelding.pdl.exceptions.PdlUnavailableException
 import no.nav.syfo.sykmelding.pdl.model.formatName
 import no.nav.syfo.util.HttpClientTest
 import org.amshove.kluent.shouldBeEqualTo
@@ -38,7 +38,7 @@ class PdlPersonServiceTest : Spek({
                     delay(10_000)
                     null
                 }
-                assertFailsWith<PdlUnavailableException> {
+                assertFailsWith<ServiceUnavailableException> {
                     pdlPersonService.getPerson(fnr, sykmeldingId)
                 }
             }

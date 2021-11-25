@@ -1,12 +1,10 @@
 package no.nav.syfo.sykmelding.pdl.service
 
-import io.ktor.network.sockets.SocketTimeoutException
 import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.log
 import no.nav.syfo.sykmelding.pdl.client.PdlClient
 import no.nav.syfo.sykmelding.pdl.client.model.GetPersonResponse
 import no.nav.syfo.sykmelding.pdl.exceptions.NameNotFoundInPdlException
-import no.nav.syfo.sykmelding.pdl.exceptions.PdlUnavailableException
 import no.nav.syfo.sykmelding.pdl.model.Navn
 import no.nav.syfo.sykmelding.pdl.model.PdlPerson
 import java.lang.RuntimeException
@@ -25,9 +23,6 @@ class PdlPersonService(
         try {
             val pdlResponse = pdlClient.getPerson(fnr = fnr, token = accessToken)
             return pdlResponse.toPerson(callId)
-        } catch (e: SocketTimeoutException) {
-            log.error("SocketTimeoutExceptoin from pdl", e.message)
-            throw PdlUnavailableException("SocketTimeoutException calling PDL")
         } catch (e: Exception) {
             log.error("Feil ved henting av person fra PDL for $callId", e)
             throw e

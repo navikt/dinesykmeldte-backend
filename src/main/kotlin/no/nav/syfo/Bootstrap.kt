@@ -11,9 +11,11 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.features.HttpResponseValidator
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.get
+import io.ktor.network.sockets.SocketTimeoutException
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -25,6 +27,7 @@ import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.common.CommonKafkaService
 import no.nav.syfo.common.delete.DeleteDataDb
 import no.nav.syfo.common.delete.DeleteDataService
+import no.nav.syfo.common.exception.ServiceUnavailableException
 import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.kafka.aiven.KafkaUtils
@@ -73,6 +76,13 @@ fun main() {
                 registerModule(JavaTimeModule())
                 configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            }
+        }
+        HttpResponseValidator {
+            handleResponseException { exception ->
+                when (exception) {
+                    is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
+                }
             }
         }
     }
