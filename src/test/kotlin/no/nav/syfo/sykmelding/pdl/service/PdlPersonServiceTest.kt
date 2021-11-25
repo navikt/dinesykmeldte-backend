@@ -2,10 +2,12 @@ package no.nav.syfo.sykmelding.pdl.service
 
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.sykmelding.pdl.client.PdlClient
 import no.nav.syfo.sykmelding.pdl.exceptions.NameNotFoundInPdlException
+import no.nav.syfo.sykmelding.pdl.exceptions.PdlUnavailableException
 import no.nav.syfo.sykmelding.pdl.model.formatName
 import no.nav.syfo.util.HttpClientTest
 import org.amshove.kluent.shouldBeEqualTo
@@ -30,6 +32,17 @@ class PdlPersonServiceTest : Spek({
     }
 
     describe("PdlPersonService") {
+        it("Handle error") {
+            runBlocking {
+                httpClient.respond {
+                    delay(10_000)
+                    null
+                }
+                assertFailsWith<PdlUnavailableException> {
+                    pdlPersonService.getPerson(fnr, sykmeldingId)
+                }
+            }
+        }
         it("Henter navn og aktørid for person som finnes i PDL") {
             httpClient.respond(getTestData())
             runBlocking {

@@ -1,5 +1,6 @@
 package no.nav.syfo.common
 
+import io.ktor.network.sockets.SocketTimeoutException
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -44,8 +45,11 @@ class CommonKafkaService(
                         )
                     )
                     start()
+                } catch (ex: SocketTimeoutException) {
+                    log.error("Error running kafka consumer, ${ex.javaClass}: ${ex.message}")
                 } catch (ex: Exception) {
                     log.error("Error running kafka consumer, unsubscribing and waiting 10 seconds for retry", ex)
+                } finally {
                     kafkaConsumer.unsubscribe()
                     delay(10_000)
                 }

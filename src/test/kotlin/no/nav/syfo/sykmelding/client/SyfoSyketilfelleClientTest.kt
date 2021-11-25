@@ -8,10 +8,12 @@ import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
+import io.ktor.client.features.HttpTimeout
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.features.ContentNegotiation
 import io.ktor.jackson.jackson
+import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.response.respond
 import io.ktor.routing.get
 import io.ktor.routing.routing
@@ -19,6 +21,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.azuread.AccessTokenClient
 import org.amshove.kluent.shouldBeEqualTo
@@ -38,7 +41,7 @@ object SyfoSyketilfelleClientTest : Spek({
 
     val aktorId1 = "123456"
     val aktorId2 = "654321"
-
+    val aktorId3 = "1234567"
     val accessTokenClient = mockk<AccessTokenClient>()
     val httpClient = HttpClient(Apache) {
         install(JsonFeature) {
@@ -48,6 +51,20 @@ object SyfoSyketilfelleClientTest : Spek({
                 configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
+        }
+    }
+
+    val socketTimeoutClient = HttpClient(Apache) {
+        install(JsonFeature) {
+            serializer = JacksonSerializer {
+                registerKotlinModule()
+                registerModule(JavaTimeModule())
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            }
+        }
+        install(HttpTimeout) {
+            socketTimeoutMillis = 1L
         }
     }
 
@@ -63,6 +80,10 @@ object SyfoSyketilfelleClientTest : Spek({
             }
         }
         routing {
+            get("/syfosyketilfelle/sparenaproxy/$aktorId3/sykeforloep") {
+                delay(10_000)
+                call.respond(emptyList<Sykeforloep>())
+            }
             get("/syfosyketilfelle/sparenaproxy/$aktorId1/sykeforloep") {
                 call.respond(
                     listOf(
@@ -135,6 +156,13 @@ object SyfoSyketilfelleClientTest : Spek({
         httpClient
     )
 
+    val syfoSyketilfelletSocketTimeoutClient = SyfoSyketilfelleClient(
+        mockHttpServerUrl,
+        accessTokenClient,
+        "scope",
+        socketTimeoutClient
+    )
+
     afterGroup {
         mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))
     }
@@ -144,6 +172,14 @@ object SyfoSyketilfelleClientTest : Spek({
     }
 
     describe("Test av SyfoSyketilfelleClient - finnStartDato") {
+        it("Should get SocketTimeoutException") {
+            runBlocking {
+                assertFailsWith<SocketTimeoutException> {
+                    syfoSyketilfelletSocketTimeoutClient.finnStartdato(aktorId3, sykmeldingUUID.toString())
+                }
+            }
+        }
+
         it("Henter riktig startdato fra syfosyketilfelle") {
             runBlocking {
                 val startDato = syfoSyketilfelleClient.finnStartdato(aktorId1, sykmeldingUUID.toString())
