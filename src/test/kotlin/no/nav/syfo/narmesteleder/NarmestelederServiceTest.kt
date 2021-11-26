@@ -21,7 +21,7 @@ class NarmestelederServiceTest : Spek({
     describe("NarmestelederService") {
         it("Legger inn ny NL-kobling") {
             val id = UUID.randomUUID()
-            narmestelederService.updateNl(getNarmestelederLeesahKafkaMessage(id))
+            narmestelederService.updateNl(createNarmestelederLeesahKafkaMessage(id))
 
             val nlKobling = TestDb.getNarmesteleder(pasientFnr = "12345678910").first()
 
@@ -32,21 +32,27 @@ class NarmestelederServiceTest : Spek({
         }
         it("Sletter deaktivert NL-kobling") {
             val id = UUID.randomUUID()
-            narmestelederService.updateNl(getNarmestelederLeesahKafkaMessage(id))
-            narmestelederService.updateNl(getNarmestelederLeesahKafkaMessage(id, aktivTom = LocalDate.now()))
+            narmestelederService.updateNl(createNarmestelederLeesahKafkaMessage(id))
+            narmestelederService.updateNl(createNarmestelederLeesahKafkaMessage(id, aktivTom = LocalDate.now()))
 
             TestDb.getNarmesteleder(pasientFnr = "12345678910").size shouldBeEqualTo 0
         }
     }
 })
 
-fun getNarmestelederLeesahKafkaMessage(id: UUID, aktivTom: LocalDate? = null): NarmestelederLeesahKafkaMessage =
+fun createNarmestelederLeesahKafkaMessage(
+    id: UUID,
+    orgnummer: String = "88888888",
+    fnr: String = "12345678910",
+    narmesteLederFnr: String = "01987654321",
+    aktivTom: LocalDate? = null,
+): NarmestelederLeesahKafkaMessage =
     NarmestelederLeesahKafkaMessage(
         narmesteLederId = id,
-        fnr = "12345678910",
-        orgnummer = "88888888",
+        fnr = fnr,
+        orgnummer = orgnummer,
         narmesteLederEpost = "test@nav.no",
-        narmesteLederFnr = "01987654321",
+        narmesteLederFnr = narmesteLederFnr,
         narmesteLederTelefonnummer = "12345678",
         aktivFom = LocalDate.of(2020, 1, 1),
         arbeidsgiverForskutterer = null,

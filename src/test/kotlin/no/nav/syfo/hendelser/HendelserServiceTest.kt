@@ -6,6 +6,7 @@ import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.hendelser.kafka.model.DineSykmeldteHendelse
 import no.nav.syfo.hendelser.kafka.model.FerdigstillHendelse
 import no.nav.syfo.hendelser.kafka.model.OpprettHendelse
+import no.nav.syfo.kafka.felles.ArbeidsgiverDTO
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDb
@@ -107,7 +108,7 @@ class HendelserServiceTest : Spek({
         }
         it("Ferdigstilling av les sykmelding-hendelse setter sykmelding som lest") {
             val sykmeldingId = UUID.randomUUID().toString()
-            sykmeldingDb.insertOrUpdate(getSykmeldingDbModel(sykmeldingId), getSykmeldtDbModel())
+            sykmeldingDb.insertOrUpdate(createSykmeldingDbModel(sykmeldingId), createSykmeldtDbModel())
             val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
                 id = sykmeldingId,
                 opprettHendelse = null,
@@ -127,7 +128,7 @@ class HendelserServiceTest : Spek({
         }
         it("Ferdigstilling av les sykmelding-hendelse setter sykmelding som lest hvis oppgavetype mangler") {
             val sykmeldingId = UUID.randomUUID().toString()
-            sykmeldingDb.insertOrUpdate(getSykmeldingDbModel(sykmeldingId), getSykmeldtDbModel())
+            sykmeldingDb.insertOrUpdate(createSykmeldingDbModel(sykmeldingId), createSykmeldtDbModel())
             val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
                 id = sykmeldingId,
                 opprettHendelse = null,
@@ -147,7 +148,7 @@ class HendelserServiceTest : Spek({
         }
         it("Ferdigstilling av les søknad-hendelse setter søknad som lest") {
             val soknadId = UUID.randomUUID().toString()
-            soknadDb.insert(getSoknadDbModel(soknadId))
+            soknadDb.insert(createSoknadDbModel(soknadId))
             val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
                 id = soknadId,
                 opprettHendelse = null,
@@ -167,7 +168,7 @@ class HendelserServiceTest : Spek({
         }
         it("Ferdigstilling av les søknad-hendelse setter søknad som lest hvis oppgavetype mangler") {
             val soknadId = UUID.randomUUID().toString()
-            soknadDb.insert(getSoknadDbModel(soknadId))
+            soknadDb.insert(createSoknadDbModel(soknadId))
             val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
                 id = soknadId,
                 opprettHendelse = null,
@@ -256,11 +257,15 @@ class HendelserServiceTest : Spek({
     }
 })
 
-fun getSykmeldingDbModel(sykmeldingId: String): SykmeldingDbModel {
+fun createSykmeldingDbModel(
+    sykmeldingId: String,
+    pasientFnr: String = "12345678910",
+    orgnummer: String = "orgnummer",
+): SykmeldingDbModel {
     return SykmeldingDbModel(
         sykmeldingId = sykmeldingId,
-        pasientFnr = "12345678910",
-        orgnummer = "orgnummer",
+        pasientFnr = pasientFnr,
+        orgnummer = orgnummer,
         orgnavn = "Navn AS",
         sykmelding = createArbeidsgiverSykmelding(sykmeldingId = sykmeldingId),
         lest = false,
@@ -269,20 +274,32 @@ fun getSykmeldingDbModel(sykmeldingId: String): SykmeldingDbModel {
     )
 }
 
-fun getSykmeldtDbModel(): SykmeldtDbModel {
+fun createSykmeldtDbModel(pasientFnr: String = "12345678910"): SykmeldtDbModel {
     return SykmeldtDbModel(
-        pasientFnr = "12345678910",
+        pasientFnr = pasientFnr,
         pasientNavn = "Navn Navnesen",
         startdatoSykefravaer = LocalDate.now().minusMonths(2),
         latestTom = LocalDate.now().minusWeeks(2)
     )
 }
 
-fun getSoknadDbModel(soknadId: String): SoknadDbModel {
+fun createSoknadDbModel(
+    soknadId: String,
+    sykmeldingId: String = "76483e9f-eb16-464c-9bed-a9b258794bc4",
+    pasientFnr: String = "123456789",
+    arbeidsgivernavn: String = "Kebabbiten",
+    orgnummer: String = "123454543",
+): SoknadDbModel {
     val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
         getFileAsString("src/test/resources/soknad.json")
     ).copy(
-        id = soknadId
+        id = soknadId,
+        sykmeldingId = sykmeldingId,
+        fnr = pasientFnr,
+        arbeidsgiver = ArbeidsgiverDTO(
+            navn = arbeidsgivernavn,
+            orgnummer = orgnummer,
+        )
     )
     return sykepengesoknadDTO.toSoknadDbModel()
 }
