@@ -80,9 +80,45 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
               AND n.leder_fnr = ?
         """
             ).use { ps ->
-                ps.setString(1, soknadId.toString())
+                ps.setString(1, soknadId)
                 ps.setString(2, lederFnr)
                 ps.executeQuery().toSykmeldtSoknad()
+            }
+        }
+    }
+
+    fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): Boolean {
+        return database.connection.use { connection ->
+            connection.prepareStatement(
+                """
+               UPDATE sykmelding SET lest = TRUE
+                FROM narmesteleder
+                WHERE (narmesteleder.pasient_fnr = sykmelding.pasient_fnr AND narmesteleder.orgnummer = sykmelding.orgnummer) 
+                AND sykmelding.sykmelding_id = ?
+                AND narmesteleder.leder_fnr = ?
+            """
+            ).use { ps ->
+                ps.setString(1, sykmeldingId)
+                ps.setString(2, lederFnr)
+                ps.executeUpdate() > 0
+            }
+        }
+    }
+
+    fun markSoknadRead(soknadId: String, lederFnr: String): Boolean {
+        return database.connection.use { connection ->
+            connection.prepareStatement(
+                """
+               UPDATE soknad SET lest = TRUE
+                FROM narmesteleder
+                WHERE (narmesteleder.pasient_fnr = soknad.pasient_fnr AND narmesteleder.orgnummer = soknad.orgnummer) 
+                AND soknad.soknad_id = ?
+                AND narmesteleder.leder_fnr = ?
+            """
+            ).use { ps ->
+                ps.setString(1, soknadId)
+                ps.setString(2, lederFnr)
+                ps.executeUpdate() > 0
             }
         }
     }

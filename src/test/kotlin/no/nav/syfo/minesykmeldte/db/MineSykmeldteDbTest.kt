@@ -2,11 +2,14 @@ package no.nav.syfo.minesykmeldte.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.syfo.common.delete.DeleteDataDb
+import no.nav.syfo.hendelser.createSoknadDbModel
+import no.nav.syfo.hendelser.createSykmeldingDbModel
+import no.nav.syfo.hendelser.createSykmeldtDbModel
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
+import no.nav.syfo.narmesteleder.createNarmestelederLeesahKafkaMessage
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
-import no.nav.syfo.narmesteleder.getNarmestelederLeesahKafkaMessage
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.soknad.db.SoknadDbModel
@@ -17,6 +20,8 @@ import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.sykmelding.getSendtSykmeldingKafkaMessage
 import no.nav.syfo.sykmelding.mapper.SykmeldingMapper.Companion.toSykmeldingDbModel
 import no.nav.syfo.util.TestDb
+import org.amshove.kluent.`should be false`
+import org.amshove.kluent.`should be true`
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
@@ -40,7 +45,7 @@ class MineSykmeldteDbTest : Spek({
 
     describe("Delete data from db") {
         it("Should not delete anything") {
-            val nl = getNarmestelederLeesahKafkaMessage(UUID.randomUUID())
+            val nl = createNarmestelederLeesahKafkaMessage(UUID.randomUUID())
             narmestelederDb.insertOrUpdate(nl)
             sykmeldingDb.insertOrUpdate(
                 toSykmeldingDbModel(
@@ -72,7 +77,7 @@ class MineSykmeldteDbTest : Spek({
             result.deletedSoknader shouldBeEqualTo 0
         }
         it("Should delete") {
-            val nl = getNarmestelederLeesahKafkaMessage(UUID.randomUUID())
+            val nl = createNarmestelederLeesahKafkaMessage(UUID.randomUUID())
             narmestelederDb.insertOrUpdate(nl)
             val latestTom = LocalDate.now().minusMonths(4).minusDays(1)
             sykmeldingDb.insertOrUpdate(
@@ -112,7 +117,7 @@ class MineSykmeldteDbTest : Spek({
             sykmeldte.size shouldBeEqualTo 0
         }
         it("Should get sykmeldte without soknad") {
-            val nl = getNarmestelederLeesahKafkaMessage(UUID.randomUUID())
+            val nl = createNarmestelederLeesahKafkaMessage(UUID.randomUUID())
             narmestelederDb.insertOrUpdate(nl)
             sykmeldingDb.insertOrUpdate(
                 toSykmeldingDbModel(
@@ -126,7 +131,7 @@ class MineSykmeldteDbTest : Spek({
             sykmeldtDbModel[0].soknad shouldBeEqualTo null
         }
         it("should get sykmeldt with soknad") {
-            val nl = getNarmestelederLeesahKafkaMessage(UUID.randomUUID())
+            val nl = createNarmestelederLeesahKafkaMessage(UUID.randomUUID())
             narmestelederDb.insertOrUpdate(nl)
 
             val sykmeldingDbModel =
@@ -142,7 +147,7 @@ class MineSykmeldteDbTest : Spek({
         }
 
         it("Should get sykmeldt with 5 sykmelding and 4 soknad") {
-            val nl = getNarmestelederLeesahKafkaMessage(UUID.randomUUID())
+            val nl = createNarmestelederLeesahKafkaMessage(UUID.randomUUID())
             narmestelederDb.insertOrUpdate(nl)
 
             repeat(5) {
@@ -162,7 +167,7 @@ class MineSykmeldteDbTest : Spek({
             sykmeldtDbModel.filter { it.soknad == null }.size shouldBeEqualTo 1
         }
         it("Should get sykmelding") {
-            val nl = getNarmestelederLeesahKafkaMessage(UUID.randomUUID())
+            val nl = createNarmestelederLeesahKafkaMessage(UUID.randomUUID())
             narmestelederDb.insertOrUpdate(nl)
             val sykmeldingDbModel =
                 toSykmeldingDbModel(getSendtSykmeldingKafkaMessage(UUID.randomUUID().toString()), LocalDate.now())
@@ -174,18 +179,90 @@ class MineSykmeldteDbTest : Spek({
             sykmelding shouldNotBeEqualTo null
         }
     }
+
+    describe("Marking sykmeldinger as read") {
+        it("should mark as read when sykmelding belongs to leders ansatt") {
+            val sykmeldt = createSykmeldtDbModel(pasientFnr = "pasient-1")
+            val sykmelding = createSykmeldingDbModel("sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
+            val nl = createNarmestelederLeesahKafkaMessage(
+                UUID.randomUUID(),
+                fnr = "pasient-1",
+                orgnummer = "kul-org",
+                narmesteLederFnr = "leder-fnr-1"
+            )
+            narmestelederDb.insertOrUpdate(nl)
+            sykmeldingDb.insertOrUpdate(sykmelding, sykmeldt)
+            val didMarkAsRead = minesykmeldteDb.markSykmeldingRead("sykmelding-id-1", "leder-fnr-1")
+
+            didMarkAsRead.`should be true`()
+        }
+
+        it("should not mark as read when sykmelding does not belong to leders ansatt") {
+            val sykmeldt = createSykmeldtDbModel(pasientFnr = "pasient-1")
+            val sykmelding = createSykmeldingDbModel("sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
+            val nl = createNarmestelederLeesahKafkaMessage(
+                UUID.randomUUID(),
+                fnr = "pasient-2",
+                orgnummer = "kul-org",
+                narmesteLederFnr = "leder-fnr-1"
+            )
+            narmestelederDb.insertOrUpdate(nl)
+            sykmeldingDb.insertOrUpdate(sykmelding, sykmeldt)
+            val didMarkAsRead = minesykmeldteDb.markSykmeldingRead("sykmelding-id-1", "leder-fnr-1")
+
+            didMarkAsRead.`should be false`()
+        }
+    }
+
+    describe("Marking søknader as read") {
+        it("should mark as read when søknad belongs to leders ansatt") {
+            val sykmeldt = createSykmeldtDbModel(pasientFnr = "pasient-1")
+            val sykmelding = createSykmeldingDbModel("sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
+            val soknad = createSoknadDbModel("soknad-id-1", sykmeldingId = "sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
+            val nl = createNarmestelederLeesahKafkaMessage(
+                UUID.randomUUID(),
+                fnr = "pasient-1",
+                orgnummer = "kul-org",
+                narmesteLederFnr = "leder-fnr-1"
+            )
+            narmestelederDb.insertOrUpdate(nl)
+            sykmeldingDb.insertOrUpdate(sykmelding, sykmeldt)
+            soknadDb.insert(soknad)
+            val didMarkAsRead = minesykmeldteDb.markSoknadRead("soknad-id-1", "leder-fnr-1")
+
+            didMarkAsRead.`should be true`()
+        }
+
+        it("should not mark as read when søknad does not belong to leders ansatt") {
+            val sykmeldt = createSykmeldtDbModel(pasientFnr = "pasient-1")
+            val sykmelding = createSykmeldingDbModel("sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
+            val soknad = createSoknadDbModel("soknad-id-1", sykmeldingId = "sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
+            val nl = createNarmestelederLeesahKafkaMessage(
+                UUID.randomUUID(),
+                fnr = "pasient-2",
+                orgnummer = "kul-org",
+                narmesteLederFnr = "leder-fnr-1"
+            )
+            narmestelederDb.insertOrUpdate(nl)
+            sykmeldingDb.insertOrUpdate(sykmelding, sykmeldt)
+            soknadDb.insert(soknad)
+            val didMarkAsRead = minesykmeldteDb.markSoknadRead("soknad-id-1", "leder-fnr-1")
+
+            didMarkAsRead.`should be false`()
+        }
+    }
 })
 
 fun getSoknad(
     sykmeldingId: String = UUID.randomUUID().toString(),
-    soknadId: String = UUID.randomUUID().toString()
+    soknadId: String = UUID.randomUUID().toString(),
 ): SoknadDbModel {
     return getSykepengesoknadDto(soknadId, sykmeldingId).toSoknadDbModel()
 }
 
 fun getSykepengesoknadDto(
     soknadId: String,
-    sykmeldingId: String
+    sykmeldingId: String,
 ) = objectMapper.readValue<SykepengesoknadDTO>(
     getFileAsString("src/test/resources/soknad.json")
 ).copy(

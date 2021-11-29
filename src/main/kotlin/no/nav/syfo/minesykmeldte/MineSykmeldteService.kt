@@ -55,6 +55,14 @@ class MineSykmeldteService(
     fun getSoknad(soknadId: String, lederFnr: String): Soknad? {
         return mineSykmeldteDb.getSoknad(soknadId, lederFnr)?.toSoknad()
     }
+
+    fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): Boolean {
+        return mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr)
+    }
+
+    fun markSoknadRead(soknadId: String, lederFnr: String): Boolean {
+        return mineSykmeldteDb.markSoknadRead(soknadId, lederFnr)
+    }
 }
 
 private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>): Boolean {
