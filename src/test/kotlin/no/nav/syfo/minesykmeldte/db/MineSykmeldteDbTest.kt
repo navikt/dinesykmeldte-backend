@@ -53,7 +53,7 @@ class MineSykmeldteDbTest : Spek({
                 ),
                 sykmeldt = getSykmeldt()
             )
-            soknadDb.insert(getSoknad(sykmeldingId = "1").copy(tom = LocalDate.now().minusMonths(4)))
+            soknadDb.insertOrUpdate(getSoknad(sykmeldingId = "1").copy(tom = LocalDate.now().minusMonths(4)))
             hendelse.insertHendelse(
                 HendelseDbModel(
                     id = "2",
@@ -86,7 +86,7 @@ class MineSykmeldteDbTest : Spek({
                 ),
                 sykmeldt = getSykmeldt(latestTom)
             )
-            soknadDb.insert(getSoknad(sykmeldingId = "1").copy(tom = latestTom))
+            soknadDb.insertOrUpdate(getSoknad(sykmeldingId = "1").copy(tom = latestTom))
             hendelse.insertHendelse(
                 HendelseDbModel(
                     id = "2",
@@ -138,7 +138,7 @@ class MineSykmeldteDbTest : Spek({
                 toSykmeldingDbModel(getSendtSykmeldingKafkaMessage(UUID.randomUUID().toString()), LocalDate.now())
             sykmeldingDb.insertOrUpdate(sykmeldingDbModel, getSykmeldt())
 
-            soknadDb.insert(getSoknad(sykmeldingId = sykmeldingDbModel.sykmeldingId))
+            soknadDb.insertOrUpdate(getSoknad(sykmeldingId = sykmeldingDbModel.sykmeldingId))
 
             val sykmeldtDbModel = minesykmeldteDb.getMineSykmeldte(nl.narmesteLederFnr)
             sykmeldtDbModel.size shouldBeEqualTo 1
@@ -155,7 +155,7 @@ class MineSykmeldteDbTest : Spek({
                     toSykmeldingDbModel(getSendtSykmeldingKafkaMessage(UUID.randomUUID().toString()), LocalDate.now())
                 sykmeldingDb.insertOrUpdate(sykmeldingDbModel, getSykmeldt())
 
-                soknadDb.insert(getSoknad(sykmeldingId = sykmeldingDbModel.sykmeldingId))
+                soknadDb.insertOrUpdate(getSoknad(sykmeldingId = sykmeldingDbModel.sykmeldingId))
             }
             val sykmeldingDbModel =
                 toSykmeldingDbModel(getSendtSykmeldingKafkaMessage(UUID.randomUUID().toString()), LocalDate.now())
@@ -227,7 +227,7 @@ class MineSykmeldteDbTest : Spek({
             )
             narmestelederDb.insertOrUpdate(nl)
             sykmeldingDb.insertOrUpdate(sykmelding, sykmeldt)
-            soknadDb.insert(soknad)
+            soknadDb.insertOrUpdate(soknad)
             val didMarkAsRead = minesykmeldteDb.markSoknadRead("soknad-id-1", "leder-fnr-1")
 
             didMarkAsRead.`should be true`()
@@ -245,7 +245,7 @@ class MineSykmeldteDbTest : Spek({
             )
             narmestelederDb.insertOrUpdate(nl)
             sykmeldingDb.insertOrUpdate(sykmelding, sykmeldt)
-            soknadDb.insert(soknad)
+            soknadDb.insertOrUpdate(soknad)
             val didMarkAsRead = minesykmeldteDb.markSoknadRead("soknad-id-1", "leder-fnr-1")
 
             didMarkAsRead.`should be false`()

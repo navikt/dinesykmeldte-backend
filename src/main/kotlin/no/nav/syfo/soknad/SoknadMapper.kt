@@ -17,7 +17,7 @@ fun SykepengesoknadDTO.toSoknadDbModel(): SoknadDbModel {
         orgnummer = arbeidsgiver?.orgnummer
             ?: throw IllegalStateException("Har mottatt sendt søknad uten orgnummer: $id"),
         soknad = tilArbeidsgiverSoknad(),
-        sendtDato = sendtArbeidsgiver!!.toLocalDate(),
+        sendtDato = sendtArbeidsgiver?.toLocalDate(),
         lest = false, // oppdateres fra strangler
         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
         tom = tom!!

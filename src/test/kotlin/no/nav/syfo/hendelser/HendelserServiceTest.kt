@@ -148,7 +148,7 @@ class HendelserServiceTest : Spek({
         }
         it("Ferdigstilling av les søknad-hendelse setter søknad som lest") {
             val soknadId = UUID.randomUUID().toString()
-            soknadDb.insert(createSoknadDbModel(soknadId))
+            soknadDb.insertOrUpdate(createSoknadDbModel(soknadId))
             val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
                 id = soknadId,
                 opprettHendelse = null,
@@ -168,7 +168,7 @@ class HendelserServiceTest : Spek({
         }
         it("Ferdigstilling av les søknad-hendelse setter søknad som lest hvis oppgavetype mangler") {
             val soknadId = UUID.randomUUID().toString()
-            soknadDb.insert(createSoknadDbModel(soknadId))
+            soknadDb.insertOrUpdate(createSoknadDbModel(soknadId))
             val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
                 id = soknadId,
                 opprettHendelse = null,
