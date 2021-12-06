@@ -218,7 +218,7 @@ class HendelserServiceTest : Spek({
             val hendelse = TestDb.getHendelse(hendelseId)
             hendelse shouldNotBeEqualTo null
             hendelse?.ferdigstilt shouldBeEqualTo true
-            hendelse?.ferdigstiltTimestamp shouldBeEqualTo ferdigstiltTimestamp
+            hendelse?.ferdigstiltTimestamp?.withNano(0) shouldBeEqualTo ferdigstiltTimestamp.withNano(0)
         }
         it("Ferdigstiller ikke hendelse som allerede er ferdigstilt") {
             val hendelseId = UUID.randomUUID().toString()
@@ -252,7 +252,7 @@ class HendelserServiceTest : Spek({
             val hendelse = TestDb.getHendelse(hendelseId)
             hendelse shouldNotBeEqualTo null
             hendelse?.ferdigstilt shouldBeEqualTo true
-            hendelse?.ferdigstiltTimestamp shouldBeEqualTo ferdigstiltTimestamp
+            hendelse?.ferdigstiltTimestamp?.withNano(0) shouldBeEqualTo ferdigstiltTimestamp.withNano(0)
         }
     }
 })
