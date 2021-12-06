@@ -22,6 +22,7 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.Clock
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -188,7 +189,7 @@ class HendelserServiceTest : Spek({
         }
         it("Ferdigstiller hendelse X") {
             val hendelseId = UUID.randomUUID().toString()
-            val ferdigstiltTimestamp = OffsetDateTime.now(ZoneOffset.UTC)
+            val ferdigstiltTimestamp = OffsetDateTime.now(Clock.tickMillis(ZoneOffset.UTC))
             hendelserDb.insertHendelse(
                 HendelseDbModel(
                     id = hendelseId,
@@ -218,11 +219,11 @@ class HendelserServiceTest : Spek({
             val hendelse = TestDb.getHendelse(hendelseId)
             hendelse shouldNotBeEqualTo null
             hendelse?.ferdigstilt shouldBeEqualTo true
-            hendelse?.ferdigstiltTimestamp?.withNano(0) shouldBeEqualTo ferdigstiltTimestamp.withNano(0)
+            hendelse?.ferdigstiltTimestamp shouldBeEqualTo ferdigstiltTimestamp
         }
         it("Ferdigstiller ikke hendelse som allerede er ferdigstilt") {
             val hendelseId = UUID.randomUUID().toString()
-            val ferdigstiltTimestamp = OffsetDateTime.now(ZoneOffset.UTC)
+            val ferdigstiltTimestamp = OffsetDateTime.now(Clock.tickMillis(ZoneOffset.UTC))
             hendelserDb.insertHendelse(
                 HendelseDbModel(
                     id = hendelseId,
@@ -252,7 +253,7 @@ class HendelserServiceTest : Spek({
             val hendelse = TestDb.getHendelse(hendelseId)
             hendelse shouldNotBeEqualTo null
             hendelse?.ferdigstilt shouldBeEqualTo true
-            hendelse?.ferdigstiltTimestamp?.withNano(0) shouldBeEqualTo ferdigstiltTimestamp.withNano(0)
+            hendelse?.ferdigstiltTimestamp shouldBeEqualTo ferdigstiltTimestamp
         }
     }
 })
