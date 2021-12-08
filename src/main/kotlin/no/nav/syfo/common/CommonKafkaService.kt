@@ -38,10 +38,7 @@ class CommonKafkaService(
                         log.info("Starting consuming topics")
                         kafkaConsumer.subscribe(
                             listOf(
-                                environment.narmestelederLeesahTopic,
-                                environment.sendtSykmeldingTopic,
-                                environment.sykepengesoknadTopic,
-                                environment.hendelserTopic
+                                environment.sykepengesoknadTopic
                             )
                         )
                         start()
