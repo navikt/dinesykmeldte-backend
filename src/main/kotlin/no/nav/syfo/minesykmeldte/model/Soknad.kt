@@ -11,7 +11,7 @@ data class Soknad(
     val fnr: String,
     val lest: Boolean,
     val orgnummer: String,
-    val sendtDato: LocalDate,
+    val sendtDato: LocalDate?,
     val tom: LocalDate,
     val details: SoknadDetails,
 )

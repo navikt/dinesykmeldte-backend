@@ -12,7 +12,7 @@ data class SoknadDbModel(
     val pasientFnr: String,
     val orgnummer: String,
     val soknad: SykepengesoknadDTO,
-    val sendtDato: LocalDate,
+    val sendtDato: LocalDate?,
     val lest: Boolean,
     val timestamp: OffsetDateTime,
     val tom: LocalDate

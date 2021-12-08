@@ -72,6 +72,23 @@ class SoknadServiceTest : Spek({
 
             TestDb.getSoknad(soknadId) shouldBeEqualTo null
         }
+        it("Skal lagre soknad med ny og slette med når den bare er sendt til NAV") {
+            val soknadId = UUID.randomUUID().toString()
+            val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
+                getFileAsString("src/test/resources/soknad.json")
+            ).copy(
+                id = soknadId,
+                fom = LocalDate.now().minusMonths(1),
+                tom = LocalDate.now().minusWeeks(2),
+                sendtArbeidsgiver = null,
+                status = SoknadsstatusDTO.NY
+            )
+            soknadService.handleSykepengesoknad(sykepengesoknadDTO)
+            TestDb.getSoknad(soknadId) shouldNotBeEqualTo null
+            soknadService.handleSykepengesoknad(sykepengesoknadDTO.copy(status = SoknadsstatusDTO.SENDT))
+            TestDb.getSoknad(soknadId) shouldBeEqualTo null
+        }
+
         it("Ignorerer søknad som ikke er sendt til arbeidsgiver") {
             val soknadId = UUID.randomUUID().toString()
             val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
@@ -87,7 +104,7 @@ class SoknadServiceTest : Spek({
 
             TestDb.getSoknad(soknadId) shouldBeEqualTo null
         }
-        it("Ignorerer søknad som ikke har status sendt") {
+        it("Ignorerer ikke søknad som ikke har status sendt") {
             val soknadId = UUID.randomUUID().toString()
             val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
                 getFileAsString("src/test/resources/soknad.json")
@@ -101,7 +118,7 @@ class SoknadServiceTest : Spek({
 
             soknadService.handleSykepengesoknad(sykepengesoknadDTO)
 
-            TestDb.getSoknad(soknadId) shouldBeEqualTo null
+            TestDb.getSoknad(soknadId) shouldNotBeEqualTo null
         }
     }
 })

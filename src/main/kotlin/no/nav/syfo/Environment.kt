@@ -22,11 +22,17 @@ data class Environment(
     val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val sykepengesoknadTopic: String = "flex.sykepengesoknad",
-    val hendelserTopic: String = "teamsykmelding.dinesykmeldte-hendelser"
+    val hendelserTopic: String = "teamsykmelding.dinesykmeldte-hendelser",
+    val runKafkaConsumer: Boolean = getRunKafkaProperty()
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
     }
+}
+
+private fun getRunKafkaProperty() = when (getEnvVar("RUN_KAFKA_CONSUMER", "true")) {
+    "false" -> false
+    else -> true
 }
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

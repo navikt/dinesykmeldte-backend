@@ -23,11 +23,31 @@ class SoknadService(
     }
 
     fun handleSykepengesoknad(sykepengesoknad: SykepengesoknadDTO) {
-        if ((sykepengesoknad.status == SoknadsstatusDTO.SENDT && sykepengesoknad.sendtArbeidsgiver != null) &&
-            sykepengesoknad.tom?.isAfter(LocalDate.now().minusMonths(4)) == true
-        ) {
-            soknadDb.insert(sykepengesoknad.toSoknadDbModel())
+        if (shouldHandleSoknad(sykepengesoknad)) {
+            when (sykepengesoknad.status) {
+                SoknadsstatusDTO.NY -> soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
+                SoknadsstatusDTO.FREMTIDIG -> soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
+                SoknadsstatusDTO.SENDT -> handleSendt(sykepengesoknad)
+                SoknadsstatusDTO.KORRIGERT -> handleSendt(sykepengesoknad)
+                SoknadsstatusDTO.AVBRUTT -> soknadDb.deleteSoknad(sykepengesoknad.id)
+                SoknadsstatusDTO.SLETTET -> soknadDb.deleteSoknad(sykepengesoknad.id)
+            }
         }
         SOKNAD_TOPIC_COUNTER.inc()
     }
+
+    private fun handleSendt(sykepengesoknad: SykepengesoknadDTO) {
+        when (sykepengesoknad.sendtArbeidsgiver != null) {
+            true -> soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
+            else -> soknadDb.deleteSoknad(sykepengesoknad.id)
+        }
+    }
+
+    private fun hasArbeidsgiver(sykepengesoknad: SykepengesoknadDTO): Boolean {
+        return sykepengesoknad.arbeidsgiver?.orgnummer != null
+    }
+
+    private fun shouldHandleSoknad(sykepengesoknad: SykepengesoknadDTO) =
+        hasArbeidsgiver(sykepengesoknad) &&
+            sykepengesoknad.tom?.isAfter(LocalDate.now().minusMonths(4)) == true
 }

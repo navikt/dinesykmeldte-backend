@@ -29,7 +29,7 @@ tasks.withType<Jar> {
 
 plugins {
     id("org.jmailen.kotlinter") version "3.6.0"
-    kotlin("jvm") version "1.5.30"
+    kotlin("jvm") version "1.6.0"
     id("com.diffplug.spotless") version "5.16.0"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     jacoco
@@ -118,7 +118,7 @@ tasks {
     }
 
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "14"
+        kotlinOptions.jvmTarget = "16"
     }
 
     withType<JacocoReport> {
