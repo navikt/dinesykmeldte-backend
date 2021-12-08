@@ -110,9 +110,8 @@ fun main() {
 
     val kafkaConsumer = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also {
-            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest" // pga ny consumergroup for hendelser
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
-            it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
+            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
         }.toConsumerConfig("dinesykmeldte-backend", StringDeserializer::class),
         StringDeserializer(),
         StringDeserializer()

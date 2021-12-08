@@ -70,9 +70,6 @@ class CommonKafkaService(
                     else -> throw IllegalStateException("Har mottatt melding på ukjent topic: ${it.topic()}")
                 }
             }
-            if (!records.isEmpty) {
-                kafkaConsumer.commitSync()
-            }
             processedMessages += records.count()
             processedMessages = logProcessedMessages(processedMessages)
         }
