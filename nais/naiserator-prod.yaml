@@ -20,7 +20,7 @@ spec:
         insights:
           enabled: true
   replicas:
-    min: 2
+    min: 3
     max: 6
     cpuThresholdPercentage: 90
   port: 8080
