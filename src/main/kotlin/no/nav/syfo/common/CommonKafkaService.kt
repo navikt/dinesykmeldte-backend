@@ -31,25 +31,29 @@ class CommonKafkaService(
 
     @DelicateCoroutinesApi
     fun startConsumer() {
-        GlobalScope.launch(Dispatchers.Unbounded) {
-            while (applicationState.ready) {
-                try {
-                    log.info("Starting consuming topics")
-                    kafkaConsumer.subscribe(
-                        listOf(
-                            environment.narmestelederLeesahTopic,
-                            environment.sendtSykmeldingTopic,
-                            environment.sykepengesoknadTopic,
-                            environment.hendelserTopic
+        if(environment.runKafkaConsumer) {
+            GlobalScope.launch(Dispatchers.Unbounded) {
+                while (applicationState.ready) {
+                    try {
+                        log.info("Starting consuming topics")
+                        kafkaConsumer.subscribe(
+                            listOf(
+                                environment.narmestelederLeesahTopic,
+                                environment.sendtSykmeldingTopic,
+                                environment.sykepengesoknadTopic,
+                                environment.hendelserTopic
+                            )
                         )
-                    )
-                    start()
-                } catch (ex: Exception) {
-                    log.error("Error running kafka consumer, unsubscribing and waiting 10 seconds for retry", ex)
-                    kafkaConsumer.unsubscribe()
-                    delay(10_000)
+                        start()
+                    } catch (ex: Exception) {
+                        log.error("Error running kafka consumer, unsubscribing and waiting 10 seconds for retry", ex)
+                        kafkaConsumer.unsubscribe()
+                        delay(10_000)
+                    }
                 }
             }
+        } else {
+            log.info("Does not run KafkaConsumers")
         }
     }
 
