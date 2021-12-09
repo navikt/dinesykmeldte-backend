@@ -31,7 +31,7 @@ class CommonKafkaService(
 
     @DelicateCoroutinesApi
     fun startConsumer() {
-        if(environment.runKafkaConsumer) {
+        if (environment.runKafkaConsumer) {
             GlobalScope.launch(Dispatchers.Unbounded) {
                 while (applicationState.ready) {
                     try {
@@ -76,7 +76,7 @@ class CommonKafkaService(
     }
 
     private fun logProcessedMessages(processedMessages: Int): Int {
-        var currentLogTime = Instant.now().toEpochMilli()
+        val currentLogTime = Instant.now().toEpochMilli()
         if (processedMessages > 0 && currentLogTime - lastLogTime > logTimer) {
             log.info("Processed $processedMessages messages")
             lastLogTime = currentLogTime
