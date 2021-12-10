@@ -1,9 +1,14 @@
 package no.nav.syfo.minesykmeldte
 
+import no.nav.syfo.kafka.felles.SoknadsstatusDTO
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
+import no.nav.syfo.minesykmeldte.model.FremtidigSoknad
+import no.nav.syfo.minesykmeldte.model.KorrigertSoknad
+import no.nav.syfo.minesykmeldte.model.NySoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmelding
+import no.nav.syfo.minesykmeldte.model.SendtSoknad
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
@@ -23,14 +28,54 @@ class MineSykmeldteMapper private constructor() {
         }
 
         fun toPreviewSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewSoknad {
-            return PreviewSoknad(
+            return when (soknad.status) {
+                SoknadsstatusDTO.NY -> getNySoknad(soknad, lest)
+                SoknadsstatusDTO.SENDT -> getSendtSoknad(soknad, lest)
+                SoknadsstatusDTO.FREMTIDIG -> getFremtidigSoknad(soknad, lest)
+                SoknadsstatusDTO.KORRIGERT -> getKorrigertSoknad(soknad, lest)
+                else -> throw IllegalArgumentException("Incorrect soknad status ${soknad.status}")
+            }
+        }
+
+        private fun getKorrigertSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewSoknad {
+            return KorrigertSoknad(
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
                 tom = soknad.tom,
-                status = soknad.status.name,
-                sendtDato = soknad.sendtArbeidsgiver?.toLocalDate(),
-                lest = lest
+                korrigererSoknadId = soknad.korrigerer
+                    ?: throw IllegalStateException("korrigerer must not be null in korrigert soknad: ${soknad.id}"),
+                korrigertBySoknadId = soknad.korrigertAv
+            )
+        }
+
+        private fun getSendtSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewSoknad {
+            return SendtSoknad(
+                id = soknad.id,
+                sykmeldingId = soknad.sykmeldingId,
+                fom = soknad.fom,
+                tom = soknad.tom,
+                lest = lest,
+                sendtDato = soknad.sendtArbeidsgiver
+                    ?: throw IllegalStateException("sendtArbeidsgiver is null for soknad: ${soknad.id}"),
+                korrigertBySoknadId = soknad.korrigertAv
+            )
+        }
+
+        private fun getFremtidigSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewSoknad {
+            return FremtidigSoknad(
+                id = soknad.id, sykmeldingId = soknad.sykmeldingId, fom = soknad.fom, tom = soknad.tom
+            )
+        }
+
+        private fun getNySoknad(soknad: SykepengesoknadDTO, varsel: Boolean): PreviewSoknad {
+            return NySoknad(
+                frist = soknad.tom?.plusMonths(1) ?: TODO("Finn soknadfrist"),
+                varsel = varsel,
+                id = soknad.id,
+                sykmeldingId = soknad.sykmeldingId,
+                fom = soknad.fom,
+                tom = soknad.tom
             )
         }
 
@@ -44,14 +89,13 @@ class MineSykmeldteMapper private constructor() {
             }
         }
 
-        private fun formatPeriodType(relevantPeriod: SykmeldingsperiodeAGDTO) =
-            when (relevantPeriod.type) {
-                PeriodetypeDTO.GRADERT -> relevantPeriod.gradert.gradPercent
-                PeriodetypeDTO.AKTIVITET_IKKE_MULIG -> "100%"
-                PeriodetypeDTO.AVVENTENDE -> "Avventende"
-                PeriodetypeDTO.BEHANDLINGSDAGER -> "Behandlingsdager"
-                PeriodetypeDTO.REISETILSKUDD -> "Reisetilskudd"
-            }
+        private fun formatPeriodType(relevantPeriod: SykmeldingsperiodeAGDTO) = when (relevantPeriod.type) {
+            PeriodetypeDTO.GRADERT -> relevantPeriod.gradert.gradPercent
+            PeriodetypeDTO.AKTIVITET_IKKE_MULIG -> "100%"
+            PeriodetypeDTO.AVVENTENDE -> "Avventende"
+            PeriodetypeDTO.BEHANDLINGSDAGER -> "Behandlingsdager"
+            PeriodetypeDTO.REISETILSKUDD -> "Reisetilskudd"
+        }
     }
 }
 
