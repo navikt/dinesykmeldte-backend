@@ -75,8 +75,8 @@ jobs:
           docker build --tag ${IMAGE} .
           docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
           docker push ${IMAGE}
-  deploy-dev:
-    name: Deploy to devprod
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
     needs: [snyk-test, build]
     steps:
@@ -88,13 +88,6 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: nais/naiserator-dev.yaml
-  deploy:
-    name: Deploy to prod
-    runs-on: ubuntu-latest
-    needs: [snyk-test, build, deploy-dev]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@master
       - name: Deploy to Prod
         uses: nais/deploy/actions/deploy@v1
         env:
