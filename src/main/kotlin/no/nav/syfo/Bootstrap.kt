@@ -43,6 +43,8 @@ import no.nav.syfo.sykmelding.client.SyfoSyketilfelleClient
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.pdl.client.PdlClient
 import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
+import no.nav.syfo.virksomhet.api.VirksomhetService
+import no.nav.syfo.virksomhet.db.VirksomhetDb
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -137,7 +139,8 @@ fun main() {
         jwkProviderTokenX,
         wellKnownTokenX.issuer,
         applicationState,
-        MineSykmeldteService(MineSykmeldteDb(database))
+        MineSykmeldteService(MineSykmeldteDb(database)),
+        VirksomhetService(VirksomhetDb(database))
     )
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
