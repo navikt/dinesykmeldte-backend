@@ -1,28 +1,13 @@
 package no.nav.syfo.minesykmeldte.api
 
-import com.auth0.jwk.JwkProviderBuilder
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.application.install
-import io.ktor.auth.authenticate
-import io.ktor.features.ContentNegotiation
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.jackson.jackson
-import io.ktor.routing.routing
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.handleRequest
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.syfo.Environment
-import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.setupAuth
 import no.nav.syfo.kafka.felles.SoknadsstatusDTO
 import no.nav.syfo.kafka.felles.SoknadstypeDTO
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
@@ -33,12 +18,12 @@ import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
 import no.nav.syfo.minesykmeldte.model.Soknad
 import no.nav.syfo.minesykmeldte.model.SoknadDetails
 import no.nav.syfo.minesykmeldte.model.Sykmelding
-import no.nav.syfo.objectMapper
-import no.nav.syfo.testutils.generateJWTLoginservice
+import no.nav.syfo.util.addAuthorizationHeader
+import no.nav.syfo.util.minifyApiResponse
+import no.nav.syfo.util.withKtor
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.nio.file.Paths
 import java.time.LocalDate
 import java.util.UUID
 
@@ -54,30 +39,9 @@ object MineSykmeldteApiKtTest : Spek({
         clearMocks(mineSykmeldteService, env)
     }
 
-    with(TestApplicationEngine()) {
-        start()
-        val applicationState = ApplicationState()
-        applicationState.ready = true
-        applicationState.alive = true
-        application.install(ContentNegotiation) {
-            jackson {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
-        application.setupAuth(
-            jwkProviderTokenX = JwkProviderBuilder(Paths.get("src/test/resources/jwkset.json").toUri().toURL()).build(),
-            tokenXIssuer = "https://sts.issuer.net/myid",
-            env = env
-        )
-        application.routing {
-            authenticate("tokenx") {
-                registerMineSykmeldteApi(mineSykmeldteService)
-            }
-        }
-
+    withKtor(env, {
+        registerMineSykmeldteApi(mineSykmeldteService)
+    }) {
         describe("/api/mineSykmeldte") {
             it("should get empty list") {
                 every { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
@@ -343,7 +307,7 @@ fun createSykmeldingTestData(
         navn = "Beh. Handler",
         hprNummer = "80802721231",
         telefon = "81549300",
-    )
+    ),
 ): Sykmelding = Sykmelding(
     id = id,
     startdatoSykefravar = startdatoSykefravar,
@@ -359,27 +323,3 @@ fun createSykmeldingTestData(
     innspillArbeidsplassen = innspillArbeidsplassen,
     behandler = behandler,
 )
-
-private fun TestApplicationRequest.addAuthorizationHeader(
-    audience: String = "dummy-client-id",
-    subject: String = "08086912345",
-    issuer: String = "https://sts.issuer.net/myid",
-    level: String = "Level4",
-) {
-    addHeader(
-        "Authorization",
-        "Bearer ${
-        generateJWTLoginservice(
-            audience = audience,
-            subject = subject,
-            issuer = issuer,
-            level = level
-        )
-        }"
-    )
-}
-
-private fun String.minifyApiResponse(): String =
-    objectMapper.writeValueAsString(
-        objectMapper.readValue(this)
-    )

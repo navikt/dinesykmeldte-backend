@@ -1,8 +1,6 @@
 package no.nav.syfo.minesykmeldte.api
 
-import io.ktor.application.ApplicationCall
 import io.ktor.application.call
-import io.ktor.auth.authentication
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -12,6 +10,8 @@ import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.HttpErrorMessage
 import no.nav.syfo.minesykmeldte.model.HttpMessage
+import no.nav.syfo.util.getBrukerPrincipal
+import no.nav.syfo.util.getParam
 
 fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
     get("api/minesykmeldte") {
@@ -65,24 +65,4 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
             false -> call.respond(HttpStatusCode.NotFound, HttpMessage("Not found"))
         }
     }
-}
-
-private fun ApplicationCall.getBrukerPrincipal(): BrukerPrincipal {
-    val brukerPrincipal: BrukerPrincipal? = this.authentication.principal()
-
-    requireNotNull(brukerPrincipal) {
-        "Mottok HTTP kall uten principal. Er serveren konfigurert riktig?"
-    }
-
-    return brukerPrincipal
-}
-
-private fun ApplicationCall.getParam(paramName: String): String {
-    val param = this.parameters[paramName]
-
-    requireNotNull(param) {
-        "Tried to get param $paramName. You need to match the param name with the name defined in the route."
-    }
-
-    return param
 }
