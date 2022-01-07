@@ -14,6 +14,7 @@ import no.nav.syfo.minesykmeldte.model.Behandlingsdager
 import no.nav.syfo.minesykmeldte.model.Gradert
 import no.nav.syfo.minesykmeldte.model.MinSykmeldtKey
 import no.nav.syfo.minesykmeldte.model.Periode
+import no.nav.syfo.minesykmeldte.model.PreviewSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
 import no.nav.syfo.minesykmeldte.model.Reisetilskudd
 import no.nav.syfo.minesykmeldte.model.Soknad
@@ -73,7 +74,7 @@ private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
     return ChronoUnit.DAYS.between(latestTom, LocalDate.now()) > 16
 }
 
-private fun mapNullableSoknad(sykmeldtDbModel: MinSykmeldtDbModel) =
+private fun mapNullableSoknad(sykmeldtDbModel: MinSykmeldtDbModel): PreviewSoknad? =
     sykmeldtDbModel.soknad?.let { toPreviewSoknad(it, sykmeldtDbModel.lestSoknad) }
 
 private fun MinSykmeldtDbModel.toMinSykmeldtKey(): MinSykmeldtKey = MinSykmeldtKey(

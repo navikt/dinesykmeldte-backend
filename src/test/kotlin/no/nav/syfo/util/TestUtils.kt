@@ -19,6 +19,7 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.objectMapper
 import no.nav.syfo.testutils.generateJWTLoginservice
+import org.amshove.kluent.shouldBeInstanceOf
 import java.nio.file.Paths
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -29,7 +30,7 @@ inline fun <reified T> Any?.shouldBeInstance() {
         returns() implies (this@shouldBeInstance is T)
     }
 
-    this is T
+    this.shouldBeInstanceOf(T::class)
 }
 
 fun withKtor(env: Environment, build: Route.() -> Unit, block: TestApplicationEngine.() -> Unit) {

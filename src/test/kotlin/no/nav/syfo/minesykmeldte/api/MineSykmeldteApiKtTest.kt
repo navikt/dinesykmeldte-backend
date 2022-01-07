@@ -13,6 +13,7 @@ import no.nav.syfo.kafka.felles.SoknadstypeDTO
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.Behandler
+import no.nav.syfo.minesykmeldte.model.NySoknad
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
 import no.nav.syfo.minesykmeldte.model.Soknad
@@ -131,6 +132,60 @@ object MineSykmeldteApiKtTest : Spek({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                }
+            }
+
+            describe("given a søknad") {
+                it("should map a ny søknad to correct object") {
+                    every { mineSykmeldteService.getMineSykmeldte("08086912345") } returns listOf(
+                        PreviewSykmeldt(
+                            narmestelederId = "08086912345",
+                            orgnummer = "orgnummer",
+                            fnr = "fnr",
+                            navn = "navn",
+                            startdatoSykefravar = LocalDate.now().minusDays(14),
+                            friskmeldt = false,
+                            previewSykmeldinger = emptyList(),
+                            previewSoknader = listOf(
+                                NySoknad(
+                                    id = "soknad-1-id",
+                                    sykmeldingId = "sykmelding-id-1",
+                                    frist = LocalDate.parse("2020-05-05"),
+                                    fom = LocalDate.parse("2020-01-01"),
+                                    tom = LocalDate.parse("2020-02-01"),
+                                    varsel = true,
+                                )
+                            ),
+                        )
+                    )
+                    with(
+                        handleRequest(HttpMethod.Get, "/api/minesykmeldte") { addAuthorizationHeader() }
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        response.content shouldBeEqualTo """
+                        [
+                          {
+                            "narmestelederId": "08086912345",
+                            "orgnummer": "orgnummer",
+                            "fnr": "fnr",
+                            "navn": "navn",
+                            "startdatoSykefravar": "2021-12-24",
+                            "friskmeldt": false,
+                            "previewSykmeldinger": [],
+                            "previewSoknader": [
+                              {
+                                "frist": "2020-05-05",
+                                "varsel": true,
+                                "id": "soknad-1-id",
+                                "sykmeldingId": "sykmelding-id-1",
+                                "fom": "2020-01-01",
+                                "tom": "2020-02-01",
+                                "status": "NY"
+                              }
+                            ]
+                          }
+                        ]""".minifyApiResponse()
+                    }
                 }
             }
         }

@@ -14,12 +14,13 @@ import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import java.time.LocalDate
+import java.util.Collections.max
 
 class MineSykmeldteMapper private constructor() {
     companion object {
         fun toPreviewSykmelding(sykmeldingDbModel: MinSykmeldtDbModel): PreviewSykmelding {
             return PreviewSykmelding(
-                id = sykmeldingDbModel.sykmeldingId.toString(),
+                id = sykmeldingDbModel.sykmeldingId,
                 fom = sykmeldingDbModel.sykmelding.sykmeldingsperioder.minOf { it.fom },
                 tom = sykmeldingDbModel.sykmelding.sykmeldingsperioder.maxOf { it.tom },
                 type = getTypeSykmelding(sykmeldingDbModel.sykmelding),
@@ -27,18 +28,17 @@ class MineSykmeldteMapper private constructor() {
             )
         }
 
-        fun toPreviewSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewSoknad {
-            return when (soknad.status) {
+        fun toPreviewSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewSoknad =
+            when (soknad.status) {
                 SoknadsstatusDTO.NY -> getNySoknad(soknad, lest)
                 SoknadsstatusDTO.SENDT -> getSendtSoknad(soknad, lest)
-                SoknadsstatusDTO.FREMTIDIG -> getFremtidigSoknad(soknad, lest)
-                SoknadsstatusDTO.KORRIGERT -> getKorrigertSoknad(soknad, lest)
+                SoknadsstatusDTO.FREMTIDIG -> getFremtidigSoknad(soknad)
+                SoknadsstatusDTO.KORRIGERT -> getKorrigertSoknad(soknad)
                 else -> throw IllegalArgumentException("Incorrect soknad status ${soknad.status}")
             }
-        }
 
-        private fun getKorrigertSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewSoknad {
-            return KorrigertSoknad(
+        private fun getKorrigertSoknad(soknad: SykepengesoknadDTO): KorrigertSoknad =
+            KorrigertSoknad(
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
@@ -47,10 +47,9 @@ class MineSykmeldteMapper private constructor() {
                     ?: throw IllegalStateException("korrigerer must not be null in korrigert soknad: ${soknad.id}"),
                 korrigertBySoknadId = soknad.korrigertAv
             )
-        }
 
-        private fun getSendtSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewSoknad {
-            return SendtSoknad(
+        private fun getSendtSoknad(soknad: SykepengesoknadDTO, lest: Boolean): SendtSoknad =
+            SendtSoknad(
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
@@ -60,24 +59,21 @@ class MineSykmeldteMapper private constructor() {
                     ?: throw IllegalStateException("sendtArbeidsgiver is null for soknad: ${soknad.id}"),
                 korrigertBySoknadId = soknad.korrigertAv
             )
-        }
 
-        private fun getFremtidigSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewSoknad {
-            return FremtidigSoknad(
+        private fun getFremtidigSoknad(soknad: SykepengesoknadDTO): FremtidigSoknad =
+            FremtidigSoknad(
                 id = soknad.id, sykmeldingId = soknad.sykmeldingId, fom = soknad.fom, tom = soknad.tom
             )
-        }
 
-        private fun getNySoknad(soknad: SykepengesoknadDTO, varsel: Boolean): PreviewSoknad {
-            return NySoknad(
-                frist = soknad.tom?.plusMonths(1) ?: TODO("Finn soknadfrist"),
+        private fun getNySoknad(soknad: SykepengesoknadDTO, varsel: Boolean): NySoknad =
+            NySoknad(
+                frist = maxDate(soknad.opprettet?.toLocalDate(), soknad.tom).plusMonths(4),
                 varsel = varsel,
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
                 tom = soknad.tom
             )
-        }
 
         private fun getTypeSykmelding(sykmelding: ArbeidsgiverSykmelding): String {
             val now = LocalDate.now()
@@ -98,6 +94,14 @@ class MineSykmeldteMapper private constructor() {
         }
     }
 }
+
+private fun maxDate(first: LocalDate?, second: LocalDate?): LocalDate =
+    max(
+        listOf(
+            first ?: LocalDate.MIN,
+            second ?: LocalDate.MIN
+        )
+    )
 
 private val GradertDTO?.gradPercent: String
     get() = this?.let { "${this.grad}%" } ?: "Ukjent gradering"
