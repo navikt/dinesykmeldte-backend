@@ -27,6 +27,7 @@ import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
+import java.lang.IllegalStateException
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -163,6 +164,7 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
         PeriodetypeDTO.BEHANDLINGSDAGER -> Behandlingsdager(
             this.fom,
             this.tom,
+            this.behandlingsdager ?: throw IllegalStateException("Behandlingsdager without behandlingsdager"),
         )
         PeriodetypeDTO.GRADERT -> {
             val gradering = this.gradert

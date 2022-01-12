@@ -62,7 +62,10 @@ class MineSykmeldteMapper private constructor() {
 
         private fun getFremtidigSoknad(soknad: SykepengesoknadDTO): FremtidigSoknad =
             FremtidigSoknad(
-                id = soknad.id, sykmeldingId = soknad.sykmeldingId, fom = soknad.fom, tom = soknad.tom
+                id = soknad.id,
+                sykmeldingId = soknad.sykmeldingId,
+                fom = soknad.fom,
+                tom = soknad.tom,
             )
 
         private fun getNySoknad(soknad: SykepengesoknadDTO, varsel: Boolean): NySoknad =

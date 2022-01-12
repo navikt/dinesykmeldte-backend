@@ -169,7 +169,7 @@ object MineSykmeldteApiKtTest : Spek({
                             "orgnummer": "orgnummer",
                             "fnr": "fnr",
                             "navn": "navn",
-                            "startdatoSykefravar": "2021-12-24",
+                            "startdatoSykefravar": "${LocalDate.now().minusDays(14)}",
                             "friskmeldt": false,
                             "previewSykmeldinger": [],
                             "previewSoknader": [
