@@ -1,6 +1,7 @@
 package no.nav.syfo.minesykmeldte.model
 
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class PreviewSykmeldt(
     val narmestelederId: String,
@@ -21,12 +22,60 @@ data class PreviewSykmelding(
     val lest: Boolean
 )
 
-data class PreviewSoknad(
-    val id: String,
-    val sykmeldingId: String?,
-    val fom: LocalDate?,
-    val tom: LocalDate?,
-    val status: String,
-    val sendtDato: LocalDate?,
-    val lest: Boolean
-)
+enum class SoknadStatus {
+    FREMTIDIG,
+    NY,
+    SENDT,
+    KORRIGERT
+}
+
+sealed interface PreviewSoknad {
+    val id: String
+    val sykmeldingId: String?
+    val fom: LocalDate?
+    val tom: LocalDate?
+    val status: SoknadStatus
+}
+
+data class SendtSoknad(
+    val korrigertBySoknadId: String?,
+    val lest: Boolean,
+    val sendtDato: LocalDateTime,
+    override val id: String,
+    override val sykmeldingId: String?,
+    override val fom: LocalDate?,
+    override val tom: LocalDate?,
+) : PreviewSoknad {
+    override val status = SoknadStatus.SENDT
+}
+
+data class NySoknad(
+    val frist: LocalDate,
+    val varsel: Boolean,
+    override val id: String,
+    override val sykmeldingId: String?,
+    override val fom: LocalDate?,
+    override val tom: LocalDate?,
+) : PreviewSoknad {
+    override val status = SoknadStatus.NY
+}
+
+data class FremtidigSoknad(
+    override val id: String,
+    override val sykmeldingId: String?,
+    override val fom: LocalDate?,
+    override val tom: LocalDate?,
+) : PreviewSoknad {
+    override val status = SoknadStatus.FREMTIDIG
+}
+
+data class KorrigertSoknad(
+    val korrigertBySoknadId: String?,
+    val korrigererSoknadId: String,
+    override val id: String,
+    override val sykmeldingId: String?,
+    override val fom: LocalDate?,
+    override val tom: LocalDate?,
+) : PreviewSoknad {
+    override val status = SoknadStatus.KORRIGERT
+}

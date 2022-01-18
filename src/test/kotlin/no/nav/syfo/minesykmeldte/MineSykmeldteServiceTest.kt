@@ -8,15 +8,19 @@ import no.nav.syfo.kafka.felles.SoknadstypeDTO
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
-import no.nav.syfo.minesykmeldte.db.getSykepengesoknadDto
+import no.nav.syfo.minesykmeldte.db.createSykepengesoknadDto
 import no.nav.syfo.minesykmeldte.model.AktivitetIkkeMulig
 import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsakEnum
 import no.nav.syfo.minesykmeldte.model.Avventende
 import no.nav.syfo.minesykmeldte.model.Behandlingsdager
+import no.nav.syfo.minesykmeldte.model.FremtidigSoknad
 import no.nav.syfo.minesykmeldte.model.Gradert
+import no.nav.syfo.minesykmeldte.model.KorrigertSoknad
+import no.nav.syfo.minesykmeldte.model.NySoknad
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PeriodeEnum
 import no.nav.syfo.minesykmeldte.model.Reisetilskudd
+import no.nav.syfo.minesykmeldte.model.SendtSoknad
 import no.nav.syfo.model.sykmelding.arbeidsgiver.AktivitetIkkeMuligAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.model.ArbeidsrelatertArsakDTO
@@ -37,6 +41,7 @@ import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.contracts.ExperimentalContracts
@@ -44,7 +49,7 @@ import kotlin.contracts.ExperimentalContracts
 @ExperimentalContracts
 class MineSykmeldteServiceTest : Spek({
     val mineSykmeldteDb = mockk<MineSykmeldteDb>()
-    val minesykmeldtService = MineSykmeldteService(mineSykmeldteDb)
+    val mineSykmeldtService = MineSykmeldteService(mineSykmeldteDb)
 
     afterEachTest {
         clearMocks(mineSykmeldteDb)
@@ -53,12 +58,12 @@ class MineSykmeldteServiceTest : Spek({
     describe("getMineSykmeldte") {
         it("Should get empty list") {
             every { mineSykmeldteDb.getMineSykmeldte("1") } returns emptyList()
-            minesykmeldtService.getMineSykmeldte("1").size shouldBeEqualTo 0
+            mineSykmeldtService.getMineSykmeldte("1").size shouldBeEqualTo 0
         }
 
         it("should get one sykmeldt") {
             every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(1, sykmeldtFnrPrefix = "prefix")
-            val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+            val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
             mineSykmeldte.size shouldBeEqualTo 1
             mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "100%"
         }
@@ -85,7 +90,7 @@ class MineSykmeldteServiceTest : Spek({
                         soknader = 0
                     )
 
-            val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+            val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
 
             mineSykmeldte shouldHaveSize 5
         }
@@ -112,7 +117,7 @@ class MineSykmeldteServiceTest : Spek({
                     sykmeldtFnrPrefix = "prefix"
                 )
 
-                val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+                val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte shouldHaveSize 1
                 mineSykmeldte.first().friskmeldt shouldBe false
             }
@@ -138,7 +143,7 @@ class MineSykmeldteServiceTest : Spek({
                     sykmeldtFnrPrefix = "prefix"
                 )
 
-                val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+                val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte shouldHaveSize 1
                 mineSykmeldte.first().friskmeldt shouldBe true
             }
@@ -166,7 +171,7 @@ class MineSykmeldteServiceTest : Spek({
                     sykmeldtFnrPrefix = "prefix"
                 )
 
-                val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+                val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
                 mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "50%"
             }
@@ -192,7 +197,7 @@ class MineSykmeldteServiceTest : Spek({
                     sykmeldtFnrPrefix = "prefix"
                 )
 
-                val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+                val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
                 mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "20%"
             }
@@ -218,7 +223,7 @@ class MineSykmeldteServiceTest : Spek({
                     sykmeldtFnrPrefix = "prefix"
                 )
 
-                val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+                val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
                 mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Avventende"
             }
@@ -244,7 +249,7 @@ class MineSykmeldteServiceTest : Spek({
                     sykmeldtFnrPrefix = "prefix"
                 )
 
-                val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+                val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
                 mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Behandlingsdager"
             }
@@ -270,7 +275,7 @@ class MineSykmeldteServiceTest : Spek({
                     sykmeldtFnrPrefix = "prefix"
                 )
 
-                val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+                val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
                 mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Reisetilskudd"
             }
@@ -311,7 +316,7 @@ class MineSykmeldteServiceTest : Spek({
                     ),
                 )
 
-                val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+                val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
                 mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Reisetilskudd"
             }
@@ -352,7 +357,7 @@ class MineSykmeldteServiceTest : Spek({
                     ),
                 )
 
-                val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+                val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
                 mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Reisetilskudd"
             }
@@ -393,7 +398,7 @@ class MineSykmeldteServiceTest : Spek({
                     ),
                 )
 
-                val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+                val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
                 mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Reisetilskudd"
             }
@@ -434,7 +439,7 @@ class MineSykmeldteServiceTest : Spek({
                     ),
                 )
 
-                val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+                val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
                 mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Reisetilskudd"
             }
@@ -475,9 +480,163 @@ class MineSykmeldteServiceTest : Spek({
                     ),
                 )
 
-                val mineSykmeldte = minesykmeldtService.getMineSykmeldte("1")
+                val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
                 mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Reisetilskudd"
+            }
+        }
+
+        describe("when mapping søknader") {
+            it("should map to a new søknad and use tom if date is latest") {
+                val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
+                    status = SoknadsstatusDTO.NY,
+                    tom = LocalDate.parse("2020-05-02"),
+                    opprettet = LocalDateTime.parse("2020-04-05T18:00:50.63"),
+                )
+
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
+                    MinSykmeldtDbModel(
+                        narmestelederId = UUID.randomUUID().toString(),
+                        sykmeldtFnr = "080806933221",
+                        orgnummer = "orgnummer",
+                        sykmeldtNavn = "Navn",
+                        startDatoSykefravar = LocalDate.now(),
+                        orgNavn = "orgnavn",
+                        sykmeldingId = "sykmeldingId",
+                        sykmelding = createArbeidsgiverSykmelding("sykmeldingId"),
+                        soknad = soknad,
+                        lestSykmelding = false,
+                        lestSoknad = true,
+                    )
+                )
+
+                val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
+                val mappedSoknad = mineSykeldte[0].previewSoknader[0]
+
+                mappedSoknad.shouldBeInstance<NySoknad>()
+                mappedSoknad.varsel shouldBeEqualTo true
+                mappedSoknad.frist shouldBeEqualTo LocalDate.parse("2020-09-02")
+            }
+
+            it("should map to a new søknad and use opprettet if date is latest") {
+                val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
+                    status = SoknadsstatusDTO.NY,
+                    tom = LocalDate.parse("2020-05-02"),
+                    opprettet = LocalDateTime.parse("2020-06-05T18:00:50.63"),
+                )
+
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
+                    MinSykmeldtDbModel(
+                        narmestelederId = UUID.randomUUID().toString(),
+                        sykmeldtFnr = "080806933221",
+                        orgnummer = "orgnummer",
+                        sykmeldtNavn = "Navn",
+                        startDatoSykefravar = LocalDate.now(),
+                        orgNavn = "orgnavn",
+                        sykmeldingId = "sykmeldingId",
+                        sykmelding = createArbeidsgiverSykmelding("sykmeldingId"),
+                        soknad = soknad,
+                        lestSykmelding = false,
+                        lestSoknad = true,
+                    )
+                )
+
+                val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
+                val mappedSoknad = mineSykeldte[0].previewSoknader[0]
+
+                mappedSoknad.shouldBeInstance<NySoknad>()
+                mappedSoknad.varsel shouldBeEqualTo true
+                mappedSoknad.frist shouldBeEqualTo LocalDate.parse("2020-10-05")
+            }
+
+            it("should map to a sendt søknad") {
+                val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
+                    status = SoknadsstatusDTO.SENDT,
+                    korrigertAv = "korrigert-av-id",
+                    sendtArbeidsgiver = LocalDateTime.parse("2020-06-07T19:34:50.63")
+                )
+
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
+                    MinSykmeldtDbModel(
+                        narmestelederId = UUID.randomUUID().toString(),
+                        sykmeldtFnr = "080806933221",
+                        orgnummer = "orgnummer",
+                        sykmeldtNavn = "Navn",
+                        startDatoSykefravar = LocalDate.now(),
+                        orgNavn = "orgnavn",
+                        sykmeldingId = "sykmeldingId",
+                        sykmelding = createArbeidsgiverSykmelding("sykmeldingId"),
+                        soknad = soknad,
+                        lestSykmelding = false,
+                        lestSoknad = true,
+                    )
+                )
+
+                val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
+                val mappedSoknad = mineSykeldte[0].previewSoknader[0]
+
+                mappedSoknad.shouldBeInstance<SendtSoknad>()
+                mappedSoknad.lest shouldBeEqualTo true
+                mappedSoknad.korrigertBySoknadId shouldBeEqualTo "korrigert-av-id"
+                mappedSoknad.sendtDato shouldBeEqualTo LocalDateTime.parse("2020-06-07T19:34:50.63")
+            }
+
+            it("should map to a fremtidig søknad") {
+                val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
+                    status = SoknadsstatusDTO.FREMTIDIG,
+                )
+
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
+                    MinSykmeldtDbModel(
+                        narmestelederId = UUID.randomUUID().toString(),
+                        sykmeldtFnr = "080806933221",
+                        orgnummer = "orgnummer",
+                        sykmeldtNavn = "Navn",
+                        startDatoSykefravar = LocalDate.now(),
+                        orgNavn = "orgnavn",
+                        sykmeldingId = "sykmeldingId",
+                        sykmelding = createArbeidsgiverSykmelding("sykmeldingId"),
+                        soknad = soknad,
+                        lestSykmelding = false,
+                        lestSoknad = true,
+                    )
+                )
+
+                val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
+                val mappedSoknad = mineSykeldte[0].previewSoknader[0]
+
+                mappedSoknad.shouldBeInstance<FremtidigSoknad>()
+            }
+
+            it("should map to a korrigert søknad") {
+                val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
+                    status = SoknadsstatusDTO.KORRIGERT,
+                    korrigerer = "korrigerer",
+                    korrigertAv = "korrigert-av"
+                )
+
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
+                    MinSykmeldtDbModel(
+                        narmestelederId = UUID.randomUUID().toString(),
+                        sykmeldtFnr = "080806933221",
+                        orgnummer = "orgnummer",
+                        sykmeldtNavn = "Navn",
+                        startDatoSykefravar = LocalDate.now(),
+                        orgNavn = "orgnavn",
+                        sykmeldingId = "sykmeldingId",
+                        sykmelding = createArbeidsgiverSykmelding("sykmeldingId"),
+                        soknad = soknad,
+                        lestSykmelding = false,
+                        lestSoknad = true,
+                    )
+                )
+
+                val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
+                val mappedSoknad = mineSykeldte[0].previewSoknader[0]
+
+                mappedSoknad.shouldBeInstance<KorrigertSoknad>()
+                mappedSoknad.korrigertBySoknadId shouldBeEqualTo "korrigert-av"
+                mappedSoknad.korrigererSoknadId shouldBeEqualTo "korrigerer"
             }
         }
     }
@@ -507,7 +666,7 @@ class MineSykmeldteServiceTest : Spek({
                 )
                 )
 
-            val result = minesykmeldtService.getSykmelding(sykmeldingId, "red-1")
+            val result = mineSykmeldtService.getSykmelding(sykmeldingId, "red-1")
             val periode: Periode? = result?.perioder?.first()
 
             periode.shouldBeInstance<AktivitetIkkeMulig>()
@@ -537,7 +696,7 @@ class MineSykmeldteServiceTest : Spek({
                 )
                 )
 
-            val result = minesykmeldtService.getSykmelding(sykmeldingId, "red-1")
+            val result = mineSykmeldtService.getSykmelding(sykmeldingId, "red-1")
             val periode: Periode? = result?.perioder?.first()
 
             periode.shouldBeInstance<Avventende>()
@@ -565,7 +724,7 @@ class MineSykmeldteServiceTest : Spek({
                 )
                 )
 
-            val result = minesykmeldtService.getSykmelding(sykmeldingId, "red-1")
+            val result = mineSykmeldtService.getSykmelding(sykmeldingId, "red-1")
             val periode: Periode? = result?.perioder?.first()
 
             periode.shouldBeInstance<Behandlingsdager>()
@@ -594,7 +753,7 @@ class MineSykmeldteServiceTest : Spek({
                 )
                 )
 
-            val result = minesykmeldtService.getSykmelding(sykmeldingId, "red-1")
+            val result = mineSykmeldtService.getSykmelding(sykmeldingId, "red-1")
             val periode: Periode? = result?.perioder?.first()
 
             periode.shouldBeInstance<Gradert>()
@@ -623,7 +782,7 @@ class MineSykmeldteServiceTest : Spek({
                 )
                 )
 
-            val result = minesykmeldtService.getSykmelding(sykmeldingId, "red-1")
+            val result = mineSykmeldtService.getSykmelding(sykmeldingId, "red-1")
             val periode: Periode? = result?.perioder?.first()
 
             periode.shouldBeInstance<Reisetilskudd>()
@@ -646,7 +805,7 @@ class MineSykmeldteServiceTest : Spek({
                 )
                 )
 
-            val result = minesykmeldtService.getSoknad(soknadId, "red-2")
+            val result = mineSykmeldtService.getSoknad(soknadId, "red-2")
 
             result.shouldNotBeNull()
             result.id shouldBeEqualTo soknadId
@@ -740,7 +899,7 @@ fun getSykmeldtData(
                 sykmeldingId = arbeigsgiverSykmelding.id,
                 orgNavn = orgnavn,
                 sykmelding = arbeigsgiverSykmelding,
-                soknad = if (soknader != 0 && index < soknader) getSykepengesoknadDto(
+                soknad = if (soknader != 0 && index < soknader) createSykepengesoknadDto(
                     soknadId = UUID.randomUUID().toString(),
                     sykmeldingId = arbeigsgiverSykmelding.id
                 ) else null,

@@ -257,10 +257,10 @@ fun getSoknad(
     sykmeldingId: String = UUID.randomUUID().toString(),
     soknadId: String = UUID.randomUUID().toString(),
 ): SoknadDbModel {
-    return getSykepengesoknadDto(soknadId, sykmeldingId).toSoknadDbModel()
+    return createSykepengesoknadDto(soknadId, sykmeldingId).toSoknadDbModel()
 }
 
-fun getSykepengesoknadDto(
+fun createSykepengesoknadDto(
     soknadId: String,
     sykmeldingId: String,
 ) = objectMapper.readValue<SykepengesoknadDTO>(

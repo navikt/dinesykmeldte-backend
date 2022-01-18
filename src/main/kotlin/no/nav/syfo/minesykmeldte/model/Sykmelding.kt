@@ -64,6 +64,7 @@ data class Gradert(
 data class Behandlingsdager(
     override val fom: LocalDate,
     override val tom: LocalDate,
+    val behandlingsdager: Int,
 ) : Periode {
     override val type = PeriodeEnum.BEHANDLINGSDAGER
 }
