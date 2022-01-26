@@ -1,22 +1,22 @@
 package no.nav.syfo.minesykmeldte.model
 
-import no.nav.syfo.kafka.felles.SoknadsstatusDTO
-import no.nav.syfo.kafka.felles.SoknadstypeDTO
+import no.nav.syfo.kafka.felles.FravarstypeDTO
 import java.time.LocalDate
 
 data class Soknad(
     val id: String,
     val sykmeldingId: String,
+    val fom: LocalDate,
+    val tom: LocalDate,
     val navn: String,
     val fnr: String,
-    val lest: Boolean,
-    val orgnummer: String,
-    val sendtDato: LocalDate?,
-    val tom: LocalDate,
-    val details: SoknadDetails,
+    val korrigertBySoknadId: String?,
+    val fravar: List<Fravar>,
+    // TODO: tilbake i fullt arbeid?
 )
 
-data class SoknadDetails(
-    val type: SoknadstypeDTO,
-    val status: SoknadsstatusDTO,
+data class Fravar(
+    val fom: LocalDate,
+    val tom: LocalDate,
+    val type: FravarstypeDTO,
 )

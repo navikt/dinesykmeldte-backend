@@ -3,24 +3,11 @@ package no.nav.syfo.minesykmeldte
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.syfo.kafka.felles.SoknadsstatusDTO
-import no.nav.syfo.kafka.felles.SoknadstypeDTO
-import no.nav.syfo.kafka.felles.SykepengesoknadDTO
+import no.nav.syfo.kafka.felles.*
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.createSykepengesoknadDto
-import no.nav.syfo.minesykmeldte.model.AktivitetIkkeMulig
-import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsakEnum
-import no.nav.syfo.minesykmeldte.model.Avventende
-import no.nav.syfo.minesykmeldte.model.Behandlingsdager
-import no.nav.syfo.minesykmeldte.model.FremtidigSoknad
-import no.nav.syfo.minesykmeldte.model.Gradert
-import no.nav.syfo.minesykmeldte.model.KorrigertSoknad
-import no.nav.syfo.minesykmeldte.model.NySoknad
-import no.nav.syfo.minesykmeldte.model.Periode
-import no.nav.syfo.minesykmeldte.model.PeriodeEnum
-import no.nav.syfo.minesykmeldte.model.Reisetilskudd
-import no.nav.syfo.minesykmeldte.model.SendtSoknad
+import no.nav.syfo.minesykmeldte.model.*
 import no.nav.syfo.model.sykmelding.arbeidsgiver.AktivitetIkkeMuligAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.model.ArbeidsrelatertArsakDTO
@@ -796,12 +783,25 @@ class MineSykmeldteServiceTest : Spek({
             every {
                 mineSykmeldteDb.getSoknad(soknadId, "red-2")
             } returns (
-                createSykmeldtDbModel() to createSoknadDbModel(
+                createSykmeldtDbModel(
+                    pasientNavn = "Navn Navnesen"
+                ) to createSoknadDbModel(
                     soknadId = soknadId,
                     sykmeldingId = "31c5b5ca-1248-4280-bc2e-3c6b11c365b9",
                     tom = LocalDate.parse("2021-04-04"),
                     sendtDato = LocalDate.parse("2021-04-04"),
                     timestamp = OffsetDateTime.parse("2021-11-18T14:06:12Z"),
+                    soknad = mockk<SykepengesoknadDTO>().also {
+                        every { it.fravar } returns listOf(
+                            FravarDTO(
+                                LocalDate.parse("2021-10-01"),
+                                LocalDate.parse("2021-10-07"),
+                                FravarstypeDTO.FERIE,
+                            )
+                        )
+                        every { it.fom } returns LocalDate.parse("2021-10-01")
+                        every { it.korrigertAv } returns "jd14jfqd-0422-4a5e-b779-a8819abf"
+                    },
                 )
                 )
 
@@ -809,8 +809,16 @@ class MineSykmeldteServiceTest : Spek({
 
             result.shouldNotBeNull()
             result.id shouldBeEqualTo soknadId
-            result.details.type shouldBeEqualTo SoknadstypeDTO.ARBEIDSLEDIG
-            result.details.status shouldBeEqualTo SoknadsstatusDTO.NY
+            result.sykmeldingId shouldBeEqualTo "31c5b5ca-1248-4280-bc2e-3c6b11c365b9"
+            result.fravar shouldBeEqualTo listOf(
+                Fravar(
+                    fom = LocalDate.parse("2021-10-01"),
+                    tom = LocalDate.parse("2021-10-07"),
+                    type = FravarstypeDTO.FERIE,
+                )
+            )
+            result.navn shouldBeEqualTo "Navn Navnesen"
+            result.korrigertBySoknadId shouldBeEqualTo "jd14jfqd-0422-4a5e-b779-a8819abf"
         }
     }
 })
