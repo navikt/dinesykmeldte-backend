@@ -37,7 +37,7 @@ sealed interface PreviewSoknad {
     val status: SoknadStatus
 }
 
-data class SendtSoknad(
+data class PreviewSendtSoknad(
     val korrigertBySoknadId: String?,
     val lest: Boolean,
     val sendtDato: LocalDateTime,
@@ -49,7 +49,7 @@ data class SendtSoknad(
     override val status = SoknadStatus.SENDT
 }
 
-data class NySoknad(
+data class PreviewNySoknad(
     val frist: LocalDate,
     val varsel: Boolean,
     override val id: String,
@@ -60,7 +60,7 @@ data class NySoknad(
     override val status = SoknadStatus.NY
 }
 
-data class FremtidigSoknad(
+data class PreviewFremtidigSoknad(
     override val id: String,
     override val sykmeldingId: String?,
     override val fom: LocalDate?,
@@ -69,7 +69,7 @@ data class FremtidigSoknad(
     override val status = SoknadStatus.FREMTIDIG
 }
 
-data class KorrigertSoknad(
+data class PreviewKorrigertSoknad(
     val korrigertBySoknadId: String?,
     val korrigererSoknadId: String,
     override val id: String,

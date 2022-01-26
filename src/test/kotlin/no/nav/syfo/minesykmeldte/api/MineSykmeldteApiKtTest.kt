@@ -147,7 +147,7 @@ object MineSykmeldteApiKtTest : Spek({
                             friskmeldt = false,
                             previewSykmeldinger = emptyList(),
                             previewSoknader = listOf(
-                                NySoknad(
+                                PreviewNySoknad(
                                     id = "soknad-1-id",
                                     sykmeldingId = "sykmelding-id-1",
                                     frist = LocalDate.parse("2020-05-05"),

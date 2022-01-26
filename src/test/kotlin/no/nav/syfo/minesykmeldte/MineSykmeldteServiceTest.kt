@@ -513,7 +513,7 @@ class MineSykmeldteServiceTest : Spek({
                 val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
                 val mappedSoknad = mineSykeldte[0].previewSoknader[0]
 
-                mappedSoknad.shouldBeInstance<NySoknad>()
+                mappedSoknad.shouldBeInstance<PreviewNySoknad>()
                 mappedSoknad.varsel shouldBeEqualTo true
                 mappedSoknad.frist shouldBeEqualTo LocalDate.parse("2020-09-02")
             }
@@ -544,7 +544,7 @@ class MineSykmeldteServiceTest : Spek({
                 val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
                 val mappedSoknad = mineSykeldte[0].previewSoknader[0]
 
-                mappedSoknad.shouldBeInstance<NySoknad>()
+                mappedSoknad.shouldBeInstance<PreviewNySoknad>()
                 mappedSoknad.varsel shouldBeEqualTo true
                 mappedSoknad.frist shouldBeEqualTo LocalDate.parse("2020-10-05")
             }
@@ -575,7 +575,7 @@ class MineSykmeldteServiceTest : Spek({
                 val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
                 val mappedSoknad = mineSykeldte[0].previewSoknader[0]
 
-                mappedSoknad.shouldBeInstance<SendtSoknad>()
+                mappedSoknad.shouldBeInstance<PreviewSendtSoknad>()
                 mappedSoknad.lest shouldBeEqualTo true
                 mappedSoknad.korrigertBySoknadId shouldBeEqualTo "korrigert-av-id"
                 mappedSoknad.sendtDato shouldBeEqualTo LocalDateTime.parse("2020-06-07T19:34:50.63")
@@ -605,7 +605,7 @@ class MineSykmeldteServiceTest : Spek({
                 val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
                 val mappedSoknad = mineSykeldte[0].previewSoknader[0]
 
-                mappedSoknad.shouldBeInstance<FremtidigSoknad>()
+                mappedSoknad.shouldBeInstance<PreviewFremtidigSoknad>()
             }
 
             it("should map to a korrigert søknad") {
@@ -634,7 +634,7 @@ class MineSykmeldteServiceTest : Spek({
                 val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
                 val mappedSoknad = mineSykeldte[0].previewSoknader[0]
 
-                mappedSoknad.shouldBeInstance<KorrigertSoknad>()
+                mappedSoknad.shouldBeInstance<PreviewKorrigertSoknad>()
                 mappedSoknad.korrigertBySoknadId shouldBeEqualTo "korrigert-av"
                 mappedSoknad.korrigererSoknadId shouldBeEqualTo "korrigerer"
             }
