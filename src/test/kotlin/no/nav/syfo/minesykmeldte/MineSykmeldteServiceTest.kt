@@ -3,11 +3,20 @@ package no.nav.syfo.minesykmeldte
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.syfo.kafka.felles.*
+import no.nav.syfo.kafka.felles.SoknadsstatusDTO
+import no.nav.syfo.kafka.felles.SoknadstypeDTO
+import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.createSykepengesoknadDto
-import no.nav.syfo.minesykmeldte.model.*
+import no.nav.syfo.minesykmeldte.model.AktivitetIkkeMulig
+import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsakEnum
+import no.nav.syfo.minesykmeldte.model.Avventende
+import no.nav.syfo.minesykmeldte.model.Behandlingsdager
+import no.nav.syfo.minesykmeldte.model.Gradert
+import no.nav.syfo.minesykmeldte.model.Periode
+import no.nav.syfo.minesykmeldte.model.PeriodeEnum
+import no.nav.syfo.minesykmeldte.model.Reisetilskudd
 import no.nav.syfo.model.sykmelding.arbeidsgiver.AktivitetIkkeMuligAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.model.ArbeidsrelatertArsakDTO
@@ -31,6 +40,13 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
+import no.nav.syfo.kafka.felles.FravarDTO
+import no.nav.syfo.kafka.felles.FravarstypeDTO
+import no.nav.syfo.minesykmeldte.model.Fravar
+import no.nav.syfo.minesykmeldte.model.PreviewFremtidigSoknad
+import no.nav.syfo.minesykmeldte.model.PreviewKorrigertSoknad
+import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
+import no.nav.syfo.minesykmeldte.model.PreviewSendtSoknad
 import kotlin.contracts.ExperimentalContracts
 
 @ExperimentalContracts
