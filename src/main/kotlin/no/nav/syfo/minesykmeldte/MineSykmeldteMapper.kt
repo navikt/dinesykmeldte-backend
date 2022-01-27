@@ -3,12 +3,12 @@ package no.nav.syfo.minesykmeldte
 import no.nav.syfo.kafka.felles.SoknadsstatusDTO
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
-import no.nav.syfo.minesykmeldte.model.FremtidigSoknad
-import no.nav.syfo.minesykmeldte.model.KorrigertSoknad
-import no.nav.syfo.minesykmeldte.model.NySoknad
+import no.nav.syfo.minesykmeldte.model.PreviewFremtidigSoknad
+import no.nav.syfo.minesykmeldte.model.PreviewKorrigertSoknad
+import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
+import no.nav.syfo.minesykmeldte.model.PreviewSendtSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmelding
-import no.nav.syfo.minesykmeldte.model.SendtSoknad
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
@@ -37,8 +37,8 @@ class MineSykmeldteMapper private constructor() {
                 else -> throw IllegalArgumentException("Incorrect soknad status ${soknad.status}")
             }
 
-        private fun getKorrigertSoknad(soknad: SykepengesoknadDTO): KorrigertSoknad =
-            KorrigertSoknad(
+        private fun getKorrigertSoknad(soknad: SykepengesoknadDTO): PreviewKorrigertSoknad =
+            PreviewKorrigertSoknad(
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
@@ -48,8 +48,8 @@ class MineSykmeldteMapper private constructor() {
                 korrigertBySoknadId = soknad.korrigertAv
             )
 
-        private fun getSendtSoknad(soknad: SykepengesoknadDTO, lest: Boolean): SendtSoknad =
-            SendtSoknad(
+        private fun getSendtSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewSendtSoknad =
+            PreviewSendtSoknad(
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
@@ -60,16 +60,16 @@ class MineSykmeldteMapper private constructor() {
                 korrigertBySoknadId = soknad.korrigertAv
             )
 
-        private fun getFremtidigSoknad(soknad: SykepengesoknadDTO): FremtidigSoknad =
-            FremtidigSoknad(
+        private fun getFremtidigSoknad(soknad: SykepengesoknadDTO): PreviewFremtidigSoknad =
+            PreviewFremtidigSoknad(
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
                 tom = soknad.tom,
             )
 
-        private fun getNySoknad(soknad: SykepengesoknadDTO, varsel: Boolean): NySoknad =
-            NySoknad(
+        private fun getNySoknad(soknad: SykepengesoknadDTO, varsel: Boolean): PreviewNySoknad =
+            PreviewNySoknad(
                 frist = maxDate(soknad.opprettet?.toLocalDate(), soknad.tom).plusMonths(4),
                 varsel = varsel,
                 id = soknad.id,

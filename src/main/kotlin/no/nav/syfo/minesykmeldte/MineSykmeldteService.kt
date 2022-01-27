@@ -18,7 +18,6 @@ import no.nav.syfo.minesykmeldte.model.PreviewSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
 import no.nav.syfo.minesykmeldte.model.Reisetilskudd
 import no.nav.syfo.minesykmeldte.model.Soknad
-import no.nav.syfo.minesykmeldte.model.SoknadDetails
 import no.nav.syfo.minesykmeldte.model.Sykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.BehandlerAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
@@ -27,9 +26,10 @@ import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
-import java.lang.IllegalStateException
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import no.nav.syfo.minesykmeldte.model.Fravar
+import kotlin.IllegalStateException
 
 class MineSykmeldteService(
     private val mineSykmeldteDb: MineSykmeldteDb,
@@ -87,28 +87,29 @@ private fun MinSykmeldtDbModel.toMinSykmeldtKey(): MinSykmeldtKey = MinSykmeldtK
 )
 
 private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
-    val (sykmeldt, soknad) = this
-    val details = soknad.soknad
+    val (sykmeldt, soknadDb) = this
 
-    val sykmeldingId = soknad.sykmeldingId
+    val sykmeldingId = soknadDb.sykmeldingId
 
     requireNotNull(sykmeldingId) {
         "Søknad kan ikke eksistere uten sykmelding"
     }
 
     return Soknad(
-        id = soknad.soknadId,
+        id = soknadDb.soknadId,
         sykmeldingId = sykmeldingId,
         navn = sykmeldt.pasientNavn,
         fnr = sykmeldt.pasientFnr,
-        lest = soknad.lest,
-        orgnummer = soknad.orgnummer,
-        sendtDato = soknad.sendtDato,
-        tom = soknad.tom,
-        details = SoknadDetails(
-            type = details.type,
-            status = details.status,
-        ),
+        fom = soknadDb.soknad.fom!!,
+        tom = soknadDb.tom,
+        korrigertBySoknadId = soknadDb.soknad.korrigertAv,
+        fravar = soknadDb.soknad.fravar?.map {
+            Fravar(
+                fom = it.fom!!,
+                tom = it.tom!!,
+                type = it.type!!,
+            )
+        } ?: throw IllegalStateException("TODO"),
     )
 }
 
