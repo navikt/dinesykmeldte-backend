@@ -55,7 +55,7 @@ class SykmeldingService(
                     throw IllegalStateException("Mottatt sendt sykmelding uten arbeidsgiver, $sykmeldingId")
                 }
                 val person = pdlPersonService.getPerson(fnr = sykmelding.kafkaMetadata.fnr, callId = sykmeldingId)
-                val startdato = syfoSyketilfelleClient.finnStartdato(aktorId = person.aktorId!!, sykmeldingId = sykmeldingId)
+                val startdato = syfoSyketilfelleClient.finnStartdato(fnr = sykmelding.kafkaMetadata.fnr, sykmeldingId = sykmeldingId)
                 sykmeldingDb.insertOrUpdate(
                     toSykmeldingDbModel(sykmelding, sisteTom),
                     SykmeldtDbModel(

@@ -65,7 +65,7 @@ spec:
     outbound:
       external:
         - host: https://pdl-api.prod-fss-pub.nais.io
-        - host: https://teamsykmelding-auth-fss-proxy.prod-fss-pub.nais.io
+        - host: https://flex-syketilfelle.intern.nav.no
   env:
     - name: ALLOWED_ORIGIN
       value: tjenester.nav.no,www.nav.no
@@ -74,6 +74,6 @@ spec:
     - name: PDL_SCOPE
       value: api://prod-fss.pdl.pdl-api/.default
     - name: SYKETILLFELLE_ENDPOINT_URL
-      value: https://teamsykmelding-auth-fss-proxy.prod-fss-pub.nais.io
+      value: https://flex-syketilfelle.intern.nav.no
     - name: SYKETILLFELLE_SCOPE
-      value: api://prod-fss.teamsykmelding.teamsykmelding-auth-fss-proxy/.default
+      value: api://prod-gcp.flex.flex-syketilfelle/.default
