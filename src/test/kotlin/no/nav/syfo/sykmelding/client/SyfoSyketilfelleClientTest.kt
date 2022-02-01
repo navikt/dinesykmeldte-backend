@@ -39,9 +39,9 @@ object SyfoSyketilfelleClientTest : Spek({
     val oppfolgingsdato2 = LocalDate.of(2020, 1, 30)
     val oppfolgingsdato3 = LocalDate.of(2018, 10, 15)
 
-    val aktorId1 = "123456"
-    val aktorId2 = "654321"
-    val aktorId3 = "1234567"
+    val fnr1 = "123456"
+    val fnr2 = "654321"
+    val fnr3 = "1234567"
     val accessTokenClient = mockk<AccessTokenClient>()
     val httpClient = HttpClient(Apache) {
         install(JsonFeature) {
@@ -80,71 +80,71 @@ object SyfoSyketilfelleClientTest : Spek({
             }
         }
         routing {
-            get("/syfosyketilfelle/sparenaproxy/$aktorId3/sykeforloep") {
-                delay(10_000)
-                call.respond(emptyList<Sykeforloep>())
-            }
-            get("/syfosyketilfelle/sparenaproxy/$aktorId1/sykeforloep") {
-                call.respond(
-                    listOf(
-                        Sykeforloep(
-                            oppfolgingsdato1,
-                            listOf(
-                                SimpleSykmelding(
-                                    UUID.randomUUID().toString(),
-                                    oppfolgingsdato1,
-                                    oppfolgingsdato1.plusWeeks(3)
+            get("/api/v1/sykeforloep") {
+                when (call.request.headers["fnr"]) {
+                    fnr3 -> {
+                        delay(10_000)
+                        call.respond(emptyList<Sykeforloep>())
+                    }
+                    fnr1 -> call.respond(
+                        listOf(
+                            Sykeforloep(
+                                oppfolgingsdato1,
+                                listOf(
+                                    SimpleSykmelding(
+                                        UUID.randomUUID().toString(),
+                                        oppfolgingsdato1,
+                                        oppfolgingsdato1.plusWeeks(3)
+                                    )
                                 )
-                            )
-                        ),
-                        Sykeforloep(
-                            oppfolgingsdato2,
-                            listOf(
-                                SimpleSykmelding(
-                                    sykmeldingUUID.toString(),
-                                    oppfolgingsdato2,
-                                    oppfolgingsdato2.plusWeeks(4)
+                            ),
+                            Sykeforloep(
+                                oppfolgingsdato2,
+                                listOf(
+                                    SimpleSykmelding(
+                                        sykmeldingUUID.toString(),
+                                        oppfolgingsdato2,
+                                        oppfolgingsdato2.plusWeeks(4)
+                                    )
                                 )
-                            )
-                        ),
-                        Sykeforloep(
-                            oppfolgingsdato3,
-                            listOf(
-                                SimpleSykmelding(
-                                    UUID.randomUUID().toString(),
-                                    oppfolgingsdato3,
-                                    oppfolgingsdato3.plusWeeks(8)
-                                )
-                            )
-                        )
-                    )
-                )
-            }
-            get("/syfosyketilfelle/sparenaproxy/$aktorId2/sykeforloep") {
-                call.respond(
-                    listOf(
-                        Sykeforloep(
-                            oppfolgingsdato1,
-                            listOf(
-                                SimpleSykmelding(
-                                    UUID.randomUUID().toString(),
-                                    oppfolgingsdato1,
-                                    oppfolgingsdato1.plusWeeks(3)
-                                )
-                            )
-                        ),
-                        Sykeforloep(
-                            oppfolgingsdato3,
-                            listOf(
-                                SimpleSykmelding(
-                                    UUID.randomUUID().toString(),
-                                    oppfolgingsdato3,
-                                    oppfolgingsdato3.plusWeeks(8)
+                            ),
+                            Sykeforloep(
+                                oppfolgingsdato3,
+                                listOf(
+                                    SimpleSykmelding(
+                                        UUID.randomUUID().toString(),
+                                        oppfolgingsdato3,
+                                        oppfolgingsdato3.plusWeeks(8)
+                                    )
                                 )
                             )
                         )
                     )
-                )
+                    fnr2 -> call.respond(
+                        listOf(
+                            Sykeforloep(
+                                oppfolgingsdato1,
+                                listOf(
+                                    SimpleSykmelding(
+                                        UUID.randomUUID().toString(),
+                                        oppfolgingsdato1,
+                                        oppfolgingsdato1.plusWeeks(3)
+                                    )
+                                )
+                            ),
+                            Sykeforloep(
+                                oppfolgingsdato3,
+                                listOf(
+                                    SimpleSykmelding(
+                                        UUID.randomUUID().toString(),
+                                        oppfolgingsdato3,
+                                        oppfolgingsdato3.plusWeeks(8)
+                                    )
+                                )
+                            )
+                        )
+                    )
+                }
             }
         }
     }.start()
@@ -175,21 +175,21 @@ object SyfoSyketilfelleClientTest : Spek({
         it("Should get SocketTimeoutException") {
             runBlocking {
                 assertFailsWith<SocketTimeoutException> {
-                    syfoSyketilfelletSocketTimeoutClient.finnStartdato(aktorId3, sykmeldingUUID.toString())
+                    syfoSyketilfelletSocketTimeoutClient.finnStartdato(fnr3, sykmeldingUUID.toString())
                 }
             }
         }
 
         it("Henter riktig startdato fra syfosyketilfelle") {
             runBlocking {
-                val startDato = syfoSyketilfelleClient.finnStartdato(aktorId1, sykmeldingUUID.toString())
+                val startDato = syfoSyketilfelleClient.finnStartdato(fnr1, sykmeldingUUID.toString())
                 startDato shouldBeEqualTo oppfolgingsdato2
             }
         }
         it("Kaster feil hvis sykmelding ikke er knyttet til syketilfelle") {
             assertFailsWith<SyketilfelleNotFoundException> {
                 runBlocking {
-                    syfoSyketilfelleClient.finnStartdato(aktorId2, sykmeldingUUID.toString())
+                    syfoSyketilfelleClient.finnStartdato(fnr2, sykmeldingUUID.toString())
                 }
             }
         }

@@ -5,21 +5,21 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.5.1"
-val jacksonVersion = "2.12.0"
+val coroutinesVersion = "1.6.0"
+val jacksonVersion = "2.13.1"
 val kluentVersion = "1.68"
 val ktorVersion = "1.6.7"
-val logbackVersion = "1.2.7"
-val logstashEncoderVersion = "6.6"
-val prometheusVersion = "0.12.0"
+val logbackVersion = "1.2.10"
+val logstashEncoderVersion = "7.0.1"
+val prometheusVersion = "0.14.1"
 val spekVersion = "2.0.17"
 val smCommonVersion = "1.a92720c"
-val mockkVersion = "1.12.0"
-val nimbusdsVersion = "9.2"
-val hikariVersion = "5.0.0"
-val flywayVersion = "7.15.0"
-val postgresVersion = "42.2.24"
-val testContainerVersion = "1.16.2"
+val mockkVersion = "1.12.2"
+val nimbusdsVersion = "9.16"
+val hikariVersion = "5.0.1"
+val flywayVersion = "8.4.2"
+val postgresVersion = "42.3.1"
+val testContainerVersion = "1.16.3"
 val kotlinVersion = "1.6.0"
 val syfoKafkaVersion = "2021.07.20-09.39-6be2c52c"
 
@@ -31,8 +31,7 @@ plugins {
     id("org.jmailen.kotlinter") version "3.6.0"
     kotlin("jvm") version "1.6.0"
     id("com.diffplug.spotless") version "5.16.0"
-    id("com.github.johnrengelman.shadow") version "6.1.0"
-    jacoco
+    id("com.github.johnrengelman.shadow") version "7.0.0"
 }
 
 buildscript {
@@ -56,7 +55,7 @@ repositories {
 
 
 dependencies {
-    implementation(kotlin("stdlib"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$coroutinesVersion")
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
@@ -103,14 +102,6 @@ dependencies {
     }
 }
 
-tasks.jacocoTestReport {
-    reports {
-        xml.isEnabled = true
-        html.isEnabled = true
-    }
-}
-
-
 tasks {
 
     create("printVersion") {
@@ -118,17 +109,9 @@ tasks {
     }
 
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "16"
+        kotlinOptions.jvmTarget = "17"
     }
 
-    withType<JacocoReport> {
-        classDirectories.setFrom(
-                sourceSets.main.get().output.asFileTree.matching {
-                    exclude()
-                }
-        )
-
-    }
     withType<ShadowJar> {
         transform(ServiceFileTransformer::class.java) {
             setPath("META-INF/cxf")

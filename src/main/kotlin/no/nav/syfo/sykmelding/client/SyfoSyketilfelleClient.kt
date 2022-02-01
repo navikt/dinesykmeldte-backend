@@ -16,8 +16,8 @@ class SyfoSyketilfelleClient(
     private val httpClient: HttpClient
 ) {
 
-    suspend fun finnStartdato(aktorId: String, sykmeldingId: String): LocalDate {
-        val sykeforloep = hentSykeforloep(aktorId)
+    suspend fun finnStartdato(fnr: String, sykmeldingId: String): LocalDate {
+        val sykeforloep = hentSykeforloep(fnr)
         val aktueltSykeforloep = sykeforloep.firstOrNull {
             it.sykmeldinger.any { simpleSykmelding -> simpleSykmelding.id == sykmeldingId }
         }
@@ -30,12 +30,13 @@ class SyfoSyketilfelleClient(
         }
     }
 
-    private suspend fun hentSykeforloep(aktorId: String): List<Sykeforloep> =
-        httpClient.get<List<Sykeforloep>>("$syketilfelleEndpointURL/syfosyketilfelle/sparenaproxy/$aktorId/sykeforloep") {
+    private suspend fun hentSykeforloep(fnr: String): List<Sykeforloep> =
+        httpClient.get<List<Sykeforloep>>("$syketilfelleEndpointURL/api/v1/sykeforloep?inkluderPapirsykmelding=true") {
             accept(ContentType.Application.Json)
             val token = accessTokenClient.getAccessToken(syketilfelleScope)
             headers {
                 append("Authorization", "Bearer $token")
+                append("fnr", fnr)
             }
         }
 }
