@@ -12,7 +12,9 @@ import no.nav.syfo.kafka.felles.FravarstypeDTO
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.Behandler
+import no.nav.syfo.minesykmeldte.model.Fravar
 import no.nav.syfo.minesykmeldte.model.Periode
+import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
 import no.nav.syfo.minesykmeldte.model.Soknad
 import no.nav.syfo.minesykmeldte.model.Sykmelding
@@ -24,8 +26,6 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.util.UUID
-import no.nav.syfo.minesykmeldte.model.Fravar
-import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
 
 object MineSykmeldteApiKtTest : Spek({
     val mineSykmeldteService = mockk<MineSykmeldteService>()
