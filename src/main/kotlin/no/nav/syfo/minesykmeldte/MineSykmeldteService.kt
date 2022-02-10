@@ -2,6 +2,7 @@ package no.nav.syfo.minesykmeldte
 
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSoknad
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSykmelding
+import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toSoknadsperiode
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.model.AktivitetIkkeMulig
@@ -103,13 +104,15 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         fom = soknadDb.soknad.fom!!,
         tom = soknadDb.tom,
         korrigertBySoknadId = soknadDb.soknad.korrigertAv,
+        perioder = soknadDb.soknad.soknadsperioder?.map { it.toSoknadsperiode() }
+            ?: throw IllegalStateException("Søknad uten perioder definert: ${soknadDb.soknadId}"),
         fravar = soknadDb.soknad.fravar?.map {
             Fravar(
-                fom = it.fom!!,
-                tom = it.tom!!,
-                type = it.type!!,
+                fom = requireNotNull(it.fom),
+                tom = requireNotNull(it.tom),
+                type = requireNotNull(it.type),
             )
-        } ?: throw IllegalStateException("TODO"),
+        } ?: throw IllegalStateException("Søknad uten fravær definert: ${soknadDb.soknadId}")
     )
 }
 

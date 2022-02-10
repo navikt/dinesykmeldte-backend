@@ -1,14 +1,17 @@
 package no.nav.syfo.minesykmeldte
 
+import no.nav.syfo.kafka.felles.SoknadsperiodeDTO
 import no.nav.syfo.kafka.felles.SoknadsstatusDTO
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
+import no.nav.syfo.minesykmeldte.model.PeriodeEnum
 import no.nav.syfo.minesykmeldte.model.PreviewFremtidigSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewKorrigertSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSendtSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmelding
+import no.nav.syfo.minesykmeldte.model.Soknadsperiode
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
@@ -45,7 +48,9 @@ class MineSykmeldteMapper private constructor() {
                 tom = soknad.tom,
                 korrigererSoknadId = soknad.korrigerer
                     ?: throw IllegalStateException("korrigerer must not be null in korrigert soknad: ${soknad.id}"),
-                korrigertBySoknadId = soknad.korrigertAv
+                korrigertBySoknadId = soknad.korrigertAv,
+                perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
+                    ?: throw IllegalStateException("søknadsperioder must not be null in korrigert soknad: ${soknad.id}"),
             )
 
         private fun getSendtSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewSendtSoknad =
@@ -57,7 +62,9 @@ class MineSykmeldteMapper private constructor() {
                 lest = lest,
                 sendtDato = soknad.sendtArbeidsgiver
                     ?: throw IllegalStateException("sendtArbeidsgiver is null for soknad: ${soknad.id}"),
-                korrigertBySoknadId = soknad.korrigertAv
+                korrigertBySoknadId = soknad.korrigertAv,
+                perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
+                    ?: throw IllegalStateException("søknadsperioder must not be null in sendt soknad: ${soknad.id}"),
             )
 
         private fun getFremtidigSoknad(soknad: SykepengesoknadDTO): PreviewFremtidigSoknad =
@@ -66,6 +73,8 @@ class MineSykmeldteMapper private constructor() {
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
                 tom = soknad.tom,
+                perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
+                    ?: throw IllegalStateException("søknadsperioder must not be null in fremtidig soknad: ${soknad.id}"),
             )
 
         private fun getNySoknad(soknad: SykepengesoknadDTO, varsel: Boolean): PreviewNySoknad =
@@ -75,7 +84,9 @@ class MineSykmeldteMapper private constructor() {
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
-                tom = soknad.tom
+                tom = soknad.tom,
+                perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
+                    ?: throw IllegalStateException("søknadsperioder must not be null in ny soknad: ${soknad.id}"),
             )
 
         private fun getTypeSykmelding(sykmelding: ArbeidsgiverSykmelding): String {
@@ -87,6 +98,13 @@ class MineSykmeldteMapper private constructor() {
                 else -> formatPeriodType(periodNearestNow)
             }
         }
+
+        fun SoknadsperiodeDTO.toSoknadsperiode(): Soknadsperiode = Soknadsperiode(
+            fom = requireNotNull(fom),
+            tom = requireNotNull(tom),
+            sykmeldingsgrad = sykmeldingsgrad,
+            sykmeldingstype = PeriodeEnum.valueOf(sykmeldingstype.toString()),
+        )
 
         private fun formatPeriodType(relevantPeriod: SykmeldingsperiodeAGDTO) = when (relevantPeriod.type) {
             PeriodetypeDTO.GRADERT -> relevantPeriod.gradert.gradPercent

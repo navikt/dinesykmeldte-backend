@@ -5,9 +5,11 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.syfo.kafka.felles.FravarDTO
 import no.nav.syfo.kafka.felles.FravarstypeDTO
+import no.nav.syfo.kafka.felles.SoknadsperiodeDTO
 import no.nav.syfo.kafka.felles.SoknadsstatusDTO
 import no.nav.syfo.kafka.felles.SoknadstypeDTO
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
+import no.nav.syfo.kafka.felles.SykmeldingstypeDTO
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.createSykepengesoknadDto
@@ -817,6 +819,13 @@ class MineSykmeldteServiceTest : Spek({
                         )
                         every { it.fom } returns LocalDate.parse("2021-10-01")
                         every { it.korrigertAv } returns "jd14jfqd-0422-4a5e-b779-a8819abf"
+                        every { it.soknadsperioder } returns listOf(
+                            SoknadsperiodeDTO(
+                                fom = LocalDate.parse("2021-10-04"),
+                                tom = LocalDate.parse("2021-10-12"),
+                                sykmeldingstype = SykmeldingstypeDTO.AKTIVITET_IKKE_MULIG,
+                            )
+                        )
                     },
                 )
                 )
@@ -835,6 +844,9 @@ class MineSykmeldteServiceTest : Spek({
             )
             result.navn shouldBeEqualTo "Navn Navnesen"
             result.korrigertBySoknadId shouldBeEqualTo "jd14jfqd-0422-4a5e-b779-a8819abf"
+            result.perioder[0].fom shouldBeEqualTo LocalDate.parse("2021-10-04")
+            result.perioder[0].tom shouldBeEqualTo LocalDate.parse("2021-10-12")
+            result.perioder[0].sykmeldingstype shouldBeEqualTo PeriodeEnum.AKTIVITET_IKKE_MULIG
         }
     }
 })

@@ -153,6 +153,7 @@ object MineSykmeldteApiKtTest : Spek({
                                     fom = LocalDate.parse("2020-01-01"),
                                     tom = LocalDate.parse("2020-02-01"),
                                     varsel = true,
+                                    perioder = listOf(),
                                 )
                             ),
                         )
@@ -179,6 +180,7 @@ object MineSykmeldteApiKtTest : Spek({
                                 "sykmeldingId": "sykmelding-id-1",
                                 "fom": "2020-01-01",
                                 "tom": "2020-02-01",
+                                "perioder": [],
                                 "status": "NY"
                               }
                             ]
@@ -314,7 +316,8 @@ object MineSykmeldteApiKtTest : Spek({
                             "fom": "2021-10-01",
                             "tom": "2021-10-07",
                             "type": "PERMISJON"
-                         }]
+                         }],
+                         "perioder": []
                       }
                     """.minifyApiResponse()
                 }
@@ -342,6 +345,7 @@ fun createSoknadTestData(
     fom = fom,
     korrigertBySoknadId = korrigertBySoknadId,
     fravar = fravar,
+    perioder = listOf(),
 )
 
 fun createSykmeldingTestData(

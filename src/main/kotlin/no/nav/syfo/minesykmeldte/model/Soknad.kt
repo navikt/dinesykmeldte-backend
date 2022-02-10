@@ -12,6 +12,7 @@ data class Soknad(
     val fnr: String,
     val korrigertBySoknadId: String?,
     val fravar: List<Fravar>,
+    val perioder: List<Soknadsperiode>,
     // TODO: tilbake i fullt arbeid?
 )
 
@@ -19,4 +20,11 @@ data class Fravar(
     val fom: LocalDate,
     val tom: LocalDate,
     val type: FravarstypeDTO,
+)
+
+data class Soknadsperiode(
+    val fom: LocalDate,
+    val tom: LocalDate,
+    val sykmeldingsgrad: Int?,
+    val sykmeldingstype: PeriodeEnum,
 )
