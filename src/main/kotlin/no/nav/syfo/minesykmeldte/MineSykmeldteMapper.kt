@@ -18,6 +18,9 @@ import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import java.time.LocalDate
 import java.util.Collections.max
+import no.nav.syfo.kafka.felles.SporsmalDTO
+import no.nav.syfo.minesykmeldte.model.Sporsmal
+import no.nav.syfo.minesykmeldte.model.Svar
 
 class MineSykmeldteMapper private constructor() {
     companion object {
@@ -104,6 +107,21 @@ class MineSykmeldteMapper private constructor() {
             tom = requireNotNull(tom),
             sykmeldingsgrad = sykmeldingsgrad,
             sykmeldingstype = PeriodeEnum.valueOf(sykmeldingstype.toString()),
+        )
+
+        fun SporsmalDTO.toSporsmal(): Sporsmal = Sporsmal(
+            id = requireNotNull(id),
+            tag = requireNotNull(tag),
+            sporsmalstekst = requireNotNull(sporsmalstekst),
+            undertekst = undertekst,
+            svartype = requireNotNull(svartype),
+            kriterieForVisningAvUndersporsmal = requireNotNull(kriterieForVisningAvUndersporsmal),
+            svar = requireNotNull(svar).map {
+                Svar(
+                    verdi = requireNotNull(it.verdi),
+                )
+            },
+            undersporsmal = undersporsmal?.map { it.toSporsmal() },
         )
 
         private fun formatPeriodType(relevantPeriod: SykmeldingsperiodeAGDTO) = when (relevantPeriod.type) {

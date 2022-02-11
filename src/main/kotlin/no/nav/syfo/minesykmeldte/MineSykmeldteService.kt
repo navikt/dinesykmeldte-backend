@@ -30,6 +30,7 @@ import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toSporsmal
 import kotlin.IllegalStateException
 
 class MineSykmeldteService(
@@ -113,7 +114,8 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
                 tom = requireNotNull(it.tom),
                 type = requireNotNull(it.type),
             )
-        } ?: throw IllegalStateException("Søknad uten fravær definert: ${soknadDb.soknadId}")
+        } ?: throw IllegalStateException("Søknad uten fravær definert: ${soknadDb.soknadId}"),
+        sporsmal = requireNotNull(soknadDb.soknad.sporsmal).map { it.toSporsmal() },
     )
 }
 

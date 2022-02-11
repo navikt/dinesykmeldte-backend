@@ -49,6 +49,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
+import no.nav.syfo.kafka.felles.SporsmalDTO
+import no.nav.syfo.kafka.felles.SvarDTO
+import no.nav.syfo.kafka.felles.SvartypeDTO
+import no.nav.syfo.kafka.felles.VisningskriteriumDTO
+import no.nav.syfo.minesykmeldte.model.Svar
 import kotlin.contracts.ExperimentalContracts
 
 @ExperimentalContracts
@@ -826,6 +831,21 @@ class MineSykmeldteServiceTest : Spek({
                                 sykmeldingstype = SykmeldingstypeDTO.AKTIVITET_IKKE_MULIG,
                             )
                         )
+                        every { it.sporsmal } returns listOf(
+                            SporsmalDTO(
+                                id = "54217564",
+                                tag = "label",
+                                sporsmalstekst = "Er dette et spørsmål?",
+                                undertekst = "Undertekst til spørsmålet",
+                                svartype = SvartypeDTO.FRITEKST,
+                                kriterieForVisningAvUndersporsmal = VisningskriteriumDTO.JA,
+                                svar = listOf(
+                                    SvarDTO(
+                                        verdi = "Ja",
+                                    )
+                                ),
+                            )
+                        )
                     },
                 )
                 )
@@ -847,6 +867,13 @@ class MineSykmeldteServiceTest : Spek({
             result.perioder[0].fom shouldBeEqualTo LocalDate.parse("2021-10-04")
             result.perioder[0].tom shouldBeEqualTo LocalDate.parse("2021-10-12")
             result.perioder[0].sykmeldingstype shouldBeEqualTo PeriodeEnum.AKTIVITET_IKKE_MULIG
+            result.sporsmal[0].tag shouldBeEqualTo "label"
+            result.sporsmal[0].svartype shouldBeEqualTo SvartypeDTO.FRITEKST
+            result.sporsmal[0].svar shouldBeEqualTo listOf(
+                Svar(
+                    verdi = "Ja",
+                )
+            )
         }
     }
 })
