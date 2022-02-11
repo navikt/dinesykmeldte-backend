@@ -1,7 +1,7 @@
 package no.nav.syfo.soknad
 
-import no.nav.syfo.kafka.felles.SporsmalDTO
-import no.nav.syfo.kafka.felles.SykepengesoknadDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.soknad.db.SoknadDbModel
 import java.time.OffsetDateTime
 import java.time.ZoneOffset

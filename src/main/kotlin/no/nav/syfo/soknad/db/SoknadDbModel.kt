@@ -1,6 +1,6 @@
 package no.nav.syfo.soknad.db
 
-import no.nav.syfo.kafka.felles.SykepengesoknadDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.objectMapper
 import org.postgresql.util.PGobject
 import java.time.LocalDate

@@ -1,6 +1,6 @@
 package no.nav.syfo.minesykmeldte.db
 
-import no.nav.syfo.kafka.felles.SykepengesoknadDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import java.time.LocalDate
 

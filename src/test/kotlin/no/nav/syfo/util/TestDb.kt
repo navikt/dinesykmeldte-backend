@@ -2,12 +2,12 @@ package no.nav.syfo.util
 
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.Environment
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.hendelser.db.HendelseDbModel
-import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
 import no.nav.syfo.objectMapper
