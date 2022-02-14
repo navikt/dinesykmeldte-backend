@@ -107,8 +107,9 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         korrigertBySoknadId = soknadDb.soknad.korrigertAv,
         perioder = soknadDb.soknad.soknadsperioder?.map { it.toSoknadsperiode() }
             ?: throw IllegalStateException("Søknad uten perioder definert: ${soknadDb.soknadId}"),
-        sporsmal = requireNotNull(soknadDb.soknad.sporsmal).map { it.toSporsmal() },
-    )
+        sporsmal = soknadDb.soknad.sporsmal?.map { it.toSporsmal() }
+            ?: throw IllegalStateException("Søknad uten sporsmal definert: ${soknadDb.soknadId}"),
+        )
 }
 
 private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding {
