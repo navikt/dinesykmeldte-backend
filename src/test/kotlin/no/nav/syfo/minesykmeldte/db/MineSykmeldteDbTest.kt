@@ -1,13 +1,13 @@
 package no.nav.syfo.minesykmeldte.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.common.delete.DeleteDataDb
 import no.nav.syfo.hendelser.createSoknadDbModel
 import no.nav.syfo.hendelser.createSykmeldingDbModel
 import no.nav.syfo.hendelser.createSykmeldtDbModel
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.hendelser.db.HendelserDb
-import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.narmesteleder.createNarmestelederLeesahKafkaMessage
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.objectMapper

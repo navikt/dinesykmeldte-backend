@@ -1,6 +1,6 @@
 package no.nav.syfo.minesykmeldte.model
 
-import no.nav.syfo.kafka.felles.FravarstypeDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.FravarstypeDTO
 import java.time.LocalDate
 
 data class Soknad(

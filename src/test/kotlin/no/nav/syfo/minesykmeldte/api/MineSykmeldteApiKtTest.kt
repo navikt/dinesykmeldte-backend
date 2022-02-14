@@ -7,8 +7,8 @@ import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.helse.flex.sykepengesoknad.kafka.FravarstypeDTO
 import no.nav.syfo.Environment
-import no.nav.syfo.kafka.felles.FravarstypeDTO
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.Behandler

@@ -1,13 +1,13 @@
 package no.nav.syfo.hendelser
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.sykepengesoknad.kafka.ArbeidsgiverDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.hendelser.kafka.model.DineSykmeldteHendelse
 import no.nav.syfo.hendelser.kafka.model.FerdigstillHendelse
 import no.nav.syfo.hendelser.kafka.model.OpprettHendelse
-import no.nav.syfo.kafka.felles.ArbeidsgiverDTO
-import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.soknad.db.SoknadDbModel

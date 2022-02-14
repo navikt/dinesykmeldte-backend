@@ -1,8 +1,8 @@
 package no.nav.syfo.minesykmeldte
 
-import no.nav.syfo.kafka.felles.SoknadsperiodeDTO
-import no.nav.syfo.kafka.felles.SoknadsstatusDTO
-import no.nav.syfo.kafka.felles.SykepengesoknadDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsperiodeDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.model.PeriodeEnum
 import no.nav.syfo.minesykmeldte.model.PreviewFremtidigSoknad
