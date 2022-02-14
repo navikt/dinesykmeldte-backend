@@ -7,12 +7,10 @@ import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import no.nav.helse.flex.sykepengesoknad.kafka.FravarstypeDTO
 import no.nav.syfo.Environment
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.Behandler
-import no.nav.syfo.minesykmeldte.model.Fravar
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
@@ -281,14 +279,6 @@ object MineSykmeldteApiKtTest : Spek({
             }
 
             it("should respond with the correct content if found") {
-                val fravar = listOf(
-                    Fravar(
-                        fom = LocalDate.parse("2021-10-01"),
-                        tom = LocalDate.parse("2021-10-07"),
-                        type = FravarstypeDTO.PERMISJON,
-                    )
-                )
-
                 val sporsmal = listOf(
                     Sporsmal(
                         id = "890342785232",
@@ -316,7 +306,6 @@ object MineSykmeldteApiKtTest : Spek({
                     sykmeldingId = "772e674d-0422-4a5e-b779-a8819abf5959",
                     tom = LocalDate.parse("2021-01-01"),
                     fom = LocalDate.parse("2020-12-01"),
-                    fravar = fravar,
                     sporsmal = sporsmal,
                 )
                 with(
@@ -335,11 +324,6 @@ object MineSykmeldteApiKtTest : Spek({
                          "fnr": "08088012345",
                          "lest": false,
                          "korrigertBySoknadId": "0422-4a5e-b779-a8819abf",
-                         "fravar": [{
-                            "fom": "2021-10-01",
-                            "tom": "2021-10-07",
-                            "type": "PERMISJON"
-                         }],
                          "perioder": [],
                          "sporsmal": [{
                             "id": "890342785232",
@@ -371,7 +355,6 @@ fun createSoknadTestData(
     tom: LocalDate = LocalDate.now(),
     fom: LocalDate = LocalDate.parse("2021-05-01"),
     korrigertBySoknadId: String = "0422-4a5e-b779-a8819abf",
-    fravar: List<Fravar>,
     sporsmal: List<Sporsmal>,
 ) = Soknad(
     id = id,
@@ -382,7 +365,6 @@ fun createSoknadTestData(
     fom = fom,
     lest = lest,
     korrigertBySoknadId = korrigertBySoknadId,
-    fravar = fravar,
     perioder = listOf(),
     sporsmal = sporsmal,
 )

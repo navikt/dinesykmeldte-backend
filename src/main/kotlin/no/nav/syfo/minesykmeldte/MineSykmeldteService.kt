@@ -12,7 +12,6 @@ import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsakEnum
 import no.nav.syfo.minesykmeldte.model.Avventende
 import no.nav.syfo.minesykmeldte.model.Behandler
 import no.nav.syfo.minesykmeldte.model.Behandlingsdager
-import no.nav.syfo.minesykmeldte.model.Fravar
 import no.nav.syfo.minesykmeldte.model.Gradert
 import no.nav.syfo.minesykmeldte.model.MinSykmeldtKey
 import no.nav.syfo.minesykmeldte.model.Periode
@@ -108,13 +107,6 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         korrigertBySoknadId = soknadDb.soknad.korrigertAv,
         perioder = soknadDb.soknad.soknadsperioder?.map { it.toSoknadsperiode() }
             ?: throw IllegalStateException("Søknad uten perioder definert: ${soknadDb.soknadId}"),
-        fravar = soknadDb.soknad.fravar?.map {
-            Fravar(
-                fom = requireNotNull(it.fom),
-                tom = requireNotNull(it.tom),
-                type = requireNotNull(it.type),
-            )
-        } ?: throw IllegalStateException("Søknad uten fravær definert: ${soknadDb.soknadId}"),
         sporsmal = requireNotNull(soknadDb.soknad.sporsmal).map { it.toSporsmal() },
     )
 }
