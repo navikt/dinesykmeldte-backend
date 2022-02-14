@@ -103,6 +103,7 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         fnr = sykmeldt.pasientFnr,
         fom = soknadDb.soknad.fom!!,
         tom = soknadDb.tom,
+        lest = soknadDb.lest,
         korrigertBySoknadId = soknadDb.soknad.korrigertAv,
         perioder = soknadDb.soknad.soknadsperioder?.map { it.toSoknadsperiode() }
             ?: throw IllegalStateException("Søknad uten perioder definert: ${soknadDb.soknadId}"),
