@@ -24,8 +24,8 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.util.UUID
-import no.nav.syfo.kafka.felles.SvartypeDTO
-import no.nav.syfo.kafka.felles.VisningskriteriumDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
 import no.nav.syfo.minesykmeldte.model.Sporsmal
 import no.nav.syfo.minesykmeldte.model.Svar
 

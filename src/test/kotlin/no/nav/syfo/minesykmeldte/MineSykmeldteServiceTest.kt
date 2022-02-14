@@ -46,10 +46,10 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
-import no.nav.syfo.kafka.felles.SporsmalDTO
-import no.nav.syfo.kafka.felles.SvarDTO
-import no.nav.syfo.kafka.felles.SvartypeDTO
-import no.nav.syfo.kafka.felles.VisningskriteriumDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SvarDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
 import no.nav.syfo.minesykmeldte.model.Svar
 import kotlin.contracts.ExperimentalContracts
 

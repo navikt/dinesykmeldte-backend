@@ -18,7 +18,7 @@ import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import java.time.LocalDate
 import java.util.Collections.max
-import no.nav.syfo.kafka.felles.SporsmalDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
 import no.nav.syfo.minesykmeldte.model.Sporsmal
 import no.nav.syfo.minesykmeldte.model.Svar
 
