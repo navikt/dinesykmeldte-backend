@@ -48,7 +48,7 @@ spec:
   vault:
     enabled: false
   ingresses:
-    - "https://dinesykmeldte-backend.nav.no"
+    - "https://dinesykmeldte-backend.intern.nav.no"
   webproxy: true
   kafka:
     pool: nav-prod
