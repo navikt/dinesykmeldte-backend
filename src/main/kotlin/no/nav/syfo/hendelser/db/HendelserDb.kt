@@ -1,8 +1,6 @@
 package no.nav.syfo.hendelser.db
 
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.hendelser.OPPGAVETYPE_LES_SOKNAD
-import no.nav.syfo.hendelser.OPPGAVETYPE_LES_SYKMELDING
 import no.nav.syfo.log
 import java.sql.Connection
 import java.sql.Timestamp
@@ -36,45 +34,31 @@ class HendelserDb(private val database: DatabaseInterface) {
         }
     }
 
-    fun ferdigstillHendelse(id: String, oppgavetype: String?, ferdigstiltTimestamp: OffsetDateTime) {
+    fun ferdigstillLestSykmeldingEllerSoknadHendelse(id: String) {
         database.connection.use { connection ->
-            if (oppgavetype == null || oppgavetype == OPPGAVETYPE_LES_SYKMELDING || oppgavetype == OPPGAVETYPE_LES_SOKNAD) {
-                connection.settSykmeldingLest(id)
-                connection.settSoknadLest(id)
-                connection.commit()
-            } else {
-                if (connection.hendelseFinnesOgErIkkeFerdigstilt(id, oppgavetype)) {
-                    connection.ferdigstillHendelse(id, oppgavetype, ferdigstiltTimestamp)
-                    connection.commit()
-                    log.info("Ferdigstilt hendelse med id $id og type $oppgavetype")
-                } else {
-                    log.info("Fant ingen åpen hendelse med id $id for oppgavetype $oppgavetype")
-                }
-            }
+            connection.settSykmeldingLest(id)
+            connection.settSoknadLest(id)
+            connection.commit()
         }
     }
 
-    private fun Connection.hendelseFinnesOgErIkkeFerdigstilt(id: String, oppgavetype: String): Boolean =
-        this.prepareStatement(
-            """
-                SELECT 1 FROM hendelser WHERE id=? AND oppgavetype=? AND ferdigstilt != true;
-                """
-        ).use {
-            it.setString(1, id)
-            it.setString(2, oppgavetype)
-            it.executeQuery().next()
+    fun ferdigstillHendelse(id: String, ferdigstiltTimestamp: OffsetDateTime) {
+        database.connection.use { connection ->
+            connection.ferdigstillHendelse(id, ferdigstiltTimestamp)
+            connection.commit()
+            log.info("Ferdigstilt hendelse med id $id")
         }
+    }
 
-    private fun Connection.ferdigstillHendelse(id: String, oppgavetype: String, ferdigstiltTimestamp: OffsetDateTime) {
+    private fun Connection.ferdigstillHendelse(id: String, ferdigstiltTimestamp: OffsetDateTime) {
         this.prepareStatement(
             """
-                UPDATE hendelser SET ferdigstilt=?, ferdigstilt_timestamp=? WHERE id=? AND oppgavetype=?;
+                UPDATE hendelser SET ferdigstilt=?, ferdigstilt_timestamp=? WHERE id=? AND ferdigstilt != true;
                 """
         ).use {
             it.setBoolean(1, true)
             it.setTimestamp(2, Timestamp.from(ferdigstiltTimestamp.toInstant()))
             it.setString(3, id)
-            it.setString(4, oppgavetype)
             it.executeUpdate()
         }
     }

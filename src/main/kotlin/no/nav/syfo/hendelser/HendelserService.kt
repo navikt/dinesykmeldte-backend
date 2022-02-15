@@ -5,6 +5,7 @@ import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.hendelser.kafka.model.DineSykmeldteHendelse
 import no.nav.syfo.hendelser.kafka.model.OpprettHendelse
+import no.nav.syfo.hendelser.kafka.model.sykmeldingsoknad.LestSykmeldingEllerSoknadHendelse
 import no.nav.syfo.log
 import no.nav.syfo.objectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -23,36 +24,48 @@ class HendelserService(
 
     fun handleHendelse(dineSykmeldteHendelse: DineSykmeldteHendelse) {
         if (dineSykmeldteHendelse.opprettHendelse != null) {
-            if (!(dineSykmeldteHendelse.opprettHendelse.oppgavetype == OPPGAVETYPE_LES_SYKMELDING || dineSykmeldteHendelse.opprettHendelse.oppgavetype == OPPGAVETYPE_LES_SOKNAD)) {
-                hendelserDb.insertHendelse(opprettHendelseTilHendelseDbModel(dineSykmeldteHendelse.opprettHendelse))
-            } else {
-                log.debug("Oppretter ikke hendelse for sykmelding/søknad med id ${dineSykmeldteHendelse.id}")
-            }
+            hendelserDb.insertHendelse(opprettHendelseTilHendelseDbModel(dineSykmeldteHendelse.id, dineSykmeldteHendelse.opprettHendelse))
         } else if (dineSykmeldteHendelse.ferdigstillHendelse != null) {
-            hendelserDb.ferdigstillHendelse(dineSykmeldteHendelse.ferdigstillHendelse.id, dineSykmeldteHendelse.ferdigstillHendelse.oppgavetype, dineSykmeldteHendelse.ferdigstillHendelse.timestamp)
+            hendelserDb.ferdigstillHendelse(dineSykmeldteHendelse.id, dineSykmeldteHendelse.ferdigstillHendelse.timestamp)
         } else {
             log.error("Har mottatt hendelse som ikke er oppretting eller ferdigstilling for id ${dineSykmeldteHendelse.id}")
             throw IllegalStateException("Mottatt hendelse er ikke oppretting eller ferdigstilling")
         }
     }
 
-    private fun opprettHendelseTilHendelseDbModel(opprettHendelse: OpprettHendelse): HendelseDbModel {
-        if (opprettHendelse.orgnummer == null || opprettHendelse.ansattFnr == null) {
-            log.error("Fnr og/eller orgnummer mangler for hendelse med id ${opprettHendelse.id}")
-            throw IllegalStateException("Fnr og/eller orgnummer mangler for mottatt hendelse")
-        } else {
-            return HendelseDbModel(
-                id = opprettHendelse.id,
-                pasientFnr = opprettHendelse.ansattFnr,
-                orgnummer = opprettHendelse.orgnummer,
-                oppgavetype = opprettHendelse.oppgavetype,
-                lenke = opprettHendelse.lenke,
-                tekst = opprettHendelse.tekst,
-                timestamp = opprettHendelse.timestamp,
-                utlopstidspunkt = opprettHendelse.utlopstidspunkt,
-                ferdigstilt = false,
-                ferdigstiltTimestamp = null
-            )
+    // LestSykmeldingEllerSoknad fjernes når lest-status for sykmelding og søknad oppdateres via api
+    fun handleLestSykmeldingEllerSoknadHendelse(record: ConsumerRecord<String, String>) {
+        try {
+            handleLestSykmeldingEllerSoknadHendelse(objectMapper.readValue<LestSykmeldingEllerSoknadHendelse>(record.value()))
+        } catch (e: Exception) {
+            log.error("Noe gikk galt ved mottak av lest sykmelding/søknad-hendelse med id ${record.key()}")
+            throw e
         }
+    }
+
+    fun handleLestSykmeldingEllerSoknadHendelse(lestSykmeldingEllerSoknadHendelse: LestSykmeldingEllerSoknadHendelse) {
+        if (lestSykmeldingEllerSoknadHendelse.opprettHendelse != null) {
+            log.debug("Oppretter ikke hendelse for sykmelding/søknad med id ${lestSykmeldingEllerSoknadHendelse.id}")
+        } else if (lestSykmeldingEllerSoknadHendelse.ferdigstillHendelse != null) {
+            hendelserDb.ferdigstillLestSykmeldingEllerSoknadHendelse(lestSykmeldingEllerSoknadHendelse.ferdigstillHendelse.id)
+        } else {
+            log.error("Har mottatt lest sykmelding/søknad-hendelse som ikke er oppretting eller ferdigstilling for id ${lestSykmeldingEllerSoknadHendelse.id}")
+            throw IllegalStateException("Mottatt hendelse er ikke oppretting eller ferdigstilling")
+        }
+    }
+
+    private fun opprettHendelseTilHendelseDbModel(hendelseId: String, opprettHendelse: OpprettHendelse): HendelseDbModel {
+        return HendelseDbModel(
+            id = hendelseId,
+            pasientFnr = opprettHendelse.ansattFnr,
+            orgnummer = opprettHendelse.orgnummer,
+            oppgavetype = opprettHendelse.oppgavetype,
+            lenke = opprettHendelse.lenke,
+            tekst = null,
+            timestamp = opprettHendelse.timestamp,
+            utlopstidspunkt = opprettHendelse.utlopstidspunkt,
+            ferdigstilt = false,
+            ferdigstiltTimestamp = null
+        )
     }
 }
