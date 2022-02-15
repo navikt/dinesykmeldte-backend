@@ -48,7 +48,7 @@ spec:
   vault:
     enabled: false
   ingresses:
-    - "https://dinesykmeldte-backend.dev.nav.no"
+    - "https://dinesykmeldte-backend.dev.intern.nav.no"
   webproxy: true
   kafka:
     pool: nav-dev
@@ -62,7 +62,6 @@ spec:
     inbound:
       rules:
         - application: dinesykmeldte
-        - application: dinesykmeldte-backend
     outbound:
       external:
         - host: https://pdl-api.dev-fss-pub.nais.io
