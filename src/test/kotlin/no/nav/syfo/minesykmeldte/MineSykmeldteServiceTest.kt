@@ -6,8 +6,12 @@ import io.mockk.mockk
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsperiodeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SvarDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykmeldingstypeDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.createSykepengesoknadDto
@@ -23,6 +27,7 @@ import no.nav.syfo.minesykmeldte.model.PreviewKorrigertSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSendtSoknad
 import no.nav.syfo.minesykmeldte.model.Reisetilskudd
+import no.nav.syfo.minesykmeldte.model.Svar
 import no.nav.syfo.model.sykmelding.arbeidsgiver.AktivitetIkkeMuligAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.model.ArbeidsrelatertArsakDTO
@@ -46,11 +51,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
-import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SvarDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
-import no.nav.syfo.minesykmeldte.model.Svar
 import kotlin.contracts.ExperimentalContracts
 
 @ExperimentalContracts

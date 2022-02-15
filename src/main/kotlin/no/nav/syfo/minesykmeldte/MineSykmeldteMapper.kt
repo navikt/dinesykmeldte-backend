@@ -2,6 +2,7 @@ package no.nav.syfo.minesykmeldte
 
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsperiodeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.model.PeriodeEnum
@@ -12,15 +13,14 @@ import no.nav.syfo.minesykmeldte.model.PreviewSendtSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmelding
 import no.nav.syfo.minesykmeldte.model.Soknadsperiode
+import no.nav.syfo.minesykmeldte.model.Sporsmal
+import no.nav.syfo.minesykmeldte.model.Svar
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import java.time.LocalDate
 import java.util.Collections.max
-import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
-import no.nav.syfo.minesykmeldte.model.Sporsmal
-import no.nav.syfo.minesykmeldte.model.Svar
 
 class MineSykmeldteMapper private constructor() {
     companion object {

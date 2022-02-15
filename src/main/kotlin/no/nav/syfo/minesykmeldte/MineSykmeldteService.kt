@@ -3,6 +3,7 @@ package no.nav.syfo.minesykmeldte
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSoknad
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSykmelding
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toSoknadsperiode
+import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toSporsmal
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.model.AktivitetIkkeMulig
@@ -29,7 +30,6 @@ import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toSporsmal
 import kotlin.IllegalStateException
 
 class MineSykmeldteService(
@@ -109,7 +109,7 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
             ?: throw IllegalStateException("Søknad uten perioder definert: ${soknadDb.soknadId}"),
         sporsmal = soknadDb.soknad.sporsmal?.map { it.toSporsmal() }
             ?: throw IllegalStateException("Søknad uten sporsmal definert: ${soknadDb.soknadId}"),
-        )
+    )
 }
 
 private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding {

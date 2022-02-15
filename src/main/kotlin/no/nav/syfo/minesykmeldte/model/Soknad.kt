@@ -1,8 +1,8 @@
 package no.nav.syfo.minesykmeldte.model
 
-import java.time.LocalDate
 import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
+import java.time.LocalDate
 
 data class Soknad(
     val id: String,

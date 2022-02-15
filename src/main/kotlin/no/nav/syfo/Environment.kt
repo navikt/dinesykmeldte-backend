@@ -22,7 +22,8 @@ data class Environment(
     val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val sykepengesoknadTopic: String = "flex.sykepengesoknad",
-    val hendelserTopic: String = "teamsykmelding.dinesykmeldte-hendelser",
+    val lestSykmeldingSoknadTopic: String = "teamsykmelding.dinesykmeldte-hendelser",
+    val hendelserTopic: String = "teamsykmelding.dinesykmeldte-hendelser-v2",
     val runKafkaConsumer: Boolean = getRunKafkaProperty()
 ) {
     fun jdbcUrl(): String {
