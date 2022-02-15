@@ -10,6 +10,7 @@ data class Soknad(
     val tom: LocalDate,
     val navn: String,
     val fnr: String,
+    val lest: Boolean,
     val korrigertBySoknadId: String?,
     val fravar: List<Fravar>,
     val perioder: List<Soknadsperiode>,

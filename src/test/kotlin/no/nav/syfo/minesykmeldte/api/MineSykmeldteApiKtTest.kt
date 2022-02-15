@@ -311,6 +311,7 @@ object MineSykmeldteApiKtTest : Spek({
                          "tom":"2021-01-01",
                          "navn": "Navn N. Navnessen",
                          "fnr": "08088012345",
+                         "lest": false,
                          "korrigertBySoknadId": "0422-4a5e-b779-a8819abf",
                          "fravar": [{
                             "fom": "2021-10-01",
@@ -332,6 +333,7 @@ fun createSoknadTestData(
     sykmeldingId: String = UUID.randomUUID().toString(),
     navn: String = "Navn N. Navnessen",
     fnr: String = "08088012345",
+    lest: Boolean = false,
     tom: LocalDate = LocalDate.now(),
     fom: LocalDate = LocalDate.parse("2021-05-01"),
     korrigertBySoknadId: String = "0422-4a5e-b779-a8819abf",
@@ -343,6 +345,7 @@ fun createSoknadTestData(
     fnr = fnr,
     tom = tom,
     fom = fom,
+    lest = lest,
     korrigertBySoknadId = korrigertBySoknadId,
     fravar = fravar,
     perioder = listOf(),
