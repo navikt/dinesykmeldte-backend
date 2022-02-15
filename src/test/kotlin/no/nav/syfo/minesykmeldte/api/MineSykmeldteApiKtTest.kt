@@ -7,6 +7,8 @@ import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
 import no.nav.syfo.Environment
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
@@ -15,6 +17,8 @@ import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
 import no.nav.syfo.minesykmeldte.model.Soknad
+import no.nav.syfo.minesykmeldte.model.Sporsmal
+import no.nav.syfo.minesykmeldte.model.Svar
 import no.nav.syfo.minesykmeldte.model.Sykmelding
 import no.nav.syfo.util.addAuthorizationHeader
 import no.nav.syfo.util.minifyApiResponse
@@ -24,10 +28,6 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.util.UUID
-import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
-import no.nav.syfo.minesykmeldte.model.Sporsmal
-import no.nav.syfo.minesykmeldte.model.Svar
 
 object MineSykmeldteApiKtTest : Spek({
     val mineSykmeldteService = mockk<MineSykmeldteService>()
