@@ -7,12 +7,10 @@ import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import no.nav.helse.flex.sykepengesoknad.kafka.FravarstypeDTO
 import no.nav.syfo.Environment
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.Behandler
-import no.nav.syfo.minesykmeldte.model.Fravar
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
@@ -26,6 +24,10 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.util.UUID
+import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
+import no.nav.syfo.minesykmeldte.model.Sporsmal
+import no.nav.syfo.minesykmeldte.model.Svar
 
 object MineSykmeldteApiKtTest : Spek({
     val mineSykmeldteService = mockk<MineSykmeldteService>()
@@ -277,11 +279,20 @@ object MineSykmeldteApiKtTest : Spek({
             }
 
             it("should respond with the correct content if found") {
-                val fravar = listOf(
-                    Fravar(
-                        fom = LocalDate.parse("2021-10-01"),
-                        tom = LocalDate.parse("2021-10-07"),
-                        type = FravarstypeDTO.PERMISJON,
+                val sporsmal = listOf(
+                    Sporsmal(
+                        id = "890342785232",
+                        tag = "Arbeid",
+                        sporsmalstekst = "Har du vært på ferie?",
+                        undertekst = null,
+                        svartype = SvartypeDTO.JA_NEI,
+                        kriterieForVisningAvUndersporsmal = VisningskriteriumDTO.CHECKED,
+                        svar = listOf(
+                            Svar(
+                                verdi = "Nei"
+                            )
+                        ),
+                        undersporsmal = emptyList()
                     )
                 )
 
@@ -295,7 +306,7 @@ object MineSykmeldteApiKtTest : Spek({
                     sykmeldingId = "772e674d-0422-4a5e-b779-a8819abf5959",
                     tom = LocalDate.parse("2021-01-01"),
                     fom = LocalDate.parse("2020-12-01"),
-                    fravar = fravar,
+                    sporsmal = sporsmal,
                 )
                 with(
                     handleRequest(HttpMethod.Get, "/api/soknad/d9ca08ca-bdbf-4571-ba4f-109c3642047b") {
@@ -311,13 +322,21 @@ object MineSykmeldteApiKtTest : Spek({
                          "tom":"2021-01-01",
                          "navn": "Navn N. Navnessen",
                          "fnr": "08088012345",
+                         "lest": false,
                          "korrigertBySoknadId": "0422-4a5e-b779-a8819abf",
-                         "fravar": [{
-                            "fom": "2021-10-01",
-                            "tom": "2021-10-07",
-                            "type": "PERMISJON"
-                         }],
-                         "perioder": []
+                         "perioder": [],
+                         "sporsmal": [{
+                            "id": "890342785232",
+                            "tag": "Arbeid",
+                            "sporsmalstekst": "Har du vært på ferie?",
+                            "undertekst": null,
+                            "svartype": "JA_NEI",
+                            "kriterieForVisningAvUndersporsmal": "CHECKED",
+                            "svar": [{
+                                "verdi": "Nei"
+                            }],
+                            "undersporsmal": []
+                         }]
                       }
                     """.minifyApiResponse()
                 }
@@ -332,10 +351,11 @@ fun createSoknadTestData(
     sykmeldingId: String = UUID.randomUUID().toString(),
     navn: String = "Navn N. Navnessen",
     fnr: String = "08088012345",
+    lest: Boolean = false,
     tom: LocalDate = LocalDate.now(),
     fom: LocalDate = LocalDate.parse("2021-05-01"),
     korrigertBySoknadId: String = "0422-4a5e-b779-a8819abf",
-    fravar: List<Fravar>,
+    sporsmal: List<Sporsmal>,
 ) = Soknad(
     id = id,
     sykmeldingId = sykmeldingId,
@@ -343,9 +363,10 @@ fun createSoknadTestData(
     fnr = fnr,
     tom = tom,
     fom = fom,
+    lest = lest,
     korrigertBySoknadId = korrigertBySoknadId,
-    fravar = fravar,
     perioder = listOf(),
+    sporsmal = sporsmal,
 )
 
 fun createSykmeldingTestData(

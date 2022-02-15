@@ -12,7 +12,6 @@ import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsakEnum
 import no.nav.syfo.minesykmeldte.model.Avventende
 import no.nav.syfo.minesykmeldte.model.Behandler
 import no.nav.syfo.minesykmeldte.model.Behandlingsdager
-import no.nav.syfo.minesykmeldte.model.Fravar
 import no.nav.syfo.minesykmeldte.model.Gradert
 import no.nav.syfo.minesykmeldte.model.MinSykmeldtKey
 import no.nav.syfo.minesykmeldte.model.Periode
@@ -30,6 +29,7 @@ import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toSporsmal
 import kotlin.IllegalStateException
 
 class MineSykmeldteService(
@@ -103,17 +103,13 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         fnr = sykmeldt.pasientFnr,
         fom = soknadDb.soknad.fom!!,
         tom = soknadDb.tom,
+        lest = soknadDb.lest,
         korrigertBySoknadId = soknadDb.soknad.korrigertAv,
         perioder = soknadDb.soknad.soknadsperioder?.map { it.toSoknadsperiode() }
             ?: throw IllegalStateException("Søknad uten perioder definert: ${soknadDb.soknadId}"),
-        fravar = soknadDb.soknad.fravar?.map {
-            Fravar(
-                fom = requireNotNull(it.fom),
-                tom = requireNotNull(it.tom),
-                type = requireNotNull(it.type),
-            )
-        } ?: throw IllegalStateException("Søknad uten fravær definert: ${soknadDb.soknadId}")
-    )
+        sporsmal = soknadDb.soknad.sporsmal?.map { it.toSporsmal() }
+            ?: throw IllegalStateException("Søknad uten sporsmal definert: ${soknadDb.soknadId}"),
+        )
 }
 
 private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding {
