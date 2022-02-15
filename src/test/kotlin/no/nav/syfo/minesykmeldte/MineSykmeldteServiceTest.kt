@@ -3,8 +3,6 @@ package no.nav.syfo.minesykmeldte
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.helse.flex.sykepengesoknad.kafka.FravarDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.FravarstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsperiodeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
@@ -17,7 +15,6 @@ import no.nav.syfo.minesykmeldte.model.AktivitetIkkeMulig
 import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsakEnum
 import no.nav.syfo.minesykmeldte.model.Avventende
 import no.nav.syfo.minesykmeldte.model.Behandlingsdager
-import no.nav.syfo.minesykmeldte.model.Fravar
 import no.nav.syfo.minesykmeldte.model.Gradert
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PeriodeEnum
@@ -49,6 +46,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
+import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SvarDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
+import no.nav.syfo.minesykmeldte.model.Svar
 import kotlin.contracts.ExperimentalContracts
 
 @ExperimentalContracts
@@ -810,13 +812,6 @@ class MineSykmeldteServiceTest : Spek({
                     sendtDato = LocalDate.parse("2021-04-04"),
                     timestamp = OffsetDateTime.parse("2021-11-18T14:06:12Z"),
                     soknad = mockk<SykepengesoknadDTO>().also {
-                        every { it.fravar } returns listOf(
-                            FravarDTO(
-                                LocalDate.parse("2021-10-01"),
-                                LocalDate.parse("2021-10-07"),
-                                FravarstypeDTO.FERIE,
-                            )
-                        )
                         every { it.fom } returns LocalDate.parse("2021-10-01")
                         every { it.korrigertAv } returns "jd14jfqd-0422-4a5e-b779-a8819abf"
                         every { it.soknadsperioder } returns listOf(
@@ -824,6 +819,21 @@ class MineSykmeldteServiceTest : Spek({
                                 fom = LocalDate.parse("2021-10-04"),
                                 tom = LocalDate.parse("2021-10-12"),
                                 sykmeldingstype = SykmeldingstypeDTO.AKTIVITET_IKKE_MULIG,
+                            )
+                        )
+                        every { it.sporsmal } returns listOf(
+                            SporsmalDTO(
+                                id = "54217564",
+                                tag = "label",
+                                sporsmalstekst = "Er dette et spørsmål?",
+                                undertekst = "Undertekst til spørsmålet",
+                                svartype = SvartypeDTO.FRITEKST,
+                                kriterieForVisningAvUndersporsmal = VisningskriteriumDTO.JA,
+                                svar = listOf(
+                                    SvarDTO(
+                                        verdi = "Ja",
+                                    )
+                                ),
                             )
                         )
                     },
@@ -835,18 +845,18 @@ class MineSykmeldteServiceTest : Spek({
             result.shouldNotBeNull()
             result.id shouldBeEqualTo soknadId
             result.sykmeldingId shouldBeEqualTo "31c5b5ca-1248-4280-bc2e-3c6b11c365b9"
-            result.fravar shouldBeEqualTo listOf(
-                Fravar(
-                    fom = LocalDate.parse("2021-10-01"),
-                    tom = LocalDate.parse("2021-10-07"),
-                    type = FravarstypeDTO.FERIE,
-                )
-            )
             result.navn shouldBeEqualTo "Navn Navnesen"
             result.korrigertBySoknadId shouldBeEqualTo "jd14jfqd-0422-4a5e-b779-a8819abf"
             result.perioder[0].fom shouldBeEqualTo LocalDate.parse("2021-10-04")
             result.perioder[0].tom shouldBeEqualTo LocalDate.parse("2021-10-12")
             result.perioder[0].sykmeldingstype shouldBeEqualTo PeriodeEnum.AKTIVITET_IKKE_MULIG
+            result.sporsmal[0].tag shouldBeEqualTo "label"
+            result.sporsmal[0].svartype shouldBeEqualTo SvartypeDTO.FRITEKST
+            result.sporsmal[0].svar shouldBeEqualTo listOf(
+                Svar(
+                    verdi = "Ja",
+                )
+            )
         }
     }
 })

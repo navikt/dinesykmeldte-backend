@@ -1,7 +1,8 @@
 package no.nav.syfo.minesykmeldte.model
 
-import no.nav.helse.flex.sykepengesoknad.kafka.FravarstypeDTO
 import java.time.LocalDate
+import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
 
 data class Soknad(
     val id: String,
@@ -12,15 +13,8 @@ data class Soknad(
     val fnr: String,
     val lest: Boolean,
     val korrigertBySoknadId: String?,
-    val fravar: List<Fravar>,
     val perioder: List<Soknadsperiode>,
-    // TODO: tilbake i fullt arbeid?
-)
-
-data class Fravar(
-    val fom: LocalDate,
-    val tom: LocalDate,
-    val type: FravarstypeDTO,
+    val sporsmal: List<Sporsmal>,
 )
 
 data class Soknadsperiode(
@@ -28,4 +22,19 @@ data class Soknadsperiode(
     val tom: LocalDate,
     val sykmeldingsgrad: Int?,
     val sykmeldingstype: PeriodeEnum,
+)
+
+data class Sporsmal(
+    val id: String,
+    val tag: String,
+    val sporsmalstekst: String,
+    val undertekst: String?,
+    val svartype: SvartypeDTO,
+    var kriterieForVisningAvUndersporsmal: VisningskriteriumDTO,
+    var svar: List<Svar>,
+    var undersporsmal: List<Sporsmal>?,
+)
+
+data class Svar(
+    var verdi: String,
 )
