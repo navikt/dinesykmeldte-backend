@@ -61,7 +61,7 @@ class HendelserService(
             orgnummer = opprettHendelse.orgnummer,
             oppgavetype = opprettHendelse.oppgavetype,
             lenke = opprettHendelse.lenke,
-            tekst = null,
+            tekst = opprettHendelse.tekst,
             timestamp = opprettHendelse.timestamp,
             utlopstidspunkt = opprettHendelse.utlopstidspunkt,
             ferdigstilt = false,
