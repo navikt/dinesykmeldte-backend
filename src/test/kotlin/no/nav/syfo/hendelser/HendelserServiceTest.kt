@@ -178,6 +178,7 @@ class HendelserServiceTest : Spek({
                     orgnummer = "orgnummer",
                     oppgavetype = "HENDELSE_X",
                     lenke = null,
+                    tekst = "tekst",
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                     utlopstidspunkt = null
                 ),
