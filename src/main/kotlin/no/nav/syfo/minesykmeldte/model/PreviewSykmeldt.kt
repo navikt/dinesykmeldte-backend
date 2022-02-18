@@ -10,7 +10,8 @@ data class PreviewSykmeldt(
     val startdatoSykefravar: LocalDate,
     val friskmeldt: Boolean,
     val previewSykmeldinger: List<PreviewSykmelding>,
-    val previewSoknader: List<PreviewSoknad>
+    val previewSoknader: List<PreviewSoknad>,
+    val hendelser: List<Hendelse>
 )
 
 data class PreviewSykmelding(

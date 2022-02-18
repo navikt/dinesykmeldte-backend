@@ -1,5 +1,9 @@
 package no.nav.syfo.minesykmeldte
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
+import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSoknad
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSykmelding
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toSoknadsperiode
@@ -14,6 +18,7 @@ import no.nav.syfo.minesykmeldte.model.Avventende
 import no.nav.syfo.minesykmeldte.model.Behandler
 import no.nav.syfo.minesykmeldte.model.Behandlingsdager
 import no.nav.syfo.minesykmeldte.model.Gradert
+import no.nav.syfo.minesykmeldte.model.Hendelse
 import no.nav.syfo.minesykmeldte.model.MinSykmeldtKey
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PreviewSoknad
@@ -33,10 +38,18 @@ import java.time.temporal.ChronoUnit
 import kotlin.IllegalStateException
 
 class MineSykmeldteService(
-    private val mineSykmeldteDb: MineSykmeldteDb,
+    private val mineSykmeldteDb: MineSykmeldteDb
 ) {
-    fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> =
-        mineSykmeldteDb.getMineSykmeldte(lederFnr).groupBy { it.toMinSykmeldtKey() }.map { it ->
+    suspend fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> = withContext(Dispatchers.IO) {
+        val hendelserJob = async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr) }
+        val sykmeldteMapJob = async(Dispatchers.IO) { mineSykmeldteDb.getMineSykmeldte(lederFnr).groupBy { it.toMinSykmeldtKey() } }
+
+        val hendelserMap = hendelserJob.await().groupBy { it.pasientFnr }
+            .mapValues { it.value.map { hendelse -> hendelse.toHendelse() } }
+
+        val sykmeldteMap = sykmeldteMapJob.await()
+
+        return@withContext sykmeldteMap.map { it ->
             PreviewSykmeldt(
                 narmestelederId = it.key.narmestelederId,
                 orgnummer = it.key.orgnummer,
@@ -47,9 +60,11 @@ class MineSykmeldteService(
                 previewSykmeldinger = it.value.distinctBy { it.sykmeldingId }.map { sykmeldtDbModel ->
                     toPreviewSykmelding(sykmeldtDbModel)
                 },
-                previewSoknader = it.value.mapNotNull { mapNullableSoknad(it) }
+                previewSoknader = it.value.mapNotNull { mapNullableSoknad(it) },
+                hendelser = hendelserMap[it.key.fnr] ?: emptyList()
             )
         }
+    }
 
     fun getSykmelding(sykmeldingId: String, lederFnr: String): Sykmelding? {
         return mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr)?.toSykmelding()
@@ -65,6 +80,10 @@ class MineSykmeldteService(
 
     fun markSoknadRead(soknadId: String, lederFnr: String): Boolean {
         return mineSykmeldteDb.markSoknadRead(soknadId, lederFnr)
+    }
+
+    fun markHendelseRead(hendelseId: String, lederFnr: String): Boolean {
+        return mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr)
     }
 }
 
@@ -186,3 +205,11 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
     }
 
 private fun BehandlerAGDTO.formatName(): String = toFormattedNameString(fornavn, mellomnavn, etternavn)
+
+private fun HendelseDbModel.toHendelse() =
+    Hendelse(
+        id = id,
+        oppgavetype = oppgavetype,
+        lenke = lenke,
+        tekst = tekst
+    )
