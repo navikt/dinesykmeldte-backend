@@ -36,7 +36,7 @@ class MineSykmeldteDbTest : Spek({
     val minesykmeldteDb = MineSykmeldteDb(TestDb.database)
     val sykmeldingDb = SykmeldingDb(TestDb.database)
     val soknadDb = SoknadDb(TestDb.database)
-    val hendelse = HendelserDb(TestDb.database)
+    val hendelserDb = HendelserDb(TestDb.database)
     val deleteDataDb = DeleteDataDb(TestDb.database)
 
     afterEachTest {
@@ -54,7 +54,7 @@ class MineSykmeldteDbTest : Spek({
                 sykmeldt = getSykmeldt()
             )
             soknadDb.insertOrUpdate(getSoknad(sykmeldingId = "1").copy(tom = LocalDate.now().minusMonths(4)))
-            hendelse.insertHendelse(
+            hendelserDb.insertHendelse(
                 HendelseDbModel(
                     id = "2",
                     pasientFnr = "12345678910",
@@ -87,7 +87,7 @@ class MineSykmeldteDbTest : Spek({
                 sykmeldt = getSykmeldt(latestTom)
             )
             soknadDb.insertOrUpdate(getSoknad(sykmeldingId = "1").copy(tom = latestTom))
-            hendelse.insertHendelse(
+            hendelserDb.insertHendelse(
                 HendelseDbModel(
                     id = "2",
                     pasientFnr = "12345678910",
@@ -120,7 +120,7 @@ class MineSykmeldteDbTest : Spek({
                 sykmeldt = getSykmeldt(latestTom)
             )
             soknadDb.insertOrUpdate(getSoknad(sykmeldingId = "1").copy(tom = latestTom))
-            hendelse.insertHendelse(
+            hendelserDb.insertHendelse(
                 HendelseDbModel(
                     id = "2",
                     pasientFnr = "12345678910",
@@ -280,6 +280,68 @@ class MineSykmeldteDbTest : Spek({
             sykmeldingDb.insertOrUpdate(sykmelding, sykmeldt)
             soknadDb.insertOrUpdate(soknad)
             val didMarkAsRead = minesykmeldteDb.markSoknadRead("soknad-id-1", "leder-fnr-1")
+
+            didMarkAsRead.`should be false`()
+        }
+    }
+
+    describe("Markere hendelser som lest") {
+        it("Skal markere hendelsen som lest hvis den tilhører lederens ansatt") {
+            val sykmeldt = createSykmeldtDbModel(pasientFnr = "pasient-1")
+            val sykmelding = createSykmeldingDbModel("sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
+            val nl = createNarmestelederLeesahKafkaMessage(
+                UUID.randomUUID(),
+                fnr = "pasient-1",
+                orgnummer = "kul-org",
+                narmesteLederFnr = "leder-fnr-1"
+            )
+            val hendelse = HendelseDbModel(
+                id = "hendelse-id-1",
+                pasientFnr = "pasient-1",
+                orgnummer = "kul-org",
+                oppgavetype = "OPPGAVETYPE",
+                lenke = "https://link",
+                tekst = "tekst",
+                timestamp = OffsetDateTime.now(),
+                utlopstidspunkt = null,
+                ferdigstilt = false,
+                ferdigstiltTimestamp = null
+            )
+            narmestelederDb.insertOrUpdate(nl)
+            sykmeldingDb.insertOrUpdate(sykmelding, sykmeldt)
+            hendelserDb.insertHendelse(hendelse)
+            val didMarkAsRead = minesykmeldteDb.markHendelseRead("hendelse-id-1", "leder-fnr-1")
+
+            didMarkAsRead.`should be true`()
+        }
+
+        it("Skal ikke markere hendelsen som lest hvis den ikke tilhører lederens ansatt") {
+            val sykmeldt = createSykmeldtDbModel(pasientFnr = "pasient-1")
+            val sykmelding = createSykmeldingDbModel("sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
+            val nl = createNarmestelederLeesahKafkaMessage(
+                UUID.randomUUID(),
+                fnr = "pasient-2",
+                orgnummer = "kul-org",
+                narmesteLederFnr = "leder-fnr-1"
+            )
+            hendelserDb.insertHendelse(
+                HendelseDbModel(
+                    id = "hendelse-id-0",
+                    pasientFnr = "pasient-1",
+                    orgnummer = "kul-org",
+                    oppgavetype = "OPPGAVETYPE",
+                    lenke = null,
+                    tekst = null,
+                    timestamp = OffsetDateTime.now(),
+                    utlopstidspunkt = null,
+                    ferdigstilt = false,
+                    ferdigstiltTimestamp = null
+                )
+            )
+            narmestelederDb.insertOrUpdate(nl)
+            sykmeldingDb.insertOrUpdate(sykmelding, sykmeldt)
+
+            val didMarkAsRead = minesykmeldteDb.markHendelseRead("hendelse-id-0", "leder-fnr-1")
 
             didMarkAsRead.`should be false`()
         }

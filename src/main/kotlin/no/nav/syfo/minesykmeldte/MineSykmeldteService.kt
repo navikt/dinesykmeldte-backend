@@ -81,6 +81,10 @@ class MineSykmeldteService(
     fun markSoknadRead(soknadId: String, lederFnr: String): Boolean {
         return mineSykmeldteDb.markSoknadRead(soknadId, lederFnr)
     }
+
+    fun markHendelseRead(hendelseId: String, lederFnr: String): Boolean {
+        return mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr)
+    }
 }
 
 private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>): Boolean {

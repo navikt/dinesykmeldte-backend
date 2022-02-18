@@ -65,4 +65,15 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
             false -> call.respond(HttpStatusCode.NotFound, HttpMessage("Not found"))
         }
     }
+
+    put("api/hendelse/{hendelseId}/lest") {
+        val principal: BrukerPrincipal = call.getBrukerPrincipal()
+        val lederFnr = principal.fnr
+        val hendelseId = call.getParam("hendelseId")
+
+        when (mineSykmeldteService.markHendelseRead(hendelseId, lederFnr)) {
+            true -> call.respond(HttpStatusCode.OK, HttpMessage("Markert som lest"))
+            false -> call.respond(HttpStatusCode.NotFound, HttpMessage("Not found"))
+        }
+    }
 }

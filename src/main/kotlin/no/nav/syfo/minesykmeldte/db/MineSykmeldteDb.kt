@@ -149,6 +149,25 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
             }
         }
     }
+
+    fun markHendelseRead(hendelseId: String, lederFnr: String): Boolean {
+        return database.connection.use { connection ->
+            connection.prepareStatement(
+                """
+               UPDATE hendelser SET ferdigstilt = TRUE, ferdigstilt_timestamp = ?
+                FROM narmesteleder
+                WHERE (narmesteleder.pasient_fnr = hendelser.pasient_fnr AND narmesteleder.orgnummer = hendelser.orgnummer) 
+                AND hendelser.id = ?
+                AND narmesteleder.leder_fnr = ?
+            """
+            ).use { ps ->
+                ps.setTimestamp(1, Timestamp.from(Instant.now()))
+                ps.setString(2, hendelseId)
+                ps.setString(3, lederFnr)
+                ps.executeUpdate() > 0
+            }
+        }
+    }
 }
 
 private fun ResultSet.toHendelseDbModels() =
