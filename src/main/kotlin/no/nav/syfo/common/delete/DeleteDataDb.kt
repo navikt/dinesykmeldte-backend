@@ -57,7 +57,7 @@ class DeleteDataDb(private val database: DatabaseInterface) {
     private fun deleteHendelser(connection: Connection): Int {
         return connection.prepareStatement(
             """
-            delete from hendelser where utlopstidspunkt < ?;
+            delete from hendelser h where utlopstidspunkt < ? OR NOT EXISTS(select 1 from sykmeldt s where s.pasient_fnr = h.pasient_fnr);
         """
         ).use { ps ->
             ps.setTimestamp(1, Timestamp.from(Instant.now()))

@@ -2,11 +2,14 @@ package no.nav.syfo.minesykmeldte.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import java.sql.ResultSet
+import java.sql.Timestamp
+import java.time.Instant
 import java.time.ZoneOffset
 
 class MineSykmeldteDb(private val database: DatabaseInterface) {
@@ -87,6 +90,30 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
         }
     }
 
+    fun getHendelser(lederFnr: String): List<HendelseDbModel> = database.connection.use { connection ->
+        connection.prepareStatement(
+            """
+           SELECT h.pasient_fnr,
+              h.orgnummer,
+              h.tekst, 
+              h.id, 
+              h.orgnummer,
+              h.oppgavetype,
+              h.lenke,
+              h.timestamp
+           FROM hendelser h
+                INNER JOIN narmesteleder n ON h.pasient_fnr = n.pasient_fnr and n.orgnummer = h.orgnummer
+                INNER JOIN sykmeldt sm ON n.pasient_fnr = sm.pasient_fnr
+           WHERE ferdigstilt = false and utlopstidspunkt < ? 
+           and n.leder_fnr = ?
+        """
+        ).use { ps ->
+            ps.setTimestamp(1, Timestamp.from(Instant.now()))
+            ps.setString(2, lederFnr)
+            ps.executeQuery().toList { toHendelseDbModels() }
+        }
+    }
+
     fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): Boolean {
         return database.connection.use { connection ->
             connection.prepareStatement(
@@ -123,6 +150,20 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
         }
     }
 }
+
+private fun ResultSet.toHendelseDbModels() =
+    HendelseDbModel(
+        id = getString("id"),
+        pasientFnr = getString("pasient_fnr"),
+        orgnummer = getString("orgnummer"),
+        oppgavetype = getString("oppgavetype"),
+        lenke = getString("lenke"),
+        tekst = getString("tekst"),
+        timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
+        utlopstidspunkt = null,
+        ferdigstilt = false,
+        ferdigstiltTimestamp = null
+    )
 
 private fun ResultSet.toSykmeldtSoknad(): Pair<SykmeldtDbModel, SoknadDbModel>? =
     when (next()) {

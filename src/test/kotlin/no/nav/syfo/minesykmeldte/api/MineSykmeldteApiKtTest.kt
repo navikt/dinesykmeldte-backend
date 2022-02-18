@@ -4,6 +4,7 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.mockk.clearMocks
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -13,6 +14,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.Behandler
+import no.nav.syfo.minesykmeldte.model.Hendelse
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
@@ -46,7 +48,7 @@ object MineSykmeldteApiKtTest : Spek({
     }) {
         describe("/api/mineSykmeldte") {
             it("should get empty list") {
-                every { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
+                coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
                 with(
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") { addAuthorizationHeader() }
                 ) {
@@ -57,7 +59,7 @@ object MineSykmeldteApiKtTest : Spek({
 
             it("should get data in list") {
                 val startdato = LocalDate.now().minusDays(14)
-                every { mineSykmeldteService.getMineSykmeldte("08086912345") } returns listOf(
+                coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns listOf(
                     PreviewSykmeldt(
                         narmestelederId = "08086912345",
                         orgnummer = "orgnummer",
@@ -67,6 +69,7 @@ object MineSykmeldteApiKtTest : Spek({
                         friskmeldt = false,
                         previewSykmeldinger = emptyList(),
                         previewSoknader = emptyList(),
+                        hendelser = emptyList()
                     )
                 )
                 with(
@@ -81,14 +84,15 @@ object MineSykmeldteApiKtTest : Spek({
                           "startdatoSykefravar": "$startdato",
                           "friskmeldt": false,
                           "previewSykmeldinger": [],
-                          "previewSoknader": []
+                          "previewSoknader": [],
+                          "hendelser": []
                         }
                     ]""".minifyApiResponse()
                 }
             }
 
             it("should return 401 when missing a valid bearer token") {
-                every { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
+                coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
                 with(
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") {
                         addHeader(
@@ -102,7 +106,7 @@ object MineSykmeldteApiKtTest : Spek({
             }
 
             it("should return 401 when providing the wrong audience") {
-                every { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
+                coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
                 with(
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") {
                         addAuthorizationHeader(audience = "wrong-dummy-client-id")
@@ -113,7 +117,7 @@ object MineSykmeldteApiKtTest : Spek({
             }
 
             it("should return 401 when providing the wrong issuer") {
-                every { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
+                coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
                 with(
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") {
                         addAuthorizationHeader(issuer = "https://wrong.issuer.net/myid")
@@ -124,7 +128,7 @@ object MineSykmeldteApiKtTest : Spek({
             }
 
             it("should return 401 when jwt has the wrong access level") {
-                every { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
+                coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
                 with(
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") {
                         addAuthorizationHeader(
@@ -138,7 +142,7 @@ object MineSykmeldteApiKtTest : Spek({
 
             describe("given a søknad") {
                 it("should map a ny søknad to correct object") {
-                    every { mineSykmeldteService.getMineSykmeldte("08086912345") } returns listOf(
+                    coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns listOf(
                         PreviewSykmeldt(
                             narmestelederId = "08086912345",
                             orgnummer = "orgnummer",
@@ -158,6 +162,14 @@ object MineSykmeldteApiKtTest : Spek({
                                     perioder = listOf(),
                                 )
                             ),
+                            hendelser = listOf(
+                                Hendelse(
+                                    id = "hendelse-1-id",
+                                    oppgavetype = "REVIDERT_OPPFOLGINGSPLAN",
+                                    lenke = "https://esyfo.nav.no",
+                                    tekst = "Ny revidert oppfølgingplan"
+                                )
+                            )
                         )
                     )
                     with(
@@ -185,6 +197,14 @@ object MineSykmeldteApiKtTest : Spek({
                                 "perioder": [],
                                 "status": "NY"
                               }
+                            ],
+                            "hendelser": [
+                             {
+                               "id": "hendelse-1-id",
+                               "oppgavetype": "REVIDERT_OPPFOLGINGSPLAN",
+                               "lenke": "https://esyfo.nav.no",
+                               "tekst": "Ny revidert oppfølgingplan"
+                             }
                             ]
                           }
                         ]""".minifyApiResponse()

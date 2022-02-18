@@ -57,7 +57,7 @@ class MineSykmeldteDbTest : Spek({
             hendelse.insertHendelse(
                 HendelseDbModel(
                     id = "2",
-                    pasientFnr = "123",
+                    pasientFnr = "12345678910",
                     orgnummer = "123",
                     oppgavetype = "LES_SYKMELDING",
                     lenke = null,
@@ -90,13 +90,46 @@ class MineSykmeldteDbTest : Spek({
             hendelse.insertHendelse(
                 HendelseDbModel(
                     id = "2",
-                    pasientFnr = "123",
+                    pasientFnr = "12345678910",
                     orgnummer = "123",
                     oppgavetype = "LES_SYKMELDING",
                     lenke = null,
                     tekst = null,
                     timestamp = OffsetDateTime.now(),
                     utlopstidspunkt = OffsetDateTime.now().minusDays(1),
+                    ferdigstilt = false,
+                    ferdigstiltTimestamp = null
+                )
+            )
+
+            val result = deleteDataDb.deleteOldData(LocalDate.now().minusMonths(4))
+
+            result.deletedSykmeldt shouldBeEqualTo 1
+            result.deletedHendelser shouldBeEqualTo 1
+            result.deletedSoknader shouldBeEqualTo 1
+            result.deletedSykmelding shouldBeEqualTo 1
+        }
+        it("Skal slette hendelse hvis sykmeldt slettes") {
+            val nl = createNarmestelederLeesahKafkaMessage(UUID.randomUUID())
+            narmestelederDb.insertOrUpdate(nl)
+            val latestTom = LocalDate.now().minusMonths(4).minusDays(1)
+            sykmeldingDb.insertOrUpdate(
+                toSykmeldingDbModel(
+                    sykmelding = getSendtSykmeldingKafkaMessage("1"), latestTom
+                ),
+                sykmeldt = getSykmeldt(latestTom)
+            )
+            soknadDb.insertOrUpdate(getSoknad(sykmeldingId = "1").copy(tom = latestTom))
+            hendelse.insertHendelse(
+                HendelseDbModel(
+                    id = "2",
+                    pasientFnr = "12345678910",
+                    orgnummer = "123",
+                    oppgavetype = "LES_SYKMELDING",
+                    lenke = null,
+                    tekst = null,
+                    timestamp = OffsetDateTime.now(),
+                    utlopstidspunkt = OffsetDateTime.now().plusDays(10),
                     ferdigstilt = false,
                     ferdigstiltTimestamp = null
                 )
