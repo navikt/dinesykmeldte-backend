@@ -24,6 +24,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import no.nav.syfo.Environment
 import no.nav.syfo.application.api.registerNaisApi
+import no.nav.syfo.application.api.setupSwaggerDocApi
 import no.nav.syfo.application.metrics.monitorHttpRequests
 import no.nav.syfo.log
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
@@ -78,6 +79,9 @@ fun createApplicationEngine(
 
         routing {
             registerNaisApi(applicationState)
+            if (env.cluster == "dev-gcp") {
+                setupSwaggerDocApi()
+            }
             authenticate("tokenx") {
                 registerMineSykmeldteApi(mineSykmeldteService)
                 registerVirksomhetApi(virksomhetService)
