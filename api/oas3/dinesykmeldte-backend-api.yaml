@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Dinesykmeldte api
-  version: 1.0
+  version: 1.0.0
   description: Api for dinesykmeldte
 paths:
   /api/minesykmeldte:
@@ -19,12 +19,12 @@ paths:
           description: Not found
         500:
           description: Internal server error
-  /api/sykmelding/{sykmeldingId}/acknowledge:
+  /api/sykmelding/{sykmeldingId}/lest:
     parameters:
       - $ref: '#/components/parameters/sykmeldingId'
     put:
-      summary: Update lest
-      operationId: updateLest
+      summary: Merk sykmelding som lest
+      operationId: updateLestSykmelding
       responses:
         200:
           description: Ok
@@ -53,7 +53,68 @@ paths:
           description: Not found
         500:
           description: Internal server error
-
+  /api/soknad/{soknadId}/lest:
+    parameters:
+      - $ref: '#/components/parameters/soknadId'
+    put:
+      summary: Merk søknad som lest
+      operationId: updateLestSoknad
+      responses:
+        200:
+          description: Ok
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+  /api/soknad/{soknadId}:
+    parameters:
+      - $ref: '#/components/parameters/soknadId'
+    get:
+      summary: Getting søknad by søknadId
+      operationId: getSoknad
+      responses:
+        200:
+          $ref: '#/components/responses/SoknadResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+  /api/hendelse/{hendelseId}/lest:
+    parameters:
+      - $ref: '#/components/parameters/hendelseId'
+    put:
+      summary: Merk hendelse som lest
+      operationId: updateLestHendelse
+      responses:
+        200:
+          description: Ok
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+  /api/virksomheter:
+    get:
+      summary: Henter virksomheter der innlogget bruker er registrert som leder
+      operationId: getVirksomheter
+      responses:
+        200:
+          $ref: '#/components/responses/VirksomheterResponse'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
 
 components:
   parameters:
@@ -61,6 +122,14 @@ components:
       in: path
       name: sykmeldingId
       description: SykmeldingId til sykmelding
+    soknadId:
+      in: path
+      name: soknadId
+      description: SoknadId til søknad
+    hendelseId:
+      in: path
+      name: hendelseId
+      description: HendelseId til hendelse
   responses:
     MineSykmeldteResponse:
       description: List of sykmeldte
@@ -74,12 +143,27 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Sykmelding'
+    SoknadResponse:
+      description: Søknad
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Soknad'
+    VirksomheterResponse:
+      description: Virksomheter
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Virksomhet'
   schemas:
     Periode:
       type: object
       required:
         - fom
         - tom
+        - type
       properties:
         fom:
           type: string
@@ -115,8 +199,18 @@ components:
       allOf:
         - $ref: '#/components/schemas/Periode'
       properties:
-        tilrettelegging:
-          type: string
+        arbeidsrelatertArsak:
+          type: object
+          properties:
+            arsak:
+              type: array
+              items:
+                type: string
+                enum:
+                  - MANGLENDE_TILRETTELEGGING
+                  - ANNET
+            beskrivelse:
+              type: string
         type:
           type: string
           enum:
@@ -130,7 +224,7 @@ components:
           type: string
           enum:
             - BEHANDLINGSDAGER
-        antallDager:
+        behandlingsdager:
           type: number
           minimum: 1
           maximum: 1
@@ -151,32 +245,44 @@ components:
         type:
           type: string
           enum:
-            - AKTIVITET_IKKE_MULIG
+            - AVVENTENDE
         tilrettelegging:
           type: string
     MineSykmeldteList:
       type: array
       items:
-        $ref: '#/components/schemas/Sykmeldt'
+        $ref: '#/components/schemas/PreviewSykmeldt'
     Sykmelding:
       type: object
       required:
-        - sykmeldingId
+        - id
         - lest
         - startdatoSykefravar
+        - navn
+        - fnr
         - arbeidsgiver
         - perioder
-        - arbeidsforEtterPeriode
+        - behandler
       properties:
+        id:
+          type: string
+          format: uuid
         startdatoSykefravar:
+          type: string
+          format: date
+        kontaktDato:
           type: string
           format: date
         navn:
           type: string
         fnr:
           $ref: '#/components/schemas/Fnr'
+        lest:
+          type: boolean
         arbeidsgiver:
           type: object
+          required:
+            - orgnummer
           properties:
             navn:
               type: string
@@ -201,11 +307,10 @@ components:
           type: string
         innspillArbeidsplassen:
           type: string
-        kontaktDato:
-          type: string
-          format: date
         behandler:
           type: object
+          required:
+            - navn
           properties:
             navn:
               type: string
@@ -213,15 +318,18 @@ components:
               type: string
             telefon:
               type: string
-            adresse:
-              type: string
-        sykmeldingId:
-          type: string
-          format: uuid
-        lest:
-          type: boolean
-    Sykmeldt:
+    PreviewSykmeldt:
       type: object
+      required:
+        - narmestelederId
+        - orgnummer
+        - fnr
+        - navn
+        - startdatoSykefravar
+        - friskmeldt
+        - previewSykmeldinger
+        - previewSoknader
+        - hendelser
       properties:
         fnr:
           $ref: '#/components/schemas/Fnr'
@@ -245,6 +353,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PreviewSoknader'
+        hendelser:
+          type: array
+          items:
+            $ref: '#/components/schemas/Hendelse'
     PreviewSykmelding:
       type: object
       required:
@@ -294,9 +406,170 @@ components:
         sendtDato:
           type: string
           format: date
+    Soknad:
+      required:
+        - id
+        - sykmeldingId
+        - fom
+        - tom
+        - navn
+        - fnr
+        - lest
+        - perioder
+        - sporsmal
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          sykmeldingId:
+            type: string
+            format: uuid
+          fom:
+            type: string
+            format: date
+          tom:
+            type: string
+            format: date
+          navn:
+            type: string
+          fnr:
+            $ref: '#/components/schemas/Fnr'
+          lest:
+            type: boolean
+          korrigertBySoknadId:
+            type: string
+          perioder:
+            type: array
+            items:
+              $ref: '#/components/schemas/Soknadsperiode'
+          sporsmal:
+            type: array
+            items:
+              $ref: '#/components/schemas/Sporsmal'
+    Soknadsperiode:
+      required:
+        - fom
+        - tom
+        - sykmeldingstype
+        type: object
+        properties:
+          fom:
+            type: string
+            format: date
+          tom:
+            type: string
+            format: date
+          sykmeldingsgrad:
+            type: number
+              maximum: 100
+              minimum: 0
+          sykmeldingstype:
+            type: string
+            enum:
+              - AKTIVITET_IKKE_MULIG
+              - AVVENTENDE
+              - BEHANDLINGSDAGER
+              - GRADERT
+              - REISETILSKUDD
+    Sporsmal:
+      required:
+        - id
+        - tag
+        - sporsmalstekst
+        - svartype
+        - kriterieForVisningAvUndersporsmal
+        - svar
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          tag:
+            type: string
+          sporsmalstekst:
+            type: string
+          undertekst:
+            type: string
+          svartype:
+            $ref: '#/components/schemas/SvartypeDTO'
+          kriterieForVisningAvUndersporsmal:
+            $ref: '#/components/schemas/VisningskriteriumDTO'
+          svar:
+            type: array
+            items:
+              $ref: '#/components/schemas/Svar'
+          undersporsmal:
+            type: array
+            items:
+              $ref: '#/components/schemas/Sporsmal'
+    SvartypeDTO:
+      type: string
+      enum:
+        - JA_NEI
+        - CHECKBOX
+        - CHECKBOX_GRUPPE
+        - CHECKBOX_PANEL
+        - DATO
+        - PERIODE
+        - PERIODER
+        - TIMER
+        - FRITEKST
+        - IKKE_RELEVANT
+        - PROSENT
+        - RADIO_GRUPPE
+        - RADIO_GRUPPE_TIMER_PROSENT
+        - RADIO
+        - TALL
+        - RADIO_GRUPPE_UKEKALENDER
+        - LAND
+        - INFO_BEHANDLINGSDAGER
+        - KVITTERING
+        - DATOER
+        - BELOP
+        - KILOMETER
+    VisningskriteriumDTO:
+      type: string
+      enum:
+        - JA
+        - NEI
+        - CHECKED
+    Svar:
+      required:
+        - verdi
+        type: object
+        properties:
+          verdi:
+            type: string
+    Hendelse:
+      required:
+        - id
+        - oppgavetype
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          oppgavetype:
+            type: string
+            example: 'IKKE_SENDT_SOKNAD'
+          lenke:
+            type: string
+          tekst:
+            type: string
     Fnr:
       type: string
       minLength: 11
       maxLength: 11
       example: '01010112345'
 
+   Virksomhet:
+     required:
+       - navn
+       - orgnummer
+       type: object
+       properties:
+         navn:
+           type: string
+         orgnummer:
+           type: string
