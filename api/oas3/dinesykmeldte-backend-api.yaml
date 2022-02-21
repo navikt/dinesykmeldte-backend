@@ -130,6 +130,7 @@ components:
       in: path
       name: hendelseId
       description: HendelseId til hendelse
+
   responses:
     MineSykmeldteResponse:
       description: List of sykmeldte
@@ -157,6 +158,7 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Virksomhet'
+
   schemas:
     Periode:
       type: object
@@ -417,61 +419,61 @@ components:
         - lest
         - perioder
         - sporsmal
-        type: object
-        properties:
-          id:
-            type: string
-            format: uuid
-          sykmeldingId:
-            type: string
-            format: uuid
-          fom:
-            type: string
-            format: date
-          tom:
-            type: string
-            format: date
-          navn:
-            type: string
-          fnr:
-            $ref: '#/components/schemas/Fnr'
-          lest:
-            type: boolean
-          korrigertBySoknadId:
-            type: string
-          perioder:
-            type: array
-            items:
-              $ref: '#/components/schemas/Soknadsperiode'
-          sporsmal:
-            type: array
-            items:
-              $ref: '#/components/schemas/Sporsmal'
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sykmeldingId:
+          type: string
+          format: uuid
+        fom:
+          type: string
+          format: date
+        tom:
+          type: string
+          format: date
+        navn:
+          type: string
+        fnr:
+          $ref: '#/components/schemas/Fnr'
+        lest:
+          type: boolean
+        korrigertBySoknadId:
+          type: string
+        perioder:
+          type: array
+          items:
+            $ref: '#/components/schemas/Soknadsperiode'
+        sporsmal:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sporsmal'
     Soknadsperiode:
       required:
         - fom
         - tom
         - sykmeldingstype
-        type: object
-        properties:
-          fom:
-            type: string
-            format: date
-          tom:
-            type: string
-            format: date
-          sykmeldingsgrad:
-            type: number
-              maximum: 100
-              minimum: 0
-          sykmeldingstype:
-            type: string
-            enum:
-              - AKTIVITET_IKKE_MULIG
-              - AVVENTENDE
-              - BEHANDLINGSDAGER
-              - GRADERT
-              - REISETILSKUDD
+      type: object
+      properties:
+        fom:
+          type: string
+          format: date
+        tom:
+          type: string
+          format: date
+        sykmeldingsgrad:
+          type: number
+          maximum: 100
+          minimum: 0
+        sykmeldingstype:
+          type: string
+          enum:
+            - AKTIVITET_IKKE_MULIG
+            - AVVENTENDE
+            - BEHANDLINGSDAGER
+            - GRADERT
+            - REISETILSKUDD
     Sporsmal:
       required:
         - id
@@ -480,29 +482,29 @@ components:
         - svartype
         - kriterieForVisningAvUndersporsmal
         - svar
-        type: object
-        properties:
-          id:
-            type: string
-            format: uuid
-          tag:
-            type: string
-          sporsmalstekst:
-            type: string
-          undertekst:
-            type: string
-          svartype:
-            $ref: '#/components/schemas/SvartypeDTO'
-          kriterieForVisningAvUndersporsmal:
-            $ref: '#/components/schemas/VisningskriteriumDTO'
-          svar:
-            type: array
-            items:
-              $ref: '#/components/schemas/Svar'
-          undersporsmal:
-            type: array
-            items:
-              $ref: '#/components/schemas/Sporsmal'
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tag:
+          type: string
+        sporsmalstekst:
+          type: string
+        undertekst:
+          type: string
+        svartype:
+          $ref: '#/components/schemas/SvartypeDTO'
+        kriterieForVisningAvUndersporsmal:
+          $ref: '#/components/schemas/VisningskriteriumDTO'
+        svar:
+          type: array
+          items:
+            $ref: '#/components/schemas/Svar'
+        undersporsmal:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sporsmal'
     SvartypeDTO:
       type: string
       enum:
@@ -537,39 +539,38 @@ components:
     Svar:
       required:
         - verdi
-        type: object
-        properties:
-          verdi:
-            type: string
+      type: object
+      properties:
+        verdi:
+          type: string
     Hendelse:
       required:
         - id
         - oppgavetype
-        type: object
-        properties:
-          id:
-            type: string
-            format: uuid
-          oppgavetype:
-            type: string
-            example: 'IKKE_SENDT_SOKNAD'
-          lenke:
-            type: string
-          tekst:
-            type: string
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        oppgavetype:
+          type: string
+          example: 'IKKE_SENDT_SOKNAD'
+        lenke:
+          type: string
+        tekst:
+          type: string
     Fnr:
       type: string
       minLength: 11
       maxLength: 11
       example: '01010112345'
-
-   Virksomhet:
+    Virksomhet:
      required:
        - navn
        - orgnummer
-       type: object
-       properties:
-         navn:
-           type: string
-         orgnummer:
-           type: string
+     type: object
+     properties:
+       navn:
+         type: string
+       orgnummer:
+         type: string
