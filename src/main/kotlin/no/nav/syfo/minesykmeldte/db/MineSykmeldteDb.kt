@@ -116,7 +116,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
 
     fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): Boolean {
         return database.connection.use { connection ->
-            connection.prepareStatement(
+            val updated = connection.prepareStatement(
                 """
                UPDATE sykmelding SET lest = TRUE
                 FROM narmesteleder
@@ -129,12 +129,14 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 ps.setString(2, lederFnr)
                 ps.executeUpdate() > 0
             }
+            connection.commit()
+            updated
         }
     }
 
     fun markSoknadRead(soknadId: String, lederFnr: String): Boolean {
         return database.connection.use { connection ->
-            connection.prepareStatement(
+            val updated = connection.prepareStatement(
                 """
                UPDATE soknad SET lest = TRUE
                 FROM narmesteleder
@@ -147,12 +149,14 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 ps.setString(2, lederFnr)
                 ps.executeUpdate() > 0
             }
+            connection.commit()
+            updated
         }
     }
 
     fun markHendelseRead(hendelseId: String, lederFnr: String): Boolean {
         return database.connection.use { connection ->
-            connection.prepareStatement(
+            val updated = connection.prepareStatement(
                 """
                UPDATE hendelser SET ferdigstilt = TRUE, ferdigstilt_timestamp = ?
                 FROM narmesteleder
@@ -166,6 +170,8 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 ps.setString(3, lederFnr)
                 ps.executeUpdate() > 0
             }
+            connection.commit()
+            updated
         }
     }
 }

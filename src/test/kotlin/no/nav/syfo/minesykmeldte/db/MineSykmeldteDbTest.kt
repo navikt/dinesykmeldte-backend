@@ -226,8 +226,10 @@ class MineSykmeldteDbTest : Spek({
             narmestelederDb.insertOrUpdate(nl)
             sykmeldingDb.insertOrUpdate(sykmelding, sykmeldt)
             val didMarkAsRead = minesykmeldteDb.markSykmeldingRead("sykmelding-id-1", "leder-fnr-1")
+            val oppdatertSykmelding = minesykmeldteDb.getSykmelding("sykmelding-id-1", "leder-fnr-1")?.second
 
             didMarkAsRead.`should be true`()
+            oppdatertSykmelding?.lest shouldBeEqualTo true
         }
 
         it("should not mark as read when sykmelding does not belong to leders ansatt") {
@@ -262,8 +264,10 @@ class MineSykmeldteDbTest : Spek({
             sykmeldingDb.insertOrUpdate(sykmelding, sykmeldt)
             soknadDb.insertOrUpdate(soknad)
             val didMarkAsRead = minesykmeldteDb.markSoknadRead("soknad-id-1", "leder-fnr-1")
+            val oppdatertSoknad = minesykmeldteDb.getSoknad("soknad-id-1", "leder-fnr-1")?.second
 
             didMarkAsRead.`should be true`()
+            oppdatertSoknad?.lest shouldBeEqualTo true
         }
 
         it("should not mark as read when søknad does not belong to leders ansatt") {
@@ -311,8 +315,10 @@ class MineSykmeldteDbTest : Spek({
             sykmeldingDb.insertOrUpdate(sykmelding, sykmeldt)
             hendelserDb.insertHendelse(hendelse)
             val didMarkAsRead = minesykmeldteDb.markHendelseRead("hendelse-id-1", "leder-fnr-1")
+            val hendelseErFerdigstilt = minesykmeldteDb.getHendelser("leder-fnr-1").isEmpty()
 
             didMarkAsRead.`should be true`()
+            hendelseErFerdigstilt shouldBeEqualTo true
         }
 
         it("Skal ikke markere hendelsen som lest hvis den ikke tilhører lederens ansatt") {
