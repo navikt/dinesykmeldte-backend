@@ -79,12 +79,12 @@ fun createApplicationEngine(
 
         routing {
             registerNaisApi(applicationState)
+            if (env.cluster == "dev-gcp") {
+                setupSwaggerDocApi()
+            }
             authenticate("tokenx") {
                 registerMineSykmeldteApi(mineSykmeldteService)
                 registerVirksomhetApi(virksomhetService)
-                if (env.cluster == "dev-gcp") {
-                    setupSwaggerDocApi()
-                }
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
