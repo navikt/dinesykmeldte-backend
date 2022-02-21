@@ -343,6 +343,7 @@ object MineSykmeldteApiKtTest : Spek({
                          "navn": "Navn N. Navnessen",
                          "fnr": "08088012345",
                          "lest": false,
+                         "korrigererSoknadId":null,
                          "korrigertBySoknadId": "0422-4a5e-b779-a8819abf",
                          "perioder": [],
                          "sporsmal": [{
@@ -374,6 +375,7 @@ fun createSoknadTestData(
     lest: Boolean = false,
     tom: LocalDate = LocalDate.now(),
     fom: LocalDate = LocalDate.parse("2021-05-01"),
+    korrigererSoknadId: String? = null,
     korrigertBySoknadId: String = "0422-4a5e-b779-a8819abf",
     sporsmal: List<Sporsmal>,
 ) = Soknad(
@@ -384,6 +386,7 @@ fun createSoknadTestData(
     tom = tom,
     fom = fom,
     lest = lest,
+    korrigererSoknadId = korrigererSoknadId,
     korrigertBySoknadId = korrigertBySoknadId,
     perioder = listOf(),
     sporsmal = sporsmal,

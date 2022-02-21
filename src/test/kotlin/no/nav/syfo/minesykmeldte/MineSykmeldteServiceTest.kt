@@ -891,6 +891,7 @@ class MineSykmeldteServiceTest : Spek({
                     timestamp = OffsetDateTime.parse("2021-11-18T14:06:12Z"),
                     soknad = mockk<SykepengesoknadDTO>().also {
                         every { it.fom } returns LocalDate.parse("2021-10-01")
+                        every { it.korrigerer } returns null
                         every { it.korrigertAv } returns "jd14jfqd-0422-4a5e-b779-a8819abf"
                         every { it.soknadsperioder } returns listOf(
                             SoknadsperiodeDTO(
@@ -924,6 +925,7 @@ class MineSykmeldteServiceTest : Spek({
             result.id shouldBeEqualTo soknadId
             result.sykmeldingId shouldBeEqualTo "31c5b5ca-1248-4280-bc2e-3c6b11c365b9"
             result.navn shouldBeEqualTo "Navn Navnesen"
+            result.korrigererSoknadId shouldBeEqualTo null
             result.korrigertBySoknadId shouldBeEqualTo "jd14jfqd-0422-4a5e-b779-a8819abf"
             result.perioder[0].fom shouldBeEqualTo LocalDate.parse("2021-10-04")
             result.perioder[0].tom shouldBeEqualTo LocalDate.parse("2021-10-12")
