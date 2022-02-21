@@ -3,6 +3,8 @@ info:
   title: Dinesykmeldte api
   version: 1.0.0
   description: Api for dinesykmeldte
+servers:
+  - url: 'https://dinesykmeldte-backend.dev.intern.nav.no'
 paths:
   /api/minesykmeldte:
     get:
@@ -574,3 +576,12 @@ components:
          type: string
        orgnummer:
          type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: [ ]
