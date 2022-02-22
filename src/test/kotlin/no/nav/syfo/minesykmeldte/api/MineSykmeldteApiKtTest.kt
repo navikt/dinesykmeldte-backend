@@ -167,7 +167,8 @@ object MineSykmeldteApiKtTest : Spek({
                                     id = "hendelse-1-id",
                                     oppgavetype = "REVIDERT_OPPFOLGINGSPLAN",
                                     lenke = "https://esyfo.nav.no",
-                                    tekst = "Ny revidert oppfølgingplan"
+                                    tekst = "Ny revidert oppfølgingplan",
+                                    ferdigstilt = false,
                                 )
                             )
                         )
@@ -203,7 +204,8 @@ object MineSykmeldteApiKtTest : Spek({
                                "id": "hendelse-1-id",
                                "oppgavetype": "REVIDERT_OPPFOLGINGSPLAN",
                                "lenke": "https://esyfo.nav.no",
-                               "tekst": "Ny revidert oppfølgingplan"
+                               "tekst": "Ny revidert oppfølgingplan",
+                               "ferdigstilt": false
                              }
                             ]
                           }

@@ -212,5 +212,6 @@ private fun HendelseDbModel.toHendelse() =
         id = id,
         oppgavetype = oppgavetype,
         lenke = lenke,
-        tekst = tekst
+        tekst = tekst,
+        ferdigstilt = ferdigstilt,
     )

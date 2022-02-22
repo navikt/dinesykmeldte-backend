@@ -4,5 +4,6 @@ data class Hendelse(
     val id: String,
     val oppgavetype: String,
     val lenke: String?,
-    val tekst: String?
+    val tekst: String?,
+    val ferdigstilt: Boolean,
 )
