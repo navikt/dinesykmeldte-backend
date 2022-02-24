@@ -82,7 +82,6 @@ class MineSykmeldteMapper private constructor() {
 
         private fun getNySoknad(soknad: SykepengesoknadDTO, varsel: Boolean): PreviewNySoknad =
             PreviewNySoknad(
-                frist = maxDate(soknad.opprettet?.toLocalDate(), soknad.tom).plusMonths(4),
                 varsel = varsel,
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,

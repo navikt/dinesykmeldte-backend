@@ -591,7 +591,6 @@ class MineSykmeldteServiceTest : Spek({
 
                     mappedSoknad.shouldBeInstance<PreviewNySoknad>()
                     mappedSoknad.varsel shouldBeEqualTo true
-                    mappedSoknad.frist shouldBeEqualTo LocalDate.parse("2020-09-02")
                 }
             }
 
@@ -624,7 +623,6 @@ class MineSykmeldteServiceTest : Spek({
 
                     mappedSoknad.shouldBeInstance<PreviewNySoknad>()
                     mappedSoknad.varsel shouldBeEqualTo true
-                    mappedSoknad.frist shouldBeEqualTo LocalDate.parse("2020-10-05")
                 }
             }
 
