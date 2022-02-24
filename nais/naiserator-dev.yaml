@@ -16,7 +16,7 @@ spec:
           - name: dinesykmeldte-backend
             envVarPrefix: NAIS_DATABASE
             users:
-              - dinesykmeldte_aiven
+              - "dinesykmeldte_aiven"
         diskAutoresize: true
         highAvailability: true
         insights:
