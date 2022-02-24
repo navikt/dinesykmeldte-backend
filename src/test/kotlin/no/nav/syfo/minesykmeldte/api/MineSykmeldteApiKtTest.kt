@@ -155,7 +155,6 @@ object MineSykmeldteApiKtTest : Spek({
                                 PreviewNySoknad(
                                     id = "soknad-1-id",
                                     sykmeldingId = "sykmelding-id-1",
-                                    frist = LocalDate.parse("2020-05-05"),
                                     fom = LocalDate.parse("2020-01-01"),
                                     tom = LocalDate.parse("2020-02-01"),
                                     varsel = true,
@@ -188,7 +187,6 @@ object MineSykmeldteApiKtTest : Spek({
                             "previewSykmeldinger": [],
                             "previewSoknader": [
                               {
-                                "frist": "2020-05-05",
                                 "varsel": true,
                                 "id": "soknad-1-id",
                                 "sykmeldingId": "sykmelding-id-1",

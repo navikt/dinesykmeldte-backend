@@ -33,7 +33,6 @@ data class PreviewSendtSoknad(
 }
 
 data class PreviewNySoknad(
-    val frist: LocalDate,
     val varsel: Boolean,
     override val id: String,
     override val sykmeldingId: String?,
