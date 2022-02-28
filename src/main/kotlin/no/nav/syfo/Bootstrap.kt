@@ -32,10 +32,13 @@ import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
+import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
+import no.nav.syfo.narmesteleder.kafka.NLResponseProducer
+import no.nav.syfo.narmesteleder.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.soknad.SoknadService
 import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.sykmelding.SykmeldingService
@@ -43,11 +46,14 @@ import no.nav.syfo.sykmelding.client.SyfoSyketilfelleClient
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.pdl.client.PdlClient
 import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
+import no.nav.syfo.util.JacksonKafkaSerializer
 import no.nav.syfo.virksomhet.api.VirksomhetService
 import no.nav.syfo.virksomhet.db.VirksomhetDb
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URL
@@ -119,7 +125,14 @@ fun main() {
         StringDeserializer()
     )
 
-    val narmestelederService = NarmestelederService(NarmestelederDb(database))
+    val kafkaProducer = KafkaProducer<String, NlResponseKafkaMessage>(
+        KafkaUtils
+            .getAivenKafkaConfig()
+            .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class)
+    )
+    val nlResponseProducer = NLResponseProducer(kafkaProducer, env.nlResponseTopic)
+
+    val narmestelederService = NarmestelederService(NarmestelederDb(database), nlResponseProducer)
     val sykmeldingService = SykmeldingService(SykmeldingDb(database), pdlPersonService, syfoSyketilfelleClient, env.cluster)
     val soknadService = SoknadService(SoknadDb(database))
     val hendelserService = HendelserService(HendelserDb(database))
@@ -140,7 +153,8 @@ fun main() {
         wellKnownTokenX.issuer,
         applicationState,
         MineSykmeldteService(MineSykmeldteDb(database)),
-        VirksomhetService(VirksomhetDb(database))
+        VirksomhetService(VirksomhetDb(database)),
+        narmestelederService
     )
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()

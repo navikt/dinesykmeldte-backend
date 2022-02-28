@@ -24,7 +24,8 @@ data class Environment(
     val sykepengesoknadTopic: String = "flex.sykepengesoknad",
     val lestSykmeldingSoknadTopic: String = "teamsykmelding.dinesykmeldte-hendelser",
     val hendelserTopic: String = "teamsykmelding.dinesykmeldte-hendelser-v2",
-    val runKafkaConsumer: Boolean = getRunKafkaProperty()
+    val runKafkaConsumer: Boolean = getRunKafkaProperty(),
+    val nlResponseTopic: String = "teamsykmelding.syfo-narmesteleder"
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
