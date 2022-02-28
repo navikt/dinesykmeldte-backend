@@ -117,7 +117,9 @@ subprojects {
     }
 
     tasks {
-
+        withType<Jar> {
+            manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
+        }
         create("printVersion") {
             println(project.version)
         }
