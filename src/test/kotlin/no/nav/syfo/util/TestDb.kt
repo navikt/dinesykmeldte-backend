@@ -10,6 +10,7 @@ import no.nav.syfo.application.database.toList
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
+import no.nav.syfo.narmesteleder.db.toNarmestelederDbModel
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
@@ -69,14 +70,6 @@ class TestDb private constructor() {
                 }
             }
         }
-
-        private fun ResultSet.toNarmestelederDbModel(): NarmestelederDbModel =
-            NarmestelederDbModel(
-                narmestelederId = getString("narmeste_leder_id"),
-                pasientFnr = getString("pasient_fnr"),
-                lederFnr = getString("leder_fnr"),
-                orgnummer = getString("orgnummer")
-            )
 
         fun getSykmeldt(fnr: String): SykmeldtDbModel? {
             return database.connection.use {

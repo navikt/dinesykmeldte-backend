@@ -29,6 +29,8 @@ import no.nav.syfo.application.metrics.monitorHttpRequests
 import no.nav.syfo.log
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.api.registerMineSykmeldteApi
+import no.nav.syfo.narmesteleder.NarmestelederService
+import no.nav.syfo.narmesteleder.api.registerNarmestelederApi
 import no.nav.syfo.virksomhet.api.VirksomhetService
 import no.nav.syfo.virksomhet.api.registerVirksomhetApi
 import java.util.UUID
@@ -40,6 +42,7 @@ fun createApplicationEngine(
     applicationState: ApplicationState,
     mineSykmeldteService: MineSykmeldteService,
     virksomhetService: VirksomhetService,
+    narmestelederService: NarmestelederService
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -85,6 +88,7 @@ fun createApplicationEngine(
             authenticate("tokenx") {
                 registerMineSykmeldteApi(mineSykmeldteService)
                 registerVirksomhetApi(virksomhetService)
+                registerNarmestelederApi(narmestelederService)
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
