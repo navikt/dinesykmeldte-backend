@@ -8,7 +8,7 @@ build/
 .gradle/
 
 # Generated sources
-src/generated
+dinesykmeldte-backend/src/generated
 
 # OS specific
 .DS_Store

@@ -1,0 +1,25 @@
+apiVersion: "nais.io/v1"
+kind: "Alert"
+metadata:
+  name: dinesykmeldte-aiven-alerts
+  namespace: teamsykmelding
+  labels:
+    team: teamsykmeldings
+spec:
+  receivers:
+    slack:
+      channel: '#sykmelding-alerts'
+      #prependText: '<!here> | '
+  alerts:
+    - alert: dinesykmeldte-backend app er nede
+      expr: up{app="dinesykmeldte-aiven", job="kubernetes-pods"} == 0
+      for: 5m
+      description: "App {{ $labels.app }} er nede i namespace {{ $labels.kubernetes_namespace }}"
+      action: "`kubectl describe pod {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace }}` for events, og `kubectl logs {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace }}` for logger"
+    - alert: dinesykmeldte-backend-kafka-offset
+      expr: kafka_consumergroup_group_sum_lag{group=~"dinesykmeldte-backend"} > 100
+      for: 1m
+      description: "dinesykmeldte-backend kafka-lag er høyt"
+      action: "Sjekk om dinesykmeldte-backend leser fra kafka"
+      sla: respond within 1h, during office hours
+      severity: danger

@@ -36,74 +36,122 @@ plugins {
     id("org.hidetake.swagger.generator") version "2.18.2" apply true
 }
 
-buildscript {
-    dependencies {
-    }
-}
-
 val githubUser: String by project
 val githubPassword: String by project
 
-repositories {
-    mavenCentral()
-    maven {
-        url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
-        credentials {
-            username = githubUser
-            password = githubPassword
+subprojects {
+    group = "no.nav.syfo"
+    version = "1.0.0"
+    apply(plugin = "org.jmailen.kotlinter")
+    apply(plugin = "kotlin")
+    apply(plugin = "com.diffplug.spotless")
+    apply(plugin = "com.github.johnrengelman.shadow")
+    apply(plugin = "org.hidetake.swagger.generator")
+
+    repositories {
+        mavenCentral()
+        maven {
+            url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
+            credentials {
+                username = githubUser
+                password = githubPassword
+            }
         }
     }
-}
 
+    dependencies {
+        implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
-dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$coroutinesVersion")
+        implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
+        implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$coroutinesVersion")
-    implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
-    implementation("io.prometheus:simpleclient_common:$prometheusVersion")
+        implementation("io.ktor:ktor-server-netty:$ktorVersion")
+        implementation("io.ktor:ktor-client-apache:$ktorVersion")
+        implementation("io.ktor:ktor-client-auth-basic:$ktorVersion")
+        implementation("io.ktor:ktor-client-jackson:$ktorVersion")
+        implementation("io.ktor:ktor-jackson:$ktorVersion")
+        implementation("io.ktor:ktor-auth:$ktorVersion")
+        implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
 
-    implementation("io.ktor:ktor-server-netty:$ktorVersion")
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    implementation("io.ktor:ktor-client-auth-basic:$ktorVersion")
-    implementation("io.ktor:ktor-client-jackson:$ktorVersion")
-    implementation("io.ktor:ktor-jackson:$ktorVersion")
-    implementation("io.ktor:ktor-auth:$ktorVersion")
-    implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
+        implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
+        implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
+        implementation("no.nav.helse.flex:sykepengesoknad-kafka:$sykepengesoknadKafkaVersion")
 
-    implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
-    implementation("no.nav.helse.flex:sykepengesoknad-kafka:$sykepengesoknadKafkaVersion")
+        implementation("ch.qos.logback:logback-classic:$logbackVersion")
+        implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
-    implementation("ch.qos.logback:logback-classic:$logbackVersion")
-    implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
+        implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
+        implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+        implementation("com.zaxxer:HikariCP:$hikariVersion")
+        implementation("org.flywaydb:flyway-core:$flywayVersion")
+        implementation("org.postgresql:postgresql:$postgresVersion")
+        implementation("com.google.cloud.sql:postgres-socket-factory:1.4.3")
 
-    implementation("com.zaxxer:HikariCP:$hikariVersion")
-    implementation("org.flywaydb:flyway-core:$flywayVersion")
-    implementation("org.postgresql:postgresql:$postgresVersion")
+        swaggerUI( "org.webjars:swagger-ui:$swaggerUiVersion")
 
-    swaggerUI( "org.webjars:swagger-ui:$swaggerUiVersion")
-
-    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
-    testImplementation("org.amshove.kluent:kluent:$kluentVersion")
-    testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("org.testcontainers:postgresql:$testContainerVersion")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
-    testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
-    testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
-    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
-        exclude(group = "org.eclipse.jetty")
+        testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+        testImplementation("org.amshove.kluent:kluent:$kluentVersion")
+        testImplementation("io.mockk:mockk:$mockkVersion")
+        testImplementation("org.testcontainers:postgresql:$testContainerVersion")
+        testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
+        testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
+        testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
+        testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
+            exclude(group = "org.eclipse.jetty")
+        }
+        testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
+            exclude(group = "org.jetbrains.kotlin")
+        }
+        testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
+            exclude(group = "org.jetbrains.kotlin")
+        }
     }
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
-        exclude(group = "org.jetbrains.kotlin")
+
+    swaggerSources {
+        create("dinesykmeldte-backend").apply {
+            setInputFile(file("api/oas3/dinesykmeldte-backend-api.yaml"))
+        }
     }
-    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
-        exclude(group = "org.jetbrains.kotlin")
+
+    tasks {
+
+        create("printVersion") {
+            println(project.version)
+        }
+
+        withType<KotlinCompile> {
+            kotlinOptions.jvmTarget = "17"
+        }
+
+        withType<org.hidetake.gradle.swagger.generator.GenerateSwaggerUI> {
+            outputDir = File(buildDir.path + "/resources/main/api")
+        }
+
+        withType<ShadowJar> {
+            transform(ServiceFileTransformer::class.java) {
+                setPath("META-INF/cxf")
+                include("bus-extensions.txt")
+            }
+            if (project.name == "dinesykmeldte-backend") {
+                dependsOn("generateSwaggerUI")
+            }
+        }
+
+        withType<Test> {
+            useJUnitPlatform {
+                includeEngines("spek2")
+            }
+            testLogging.showStandardStreams = true
+        }
+
+        "check" {
+            dependsOn("formatKotlin")
+        }
     }
+
 }
 
 swaggerSources {
