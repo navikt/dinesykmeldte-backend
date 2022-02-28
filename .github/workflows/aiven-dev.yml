@@ -1,4 +1,4 @@
-name: Deploy to dev
+name: Deploy aiven app to dev
 on:
   push:
     branches:
