@@ -38,16 +38,18 @@ class NarmestelederDb(private val database: DatabaseInterface) {
         }
     }
 
-    fun finnNarmestelederkoblinger(narmesteLederFnr: String, orgnummer: String, fnrSykmeldt: String): List<NarmestelederDbModel> {
+    fun finnNarmestelederkoblinger(
+        narmesteLederFnr: String,
+        narmestelederId: String,
+    ): List<NarmestelederDbModel> {
         return database.connection.use { connection ->
             connection.prepareStatement(
                 """
-           SELECT * from narmesteleder where leder_fnr = ? and orgnummer = ? and pasient_fnr = ?;
+           SELECT * FROM narmesteleder WHERE leder_fnr = ? AND narmeste_leder_id = ?;
         """
             ).use {
                 it.setString(1, narmesteLederFnr)
-                it.setString(2, orgnummer)
-                it.setString(3, fnrSykmeldt)
+                it.setString(2, narmestelederId)
                 it.executeQuery().toList { toNarmestelederDbModel() }
             }
         }
