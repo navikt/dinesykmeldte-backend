@@ -4,7 +4,7 @@ metadata:
   name: dinesykmeldte-kafka-alerts
   namespace: teamsykmelding
   labels:
-    team: teamsykmeldings
+    team: teamsykmelding
 spec:
   receivers:
     slack:
