@@ -37,4 +37,5 @@ spec:
     enabled: false
   ingresses:
     - "https://dinesykmeldte-kafka.dev.intern.nav.no"
-  webproxy: true
+  filesFrom:
+    - secret: dinesykmeldte-kafka-user-secret
