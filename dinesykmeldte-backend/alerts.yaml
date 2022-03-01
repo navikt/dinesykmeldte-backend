@@ -19,7 +19,7 @@ spec:
     - alert: dinesykmeldte-backend-kafka-offset
       expr: kafka_consumergroup_group_sum_lag{group=~"dinesykmeldte-backend"} > 100
       for: 1m
-      description: "dinesykmeldte-backend kafka-lag er høyt"
+      description: "dinesykmeldte-kafka kafka-lag er høyt"
       action: "Sjekk om dinesykmeldte-backend leser fra kafka"
       sla: respond within 1h, during office hours
       severity: danger
