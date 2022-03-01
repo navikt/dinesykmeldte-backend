@@ -8,6 +8,7 @@ import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.hendelser.db.HendelseDbModel
+import no.nav.syfo.log
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
 import no.nav.syfo.narmesteleder.db.toNarmestelederDbModel
@@ -25,20 +26,29 @@ class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
 class TestDb private constructor() {
     companion object {
         val database: DatabaseInterface
-        private val psqlContainer: PsqlContainer = PsqlContainer()
-            .withExposedPorts(5432)
-            .withUsername("username")
-            .withPassword("password")
-            .withDatabaseName("database")
-            .withInitScript("db/testdb-init.sql")
+
+        private val psqlContainer: PsqlContainer
 
         init {
-            psqlContainer.start()
-            val mockEnv = mockk<Environment>(relaxed = true)
-            every { mockEnv.databaseUsername } returns "username"
-            every { mockEnv.databasePassword } returns "password"
-            every { mockEnv.jdbcUrl() } returns psqlContainer.jdbcUrl
-            database = Database(mockEnv)
+
+            try {
+                psqlContainer = PsqlContainer()
+                    .withExposedPorts(5432)
+                    .withUsername("username")
+                    .withPassword("password")
+                    .withDatabaseName("database")
+                    .withInitScript("db/testdb-init.sql")
+
+                psqlContainer.start()
+                val mockEnv = mockk<Environment>(relaxed = true)
+                every { mockEnv.databaseUsername } returns "username"
+                every { mockEnv.databasePassword } returns "password"
+                every { mockEnv.jdbcUrl() } returns psqlContainer.jdbcUrl
+                database = Database(mockEnv)
+            } catch (ex: Exception) {
+                log.error("Error", ex)
+                throw ex
+            }
         }
 
         fun clearAllData() {

@@ -72,6 +72,7 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
 @ExperimentalTime
 @DelicateCoroutinesApi
 fun main() {
+
     val env = Environment()
     DefaultExports.initialize()
     val applicationState = ApplicationState()
