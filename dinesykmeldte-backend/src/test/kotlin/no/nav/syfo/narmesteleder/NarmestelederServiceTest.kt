@@ -50,7 +50,7 @@ class NarmestelederServiceTest : Spek({
             val id = UUID.randomUUID()
             narmestelederService.updateNl(createNarmestelederLeesahKafkaMessage(id))
 
-            narmestelederService.deaktiverNarmesteLeder("01987654321", "88888888", "12345678910", UUID.randomUUID())
+            narmestelederService.deaktiverNarmesteLeder("01987654321", id.toString(), UUID.randomUUID())
 
             verify(exactly = 1) {
                 nlResponseProducer.send(
@@ -65,7 +65,7 @@ class NarmestelederServiceTest : Spek({
             val id = UUID.randomUUID()
             narmestelederService.updateNl(createNarmestelederLeesahKafkaMessage(id))
 
-            narmestelederService.deaktiverNarmesteLeder("01987654321", "88888888", "12345012345", UUID.randomUUID())
+            narmestelederService.deaktiverNarmesteLeder("01987654321", UUID.randomUUID().toString(), UUID.randomUUID())
 
             verify(exactly = 0) { nlResponseProducer.send(any()) }
             TestDb.getNarmesteleder(pasientFnr = "12345678910").size shouldBeEqualTo 1
