@@ -17,7 +17,7 @@ import java.util.UUID
 
 class NarmestelederService(
     private val narmestelederDb: NarmestelederDb,
-    private val nlResponseProducer: NLResponseProducer
+    private val nlResponseProducer: NLResponseProducer,
 ) {
     fun updateNl(record: ConsumerRecord<String, String>) {
         try {
@@ -41,15 +41,17 @@ class NarmestelederService(
         }
     }
 
-    fun deaktiverNarmesteLeder(fnrLeder: String, orgnummer: String, fnrSykmeldt: String, callId: UUID) {
+    fun deaktiverNarmesteLeder(fnrLeder: String, narmestelederId: String, callId: UUID) {
         val nlKoblinger = narmestelederDb.finnNarmestelederkoblinger(
             narmesteLederFnr = fnrLeder,
-            orgnummer = orgnummer,
-            fnrSykmeldt = fnrSykmeldt
+            narmestelederId = narmestelederId
         )
         if (nlKoblinger.isNotEmpty()) {
             log.info("Deaktiverer ${nlKoblinger.size} NL-koblinger for $callId")
-            deaktiverNarmesteLeder(orgnummer = nlKoblinger.first().orgnummer, fnrSykmeldt = nlKoblinger.first().pasientFnr)
+            deaktiverNarmesteLeder(
+                orgnummer = nlKoblinger.first().orgnummer,
+                fnrSykmeldt = nlKoblinger.first().pasientFnr
+            )
             nlKoblinger.forEach { narmestelederDb.remove(it.narmestelederId) }
         } else {
             log.info("Ingen aktive koblinger å deaktivere $callId")
