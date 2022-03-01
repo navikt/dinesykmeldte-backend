@@ -1,3 +1,3 @@
 rootProject.name = "dinesykmeldte-backend"
 include("dinesykmeldte-backend")
-include("dinesykmeldte-aiven")
+include("dinesykmeldte-kafka")

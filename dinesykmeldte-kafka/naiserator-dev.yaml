@@ -1,7 +1,7 @@
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
-  name: dinesykmeldte-aiven
+  name: dinesykmeldte-kafka
   namespace: teamsykmelding
   labels:
     team: teamsykmelding
@@ -36,5 +36,5 @@ spec:
   vault:
     enabled: false
   ingresses:
-    - "https://dinesykmeldte-aiven.dev.intern.nav.no"
+    - "https://dinesykmeldte-kafka.dev.intern.nav.no"
   webproxy: true

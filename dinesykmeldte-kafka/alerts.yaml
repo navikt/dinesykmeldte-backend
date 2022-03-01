@@ -1,7 +1,7 @@
 apiVersion: "nais.io/v1"
 kind: "Alert"
 metadata:
-  name: dinesykmeldte-aiven-alerts
+  name: dinesykmeldte-kafka-alerts
   namespace: teamsykmelding
   labels:
     team: teamsykmeldings
@@ -12,7 +12,7 @@ spec:
       #prependText: '<!here> | '
   alerts:
     - alert: dinesykmeldte-backend app er nede
-      expr: up{app="dinesykmeldte-aiven", job="kubernetes-pods"} == 0
+      expr: up{app="dinesykmeldte-kafka", job="kubernetes-pods"} == 0
       for: 5m
       description: "App {{ $labels.app }} er nede i namespace {{ $labels.kubernetes_namespace }}"
       action: "`kubectl describe pod {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace }}` for events, og `kubectl logs {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace }}` for logger"

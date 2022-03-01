@@ -7,7 +7,7 @@ import no.nav.syfo.application.createApplicationEngine
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-val log: Logger = LoggerFactory.getLogger("no.nav.syfo.dinesykmeldte-aiven")
+val log: Logger = LoggerFactory.getLogger("no.nav.syfo.dinesykmeldte-kafka")
 
 fun main() {
     val env = Environment()
