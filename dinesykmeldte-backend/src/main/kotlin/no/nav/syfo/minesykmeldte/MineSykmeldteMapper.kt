@@ -111,11 +111,13 @@ class MineSykmeldteMapper private constructor() {
         fun SporsmalDTO.toSporsmal(): Sporsmal = Sporsmal(
             id = requireNotNull(id),
             tag = requireNotNull(tag),
+            min = min,
+            max = max,
             sporsmalstekst = requireNotNull(sporsmalstekst),
             undertekst = undertekst,
             svartype = requireNotNull(svartype),
-            kriterieForVisningAvUndersporsmal = requireNotNull(kriterieForVisningAvUndersporsmal),
-            svar = requireNotNull(svar).map {
+            kriterieForVisningAvUndersporsmal = kriterieForVisningAvUndersporsmal,
+            svar = svar?.map {
                 Svar(
                     verdi = requireNotNull(it.verdi),
                 )
