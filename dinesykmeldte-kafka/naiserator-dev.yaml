@@ -41,3 +41,5 @@ spec:
     - "https://dinesykmeldte-kafka.dev.intern.nav.no"
   filesFrom:
     - secret: dinesykmeldte-kafka-user-secret
+  kafka:
+    pool: nav-dev

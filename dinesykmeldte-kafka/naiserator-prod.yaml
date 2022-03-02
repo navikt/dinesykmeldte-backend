@@ -38,3 +38,5 @@ spec:
   webproxy: false
   filesFrom:
     - secret: dinesykmeldte-kafka-user-secret
+  kafka:
+    pool: nav-prod
