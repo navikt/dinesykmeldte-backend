@@ -19,6 +19,7 @@ import no.nav.syfo.minesykmeldte.model.Behandler
 import no.nav.syfo.minesykmeldte.model.Behandlingsdager
 import no.nav.syfo.minesykmeldte.model.Gradert
 import no.nav.syfo.minesykmeldte.model.Hendelse
+import no.nav.syfo.minesykmeldte.model.HendelseType
 import no.nav.syfo.minesykmeldte.model.MinSykmeldtKey
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PreviewSoknad
@@ -33,16 +34,20 @@ import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
+import no.nav.syfo.log
+import no.nav.syfo.minesykmeldte.model.Dialogmote
+import no.nav.syfo.minesykmeldte.model.DialogmoteHendelser
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.IllegalStateException
 
 class MineSykmeldteService(
-    private val mineSykmeldteDb: MineSykmeldteDb
+    private val mineSykmeldteDb: MineSykmeldteDb,
 ) {
     suspend fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> = withContext(Dispatchers.IO) {
         val hendelserJob = async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr) }
-        val sykmeldteMapJob = async(Dispatchers.IO) { mineSykmeldteDb.getMineSykmeldte(lederFnr).groupBy { it.toMinSykmeldtKey() } }
+        val sykmeldteMapJob =
+            async(Dispatchers.IO) { mineSykmeldteDb.getMineSykmeldte(lederFnr).groupBy { it.toMinSykmeldtKey() } }
 
         val hendelserMap = hendelserJob.await().groupBy { it.pasientFnr }
             .mapValues { it.value.map { hendelse -> hendelse.toHendelse() } }
@@ -61,7 +66,15 @@ class MineSykmeldteService(
                     toPreviewSykmelding(sykmeldtDbModel)
                 },
                 previewSoknader = it.value.mapNotNull { mapNullableSoknad(it) },
-                hendelser = hendelserMap[it.key.fnr] ?: emptyList()
+                dialogmoter = hendelserMap[it.key.fnr]
+                    ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
+                    ?.map {
+                        Dialogmote(
+                            it.id,
+                            it.tekst ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}")
+                        )
+                    }
+                    ?: emptyList(),
             )
         }
     }
@@ -210,7 +223,16 @@ private fun BehandlerAGDTO.formatName(): String = toFormattedNameString(fornavn,
 private fun HendelseDbModel.toHendelse() =
     Hendelse(
         id = id,
-        oppgavetype = oppgavetype,
+        oppgavetype = safeParseHendelseEnum(oppgavetype),
         lenke = lenke,
         tekst = tekst
     )
+
+fun safeParseHendelseEnum(oppgavetype: String): HendelseType {
+    return try {
+        HendelseType.valueOf(oppgavetype)
+    } catch (e: Exception) {
+        log.error("Ukjent oppgave av type $oppgavetype er ikke håndtert i applikasjonen. Mangler vi implementasjon?")
+        HendelseType.UNKNOWN
+    }
+}

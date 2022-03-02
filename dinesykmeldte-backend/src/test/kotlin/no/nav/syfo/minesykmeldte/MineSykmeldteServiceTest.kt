@@ -72,9 +72,9 @@ class MineSykmeldteServiceTest : Spek({
                     id = "12",
                     pasientFnr = "avdeling-1-0",
                     orgnummer = "orgnummer",
-                    oppgavetype = "LES_DIALOGMOTE",
+                    oppgavetype = "DIALOGMOTE_INNKALLING",
                     lenke = "localhost",
-                    tekst = "les dialogmøte",
+                    tekst = "Innkalling til dialogmøte",
                     timestamp = OffsetDateTime.now(),
                     utlopstidspunkt = null,
                     ferdigstilt = false,
@@ -94,8 +94,8 @@ class MineSykmeldteServiceTest : Spek({
             runBlocking {
                 val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte shouldHaveSize 2
-                mineSykmeldte.first { it.fnr == "avdeling-1-0" }.hendelser shouldHaveSize 1
-                mineSykmeldte.first { it.fnr == "avdeling-1-1" }.hendelser shouldHaveSize 0
+                mineSykmeldte.first { it.fnr == "avdeling-1-0" }.dialogmoter shouldHaveSize 1
+                mineSykmeldte.first { it.fnr == "avdeling-1-1" }.dialogmoter shouldHaveSize 0
             }
         }
 

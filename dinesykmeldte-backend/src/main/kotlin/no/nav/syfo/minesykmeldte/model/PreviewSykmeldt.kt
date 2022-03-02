@@ -11,7 +11,12 @@ data class PreviewSykmeldt(
     val friskmeldt: Boolean,
     val previewSykmeldinger: List<PreviewSykmelding>,
     val previewSoknader: List<PreviewSoknad>,
-    val hendelser: List<Hendelse>
+    val dialogmoter: List<Dialogmote>,
+)
+
+data class Dialogmote(
+    val id: String,
+    var tekst: String,
 )
 
 data class PreviewSykmelding(
