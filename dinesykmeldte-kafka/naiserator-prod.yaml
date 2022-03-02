@@ -8,8 +8,8 @@ metadata:
 spec:
   image: {{ image }}
   replicas:
-    min: 2
-    max: 6
+    min: 1
+    max: 2
     cpuThresholdPercentage: 90
   port: 8080
   liveness:
@@ -35,8 +35,12 @@ spec:
       memory: 768Mi
   vault:
     enabled: false
-  webproxy: false
+  webproxy: true
   filesFrom:
     - secret: dinesykmeldte-kafka-user-secret
   kafka:
     pool: nav-prod
+  azure:
+    application:
+      enabled: true
+      tenant: nav.no
