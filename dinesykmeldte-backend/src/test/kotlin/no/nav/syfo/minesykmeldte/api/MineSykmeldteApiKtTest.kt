@@ -14,6 +14,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.Behandler
+import no.nav.syfo.minesykmeldte.model.Dialogmote
 import no.nav.syfo.minesykmeldte.model.Hendelse
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
@@ -69,7 +70,7 @@ object MineSykmeldteApiKtTest : Spek({
                         friskmeldt = false,
                         previewSykmeldinger = emptyList(),
                         previewSoknader = emptyList(),
-                        hendelser = emptyList()
+                        dialogmoter = emptyList()
                     )
                 )
                 with(
@@ -85,7 +86,7 @@ object MineSykmeldteApiKtTest : Spek({
                           "friskmeldt": false,
                           "previewSykmeldinger": [],
                           "previewSoknader": [],
-                          "hendelser": []
+                          "dialogmoter": []
                         }
                     ]""".minifyApiResponse()
                 }
@@ -159,16 +160,9 @@ object MineSykmeldteApiKtTest : Spek({
                                     tom = LocalDate.parse("2020-02-01"),
                                     varsel = true,
                                     perioder = listOf(),
-                                )
+                                ),
                             ),
-                            hendelser = listOf(
-                                Hendelse(
-                                    id = "hendelse-1-id",
-                                    oppgavetype = "REVIDERT_OPPFOLGINGSPLAN",
-                                    lenke = "https://esyfo.nav.no",
-                                    tekst = "Ny revidert oppfølgingplan"
-                                )
-                            )
+                            dialogmoter = listOf(Dialogmote("hendelse-1-id", "Ny revidert oppfølgingplan")),
                         )
                     )
                     with(
@@ -196,14 +190,7 @@ object MineSykmeldteApiKtTest : Spek({
                                 "status": "NY"
                               }
                             ],
-                            "hendelser": [
-                             {
-                               "id": "hendelse-1-id",
-                               "oppgavetype": "REVIDERT_OPPFOLGINGSPLAN",
-                               "lenke": "https://esyfo.nav.no",
-                               "tekst": "Ny revidert oppfølgingplan"
-                             }
-                            ]
+                            "dialogmoter":[{"id":"hendelse-1-id","tekst":"Ny revidert oppfølgingplan"}]
                           }
                         ]""".minifyApiResponse()
                     }
