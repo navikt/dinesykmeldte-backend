@@ -104,7 +104,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
            FROM hendelser h
                 INNER JOIN narmesteleder n ON h.pasient_fnr = n.pasient_fnr and n.orgnummer = h.orgnummer
                 INNER JOIN sykmeldt sm ON n.pasient_fnr = sm.pasient_fnr
-           WHERE ferdigstilt = false and utlopstidspunkt < ? 
+           WHERE ferdigstilt = false and utlopstidspunkt > ? 
            and n.leder_fnr = ?
         """
         ).use { ps ->
