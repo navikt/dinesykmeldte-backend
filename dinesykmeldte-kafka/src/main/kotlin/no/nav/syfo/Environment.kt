@@ -6,7 +6,16 @@ import java.nio.file.Paths
 
 data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
-    val applicationName: String = getEnvVar("NAIS_APP_NAME", "dinesykmeldte-kafka")
+    val applicationName: String = getEnvVar("NAIS_APP_NAME", "dinesykmeldte-kafka"),
+    val aadAccessTokenUrl: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
+    val clientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
+    val clientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
+    val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
+    val pdlScope: String = getEnvVar("PDL_SCOPE"),
+    val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
+    val syketilfelleEndpointURL: String = getEnvVar("SYKETILLFELLE_ENDPOINT_URL"),
+    val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),
+    val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
