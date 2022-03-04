@@ -15,7 +15,6 @@ data class Environment(
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val syketilfelleEndpointURL: String = getEnvVar("SYKETILLFELLE_ENDPOINT_URL"),
     val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),
-    val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
     val narmestelederLeesahTopic: String = "teamsykmelding.syfo-narmesteleder-leesah",
     val sendtSykmeldingTopic: String = "teamsykmelding.syfo-sendt-sykmelding",
     val sykepengesoknadTopic: String = "flex.sykepengesoknad",
