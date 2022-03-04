@@ -46,3 +46,12 @@ spec:
     application:
       enabled: true
       tenant: trygdeetaten.no
+  env:
+    - name: PDL_GRAPHQL_PATH
+      value: https://pdl-api.dev-fss-pub.nais.io/graphql
+    - name: PDL_SCOPE
+      value: api://dev-fss.pdl.pdl-api/.default
+    - name: SYKETILLFELLE_ENDPOINT_URL
+      value: https://flex-syketilfelle.dev.intern.nav.no
+    - name: SYKETILLFELLE_SCOPE
+      value: api://dev-gcp.flex.flex-syketilfelle/.default
