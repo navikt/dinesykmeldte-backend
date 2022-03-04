@@ -582,7 +582,7 @@ class MineSykmeldteServiceTest : Spek({
                         sykmelding = createArbeidsgiverSykmelding("sykmeldingId"),
                         soknad = soknad,
                         lestSykmelding = false,
-                        lestSoknad = true,
+                        lestSoknad = false,
                     )
                 )
                 runBlocking {
@@ -622,7 +622,7 @@ class MineSykmeldteServiceTest : Spek({
                     val mappedSoknad = mineSykeldte[0].previewSoknader[0]
 
                     mappedSoknad.shouldBeInstance<PreviewNySoknad>()
-                    mappedSoknad.varsel shouldBeEqualTo true
+                    mappedSoknad.varsel shouldBeEqualTo false
                 }
             }
 

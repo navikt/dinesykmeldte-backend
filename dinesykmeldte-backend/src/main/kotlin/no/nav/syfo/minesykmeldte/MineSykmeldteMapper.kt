@@ -80,9 +80,9 @@ class MineSykmeldteMapper private constructor() {
                     ?: throw IllegalStateException("søknadsperioder must not be null in fremtidig soknad: ${soknad.id}"),
             )
 
-        private fun getNySoknad(soknad: SykepengesoknadDTO, varsel: Boolean): PreviewNySoknad =
+        private fun getNySoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewNySoknad =
             PreviewNySoknad(
-                varsel = varsel,
+                varsel = !lest,
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
