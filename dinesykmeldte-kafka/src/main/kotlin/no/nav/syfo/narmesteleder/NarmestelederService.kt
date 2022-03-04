@@ -8,7 +8,6 @@ import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
 import no.nav.syfo.objectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
-
 class NarmestelederService(
     private val narmestelederDb: NarmestelederDb
 ) {

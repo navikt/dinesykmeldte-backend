@@ -5,8 +5,8 @@ import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_COUNTER
 import no.nav.syfo.log
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.objectMapper
-import no.nav.syfo.sykmelding.client.SyfoSyketilfelleClient
-import no.nav.syfo.sykmelding.client.SyketilfelleNotFoundException
+import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
+import no.nav.syfo.syketilfelle.client.SyketilfelleNotFoundException
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage

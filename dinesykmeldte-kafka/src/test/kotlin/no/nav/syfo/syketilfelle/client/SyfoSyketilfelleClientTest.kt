@@ -1,4 +1,4 @@
-package no.nav.syfo.sykmelding.client
+package no.nav.syfo.syketilfelle.client
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature

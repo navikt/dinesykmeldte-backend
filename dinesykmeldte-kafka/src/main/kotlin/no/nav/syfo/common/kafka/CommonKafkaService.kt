@@ -1,4 +1,4 @@
-package no.nav.syfo.common
+package no.nav.syfo.common.kafka
 
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -31,30 +31,26 @@ class CommonKafkaService(
 
     @DelicateCoroutinesApi
     fun startConsumer() {
-        if (environment.runKafkaConsumer) {
-            GlobalScope.launch(Dispatchers.Unbounded) {
-                while (applicationState.ready) {
-                    try {
-                        log.info("Starting consuming topics")
-                        kafkaConsumer.subscribe(
-                            listOf(
-                                environment.narmestelederLeesahTopic,
-                                environment.sendtSykmeldingTopic,
-                                environment.sykepengesoknadTopic,
-                                environment.lestSykmeldingSoknadTopic,
-                                environment.hendelserTopic
-                            )
+        GlobalScope.launch(Dispatchers.Unbounded) {
+            while (applicationState.ready) {
+                try {
+                    log.info("Starting consuming topics")
+                    kafkaConsumer.subscribe(
+                        listOf(
+                            environment.narmestelederLeesahTopic,
+                            environment.sendtSykmeldingTopic,
+                            environment.sykepengesoknadTopic,
+                            environment.lestSykmeldingSoknadTopic,
+                            environment.hendelserTopic
                         )
-                        start()
-                    } catch (ex: Exception) {
-                        log.error("Error running kafka consumer, unsubscribing and waiting 10 seconds for retry", ex)
-                        kafkaConsumer.unsubscribe()
-                        delay(10_000)
-                    }
+                    )
+                    start()
+                } catch (ex: Exception) {
+                    log.error("Error running kafka consumer, unsubscribing and waiting 10 seconds for retry", ex)
+                    kafkaConsumer.unsubscribe()
+                    delay(10_000)
                 }
             }
-        } else {
-            log.info("Does not run KafkaConsumers")
         }
     }
 

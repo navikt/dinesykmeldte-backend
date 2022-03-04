@@ -35,7 +35,7 @@ class DeleteDataService(
                 } catch (ex: Exception) {
                     log.info("Could not delete data", ex)
                 }
-                delay(hours(DELAY_HOURS))
+                delay(DELAY_HOURS.hours)
             }
         }
     }

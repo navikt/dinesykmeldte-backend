@@ -3,6 +3,7 @@ package no.nav.syfo.database
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import java.sql.Connection
+import java.sql.ResultSet
 import java.util.Properties
 
 class GcpDatabase(credentials: GcpDatabaseCredentials, database: String) : DatabaseInterface {
@@ -28,5 +29,11 @@ class GcpDatabase(credentials: GcpDatabaseCredentials, database: String) : Datab
                 validate()
             }
         )
+    }
+}
+
+fun <T> ResultSet.toList(mapper: ResultSet.() -> T) = mutableListOf<T>().apply {
+    while (next()) {
+        add(mapper())
     }
 }

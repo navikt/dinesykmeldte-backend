@@ -16,7 +16,6 @@ import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
-import no.nav.syfo.minesykmeldte.db.createSykepengesoknadDto
 import no.nav.syfo.minesykmeldte.model.AktivitetIkkeMulig
 import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsakEnum
 import no.nav.syfo.minesykmeldte.model.Avventende
@@ -40,6 +39,7 @@ import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.createArbeidsgiverSykmelding
+import no.nav.syfo.util.createSykepengesoknadDto
 import no.nav.syfo.util.createSykmeldingsperiode
 import no.nav.syfo.util.shouldBeInstance
 import org.amshove.kluent.`should not be null`

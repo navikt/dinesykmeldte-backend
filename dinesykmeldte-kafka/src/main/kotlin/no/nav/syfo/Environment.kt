@@ -16,6 +16,11 @@ data class Environment(
     val syketilfelleEndpointURL: String = getEnvVar("SYKETILLFELLE_ENDPOINT_URL"),
     val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),
     val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
+    val narmestelederLeesahTopic: String = "teamsykmelding.syfo-narmesteleder-leesah",
+    val sendtSykmeldingTopic: String = "teamsykmelding.syfo-sendt-sykmelding",
+    val sykepengesoknadTopic: String = "flex.sykepengesoknad",
+    val lestSykmeldingSoknadTopic: String = "teamsykmelding.dinesykmeldte-hendelser",
+    val hendelserTopic: String = "teamsykmelding.dinesykmeldte-hendelser-v2",
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

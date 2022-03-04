@@ -1,11 +1,10 @@
 package no.nav.syfo.virksomhet.db
 
-import no.nav.syfo.hendelser.createSykmeldingDbModel
-import no.nav.syfo.hendelser.createSykmeldtDbModel
-import no.nav.syfo.narmesteleder.createNarmestelederLeesahKafkaMessage
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
-import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.util.TestDb
+import no.nav.syfo.util.createSykmeldingDbModel
+import no.nav.syfo.util.createSykmeldtDbModel
+import no.nav.syfo.util.insertOrUpdate
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.shouldHaveSize
 import org.spekframework.spek2.Spek
@@ -15,7 +14,6 @@ import java.util.UUID
 object VirksomhetDbTest : Spek({
     val virksomhetDb = VirksomhetDb(TestDb.database)
     val narmestelederDb = NarmestelederDb(TestDb.database)
-    val sykmeldingDb = SykmeldingDb(TestDb.database)
 
     afterEachTest {
         TestDb.clearAllData()
@@ -25,14 +23,12 @@ object VirksomhetDbTest : Spek({
         it("Should get virksomhet that belongs to caller") {
             val sykmeldt = createSykmeldtDbModel(pasientFnr = "employee-fnr")
             narmestelederDb.insertOrUpdate(
-                createNarmestelederLeesahKafkaMessage(
-                    id = UUID.randomUUID(),
-                    orgnummer = "right-caller-org",
-                    fnr = "employee-fnr",
-                    narmesteLederFnr = "test-caller-fnr"
-                )
+                id = UUID.randomUUID().toString(),
+                orgnummer = "right-caller-org",
+                fnr = "employee-fnr",
+                narmesteLederFnr = "test-caller-fnr"
             )
-            sykmeldingDb.insertOrUpdate(
+            TestDb.database.insertOrUpdate(
                 createSykmeldingDbModel(
                     sykmeldingId = UUID.randomUUID().toString(),
                     pasientFnr = "employee-fnr",
@@ -50,14 +46,12 @@ object VirksomhetDbTest : Spek({
         it("Should not get virksomhet that not belongs to caller") {
             val sykmeldt = createSykmeldtDbModel(pasientFnr = "employee-fnr")
             narmestelederDb.insertOrUpdate(
-                createNarmestelederLeesahKafkaMessage(
-                    id = UUID.randomUUID(),
-                    orgnummer = "right-caller-org",
-                    fnr = "employee-fnr",
-                    narmesteLederFnr = "some-other-leader"
-                )
+                id = UUID.randomUUID().toString(),
+                orgnummer = "right-caller-org",
+                fnr = "employee-fnr",
+                narmesteLederFnr = "some-other-leader"
             )
-            sykmeldingDb.insertOrUpdate(
+            TestDb.database.insertOrUpdate(
                 createSykmeldingDbModel(
                     sykmeldingId = UUID.randomUUID().toString(),
                     pasientFnr = "employee-fnr",

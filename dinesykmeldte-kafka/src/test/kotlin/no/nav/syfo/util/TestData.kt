@@ -3,6 +3,7 @@ package no.nav.syfo.util
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.sykepengesoknad.kafka.ArbeidsgiverDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
+import no.nav.syfo.getFileAsString
 import no.nav.syfo.model.sykmelding.arbeidsgiver.AktivitetIkkeMuligAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
@@ -17,9 +18,7 @@ import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.toSoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
-import no.nav.syfo.testutils.getFileAsString
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -69,19 +68,6 @@ fun createSoknadDbModel(
     )
     return sykepengesoknadDTO.toSoknadDbModel()
 }
-
-fun createSykepengesoknadDto(
-    soknadId: String,
-    sykmeldingId: String,
-) = objectMapper.readValue<SykepengesoknadDTO>(
-    getFileAsString("src/test/resources/soknad.json")
-).copy(
-    id = soknadId,
-    fom = LocalDate.now().minusMonths(1),
-    tom = LocalDate.now().minusWeeks(2),
-    sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
-    sykmeldingId = sykmeldingId
-)
 
 fun createArbeidsgiverSykmelding(
     sykmeldingId: String,

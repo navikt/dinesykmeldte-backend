@@ -1,6 +1,6 @@
 package no.nav.syfo.common.delete
 
-import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.database.DatabaseInterface
 import java.sql.Connection
 import java.sql.Date
 import java.sql.Timestamp

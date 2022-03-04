@@ -11,7 +11,6 @@ val HTTP_HISTOGRAM: Histogram = Histogram.Builder()
     .help("http requests durations for incoming requests in seconds")
     .register()
 
-
 val NL_TOPIC_COUNTER: Counter = Counter.build()
     .labelNames("status")
     .name("nl_topic_counter")
