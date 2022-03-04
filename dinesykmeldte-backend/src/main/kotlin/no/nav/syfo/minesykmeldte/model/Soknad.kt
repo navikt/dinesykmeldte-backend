@@ -28,11 +28,13 @@ data class Soknadsperiode(
 data class Sporsmal(
     val id: String,
     val tag: String,
+    val min: String?,
+    val max: String?,
     val sporsmalstekst: String,
     val undertekst: String?,
     val svartype: SvartypeDTO,
-    var kriterieForVisningAvUndersporsmal: VisningskriteriumDTO,
-    var svar: List<Svar>,
+    var kriterieForVisningAvUndersporsmal: VisningskriteriumDTO?,
+    var svar: List<Svar>?,
     var undersporsmal: List<Sporsmal>?,
 )
 

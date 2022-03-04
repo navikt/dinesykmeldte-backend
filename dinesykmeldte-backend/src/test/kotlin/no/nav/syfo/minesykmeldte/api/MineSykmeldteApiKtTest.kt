@@ -288,6 +288,8 @@ object MineSykmeldteApiKtTest : Spek({
                     Sporsmal(
                         id = "890342785232",
                         tag = "Arbeid",
+                        min = "2021-10-03",
+                        max = "2021-10-06",
                         sporsmalstekst = "Har du vært på ferie?",
                         undertekst = null,
                         svartype = SvartypeDTO.JA_NEI,
@@ -334,6 +336,8 @@ object MineSykmeldteApiKtTest : Spek({
                          "sporsmal": [{
                             "id": "890342785232",
                             "tag": "Arbeid",
+                            "min": "2021-10-03",
+                            "max": "2021-10-06",
                             "sporsmalstekst": "Har du vært på ferie?",
                             "undertekst": null,
                             "svartype": "JA_NEI",

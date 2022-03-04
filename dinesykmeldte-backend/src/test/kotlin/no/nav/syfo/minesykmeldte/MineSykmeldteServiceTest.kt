@@ -902,6 +902,8 @@ class MineSykmeldteServiceTest : Spek({
                             SporsmalDTO(
                                 id = "54217564",
                                 tag = "label",
+                                min = "2021-10-03",
+                                max = "2021-10-06",
                                 sporsmalstekst = "Er dette et spørsmål?",
                                 undertekst = "Undertekst til spørsmålet",
                                 svartype = SvartypeDTO.FRITEKST,
@@ -929,6 +931,8 @@ class MineSykmeldteServiceTest : Spek({
             result.perioder[0].tom shouldBeEqualTo LocalDate.parse("2021-10-12")
             result.perioder[0].sykmeldingstype shouldBeEqualTo PeriodeEnum.AKTIVITET_IKKE_MULIG
             result.sporsmal[0].tag shouldBeEqualTo "label"
+            result.sporsmal[0].min shouldBeEqualTo "2021-10-03"
+            result.sporsmal[0].max shouldBeEqualTo "2021-10-06"
             result.sporsmal[0].svartype shouldBeEqualTo SvartypeDTO.FRITEKST
             result.sporsmal[0].svar shouldBeEqualTo listOf(
                 Svar(
