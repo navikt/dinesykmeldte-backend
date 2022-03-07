@@ -44,3 +44,12 @@ spec:
     application:
       enabled: true
       tenant: nav.no
+  env:
+    - name: PDL_GRAPHQL_PATH
+      value: https://pdl-api.prod-fss-pub.nais.io/graphql
+    - name: PDL_SCOPE
+      value: api://prod-fss.pdl.pdl-api/.default
+    - name: SYKETILLFELLE_ENDPOINT_URL
+      value: https://flex-syketilfelle.intern.nav.no
+    - name: SYKETILLFELLE_SCOPE
+      value: api://prod-gcp.flex.flex-syketilfelle/.default

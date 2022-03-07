@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import no.nav.syfo.hendelser.db.HendelseDbModel
+import no.nav.syfo.log
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSoknad
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSykmelding
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toSoknadsperiode
@@ -17,6 +18,8 @@ import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsakEnum
 import no.nav.syfo.minesykmeldte.model.Avventende
 import no.nav.syfo.minesykmeldte.model.Behandler
 import no.nav.syfo.minesykmeldte.model.Behandlingsdager
+import no.nav.syfo.minesykmeldte.model.Dialogmote
+import no.nav.syfo.minesykmeldte.model.DialogmoteHendelser
 import no.nav.syfo.minesykmeldte.model.Gradert
 import no.nav.syfo.minesykmeldte.model.Hendelse
 import no.nav.syfo.minesykmeldte.model.HendelseType
@@ -34,9 +37,6 @@ import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
-import no.nav.syfo.log
-import no.nav.syfo.minesykmeldte.model.Dialogmote
-import no.nav.syfo.minesykmeldte.model.DialogmoteHendelser
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.IllegalStateException

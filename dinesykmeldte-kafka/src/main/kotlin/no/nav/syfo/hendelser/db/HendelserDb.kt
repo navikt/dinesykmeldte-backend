@@ -1,6 +1,6 @@
 package no.nav.syfo.hendelser.db
 
-import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.log
 import java.sql.Connection
 import java.sql.Timestamp

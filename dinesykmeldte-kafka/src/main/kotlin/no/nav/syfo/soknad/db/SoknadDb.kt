@@ -1,6 +1,6 @@
 package no.nav.syfo.soknad.db
 
-import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.database.DatabaseInterface
 import java.sql.Timestamp
 
 class SoknadDb(private val database: DatabaseInterface) {
