@@ -5,6 +5,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.mockk.clearMocks
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -159,6 +160,7 @@ object MineSykmeldteApiKtTest : Spek({
                                     tom = LocalDate.parse("2020-02-01"),
                                     varsel = true,
                                     perioder = listOf(),
+                                    ikkeSendtSoknadVarsel = false
                                 ),
                             ),
                             dialogmoter = listOf(Dialogmote("hendelse-1-id", "Ny revidert oppfølgingplan")),
@@ -181,6 +183,7 @@ object MineSykmeldteApiKtTest : Spek({
                             "previewSoknader": [
                               {
                                 "varsel": true,
+                                "ikkeSendtSoknadVarsel": false,
                                 "id": "soknad-1-id",
                                 "sykmeldingId": "sykmelding-id-1",
                                 "fom": "2020-01-01",
@@ -265,7 +268,7 @@ object MineSykmeldteApiKtTest : Spek({
 
         describe("/api/soknad/{id}") {
             it("should respond with 404 Not Found if not found in the database ") {
-                every {
+                coEvery {
                     mineSykmeldteService.getSoknad(
                         "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
                         any()
@@ -279,7 +282,7 @@ object MineSykmeldteApiKtTest : Spek({
                     response.status() shouldBeEqualTo HttpStatusCode.NotFound
                     response.content shouldBeEqualTo """{ "message": "Søknaden finnes ikke" }""".minifyApiResponse()
                 }
-                verify(exactly = 1) { mineSykmeldteService.getSoknad(any(), any()) }
+                coVerify(exactly = 1) { mineSykmeldteService.getSoknad(any(), any()) }
             }
 
             it("should respond with the correct content if found") {
@@ -302,7 +305,7 @@ object MineSykmeldteApiKtTest : Spek({
                     )
                 )
 
-                every {
+                coEvery {
                     mineSykmeldteService.getSoknad(
                         "d9ca08ca-bdbf-4571-ba4f-109c3642047b",
                         any()
@@ -329,6 +332,7 @@ object MineSykmeldteApiKtTest : Spek({
                          "navn": "Navn N. Navnessen",
                          "fnr": "08088012345",
                          "lest": false,
+                         "ikkeSendtSoknadVarsel": false,
                          "korrigererSoknadId":null,
                          "korrigertBySoknadId": "0422-4a5e-b779-a8819abf",
                          "perioder": [],
@@ -349,7 +353,7 @@ object MineSykmeldteApiKtTest : Spek({
                       }
                     """.minifyApiResponse()
                 }
-                verify(exactly = 1) { mineSykmeldteService.getSoknad(any(), any()) }
+                coVerify(exactly = 1) { mineSykmeldteService.getSoknad(any(), any()) }
             }
         }
     }
@@ -378,6 +382,7 @@ fun createSoknadTestData(
     korrigertBySoknadId = korrigertBySoknadId,
     perioder = listOf(),
     sporsmal = sporsmal,
+    ikkeSendtSoknadVarsel = false
 )
 
 fun createSykmeldingTestData(

@@ -54,19 +54,19 @@ class MineSykmeldteService(
 
         val sykmeldteMap = sykmeldteMapJob.await()
 
-        return@withContext sykmeldteMap.map { it ->
+        return@withContext sykmeldteMap.map { sykmeldtEntry ->
             PreviewSykmeldt(
-                narmestelederId = it.key.narmestelederId,
-                orgnummer = it.key.orgnummer,
-                fnr = it.key.fnr,
-                navn = it.key.navn,
-                startdatoSykefravar = it.key.startDatoSykefravaer,
-                friskmeldt = isFriskmeldt(it),
-                previewSykmeldinger = it.value.distinctBy { it.sykmeldingId }.map { sykmeldtDbModel ->
+                narmestelederId = sykmeldtEntry.key.narmestelederId,
+                orgnummer = sykmeldtEntry.key.orgnummer,
+                fnr = sykmeldtEntry.key.fnr,
+                navn = sykmeldtEntry.key.navn,
+                startdatoSykefravar = sykmeldtEntry.key.startDatoSykefravaer,
+                friskmeldt = isFriskmeldt(sykmeldtEntry),
+                previewSykmeldinger = sykmeldtEntry.value.distinctBy { it.sykmeldingId }.map { sykmeldtDbModel ->
                     toPreviewSykmelding(sykmeldtDbModel)
                 },
-                previewSoknader = it.value.mapNotNull { mapNullableSoknad(it) },
-                dialogmoter = hendelserMap[it.key.fnr]
+                previewSoknader = sykmeldtEntry.value.mapNotNull { sykmeldt -> mapNullableSoknad(sykmeldt, hendelserMap[sykmeldtEntry.key.fnr]?.filter { it.id == sykmeldt.soknad?.id }.orEmpty()) },
+                dialogmoter = hendelserMap[sykmeldtEntry.key.fnr]
                     ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
                     ?.map {
                         Dialogmote(
@@ -83,8 +83,9 @@ class MineSykmeldteService(
         return mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr)?.toSykmelding()
     }
 
-    fun getSoknad(soknadId: String, lederFnr: String): Soknad? {
-        return mineSykmeldteDb.getSoknad(soknadId, lederFnr)?.toSoknad()
+    suspend fun getSoknad(soknadId: String, lederFnr: String): Soknad? = withContext(Dispatchers.IO) {
+        val hendelserJob = async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr).filter { it.id == soknadId } }
+        return@withContext mineSykmeldteDb.getSoknad(soknadId, lederFnr)?.toSoknad(hendelserJob.await())
     }
 
     fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): Boolean {
@@ -108,8 +109,10 @@ private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
     return ChronoUnit.DAYS.between(latestTom, LocalDate.now()) > 16
 }
 
-private fun mapNullableSoknad(sykmeldtDbModel: MinSykmeldtDbModel): PreviewSoknad? =
-    sykmeldtDbModel.soknad?.let { toPreviewSoknad(it, sykmeldtDbModel.lestSoknad) }
+private fun mapNullableSoknad(sykmeldtDbModel: MinSykmeldtDbModel, hendelser: List<Hendelse>): PreviewSoknad? =
+    sykmeldtDbModel.soknad?.let {
+        toPreviewSoknad(it, sykmeldtDbModel.lestSoknad, hendelser)
+    }
 
 private fun MinSykmeldtDbModel.toMinSykmeldtKey(): MinSykmeldtKey = MinSykmeldtKey(
     narmestelederId = this.narmestelederId,
@@ -119,7 +122,7 @@ private fun MinSykmeldtDbModel.toMinSykmeldtKey(): MinSykmeldtKey = MinSykmeldtK
     startDatoSykefravaer = this.startDatoSykefravar,
 )
 
-private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
+private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(hendelser: List<HendelseDbModel>): Soknad {
     val (sykmeldt, soknadDb) = this
 
     val sykmeldingId = soknadDb.sykmeldingId
@@ -142,6 +145,7 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
             ?: throw IllegalStateException("Søknad uten perioder definert: ${soknadDb.soknadId}"),
         sporsmal = soknadDb.soknad.sporsmal?.map { it.toSporsmal() }
             ?: throw IllegalStateException("Søknad uten sporsmal definert: ${soknadDb.soknadId}"),
+        ikkeSendtSoknadVarsel = hendelser.any { it.id == soknadDb.soknadId && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD.name }
     )
 }
 

@@ -57,7 +57,7 @@ import kotlin.contracts.ExperimentalContracts
 
 @ExperimentalContracts
 class MineSykmeldteServiceTest : Spek({
-    val mineSykmeldteDb = mockk<MineSykmeldteDb>()
+    val mineSykmeldteDb = mockk<MineSykmeldteDb>(relaxed = true)
     val mineSykmeldtService = MineSykmeldteService(mineSykmeldteDb)
 
     afterEachTest {
@@ -117,6 +117,34 @@ class MineSykmeldteServiceTest : Spek({
             }
         }
 
+        it("Should get one sykmeldt with one IKKE_SENDT_SOKNAD") {
+            val sykmeldtData = getSykmeldtData(1, sykmeldtFnrPrefix = "prefix", soknader = 1)
+                .map { it.copy(soknad = it.soknad!!.copy(status = SoknadsstatusDTO.NY)) }
+
+            every { mineSykmeldteDb.getHendelser("1") } returns listOf(
+                HendelseDbModel(
+                    id = sykmeldtData.first().soknad!!.id,
+                    pasientFnr = "prefix-0",
+                    orgnummer = "orgnummer",
+                    oppgavetype = "IKKE_SENDT_SOKNAD",
+                    lenke = null,
+                    tekst = null,
+                    timestamp = OffsetDateTime.now(),
+                    utlopstidspunkt = null,
+                    ferdigstilt = false,
+                    ferdigstiltTimestamp = null
+                )
+            )
+
+            every { mineSykmeldteDb.getMineSykmeldte("1") } returns sykmeldtData
+            runBlocking {
+                val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
+                mineSykmeldte.size shouldBeEqualTo 1
+                mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "100%"
+                (mineSykmeldte.first().previewSoknader.first() as PreviewNySoknad).ikkeSendtSoknadVarsel shouldBeEqualTo true
+            }
+        }
+
         it("should group sykmeldinger and søknader by sykmeldt") {
             every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
             every { mineSykmeldteDb.getMineSykmeldte("1") } returns
@@ -139,6 +167,7 @@ class MineSykmeldteServiceTest : Spek({
                         sykmeldtFnrPrefix = "avdeling-2",
                         soknader = 0
                     )
+
             runBlocking {
                 val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte shouldHaveSize 5
@@ -874,6 +903,33 @@ class MineSykmeldteServiceTest : Spek({
     }
 
     describe("getSoknad") {
+        it("Should map to Soknad with ikkeSendtSoknadVarsel") {
+            val soknadId = "e94a7c0f-3240-4a0c-8788-c4cc3ebcdac2"
+            every {
+                mineSykmeldteDb.getSoknad(soknadId, "red-2")
+            } returns (
+                createSykmeldtDbModel(
+                    pasientNavn = "Navn Navnesen"
+                ) to createSoknadDbModel(soknadId = soknadId)
+                )
+            every { mineSykmeldteDb.getHendelser("red-2") } returns listOf(
+                HendelseDbModel(
+                    id = "e94a7c0f-3240-4a0c-8788-c4cc3ebcdac2",
+                    pasientFnr = "08088012345",
+                    orgnummer = "orgnummer",
+                    oppgavetype = "IKKE_SENDT_SOKNAD",
+                    lenke = null,
+                    tekst = null,
+                    timestamp = OffsetDateTime.now(),
+                    utlopstidspunkt = null,
+                    ferdigstilt = false,
+                    ferdigstiltTimestamp = null
+                )
+            )
+
+            val soknad = runBlocking { mineSykmeldtService.getSoknad(soknadId, "red-2") }
+            soknad?.ikkeSendtSoknadVarsel shouldBeEqualTo true
+        }
         it("should map to Soknad") {
             val soknadId = "e94a7c0f-3240-4a0c-8788-c4cc3ebcdac2"
             every {
@@ -919,7 +975,7 @@ class MineSykmeldteServiceTest : Spek({
                 )
                 )
 
-            val result = mineSykmeldtService.getSoknad(soknadId, "red-2")
+            val result = runBlocking { mineSykmeldtService.getSoknad(soknadId, "red-2") }
 
             result.shouldNotBeNull()
             result.id shouldBeEqualTo soknadId
@@ -948,9 +1004,10 @@ private fun createSoknadDbModel(
     sykmeldingId: String = "31c5b5ca-1248-4280-bc2e-3c6b11c365b9",
     pasientFnr: String = "09099012345",
     orgnummer: String = "0102983875",
-    soknad: SykepengesoknadDTO = mockk<SykepengesoknadDTO>().also {
+    soknad: SykepengesoknadDTO = mockk<SykepengesoknadDTO>(relaxed = true).also {
         every { it.type } returns SoknadstypeDTO.ARBEIDSLEDIG
         every { it.status } returns SoknadsstatusDTO.NY
+        every { it.fom } returns LocalDate.now()
     },
     sendtDato: LocalDate = LocalDate.now(),
     tom: LocalDate = LocalDate.now(),
