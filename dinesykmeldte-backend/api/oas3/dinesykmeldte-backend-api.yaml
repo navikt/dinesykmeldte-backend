@@ -333,7 +333,7 @@ components:
         - friskmeldt
         - previewSykmeldinger
         - previewSoknader
-        - hendelser
+        - dialogmoter
       properties:
         fnr:
           $ref: '#/components/schemas/Fnr'
@@ -357,10 +357,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PreviewSoknader'
-        hendelser:
+        dialogmoter:
           type: array
           items:
-            $ref: '#/components/schemas/Hendelse'
+            $ref: '#/components/schemas/Dialogmote'
     PreviewSykmelding:
       type: object
       required:
@@ -548,18 +548,22 @@ components:
       properties:
         verdi:
           type: string
-    Hendelse:
+    Dialogmote:
       required:
         - id
         - oppgavetype
+        - hendelseId
       type: object
       properties:
         id:
           type: string
           format: uuid
+        hendelseId:
+          type: string
+          format: uuid
         oppgavetype:
           type: string
-          example: 'IKKE_SENDT_SOKNAD'
+          example: 'DIALOGMOTE_INNKALLING'
         lenke:
           type: string
         tekst:

@@ -39,6 +39,7 @@ import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import java.util.UUID
 import kotlin.IllegalStateException
 
 class MineSykmeldteService(
@@ -70,8 +71,9 @@ class MineSykmeldteService(
                     ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
                     ?.map {
                         Dialogmote(
-                            it.id,
-                            it.tekst ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}")
+                            id = it.id,
+                            hendelseId = it.hendelseId,
+                            tekst = it.tekst ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}")
                         )
                     }
                     ?: emptyList(),
@@ -95,7 +97,7 @@ class MineSykmeldteService(
         return mineSykmeldteDb.markSoknadRead(soknadId, lederFnr)
     }
 
-    fun markHendelseRead(hendelseId: String, lederFnr: String): Boolean {
+    fun markHendelseRead(hendelseId: UUID, lederFnr: String): Boolean {
         return mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr)
     }
 }
@@ -225,6 +227,7 @@ private fun BehandlerAGDTO.formatName(): String = toFormattedNameString(fornavn,
 private fun HendelseDbModel.toHendelse() =
     Hendelse(
         id = id,
+        hendelseId = hendelseId,
         oppgavetype = safeParseHendelseEnum(oppgavetype),
         lenke = lenke,
         tekst = tekst
