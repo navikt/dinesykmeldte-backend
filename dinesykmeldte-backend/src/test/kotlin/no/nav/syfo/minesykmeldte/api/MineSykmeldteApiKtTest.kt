@@ -332,7 +332,6 @@ object MineSykmeldteApiKtTest : Spek({
                          "navn": "Navn N. Navnessen",
                          "fnr": "08088012345",
                          "lest": false,
-                         "ikkeSendtSoknadVarsel": false,
                          "korrigererSoknadId":null,
                          "korrigertBySoknadId": "0422-4a5e-b779-a8819abf",
                          "perioder": [],
@@ -382,7 +381,6 @@ fun createSoknadTestData(
     korrigertBySoknadId = korrigertBySoknadId,
     perioder = listOf(),
     sporsmal = sporsmal,
-    ikkeSendtSoknadVarsel = false
 )
 
 fun createSykmeldingTestData(

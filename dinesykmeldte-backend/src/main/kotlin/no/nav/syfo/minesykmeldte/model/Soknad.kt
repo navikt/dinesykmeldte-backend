@@ -12,7 +12,6 @@ data class Soknad(
     val navn: String,
     val fnr: String,
     val lest: Boolean,
-    val ikkeSendtSoknadVarsel: Boolean,
     val korrigererSoknadId: String?,
     val korrigertBySoknadId: String?,
     val perioder: List<Soknadsperiode>,

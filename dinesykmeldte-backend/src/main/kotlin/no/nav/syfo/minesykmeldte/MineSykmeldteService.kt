@@ -83,9 +83,8 @@ class MineSykmeldteService(
         return mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr)?.toSykmelding()
     }
 
-    suspend fun getSoknad(soknadId: String, lederFnr: String): Soknad? = withContext(Dispatchers.IO) {
-        val hendelserJob = async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr).filter { it.id == soknadId } }
-        return@withContext mineSykmeldteDb.getSoknad(soknadId, lederFnr)?.toSoknad(hendelserJob.await())
+    fun getSoknad(soknadId: String, lederFnr: String): Soknad? {
+        return mineSykmeldteDb.getSoknad(soknadId, lederFnr)?.toSoknad()
     }
 
     fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): Boolean {
@@ -122,7 +121,7 @@ private fun MinSykmeldtDbModel.toMinSykmeldtKey(): MinSykmeldtKey = MinSykmeldtK
     startDatoSykefravaer = this.startDatoSykefravar,
 )
 
-private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(hendelser: List<HendelseDbModel>): Soknad {
+private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
     val (sykmeldt, soknadDb) = this
 
     val sykmeldingId = soknadDb.sykmeldingId
@@ -144,8 +143,7 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(hendelser: List<Hendel
         perioder = soknadDb.soknad.soknadsperioder?.map { it.toSoknadsperiode() }
             ?: throw IllegalStateException("Søknad uten perioder definert: ${soknadDb.soknadId}"),
         sporsmal = soknadDb.soknad.sporsmal?.map { it.toSporsmal() }
-            ?: throw IllegalStateException("Søknad uten sporsmal definert: ${soknadDb.soknadId}"),
-        ikkeSendtSoknadVarsel = hendelser.any { it.id == soknadDb.soknadId && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD.name }
+            ?: throw IllegalStateException("Søknad uten sporsmal definert: ${soknadDb.soknadId}")
     )
 }
 

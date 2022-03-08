@@ -903,33 +903,6 @@ class MineSykmeldteServiceTest : Spek({
     }
 
     describe("getSoknad") {
-        it("Should map to Soknad with ikkeSendtSoknadVarsel") {
-            val soknadId = "e94a7c0f-3240-4a0c-8788-c4cc3ebcdac2"
-            every {
-                mineSykmeldteDb.getSoknad(soknadId, "red-2")
-            } returns (
-                createSykmeldtDbModel(
-                    pasientNavn = "Navn Navnesen"
-                ) to createSoknadDbModel(soknadId = soknadId)
-                )
-            every { mineSykmeldteDb.getHendelser("red-2") } returns listOf(
-                HendelseDbModel(
-                    id = "e94a7c0f-3240-4a0c-8788-c4cc3ebcdac2",
-                    pasientFnr = "08088012345",
-                    orgnummer = "orgnummer",
-                    oppgavetype = "IKKE_SENDT_SOKNAD",
-                    lenke = null,
-                    tekst = null,
-                    timestamp = OffsetDateTime.now(),
-                    utlopstidspunkt = null,
-                    ferdigstilt = false,
-                    ferdigstiltTimestamp = null
-                )
-            )
-
-            val soknad = runBlocking { mineSykmeldtService.getSoknad(soknadId, "red-2") }
-            soknad?.ikkeSendtSoknadVarsel shouldBeEqualTo true
-        }
         it("should map to Soknad") {
             val soknadId = "e94a7c0f-3240-4a0c-8788-c4cc3ebcdac2"
             every {
@@ -975,7 +948,7 @@ class MineSykmeldteServiceTest : Spek({
                 )
                 )
 
-            val result = runBlocking { mineSykmeldtService.getSoknad(soknadId, "red-2") }
+            val result = mineSykmeldtService.getSoknad(soknadId, "red-2")
 
             result.shouldNotBeNull()
             result.id shouldBeEqualTo soknadId
