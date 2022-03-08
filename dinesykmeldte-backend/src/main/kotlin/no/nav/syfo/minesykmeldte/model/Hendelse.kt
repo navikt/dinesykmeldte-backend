@@ -5,6 +5,7 @@ enum class HendelseType {
     DIALOGMOTE_AVLYSNING,
     DIALOGMOTE_ENDRING,
     DIALOGMOTE_REFERAT,
+    IKKE_SENDT_SOKNAD,
     UNKNOWN,
 }
 

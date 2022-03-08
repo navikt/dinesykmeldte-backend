@@ -34,6 +34,7 @@ data class PreviewSendtSoknad(
 
 data class PreviewNySoknad(
     val varsel: Boolean,
+    val ikkeSendtSoknadVarsel: Boolean,
     override val id: String,
     override val sykmeldingId: String?,
     override val fom: LocalDate?,

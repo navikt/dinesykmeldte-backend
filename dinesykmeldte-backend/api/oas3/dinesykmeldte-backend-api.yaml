@@ -410,6 +410,8 @@ components:
         sendtDato:
           type: string
           format: date
+        ikkeSendtSoknadVarsel:
+          type: boolean
     Soknad:
       required:
         - id
@@ -421,6 +423,7 @@ components:
         - lest
         - perioder
         - sporsmal
+        - ikkeSendtSoknadVarsel
       type: object
       properties:
         id:

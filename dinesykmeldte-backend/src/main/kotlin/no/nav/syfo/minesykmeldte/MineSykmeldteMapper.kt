@@ -5,6 +5,8 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
+import no.nav.syfo.minesykmeldte.model.Hendelse
+import no.nav.syfo.minesykmeldte.model.HendelseType
 import no.nav.syfo.minesykmeldte.model.PeriodeEnum
 import no.nav.syfo.minesykmeldte.model.PreviewFremtidigSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewKorrigertSoknad
@@ -34,9 +36,9 @@ class MineSykmeldteMapper private constructor() {
             )
         }
 
-        fun toPreviewSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewSoknad =
+        fun toPreviewSoknad(soknad: SykepengesoknadDTO, lest: Boolean, hendelser: List<Hendelse>): PreviewSoknad =
             when (soknad.status) {
-                SoknadsstatusDTO.NY -> getNySoknad(soknad, lest)
+                SoknadsstatusDTO.NY -> getNySoknad(soknad, lest, hendelser)
                 SoknadsstatusDTO.SENDT -> getSendtSoknad(soknad, lest)
                 SoknadsstatusDTO.FREMTIDIG -> getFremtidigSoknad(soknad)
                 SoknadsstatusDTO.KORRIGERT -> getKorrigertSoknad(soknad)
@@ -80,7 +82,7 @@ class MineSykmeldteMapper private constructor() {
                     ?: throw IllegalStateException("søknadsperioder must not be null in fremtidig soknad: ${soknad.id}"),
             )
 
-        private fun getNySoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewNySoknad =
+        private fun getNySoknad(soknad: SykepengesoknadDTO, lest: Boolean, hendelser: List<Hendelse>): PreviewNySoknad =
             PreviewNySoknad(
                 varsel = !lest,
                 id = soknad.id,
@@ -89,6 +91,7 @@ class MineSykmeldteMapper private constructor() {
                 tom = soknad.tom,
                 perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
                     ?: throw IllegalStateException("søknadsperioder must not be null in ny soknad: ${soknad.id}"),
+                ikkeSendtSoknadVarsel = hendelser.any { it.id == soknad.id && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD }
             )
 
         private fun getTypeSykmelding(sykmelding: ArbeidsgiverSykmelding): String {
