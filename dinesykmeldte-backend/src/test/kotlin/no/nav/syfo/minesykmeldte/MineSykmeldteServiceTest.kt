@@ -78,7 +78,8 @@ class MineSykmeldteServiceTest : Spek({
                     timestamp = OffsetDateTime.now(),
                     utlopstidspunkt = null,
                     ferdigstilt = false,
-                    ferdigstiltTimestamp = null
+                    ferdigstiltTimestamp = null,
+                    hendelseId = UUID.randomUUID()
                 )
             )
             every { mineSykmeldteDb.getMineSykmeldte("1") } returns
@@ -132,7 +133,8 @@ class MineSykmeldteServiceTest : Spek({
                     timestamp = OffsetDateTime.now(),
                     utlopstidspunkt = null,
                     ferdigstilt = false,
-                    ferdigstiltTimestamp = null
+                    ferdigstiltTimestamp = null,
+                    hendelseId = UUID.randomUUID()
                 )
             )
 

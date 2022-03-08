@@ -25,6 +25,7 @@ import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.util.UUID
 
 class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
 
@@ -182,7 +183,8 @@ class TestDb private constructor() {
                 timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
                 utlopstidspunkt = getTimestamp("utlopstidspunkt")?.toInstant()?.atOffset(ZoneOffset.UTC),
                 ferdigstilt = getBoolean("ferdigstilt"),
-                ferdigstiltTimestamp = getTimestamp("ferdigstilt_timestamp")?.toInstant()?.atOffset(ZoneOffset.UTC)
+                ferdigstiltTimestamp = getTimestamp("ferdigstilt_timestamp")?.toInstant()?.atOffset(ZoneOffset.UTC),
+                hendelseId = UUID.fromString(getString("hendelse_id"))
             )
     }
 }
@@ -214,8 +216,8 @@ fun DatabaseInterface.insertHendelse(hendelseDbModel: HendelseDbModel) {
         connection.prepareStatement(
             """
                     INSERT INTO hendelser(id, pasient_fnr, orgnummer, oppgavetype, lenke, tekst, timestamp, 
-                                          utlopstidspunkt, ferdigstilt, ferdigstilt_timestamp)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                          utlopstidspunkt, ferdigstilt, ferdigstilt_timestamp, hendelse_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT (id, oppgavetype) DO NOTHING;
             """
         ).use { preparedStatement ->
@@ -229,6 +231,7 @@ fun DatabaseInterface.insertHendelse(hendelseDbModel: HendelseDbModel) {
             preparedStatement.setTimestamp(8, hendelseDbModel.utlopstidspunkt?.let { Timestamp.from(it.toInstant()) })
             preparedStatement.setBoolean(9, hendelseDbModel.ferdigstilt)
             preparedStatement.setTimestamp(10, hendelseDbModel.ferdigstiltTimestamp?.let { Timestamp.from(it.toInstant()) })
+            preparedStatement.setObject(11, hendelseDbModel.hendelseId)
             preparedStatement.executeUpdate()
         }
         connection.commit()

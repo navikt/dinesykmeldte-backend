@@ -12,6 +12,7 @@ import no.nav.syfo.minesykmeldte.model.HttpErrorMessage
 import no.nav.syfo.minesykmeldte.model.HttpMessage
 import no.nav.syfo.util.getBrukerPrincipal
 import no.nav.syfo.util.getParam
+import java.util.UUID
 
 fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
     get("api/minesykmeldte") {
@@ -69,7 +70,7 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
     put("api/hendelse/{hendelseId}/lest") {
         val principal: BrukerPrincipal = call.getBrukerPrincipal()
         val lederFnr = principal.fnr
-        val hendelseId = call.getParam("hendelseId")
+        val hendelseId = UUID.fromString(call.getParam("hendelseId"))
 
         when (mineSykmeldteService.markHendelseRead(hendelseId, lederFnr)) {
             true -> call.respond(HttpStatusCode.OK, HttpMessage("Markert som lest"))

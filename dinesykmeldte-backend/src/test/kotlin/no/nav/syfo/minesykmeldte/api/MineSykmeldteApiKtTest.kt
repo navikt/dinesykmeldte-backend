@@ -143,6 +143,7 @@ object MineSykmeldteApiKtTest : Spek({
 
             describe("given a søknad") {
                 it("should map a ny søknad to correct object") {
+                    val hendelseId = UUID.randomUUID()
                     coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns listOf(
                         PreviewSykmeldt(
                             narmestelederId = "08086912345",
@@ -163,7 +164,7 @@ object MineSykmeldteApiKtTest : Spek({
                                     ikkeSendtSoknadVarsel = false
                                 ),
                             ),
-                            dialogmoter = listOf(Dialogmote("hendelse-1-id", "Ny revidert oppfølgingplan")),
+                            dialogmoter = listOf(Dialogmote("hendelse-1-id", hendelseId, "Ny revidert oppfølgingplan")),
                         )
                     )
                     with(
@@ -192,7 +193,7 @@ object MineSykmeldteApiKtTest : Spek({
                                 "status": "NY"
                               }
                             ],
-                            "dialogmoter":[{"id":"hendelse-1-id","tekst":"Ny revidert oppfølgingplan"}]
+                            "dialogmoter":[{"id":"hendelse-1-id","hendelseId": "$hendelseId","tekst":"Ny revidert oppfølgingplan"}]
                           }
                         ]""".minifyApiResponse()
                     }

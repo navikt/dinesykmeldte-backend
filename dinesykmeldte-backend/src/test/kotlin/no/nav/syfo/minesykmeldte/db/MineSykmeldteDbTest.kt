@@ -218,11 +218,12 @@ class MineSykmeldteDbTest : Spek({
                 timestamp = OffsetDateTime.now(),
                 utlopstidspunkt = null,
                 ferdigstilt = false,
-                ferdigstiltTimestamp = null
+                ferdigstiltTimestamp = null,
+                hendelseId = UUID.randomUUID()
             )
             TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
             TestDb.database.insertHendelse(hendelse)
-            val didMarkAsRead = minesykmeldteDb.markHendelseRead("hendelse-id-1", "leder-fnr-1")
+            val didMarkAsRead = minesykmeldteDb.markHendelseRead(hendelse.hendelseId, "leder-fnr-1")
             val hendelseErFerdigstilt = minesykmeldteDb.getHendelser("leder-fnr-1").isEmpty()
 
             didMarkAsRead.`should be true`()
@@ -238,23 +239,25 @@ class MineSykmeldteDbTest : Spek({
                 orgnummer = "kul-org",
                 narmesteLederFnr = "leder-fnr-1"
             )
+            val hendelseDbModel = HendelseDbModel(
+                id = "hendelse-id-0",
+                pasientFnr = "pasient-1",
+                orgnummer = "kul-org",
+                oppgavetype = "OPPGAVETYPE",
+                lenke = null,
+                tekst = null,
+                timestamp = OffsetDateTime.now(),
+                utlopstidspunkt = null,
+                ferdigstilt = false,
+                ferdigstiltTimestamp = null,
+                hendelseId = UUID.randomUUID()
+            )
             TestDb.database.insertHendelse(
-                HendelseDbModel(
-                    id = "hendelse-id-0",
-                    pasientFnr = "pasient-1",
-                    orgnummer = "kul-org",
-                    oppgavetype = "OPPGAVETYPE",
-                    lenke = null,
-                    tekst = null,
-                    timestamp = OffsetDateTime.now(),
-                    utlopstidspunkt = null,
-                    ferdigstilt = false,
-                    ferdigstiltTimestamp = null
-                )
+                hendelseDbModel
             )
             TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
 
-            val didMarkAsRead = minesykmeldteDb.markHendelseRead("hendelse-id-0", "leder-fnr-1")
+            val didMarkAsRead = minesykmeldteDb.markHendelseRead(hendelseDbModel.hendelseId, "leder-fnr-1")
 
             didMarkAsRead.`should be false`()
         }

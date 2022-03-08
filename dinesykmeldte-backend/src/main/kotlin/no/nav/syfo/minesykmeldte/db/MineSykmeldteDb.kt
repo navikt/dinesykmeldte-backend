@@ -11,6 +11,7 @@ import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.Instant
 import java.time.ZoneOffset
+import java.util.UUID
 
 class MineSykmeldteDb(private val database: DatabaseInterface) {
     fun getMineSykmeldte(lederFnr: String): List<MinSykmeldtDbModel> {
@@ -100,7 +101,8 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
               h.orgnummer,
               h.oppgavetype,
               h.lenke,
-              h.timestamp
+              h.timestamp,
+              h.hendelse_id
            FROM hendelser h
                 INNER JOIN narmesteleder n ON h.pasient_fnr = n.pasient_fnr and n.orgnummer = h.orgnummer
                 INNER JOIN sykmeldt sm ON n.pasient_fnr = sm.pasient_fnr
@@ -154,19 +156,19 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
         }
     }
 
-    fun markHendelseRead(hendelseId: String, lederFnr: String): Boolean {
+    fun markHendelseRead(hendelseId: UUID, lederFnr: String): Boolean {
         return database.connection.use { connection ->
             val updated = connection.prepareStatement(
                 """
                UPDATE hendelser SET ferdigstilt = TRUE, ferdigstilt_timestamp = ?
                 FROM narmesteleder
                 WHERE (narmesteleder.pasient_fnr = hendelser.pasient_fnr AND narmesteleder.orgnummer = hendelser.orgnummer) 
-                AND hendelser.id = ?
+                AND hendelser.hendelse_id = ?
                 AND narmesteleder.leder_fnr = ?
             """
             ).use { ps ->
                 ps.setTimestamp(1, Timestamp.from(Instant.now()))
-                ps.setString(2, hendelseId)
+                ps.setObject(2, hendelseId)
                 ps.setString(3, lederFnr)
                 ps.executeUpdate() > 0
             }
@@ -179,6 +181,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
 private fun ResultSet.toHendelseDbModels() =
     HendelseDbModel(
         id = getString("id"),
+        hendelseId = UUID.fromString(getString("hendelse_id")),
         pasientFnr = getString("pasient_fnr"),
         orgnummer = getString("orgnummer"),
         oppgavetype = getString("oppgavetype"),

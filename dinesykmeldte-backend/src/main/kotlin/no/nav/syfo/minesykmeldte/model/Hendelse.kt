@@ -1,5 +1,7 @@
 package no.nav.syfo.minesykmeldte.model
 
+import java.util.UUID
+
 enum class HendelseType {
     DIALOGMOTE_INNKALLING,
     DIALOGMOTE_AVLYSNING,
@@ -21,4 +23,5 @@ data class Hendelse(
     val oppgavetype: HendelseType,
     val lenke: String?,
     val tekst: String?,
+    val hendelseId: UUID,
 )
