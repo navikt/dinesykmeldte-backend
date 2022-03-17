@@ -1,5 +1,6 @@
 package no.nav.syfo.minesykmeldte
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -35,7 +36,9 @@ import no.nav.syfo.model.sykmelding.model.ArbeidsrelatertArsakDTO
 import no.nav.syfo.model.sykmelding.model.ArbeidsrelatertArsakTypeDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
+import no.nav.syfo.soknad.toSoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.createArbeidsgiverSykmelding
@@ -46,9 +49,13 @@ import org.amshove.kluent.`should not be null`
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldHaveSize
+import org.amshove.kluent.shouldNotBe
 import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -905,6 +912,25 @@ class MineSykmeldteServiceTest : Spek({
     }
 
     describe("getSoknad") {
+
+        it("should map correct") {
+            val soknad = getFileAsString("src/test/resources/testSoknad.json")
+            val soknadDTO = objectMapper.readValue<SykepengesoknadDTO>(soknad)
+            val soknadDbModel = soknadDTO.toSoknadDbModel()
+            val sykmeldtDbModel = SykmeldtDbModel(
+                pasientFnr = "12345678912",
+                pasientNavn = "navn",
+                startdatoSykefravaer = LocalDate.now(),
+                latestTom = LocalDate.now()
+            )
+            every {
+                mineSykmeldteDb.getSoknad(soknadDbModel.soknadId, "red-2")
+            } returns (sykmeldtDbModel to soknadDbModel)
+
+            val result = mineSykmeldtService.getSoknad(soknadDbModel.soknadId, "red-2")
+            result shouldNotBe null
+        }
+
         it("should map to Soknad") {
             val soknadId = "e94a7c0f-3240-4a0c-8788-c4cc3ebcdac2"
             every {
@@ -1068,3 +1094,9 @@ fun getSykmeldtData(
             )
         }
     }
+fun getFileAsString(filePath: String) = String(
+    Files.readAllBytes(
+        Paths.get(filePath)
+    ),
+    StandardCharsets.UTF_8
+)

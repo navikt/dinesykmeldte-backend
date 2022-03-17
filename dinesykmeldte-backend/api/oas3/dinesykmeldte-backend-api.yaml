@@ -479,6 +479,37 @@ components:
             - BEHANDLINGSDAGER
             - GRADERT
             - REISETILSKUDD
+    Undersporsmal:
+      required:
+        - id
+        - tag
+        - svartype
+        - kriterieForVisningAvUndersporsmal
+        - svar
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tag:
+          type: string
+        sporsmalstekst:
+          type: string
+        undertekst:
+          type: string
+        svartype:
+          $ref: '#/components/schemas/SvartypeDTO'
+        kriterieForVisningAvUndersporsmal:
+          $ref: '#/components/schemas/VisningskriteriumDTO'
+        svar:
+          type: array
+          items:
+            $ref: '#/components/schemas/Svar'
+        undersporsmal:
+          example:
+          type: array
+          items:
+            $ref: '#/components/schemas/Undersporsmal'
     Sporsmal:
       required:
         - id
@@ -509,7 +540,7 @@ components:
         undersporsmal:
           type: array
           items:
-            $ref: '#/components/schemas/Sporsmal'
+            $ref: '#/components/schemas/Undersporsmal'
     SvartypeDTO:
       type: string
       enum:
@@ -574,15 +605,15 @@ components:
       maxLength: 11
       example: '01010112345'
     Virksomhet:
-     required:
-       - navn
-       - orgnummer
-     type: object
-     properties:
-       navn:
-         type: string
-       orgnummer:
-         type: string
+      required:
+        - navn
+        - orgnummer
+      type: object
+      properties:
+        navn:
+          type: string
+        orgnummer:
+          type: string
 
   securitySchemes:
     bearerAuth:

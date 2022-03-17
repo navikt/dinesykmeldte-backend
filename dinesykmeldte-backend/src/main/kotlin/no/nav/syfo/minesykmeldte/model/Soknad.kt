@@ -25,6 +25,19 @@ data class Soknadsperiode(
     val sykmeldingstype: PeriodeEnum,
 )
 
+data class Undersporsmal(
+    val id: String,
+    val tag: String,
+    val min: String?,
+    val max: String?,
+    val sporsmalstekst: String?,
+    val undertekst: String?,
+    val svartype: SvartypeDTO,
+    var kriterieForVisningAvUndersporsmal: VisningskriteriumDTO?,
+    var svar: List<Svar>?,
+    var undersporsmal: List<Undersporsmal>?,
+)
+
 data class Sporsmal(
     val id: String,
     val tag: String,
@@ -35,7 +48,7 @@ data class Sporsmal(
     val svartype: SvartypeDTO,
     var kriterieForVisningAvUndersporsmal: VisningskriteriumDTO?,
     var svar: List<Svar>?,
-    var undersporsmal: List<Sporsmal>?,
+    var undersporsmal: List<Undersporsmal>?,
 )
 
 data class Svar(
