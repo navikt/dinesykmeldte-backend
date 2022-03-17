@@ -1,0 +1,432 @@
+{
+  "id": "49dd7ac7-f692-3804-927a-ced1e53ab33e",
+  "fnr": "12345678912",
+  "fom": "2022-01-03",
+  "tom": "2022-01-10",
+  "type": "ARBEIDSTAKERE",
+  "fravar": [],
+  "status": "SENDT",
+  "dodsdato": null,
+  "mottaker": "ARBEIDSGIVER",
+  "sendtNav": null,
+  "sporsmal": [
+    {
+      "id": "1660521",
+      "max": null,
+      "min": null,
+      "tag": "ANSVARSERKLARING",
+      "svar": [
+        {
+          "verdi": "CHECKED"
+        }
+      ],
+      "svartype": "CHECKBOX_PANEL",
+      "undertekst": null,
+      "undersporsmal": [],
+      "sporsmalstekst": "Jeg vet at jeg kan miste retten til sykepenger hvis opplysningene jeg gir ikke er riktige eller fullstendige. Jeg vet også at NAV kan holde igjen eller kreve tilbake penger, og at å gi feil opplysninger kan være straffbart.",
+      "kriterieForVisningAvUndersporsmal": null
+    },
+    {
+      "id": "1660548",
+      "max": null,
+      "min": null,
+      "tag": "FRAVAR_FOR_SYKMELDINGEN",
+      "svar": [
+        {
+          "verdi": "NEI"
+        }
+      ],
+      "svartype": "JA_NEI",
+      "undertekst": null,
+      "undersporsmal": [
+        {
+          "id": "1660549",
+          "max": "2022-01-02",
+          "min": "2021-07-03",
+          "tag": "FRAVAR_FOR_SYKMELDINGEN_NAR",
+          "svar": [],
+          "svartype": "PERIODER",
+          "undertekst": null,
+          "undersporsmal": [],
+          "sporsmalstekst": "Hvilke dager var du syk og borte fra jobb, før du ble sykmeldt? Du trenger bare oppgi dager før 3. januar 2022.",
+          "kriterieForVisningAvUndersporsmal": null
+        }
+      ],
+      "sporsmalstekst": "Var du syk og borte fra jobb før du ble sykmeldt, i perioden 18. desember 2021 - 2. januar 2022?",
+      "kriterieForVisningAvUndersporsmal": "JA"
+    },
+    {
+      "id": "1660522",
+      "max": null,
+      "min": null,
+      "tag": "TILBAKE_I_ARBEID",
+      "svar": [
+        {
+          "verdi": "NEI"
+        }
+      ],
+      "svartype": "JA_NEI",
+      "undertekst": null,
+      "undersporsmal": [
+        {
+          "id": "1660523",
+          "max": "2022-01-10",
+          "min": "2022-01-03",
+          "tag": "TILBAKE_NAR",
+          "svar": [],
+          "svartype": "DATO",
+          "undertekst": null,
+          "undersporsmal": [],
+          "sporsmalstekst": "Når begynte du å jobbe igjen?",
+          "kriterieForVisningAvUndersporsmal": null
+        }
+      ],
+      "sporsmalstekst": "Var du tilbake i fullt arbeid hos PENGELØS SPAREBANK i løpet av perioden 3. - 10. januar 2022?",
+      "kriterieForVisningAvUndersporsmal": "JA"
+    },
+    {
+      "id": "1660524",
+      "max": null,
+      "min": null,
+      "tag": "FERIE_V2",
+      "svar": [
+        {
+          "verdi": "NEI"
+        }
+      ],
+      "svartype": "JA_NEI",
+      "undertekst": null,
+      "undersporsmal": [
+        {
+          "id": "1660525",
+          "max": "2022-01-10",
+          "min": "2022-01-03",
+          "tag": "FERIE_NAR_V2",
+          "svar": [],
+          "svartype": "PERIODER",
+          "undertekst": null,
+          "undersporsmal": [],
+          "sporsmalstekst": "Når tok du ut ferie?",
+          "kriterieForVisningAvUndersporsmal": null
+        }
+      ],
+      "sporsmalstekst": "Hadde du ferie i tidsrommet 3. - 10. januar 2022?",
+      "kriterieForVisningAvUndersporsmal": "JA"
+    },
+    {
+      "id": "1660526",
+      "max": null,
+      "min": null,
+      "tag": "PERMISJON_V2",
+      "svar": [
+        {
+          "verdi": "NEI"
+        }
+      ],
+      "svartype": "JA_NEI",
+      "undertekst": null,
+      "undersporsmal": [
+        {
+          "id": "1660527",
+          "max": "2022-01-10",
+          "min": "2022-01-03",
+          "tag": "PERMISJON_NAR_V2",
+          "svar": [],
+          "svartype": "PERIODER",
+          "undertekst": null,
+          "undersporsmal": [],
+          "sporsmalstekst": "Når tok du permisjon?",
+          "kriterieForVisningAvUndersporsmal": null
+        }
+      ],
+      "sporsmalstekst": "Tok du permisjon mens du var sykmeldt 3. - 10. januar 2022?",
+      "kriterieForVisningAvUndersporsmal": "JA"
+    },
+    {
+      "id": "1660528",
+      "max": null,
+      "min": null,
+      "tag": "UTLAND_V2",
+      "svar": [
+        {
+          "verdi": "NEI"
+        }
+      ],
+      "svartype": "JA_NEI",
+      "undertekst": null,
+      "undersporsmal": [
+        {
+          "id": "1660529",
+          "max": "2022-01-10",
+          "min": "2022-01-03",
+          "tag": "UTLAND_NAR_V2",
+          "svar": [],
+          "svartype": "PERIODER",
+          "undertekst": null,
+          "undersporsmal": [],
+          "sporsmalstekst": "Når var du utenfor EØS?",
+          "kriterieForVisningAvUndersporsmal": null
+        }
+      ],
+      "sporsmalstekst": "Var du på reise utenfor EØS mens du var sykmeldt 3. - 10. januar 2022?",
+      "kriterieForVisningAvUndersporsmal": "JA"
+    },
+    {
+      "id": "1660555",
+      "max": null,
+      "min": null,
+      "tag": "JOBBET_DU_100_PROSENT_0",
+      "svar": [
+        {
+          "verdi": "NEI"
+        }
+      ],
+      "svartype": "JA_NEI",
+      "undertekst": null,
+      "undersporsmal": [
+        {
+          "id": "1660556",
+          "max": "150",
+          "min": "1",
+          "tag": "HVOR_MANGE_TIMER_PER_UKE_0",
+          "svar": [],
+          "svartype": "TALL",
+          "undertekst": "timer per uke",
+          "undersporsmal": [],
+          "sporsmalstekst": "Hvor mange timer i uken jobber du vanligvis når du er frisk? Varierer det, kan du oppgi gjennomsnittet.",
+          "kriterieForVisningAvUndersporsmal": null
+        },
+        {
+          "id": "1660557",
+          "max": null,
+          "min": null,
+          "tag": "HVOR_MYE_HAR_DU_JOBBET_0",
+          "svar": [],
+          "svartype": "RADIO_GRUPPE_TIMER_PROSENT",
+          "undertekst": "Velg timer eller prosent",
+          "undersporsmal": [
+            {
+              "id": "1660558",
+              "max": null,
+              "min": null,
+              "tag": "HVOR_MYE_TIMER_0",
+              "svar": [],
+              "svartype": "RADIO",
+              "undertekst": null,
+              "undersporsmal": [
+                {
+                  "id": "1660559",
+                  "max": "171",
+                  "min": "1",
+                  "tag": "HVOR_MYE_TIMER_VERDI_0",
+                  "svar": [],
+                  "svartype": "TALL",
+                  "undertekst": "timer totalt",
+                  "undersporsmal": [],
+                  "sporsmalstekst": null,
+                  "kriterieForVisningAvUndersporsmal": null
+                }
+              ],
+              "sporsmalstekst": "Timer",
+              "kriterieForVisningAvUndersporsmal": "CHECKED"
+            },
+            {
+              "id": "1660560",
+              "max": null,
+              "min": null,
+              "tag": "HVOR_MYE_PROSENT_0",
+              "svar": [],
+              "svartype": "RADIO",
+              "undertekst": null,
+              "undersporsmal": [
+                {
+                  "id": "1660561",
+                  "max": "99",
+                  "min": "1",
+                  "tag": "HVOR_MYE_PROSENT_VERDI_0",
+                  "svar": [],
+                  "svartype": "TALL",
+                  "undertekst": "prosent",
+                  "undersporsmal": [],
+                  "sporsmalstekst": null,
+                  "kriterieForVisningAvUndersporsmal": null
+                }
+              ],
+              "sporsmalstekst": "Prosent",
+              "kriterieForVisningAvUndersporsmal": "CHECKED"
+            }
+          ],
+          "sporsmalstekst": "Hvor mye jobbet du tilsammen 3. - 10. januar 2022?",
+          "kriterieForVisningAvUndersporsmal": null
+        }
+      ],
+      "sporsmalstekst": "I perioden 3. - 10. januar 2022 var du 100 % sykmeldt fra PENGELØS SPAREBANK. Jobbet du noe i denne perioden?",
+      "kriterieForVisningAvUndersporsmal": "JA"
+    },
+    {
+      "id": "1660543",
+      "max": null,
+      "min": null,
+      "tag": "UTDANNING",
+      "svar": [
+        {
+          "verdi": "NEI"
+        }
+      ],
+      "svartype": "JA_NEI",
+      "undertekst": null,
+      "undersporsmal": [
+        {
+          "id": "1660544",
+          "max": "2022-01-10",
+          "min": null,
+          "tag": "UTDANNING_START",
+          "svar": [],
+          "svartype": "DATO",
+          "undertekst": null,
+          "undersporsmal": [],
+          "sporsmalstekst": "Når startet du på utdanningen?",
+          "kriterieForVisningAvUndersporsmal": null
+        },
+        {
+          "id": "1660545",
+          "max": null,
+          "min": null,
+          "tag": "FULLTIDSSTUDIUM",
+          "svar": [],
+          "svartype": "JA_NEI",
+          "undertekst": null,
+          "undersporsmal": [],
+          "sporsmalstekst": "Er utdanningen et fulltidsstudium?",
+          "kriterieForVisningAvUndersporsmal": null
+        }
+      ],
+      "sporsmalstekst": "Har du vært under utdanning i løpet av perioden 3. - 10. januar 2022?",
+      "kriterieForVisningAvUndersporsmal": "JA"
+    },
+    {
+      "id": "1660551",
+      "max": null,
+      "min": null,
+      "tag": "PERMITTERT_NAA",
+      "svar": [
+        {
+          "verdi": "NEI"
+        }
+      ],
+      "svartype": "JA_NEI",
+      "undertekst": null,
+      "undersporsmal": [
+        {
+          "id": "1660552",
+          "max": "2022-01-10",
+          "min": "2020-02-01",
+          "tag": "PERMITTERT_NAA_NAR",
+          "svar": [],
+          "svartype": "DATO",
+          "undertekst": null,
+          "undersporsmal": [],
+          "sporsmalstekst": "Velg første dag i permitteringen",
+          "kriterieForVisningAvUndersporsmal": null
+        }
+      ],
+      "sporsmalstekst": "Var du permittert av arbeidsgiveren din da du ble sykmeldt 3. januar 2022?",
+      "kriterieForVisningAvUndersporsmal": "JA"
+    },
+    {
+      "id": "1660553",
+      "max": null,
+      "min": null,
+      "tag": "PERMITTERT_PERIODE",
+      "svar": [
+        {
+          "verdi": "NEI"
+        }
+      ],
+      "svartype": "JA_NEI",
+      "undertekst": null,
+      "undersporsmal": [
+        {
+          "id": "1660554",
+          "max": "2022-01-03",
+          "min": "2021-12-03",
+          "tag": "PERMITTERT_PERIODE_NAR",
+          "svar": [],
+          "svartype": "PERIODER",
+          "undertekst": null,
+          "undersporsmal": [],
+          "sporsmalstekst": null,
+          "kriterieForVisningAvUndersporsmal": null
+        }
+      ],
+      "sporsmalstekst": "Har du vært permittert av arbeidsgiveren din i mer enn 14 sammenhengende dager mellom 3. desember 2021 - 3. januar 2022?",
+      "kriterieForVisningAvUndersporsmal": "JA"
+    },
+    {
+      "id": "1660546",
+      "max": null,
+      "min": null,
+      "tag": "VAER_KLAR_OVER_AT",
+      "svar": [],
+      "svartype": "IKKE_RELEVANT",
+      "undertekst": "<ul><li>Du kan bare få sykepenger hvis det er din egen sykdom eller skade som hindrer deg i å jobbe. Sosiale eller økonomiske problemer gir ikke rett til sykepenger.</li><li>Du kan miste retten til sykepenger hvis du nekter å opplyse om din egen arbeidsevne, eller hvis du ikke tar imot behandling eller tilrettelegging.</li><li>Retten til sykepenger gjelder bare inntekt du har mottatt som lønn og betalt skatt av på sykmeldingstidspunktet.</li><li>NAV kan innhente opplysninger som er nødvendige for å behandle søknaden.</li><li>Du må melde fra til NAV hvis du satt i varetekt, sonet straff eller var under forvaring i sykmeldingsperioden.</li><li>Fristen for å søke sykepenger er som hovedregel 3 måneder</li></ul><p>Du kan lese mer om rettigheter og plikter på <a href=\"https://www.nav.no/sykepenger\" target=\"_blank\">nav.no/sykepenger</a>.</p>",
+      "undersporsmal": [],
+      "sporsmalstekst": "Viktig å være klar over:",
+      "kriterieForVisningAvUndersporsmal": null
+    },
+    {
+      "id": "1660547",
+      "max": null,
+      "min": null,
+      "tag": "BEKREFT_OPPLYSNINGER",
+      "svar": [
+        {
+          "verdi": "CHECKED"
+        }
+      ],
+      "svartype": "CHECKBOX_PANEL",
+      "undertekst": null,
+      "undersporsmal": [],
+      "sporsmalstekst": "Jeg har lest all informasjonen jeg har fått i søknaden og bekrefter at opplysningene jeg har gitt er korrekte.",
+      "kriterieForVisningAvUndersporsmal": null
+    }
+  ],
+  "opprettet": "2022-03-16T09:30:18.575035",
+  "korrigerer": null,
+  "korrigertAv": null,
+  "arbeidsgiver": {
+    "navn": "PENGELØS SPAREBANK",
+    "orgnummer": "972674818"
+  },
+  "avsendertype": "BRUKER",
+  "ettersending": false,
+  "sykmeldingId": "0f4b0bbe-dce8-4493-9d24-18197f8bc438",
+  "egenmeldinger": [],
+  "permitteringer": [],
+  "soknadsperioder": [
+    {
+      "fom": "2022-01-03",
+      "tom": "2022-01-10",
+      "grad": 100,
+      "avtaltTimer": null,
+      "faktiskGrad": null,
+      "faktiskTimer": null,
+      "sykmeldingsgrad": 100,
+      "sykmeldingstype": "AKTIVITET_IKKE_MULIG"
+    }
+  ],
+  "arbeidssituasjon": "ARBEIDSTAKER",
+  "behandlingsdager": null,
+  "arbeidGjenopptatt": null,
+  "papirsykmeldinger": [],
+  "sendtArbeidsgiver": "2022-03-16T09:39:39.633876919",
+  "startSyketilfelle": "2022-01-03",
+  "sykmeldingSkrevet": "2022-01-03T00:00:00",
+  "andreInntektskilder": null,
+  "egenmeldtSykmelding": false,
+  "soktUtenlandsopphold": null,
+  "fravarForSykmeldingen": [],
+  "merknaderFraSykmelding": null,
+  "harRedusertVenteperiode": null,
+  "arbeidsgiverForskutterer": null
+}

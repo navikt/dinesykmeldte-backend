@@ -17,6 +17,7 @@ import no.nav.syfo.minesykmeldte.model.PreviewSykmelding
 import no.nav.syfo.minesykmeldte.model.Soknadsperiode
 import no.nav.syfo.minesykmeldte.model.Sporsmal
 import no.nav.syfo.minesykmeldte.model.Svar
+import no.nav.syfo.minesykmeldte.model.Undersporsmal
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
@@ -111,6 +112,23 @@ class MineSykmeldteMapper private constructor() {
             sykmeldingstype = PeriodeEnum.valueOf(sykmeldingstype.toString()),
         )
 
+        private fun SporsmalDTO.toUndersporsmal(): Undersporsmal = Undersporsmal(
+            id = requireNotNull(id),
+            tag = requireNotNull(tag),
+            min = min,
+            max = max,
+            sporsmalstekst = sporsmalstekst,
+            undertekst = undertekst,
+            svartype = requireNotNull(svartype),
+            kriterieForVisningAvUndersporsmal = kriterieForVisningAvUndersporsmal,
+            svar = svar?.map {
+                Svar(
+                    verdi = requireNotNull(it.verdi),
+                )
+            },
+            undersporsmal = undersporsmal?.map { it.toUndersporsmal() },
+        )
+
         fun SporsmalDTO.toSporsmal(): Sporsmal = Sporsmal(
             id = requireNotNull(id),
             tag = requireNotNull(tag),
@@ -125,7 +143,7 @@ class MineSykmeldteMapper private constructor() {
                     verdi = requireNotNull(it.verdi),
                 )
             },
-            undersporsmal = undersporsmal?.map { it.toSporsmal() },
+            undersporsmal = undersporsmal?.map { it.toUndersporsmal() },
         )
 
         private fun formatPeriodType(relevantPeriod: SykmeldingsperiodeAGDTO) = when (relevantPeriod.type) {
