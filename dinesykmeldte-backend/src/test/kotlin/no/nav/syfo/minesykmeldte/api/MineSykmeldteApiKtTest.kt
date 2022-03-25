@@ -68,7 +68,7 @@ object MineSykmeldteApiKtTest : Spek({
                         navn = "navn",
                         startdatoSykefravar = LocalDate.now().minusDays(14),
                         friskmeldt = false,
-                        previewSykmeldinger = emptyList(),
+                        sykmeldinger = emptyList(),
                         previewSoknader = emptyList(),
                         dialogmoter = emptyList()
                     )
@@ -84,7 +84,7 @@ object MineSykmeldteApiKtTest : Spek({
                           "navn": "navn",
                           "startdatoSykefravar": "$startdato",
                           "friskmeldt": false,
-                          "previewSykmeldinger": [],
+                          "sykmeldinger": [],
                           "previewSoknader": [],
                           "dialogmoter": []
                         }
@@ -152,7 +152,7 @@ object MineSykmeldteApiKtTest : Spek({
                             navn = "navn",
                             startdatoSykefravar = LocalDate.now().minusDays(14),
                             friskmeldt = false,
-                            previewSykmeldinger = emptyList(),
+                            sykmeldinger = emptyList(),
                             previewSoknader = listOf(
                                 PreviewNySoknad(
                                     id = "soknad-1-id",
@@ -180,7 +180,7 @@ object MineSykmeldteApiKtTest : Spek({
                             "navn": "navn",
                             "startdatoSykefravar": "${LocalDate.now().minusDays(14)}",
                             "friskmeldt": false,
-                            "previewSykmeldinger": [],
+                            "sykmeldinger": [],
                             "previewSoknader": [
                               {
                                 "varsel": true,
@@ -247,8 +247,7 @@ object MineSykmeldteApiKtTest : Spek({
                           "lest": false,
                           "arbeidsgiver": {
                             "navn": "Arbeid G. Iversen",
-                            "orgnummer": "981298129812",
-                            "yrke": "Snekker"
+                            "orgnummer": "981298129812"
                           },
                           "perioder": [],
                           "arbeidsforEtterPeriode": false,
@@ -394,7 +393,6 @@ fun createSykmeldingTestData(
     arbeidsgiver: Arbeidsgiver = Arbeidsgiver(
         navn = "Arbeid G. Iversen",
         orgnummer = "981298129812",
-        yrke = "Snekker",
     ),
     perioder: List<Periode> = emptyList(),
     arbeidsforEtterPeriode: Boolean = false,

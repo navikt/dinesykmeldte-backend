@@ -122,7 +122,8 @@ class MineSykmeldteServiceTest : Spek({
             runBlocking {
                 val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
-                mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "100%"
+                val periode = mineSykmeldte.first().sykmeldinger.first().perioder.first();
+                periode.shouldBeInstance<AktivitetIkkeMulig>()
             }
         }
 
@@ -150,7 +151,7 @@ class MineSykmeldteServiceTest : Spek({
             runBlocking {
                 val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
-                mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "100%"
+                mineSykmeldte.first().sykmeldinger.first().perioder.first().type shouldBeEqualTo PeriodeEnum.AKTIVITET_IKKE_MULIG
                 (mineSykmeldte.first().previewSoknader.first() as PreviewNySoknad).ikkeSendtSoknadVarsel shouldBeEqualTo true
             }
         }
@@ -268,7 +269,7 @@ class MineSykmeldteServiceTest : Spek({
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                     mineSykmeldte.size shouldBeEqualTo 1
-                    mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "50%"
+                    mineSykmeldte.first().sykmeldinger.first().perioder.first().type shouldBeEqualTo PeriodeEnum.GRADERT
                 }
             }
 
@@ -296,7 +297,7 @@ class MineSykmeldteServiceTest : Spek({
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                     mineSykmeldte.size shouldBeEqualTo 1
-                    mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "20%"
+                    mineSykmeldte.first().sykmeldinger.first().perioder.first().type shouldBeEqualTo PeriodeEnum.GRADERT
                 }
             }
 
@@ -324,7 +325,7 @@ class MineSykmeldteServiceTest : Spek({
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                     mineSykmeldte.size shouldBeEqualTo 1
-                    mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Avventende"
+                    mineSykmeldte.first().sykmeldinger.first().perioder.first().type shouldBeEqualTo PeriodeEnum.AVVENTENDE
                 }
             }
 
@@ -352,7 +353,7 @@ class MineSykmeldteServiceTest : Spek({
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                     mineSykmeldte.size shouldBeEqualTo 1
-                    mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Behandlingsdager"
+                    mineSykmeldte.first().sykmeldinger.first().perioder.first().type shouldBeEqualTo PeriodeEnum.BEHANDLINGSDAGER
                 }
             }
 
@@ -380,7 +381,7 @@ class MineSykmeldteServiceTest : Spek({
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                     mineSykmeldte.size shouldBeEqualTo 1
-                    mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Reisetilskudd"
+                    mineSykmeldte.first().sykmeldinger.first().perioder.first().type shouldBeEqualTo PeriodeEnum.REISETILSKUDD
                 }
             }
 
@@ -423,7 +424,7 @@ class MineSykmeldteServiceTest : Spek({
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                     mineSykmeldte.size shouldBeEqualTo 1
-                    mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Reisetilskudd"
+                    mineSykmeldte.first().sykmeldinger.first().perioder.elementAt(1).type shouldBeEqualTo PeriodeEnum.REISETILSKUDD
                 }
             }
 
@@ -466,7 +467,7 @@ class MineSykmeldteServiceTest : Spek({
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                     mineSykmeldte.size shouldBeEqualTo 1
-                    mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Reisetilskudd"
+                    mineSykmeldte.first().sykmeldinger.first().perioder.elementAt(1).type shouldBeEqualTo PeriodeEnum.REISETILSKUDD
                 }
             }
 
@@ -509,7 +510,7 @@ class MineSykmeldteServiceTest : Spek({
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                     mineSykmeldte.size shouldBeEqualTo 1
-                    mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Reisetilskudd"
+                    mineSykmeldte.first().sykmeldinger.first().perioder.elementAt(1).type shouldBeEqualTo PeriodeEnum.REISETILSKUDD
                 }
             }
 
@@ -552,7 +553,7 @@ class MineSykmeldteServiceTest : Spek({
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                     mineSykmeldte.size shouldBeEqualTo 1
-                    mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Reisetilskudd"
+                    mineSykmeldte.first().sykmeldinger.first().perioder.last().type shouldBeEqualTo PeriodeEnum.REISETILSKUDD
                 }
             }
 
@@ -595,7 +596,7 @@ class MineSykmeldteServiceTest : Spek({
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                     mineSykmeldte.size shouldBeEqualTo 1
-                    mineSykmeldte.first().previewSykmeldinger.first().type shouldBeEqualTo "Reisetilskudd"
+                    mineSykmeldte.first().sykmeldinger.first().perioder.first().type shouldBeEqualTo PeriodeEnum.REISETILSKUDD
                 }
             }
         }

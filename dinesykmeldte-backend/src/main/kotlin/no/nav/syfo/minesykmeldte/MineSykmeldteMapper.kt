@@ -13,7 +13,6 @@ import no.nav.syfo.minesykmeldte.model.PreviewKorrigertSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSendtSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSoknad
-import no.nav.syfo.minesykmeldte.model.PreviewSykmelding
 import no.nav.syfo.minesykmeldte.model.Soknadsperiode
 import no.nav.syfo.minesykmeldte.model.Sporsmal
 import no.nav.syfo.minesykmeldte.model.Svar
@@ -27,16 +26,6 @@ import java.util.Collections.max
 
 class MineSykmeldteMapper private constructor() {
     companion object {
-        fun toPreviewSykmelding(sykmeldingDbModel: MinSykmeldtDbModel): PreviewSykmelding {
-            return PreviewSykmelding(
-                id = sykmeldingDbModel.sykmeldingId,
-                fom = sykmeldingDbModel.sykmelding.sykmeldingsperioder.minOf { it.fom },
-                tom = sykmeldingDbModel.sykmelding.sykmeldingsperioder.maxOf { it.tom },
-                type = getTypeSykmelding(sykmeldingDbModel.sykmelding),
-                lest = sykmeldingDbModel.lestSykmelding
-            )
-        }
-
         fun toPreviewSoknad(
             soknad: SykepengesoknadDTO,
             lest: Boolean,
@@ -98,16 +87,6 @@ class MineSykmeldteMapper private constructor() {
                 ikkeSendtSoknadVarsel = hendelser.any { it.id == soknad.id && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD }
             )
 
-        private fun getTypeSykmelding(sykmelding: ArbeidsgiverSykmelding): String {
-            val now = LocalDate.now()
-            val sortedPeriods = sykmelding.sykmeldingsperioder.sortedBy { it.fom }
-
-            return when (val periodNearestNow = sortedPeriods.find { it.tom >= now }) {
-                null -> formatPeriodType(sortedPeriods.last())
-                else -> formatPeriodType(periodNearestNow)
-            }
-        }
-
         fun SoknadsperiodeDTO.toSoknadsperiode(): Soknadsperiode = Soknadsperiode(
             fom = requireNotNull(fom),
             tom = requireNotNull(tom),
@@ -148,24 +127,5 @@ class MineSykmeldteMapper private constructor() {
             },
             undersporsmal = undersporsmal?.map { it.toUndersporsmal() },
         )
-
-        private fun formatPeriodType(relevantPeriod: SykmeldingsperiodeAGDTO) = when (relevantPeriod.type) {
-            PeriodetypeDTO.GRADERT -> relevantPeriod.gradert.gradPercent
-            PeriodetypeDTO.AKTIVITET_IKKE_MULIG -> "100%"
-            PeriodetypeDTO.AVVENTENDE -> "Avventende"
-            PeriodetypeDTO.BEHANDLINGSDAGER -> "Behandlingsdager"
-            PeriodetypeDTO.REISETILSKUDD -> "Reisetilskudd"
-        }
     }
 }
-
-private fun maxDate(first: LocalDate?, second: LocalDate?): LocalDate =
-    max(
-        listOf(
-            first ?: LocalDate.MIN,
-            second ?: LocalDate.MIN
-        )
-    )
-
-private val GradertDTO?.gradPercent: String
-    get() = this?.let { "${this.grad}%" } ?: "Ukjent gradering"

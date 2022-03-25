@@ -292,8 +292,6 @@ components:
               type: string
             orgnummer:
               type: string
-            yrke:
-              type: string
         perioder:
           type: array
           items:
@@ -331,7 +329,7 @@ components:
         - navn
         - startdatoSykefravar
         - friskmeldt
-        - previewSykmeldinger
+        - sykmeldinger
         - previewSoknader
         - dialogmoter
       properties:
@@ -349,10 +347,10 @@ components:
           format: date
         friskmeldt:
           type: boolean
-        previewSykmeldinger:
+        sykmeldinger:
           type: array
           items:
-            $ref: '#/components/schemas/PreviewSykmelding'
+            $ref: '#/components/schemas/Sykmelding'
         previewSoknader:
           type: array
           items:
@@ -361,29 +359,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Dialogmote'
-    PreviewSykmelding:
-      type: object
-      required:
-        - id
-        - fom
-        - tom
-        - type
-        - lest
-      properties:
-        id:
-          type: string
-          format: uuid
-        fom:
-          type: string
-          format: date
-        tom:
-          type: string
-          format: date
-        type:
-          type: string
-          example: '100%'
-        lest:
-          type: boolean
     PreviewSoknader:
       required:
         - id

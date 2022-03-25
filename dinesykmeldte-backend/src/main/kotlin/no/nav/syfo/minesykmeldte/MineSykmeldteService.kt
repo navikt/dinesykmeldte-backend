@@ -7,7 +7,6 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.log
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSoknad
-import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSykmelding
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toSoknadsperiode
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toSporsmal
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
@@ -63,9 +62,9 @@ class MineSykmeldteService(
                 navn = sykmeldtEntry.key.navn,
                 startdatoSykefravar = sykmeldtEntry.key.startDatoSykefravaer,
                 friskmeldt = isFriskmeldt(sykmeldtEntry),
-                previewSykmeldinger = getSykmeldinger(sykmeldtEntry),
                 previewSoknader = getPreviewSoknader(sykmeldtEntry, hendelserMap),
                 dialogmoter = getDialogmoter(hendelserMap, sykmeldtEntry),
+                sykmeldinger = getSykmeldinger(sykmeldtEntry),
             )
         }
     }
@@ -100,7 +99,7 @@ class MineSykmeldteService(
 
     private fun getSykmeldinger(sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>) =
         sykmeldtEntry.value.distinctBy { it.sykmeldingId }.map { sykmeldtDbModel ->
-            toPreviewSykmelding(sykmeldtDbModel)
+            sykmeldtDbModel.toSykmelding()
         }
 
     private fun getDialogmoter(
@@ -205,6 +204,36 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
     )
 }
 
+private fun MinSykmeldtDbModel.toSykmelding(): Sykmelding {
+    val sykmelding = this.sykmelding;
+
+    return Sykmelding(
+        id = sykmelding.id,
+        kontaktDato = sykmelding.kontaktMedPasient.kontaktDato,
+        fnr = this.sykmeldtFnr,
+        lest = this.lestSykmelding,
+        arbeidsgiver = Arbeidsgiver(
+            navn = this.orgNavn,
+            orgnummer = this.orgnummer,
+        ),
+        perioder = sykmelding.sykmeldingsperioder.map { it.toSykmeldingPeriode() },
+        arbeidsforEtterPeriode = sykmelding.prognose?.arbeidsforEtterPeriode,
+        hensynArbeidsplassen = sykmelding.prognose?.hensynArbeidsplassen,
+        tiltakArbeidsplassen = sykmelding.tiltakArbeidsplassen,
+        innspillArbeidsplassen = sykmelding.meldingTilArbeidsgiver,
+        behandler = sykmelding.behandler.let {
+            Behandler(
+                navn = it.formatName(),
+                hprNummer = it.hpr,
+                telefon = it.tlf,
+            )
+        },
+        startdatoSykefravar = this.startDatoSykefravar,
+        navn = this.sykmeldtNavn,
+    )
+}
+
+
 private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding {
     val (sykmeldt, sykmelding) = this
 
@@ -216,7 +245,6 @@ private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding 
         arbeidsgiver = Arbeidsgiver(
             navn = sykmelding.orgnavn,
             orgnummer = sykmelding.orgnummer,
-            yrke = sykmelding.sykmelding.arbeidsgiver.yrkesbetegnelse
         ),
         perioder = sykmelding.sykmelding.sykmeldingsperioder.map { it.toSykmeldingPeriode() },
         arbeidsforEtterPeriode = sykmelding.sykmelding.prognose?.arbeidsforEtterPeriode,
