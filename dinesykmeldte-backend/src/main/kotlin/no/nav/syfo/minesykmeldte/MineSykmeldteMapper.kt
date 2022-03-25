@@ -37,7 +37,11 @@ class MineSykmeldteMapper private constructor() {
             )
         }
 
-        fun toPreviewSoknad(soknad: SykepengesoknadDTO, lest: Boolean, hendelser: List<Hendelse>): PreviewSoknad =
+        fun toPreviewSoknad(
+            soknad: SykepengesoknadDTO,
+            lest: Boolean,
+            hendelser: List<Hendelse>
+        ): PreviewSoknad =
             when (soknad.status) {
                 SoknadsstatusDTO.NY -> getNySoknad(soknad, lest, hendelser)
                 SoknadsstatusDTO.SENDT -> getSendtSoknad(soknad, lest)
@@ -52,9 +56,8 @@ class MineSykmeldteMapper private constructor() {
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
                 tom = soknad.tom,
-                korrigererSoknadId = soknad.korrigerer
-                    ?: throw IllegalStateException("korrigerer must not be null in korrigert soknad: ${soknad.id}"),
-                korrigertBySoknadId = soknad.korrigertAv,
+                korrigererSoknadId = soknad.korrigerer,
+                korrigertBySoknadId = soknad.korrigertAv ?: throw IllegalStateException("korrigertAv must not be null in korrigert soknad: ${soknad.id}"),
                 perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
                     ?: throw IllegalStateException("søknadsperioder must not be null in korrigert soknad: ${soknad.id}"),
             )
@@ -66,9 +69,9 @@ class MineSykmeldteMapper private constructor() {
                 fom = soknad.fom,
                 tom = soknad.tom,
                 lest = lest,
+                korrigererSoknadId = soknad.korrigerer,
                 sendtDato = soknad.sendtArbeidsgiver
                     ?: throw IllegalStateException("sendtArbeidsgiver is null for soknad: ${soknad.id}"),
-                korrigertBySoknadId = soknad.korrigertAv,
                 perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
                     ?: throw IllegalStateException("søknadsperioder must not be null in sendt soknad: ${soknad.id}"),
             )

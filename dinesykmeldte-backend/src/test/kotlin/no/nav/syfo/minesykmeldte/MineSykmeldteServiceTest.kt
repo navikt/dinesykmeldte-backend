@@ -668,7 +668,7 @@ class MineSykmeldteServiceTest : Spek({
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.SENDT,
-                    korrigertAv = "korrigert-av-id",
+                    korrigerer = "korrigerer-id",
                     sendtArbeidsgiver = LocalDateTime.parse("2020-06-07T19:34:50.63")
                 )
 
@@ -693,7 +693,7 @@ class MineSykmeldteServiceTest : Spek({
 
                     mappedSoknad.shouldBeInstance<PreviewSendtSoknad>()
                     mappedSoknad.lest shouldBeEqualTo true
-                    mappedSoknad.korrigertBySoknadId shouldBeEqualTo "korrigert-av-id"
+                    mappedSoknad.korrigererSoknadId shouldBeEqualTo "korrigerer-id"
                     mappedSoknad.sendtDato shouldBeEqualTo LocalDateTime.parse("2020-06-07T19:34:50.63")
                 }
             }
