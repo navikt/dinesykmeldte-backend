@@ -29,6 +29,7 @@ import no.nav.syfo.minesykmeldte.model.PreviewKorrigertSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSendtSoknad
 import no.nav.syfo.minesykmeldte.model.Reisetilskudd
+import no.nav.syfo.minesykmeldte.model.SoknadStatus
 import no.nav.syfo.minesykmeldte.model.Svar
 import no.nav.syfo.model.sykmelding.arbeidsgiver.AktivitetIkkeMuligAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
@@ -668,7 +669,7 @@ class MineSykmeldteServiceTest : Spek({
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.SENDT,
-                    korrigertAv = "korrigert-av-id",
+                    korrigerer = "korrigerer-id",
                     sendtArbeidsgiver = LocalDateTime.parse("2020-06-07T19:34:50.63")
                 )
 
@@ -693,10 +694,60 @@ class MineSykmeldteServiceTest : Spek({
 
                     mappedSoknad.shouldBeInstance<PreviewSendtSoknad>()
                     mappedSoknad.lest shouldBeEqualTo true
-                    mappedSoknad.korrigertBySoknadId shouldBeEqualTo "korrigert-av-id"
+                    mappedSoknad.korrigererSoknadId shouldBeEqualTo "korrigerer-id"
                     mappedSoknad.sendtDato shouldBeEqualTo LocalDateTime.parse("2020-06-07T19:34:50.63")
                 }
             }
+
+            it("Should get Korrigert soknad") {
+                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                val korrigertSoknad = createSykepengesoknadDto("soknad-id-korrigert", "sykmeldingId").copy(
+                    status = SoknadsstatusDTO.SENDT,
+                )
+                val korrigererSoknad = createSykepengesoknadDto("soknad-id-korrigerer", "sykmeldingId").copy(
+                    status = SoknadsstatusDTO.SENDT,
+                    korrigerer = "soknad-id-korrigert"
+                )
+                val sendtSoknad = createSykepengesoknadDto("soknad-id-sendt", "sykmeldingId").copy(
+                    status = SoknadsstatusDTO.SENDT,
+                )
+                val mineSykmeldteModel = MinSykmeldtDbModel(
+                    narmestelederId = UUID.randomUUID().toString(),
+                    sykmeldtFnr = "080806933221",
+                    orgnummer = "orgnummer",
+                    sykmeldtNavn = "Navn",
+                    startDatoSykefravar = LocalDate.now(),
+                    orgNavn = "orgnavn",
+                    sykmeldingId = "sykmeldingId",
+                    sykmelding = createArbeidsgiverSykmelding("sykmeldingId"),
+                    soknad = korrigertSoknad,
+                    lestSykmelding = false,
+                    lestSoknad = true,
+                )
+
+                every { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
+                    mineSykmeldteModel,
+                    mineSykmeldteModel.copy(soknad = korrigererSoknad),
+                    mineSykmeldteModel.copy(soknad = sendtSoknad)
+                )
+
+                val mineSykmeldte = runBlocking { mineSykmeldtService.getMineSykmeldte("1") }
+                mineSykmeldte.size shouldBeEqualTo 1
+                val korrigert = mineSykmeldte.first().previewSoknader.mapNotNull { it as? PreviewKorrigertSoknad }
+                korrigert.size shouldBeEqualTo 1
+                korrigert.first().id shouldBeEqualTo "soknad-id-korrigert"
+                korrigert.first().status shouldBeEqualTo SoknadStatus.KORRIGERT
+                val sendte = mineSykmeldte.first().previewSoknader.mapNotNull { it as? PreviewSendtSoknad }
+                sendte.size shouldBeEqualTo 2
+                val korrigerer = sendte.first { it.id == "soknad-id-korrigerer" }
+                korrigerer.korrigererSoknadId shouldBeEqualTo "soknad-id-korrigert"
+                korrigerer.status shouldBeEqualTo SoknadStatus.SENDT
+
+                val sendt = sendte.first { it.id == "soknad-id-sendt" }
+                sendt.status shouldBeEqualTo SoknadStatus.SENDT
+                sendt.korrigererSoknadId shouldBeEqualTo null
+            }
+
 
             it("should map to a fremtidig søknad") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()

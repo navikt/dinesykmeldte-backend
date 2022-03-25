@@ -20,7 +20,7 @@ enum class SoknadStatus {
 }
 
 data class PreviewSendtSoknad(
-    val korrigertBySoknadId: String?,
+    val korrigererSoknadId: String?,
     val lest: Boolean,
     val sendtDato: LocalDateTime,
     override val id: String,
@@ -55,8 +55,8 @@ data class PreviewFremtidigSoknad(
 }
 
 data class PreviewKorrigertSoknad(
-    val korrigertBySoknadId: String?,
-    val korrigererSoknadId: String,
+    val korrigertBySoknadId: String,
+    val korrigererSoknadId: String?,
     override val id: String,
     override val sykmeldingId: String?,
     override val fom: LocalDate?,

@@ -3,6 +3,7 @@ package no.nav.syfo.minesykmeldte
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
+import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.log
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSoknad
@@ -40,7 +41,6 @@ import no.nav.syfo.util.toFormattedNameString
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.UUID
-import kotlin.IllegalStateException
 
 class MineSykmeldteService(
     private val mineSykmeldteDb: MineSykmeldteDb,
@@ -53,7 +53,7 @@ class MineSykmeldteService(
         val hendelserMap = hendelserJob.await().groupBy { it.pasientFnr }
             .mapValues { it.value.map { hendelse -> hendelse.toHendelse() } }
 
-        val sykmeldteMap = sykmeldteMapJob.await()
+        val sykmeldteMap = sykmeldteMapJob.await().mapValues(::mapValues)
 
         return@withContext sykmeldteMap.map { sykmeldtEntry ->
             PreviewSykmeldt(
@@ -63,23 +63,76 @@ class MineSykmeldteService(
                 navn = sykmeldtEntry.key.navn,
                 startdatoSykefravar = sykmeldtEntry.key.startDatoSykefravaer,
                 friskmeldt = isFriskmeldt(sykmeldtEntry),
-                previewSykmeldinger = sykmeldtEntry.value.distinctBy { it.sykmeldingId }.map { sykmeldtDbModel ->
-                    toPreviewSykmelding(sykmeldtDbModel)
-                },
-                previewSoknader = sykmeldtEntry.value.mapNotNull { sykmeldt -> mapNullableSoknad(sykmeldt, hendelserMap[sykmeldtEntry.key.fnr]?.filter { it.id == sykmeldt.soknad?.id }.orEmpty()) },
-                dialogmoter = hendelserMap[sykmeldtEntry.key.fnr]
-                    ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
-                    ?.map {
-                        Dialogmote(
-                            id = it.id,
-                            hendelseId = it.hendelseId,
-                            tekst = it.tekst ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}")
-                        )
-                    }
-                    ?: emptyList(),
+                previewSykmeldinger = getSykmeldinger(sykmeldtEntry),
+                previewSoknader = getPreviewSoknader(sykmeldtEntry, hendelserMap),
+                dialogmoter = getDialogmoter(hendelserMap, sykmeldtEntry),
             )
         }
     }
+
+    private fun mapValues(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>): List<MinSykmeldtDbModel> {
+        val korrigerteSoknadMap = it.value
+            .mapNotNull { it.soknad }
+            .mapNotNull { soknad -> soknad.korrigerer?.let { it to soknad.id } }
+            .toMap()
+
+        return it.value.map {
+            mapToCorrectStatus(it, korrigerteSoknadMap)
+        }
+    }
+
+    private fun mapToCorrectStatus(
+        it: MinSykmeldtDbModel,
+        korrigerteSoknadMap: Map<String, String>
+    ): MinSykmeldtDbModel {
+        return when {
+            it.soknad != null && korrigerteSoknadMap.containsKey(it.soknad.id) -> {
+                it.copy(
+                    soknad = it.soknad.copy(
+                        status = SoknadsstatusDTO.KORRIGERT,
+                        korrigertAv = korrigerteSoknadMap[it.soknad.id]
+                    )
+                )
+            }
+            else -> it
+        }
+    }
+
+    private fun getSykmeldinger(sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>) =
+        sykmeldtEntry.value.distinctBy { it.sykmeldingId }.map { sykmeldtDbModel ->
+            toPreviewSykmelding(sykmeldtDbModel)
+        }
+
+    private fun getDialogmoter(
+        hendelserMap: Map<String, List<Hendelse>>,
+        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
+    ) = (
+        hendelserMap[sykmeldtEntry.key.fnr]
+            ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
+            ?.map {
+                Dialogmote(
+                    id = it.id,
+                    hendelseId = it.hendelseId,
+                    tekst = it.tekst ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}")
+                )
+            }
+            ?: emptyList()
+        )
+
+    private fun getPreviewSoknader(
+        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
+        hendelserMap: Map<String, List<Hendelse>>
+    ): List<PreviewSoknad> {
+        return sykmeldtEntry.value.mapNotNull { sykmeldt ->
+            mapNullableSoknad(sykmeldt, getHendlersforSoknad(hendelserMap, sykmeldtEntry, sykmeldt))
+        }
+    }
+
+    private fun getHendlersforSoknad(
+        hendelserMap: Map<String, List<Hendelse>>,
+        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
+        sykmeldt: MinSykmeldtDbModel
+    ) = hendelserMap[sykmeldtEntry.key.fnr]?.filter { it.id == sykmeldt.soknad?.id }.orEmpty()
 
     fun getSykmelding(sykmeldingId: String, lederFnr: String): Sykmelding? {
         return mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr)?.toSykmelding()
@@ -110,7 +163,10 @@ private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
     return ChronoUnit.DAYS.between(latestTom, LocalDate.now()) > 16
 }
 
-private fun mapNullableSoknad(sykmeldtDbModel: MinSykmeldtDbModel, hendelser: List<Hendelse>): PreviewSoknad? =
+private fun mapNullableSoknad(
+    sykmeldtDbModel: MinSykmeldtDbModel,
+    hendelser: List<Hendelse>
+): PreviewSoknad? =
     sykmeldtDbModel.soknad?.let {
         toPreviewSoknad(it, sykmeldtDbModel.lestSoknad, hendelser)
     }
