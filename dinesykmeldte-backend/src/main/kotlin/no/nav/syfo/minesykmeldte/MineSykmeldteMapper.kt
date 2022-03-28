@@ -29,14 +29,16 @@ class MineSykmeldteMapper private constructor() {
                 SoknadsstatusDTO.NY -> getNySoknad(soknad, lest, hendelser)
                 SoknadsstatusDTO.SENDT -> getSendtSoknad(soknad, lest)
                 SoknadsstatusDTO.FREMTIDIG -> getFremtidigSoknad(soknad)
-                SoknadsstatusDTO.KORRIGERT -> getKorrigertSoknad(soknad)
+                SoknadsstatusDTO.KORRIGERT -> getKorrigertSoknad(soknad, lest)
                 else -> throw IllegalArgumentException("Incorrect soknad status ${soknad.status}")
             }
 
-        private fun getKorrigertSoknad(soknad: SykepengesoknadDTO): PreviewKorrigertSoknad =
+        private fun getKorrigertSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewKorrigertSoknad =
             PreviewKorrigertSoknad(
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,
+                lest = lest,
+                sendtDato = soknad.sendtArbeidsgiver ?: throw IllegalStateException("sendtArbeidsgiver is null for soknad: ${soknad.id}"),
                 fom = soknad.fom,
                 tom = soknad.tom,
                 korrigererSoknadId = soknad.korrigerer,
