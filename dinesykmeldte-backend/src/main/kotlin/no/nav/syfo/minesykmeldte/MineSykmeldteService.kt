@@ -205,7 +205,7 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
 }
 
 private fun MinSykmeldtDbModel.toSykmelding(): Sykmelding {
-    val sykmelding = this.sykmelding;
+    val sykmelding = this.sykmelding
 
     return Sykmelding(
         id = sykmelding.id,
@@ -232,7 +232,6 @@ private fun MinSykmeldtDbModel.toSykmelding(): Sykmelding {
         navn = this.sykmeldtNavn,
     )
 }
-
 
 private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding {
     val (sykmeldt, sykmelding) = this

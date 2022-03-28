@@ -122,7 +122,7 @@ class MineSykmeldteServiceTest : Spek({
             runBlocking {
                 val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
-                val periode = mineSykmeldte.first().sykmeldinger.first().perioder.first();
+                val periode = mineSykmeldte.first().sykmeldinger.first().perioder.first()
                 periode.shouldBeInstance<AktivitetIkkeMulig>()
             }
         }
@@ -748,7 +748,6 @@ class MineSykmeldteServiceTest : Spek({
                 sendt.status shouldBeEqualTo SoknadStatus.SENDT
                 sendt.korrigererSoknadId shouldBeEqualTo null
             }
-
 
             it("should map to a fremtidig søknad") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()

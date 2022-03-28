@@ -6,9 +6,11 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.0"
-val jacksonVersion = "2.13.1"
+val jacksonVersion = "2.13.2"
+val jacksonPatchVersion = "2.13.2.1"
+val jacksonBomVersion = "2.13.2.20220324"
 val kluentVersion = "1.68"
-val ktorVersion = "1.6.7"
+val ktorVersion = "1.6.8"
 val logbackVersion = "1.2.10"
 val logstashEncoderVersion = "7.0.1"
 val prometheusVersion = "0.15.0"
@@ -81,16 +83,18 @@ subprojects {
         implementation("ch.qos.logback:logback-classic:$logbackVersion")
         implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
+        implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonPatchVersion")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
         implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
         implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+        implementation ("com.fasterxml.jackson:jackson-bom:$jacksonBomVersion")
 
         implementation("com.zaxxer:HikariCP:$hikariVersion")
         implementation("org.flywaydb:flyway-core:$flywayVersion")
         implementation("org.postgresql:postgresql:$postgresVersion")
         implementation("com.google.cloud.sql:postgres-socket-factory:1.4.3")
 
-        swaggerUI( "org.webjars:swagger-ui:$swaggerUiVersion")
+        swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
 
         testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
         testImplementation("org.amshove.kluent:kluent:$kluentVersion")
