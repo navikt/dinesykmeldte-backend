@@ -10,7 +10,7 @@ data class PreviewSykmeldt(
     val navn: String,
     val startdatoSykefravar: LocalDate,
     val friskmeldt: Boolean,
-    val previewSykmeldinger: List<PreviewSykmelding>,
+    val sykmeldinger: List<Sykmelding>,
     val previewSoknader: List<PreviewSoknad>,
     val dialogmoter: List<Dialogmote>,
 )
@@ -19,12 +19,4 @@ data class Dialogmote(
     val id: String,
     val hendelseId: UUID,
     var tekst: String,
-)
-
-data class PreviewSykmelding(
-    val id: String,
-    val fom: LocalDate,
-    val tom: LocalDate,
-    val type: String,
-    val lest: Boolean
 )
