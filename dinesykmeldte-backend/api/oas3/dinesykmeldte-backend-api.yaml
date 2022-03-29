@@ -387,8 +387,6 @@ components:
           format: date
         ikkeSendtSoknadVarsel:
           type: boolean
-        korrigertBySoknadId:
-          type: string
         korrigererSoknadId:
           type: string
     Soknad:
