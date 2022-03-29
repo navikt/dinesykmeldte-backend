@@ -3,7 +3,6 @@ package no.nav.syfo.minesykmeldte
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
-import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.log
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSoknad
@@ -52,7 +51,7 @@ class MineSykmeldteService(
         val hendelserMap = hendelserJob.await().groupBy { it.pasientFnr }
             .mapValues { it.value.map { hendelse -> hendelse.toHendelse() } }
 
-        val sykmeldteMap = sykmeldteMapJob.await().mapValues(::mapValues)
+        val sykmeldteMap = sykmeldteMapJob.await()
 
         return@withContext sykmeldteMap.map { sykmeldtEntry ->
             PreviewSykmeldt(
@@ -66,34 +65,6 @@ class MineSykmeldteService(
                 dialogmoter = getDialogmoter(hendelserMap, sykmeldtEntry),
                 sykmeldinger = getSykmeldinger(sykmeldtEntry),
             )
-        }
-    }
-
-    private fun mapValues(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>): List<MinSykmeldtDbModel> {
-        val korrigerteSoknadMap = it.value
-            .mapNotNull { it.soknad }
-            .mapNotNull { soknad -> soknad.korrigerer?.let { it to soknad.id } }
-            .toMap()
-
-        return it.value.map {
-            mapToCorrectStatus(it, korrigerteSoknadMap)
-        }
-    }
-
-    private fun mapToCorrectStatus(
-        it: MinSykmeldtDbModel,
-        korrigerteSoknadMap: Map<String, String>
-    ): MinSykmeldtDbModel {
-        return when {
-            it.soknad != null && korrigerteSoknadMap.containsKey(it.soknad.id) -> {
-                it.copy(
-                    soknad = it.soknad.copy(
-                        status = SoknadsstatusDTO.KORRIGERT,
-                        korrigertAv = korrigerteSoknadMap[it.soknad.id]
-                    )
-                )
-            }
-            else -> it
         }
     }
 
@@ -122,9 +93,15 @@ class MineSykmeldteService(
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
         hendelserMap: Map<String, List<Hendelse>>
     ): List<PreviewSoknad> {
-        return sykmeldtEntry.value.mapNotNull { sykmeldt ->
-            mapNullableSoknad(sykmeldt, getHendlersforSoknad(hendelserMap, sykmeldtEntry, sykmeldt))
-        }
+        val korrigerteSoknader = sykmeldtEntry.value
+            .mapNotNull { it.soknad }
+            .mapNotNull { it.korrigerer }
+
+        return sykmeldtEntry.value
+            .filter { it.soknad != null && !korrigerteSoknader.contains(it.soknad.id) }
+            .mapNotNull { sykmeldt ->
+                mapNullableSoknad(sykmeldt, getHendlersforSoknad(hendelserMap, sykmeldtEntry, sykmeldt))
+            }
     }
 
     private fun getHendlersforSoknad(

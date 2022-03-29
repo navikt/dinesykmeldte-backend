@@ -25,7 +25,6 @@ import no.nav.syfo.minesykmeldte.model.Gradert
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PeriodeEnum
 import no.nav.syfo.minesykmeldte.model.PreviewFremtidigSoknad
-import no.nav.syfo.minesykmeldte.model.PreviewKorrigertSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSendtSoknad
 import no.nav.syfo.minesykmeldte.model.Reisetilskudd
@@ -700,7 +699,7 @@ class MineSykmeldteServiceTest : Spek({
                 }
             }
 
-            it("Should get Korrigert soknad") {
+            it("Should not get Korrigert soknad") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val korrigertSoknad = createSykepengesoknadDto("soknad-id-korrigert", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.SENDT,
@@ -734,11 +733,11 @@ class MineSykmeldteServiceTest : Spek({
 
                 val mineSykmeldte = runBlocking { mineSykmeldtService.getMineSykmeldte("1") }
                 mineSykmeldte.size shouldBeEqualTo 1
-                val korrigert = mineSykmeldte.first().previewSoknader.mapNotNull { it as? PreviewKorrigertSoknad }
-                korrigert.size shouldBeEqualTo 1
-                korrigert.first().id shouldBeEqualTo "soknad-id-korrigert"
-                korrigert.first().status shouldBeEqualTo SoknadStatus.KORRIGERT
-                val sendte = mineSykmeldte.first().previewSoknader.mapNotNull { it as? PreviewSendtSoknad }
+
+                val soknader = mineSykmeldte.first().previewSoknader
+                soknader.size shouldBeEqualTo 2
+
+                val sendte = soknader.mapNotNull { it as? PreviewSendtSoknad }
                 sendte.size shouldBeEqualTo 2
                 val korrigerer = sendte.first { it.id == "soknad-id-korrigerer" }
                 korrigerer.korrigererSoknadId shouldBeEqualTo "soknad-id-korrigert"
@@ -775,39 +774,6 @@ class MineSykmeldteServiceTest : Spek({
                     val mappedSoknad = mineSykeldte[0].previewSoknader[0]
 
                     mappedSoknad.shouldBeInstance<PreviewFremtidigSoknad>()
-                }
-            }
-
-            it("should map to a korrigert søknad") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
-                    status = SoknadsstatusDTO.KORRIGERT,
-                    korrigerer = "korrigerer",
-                    korrigertAv = "korrigert-av"
-                )
-
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
-                    MinSykmeldtDbModel(
-                        narmestelederId = UUID.randomUUID().toString(),
-                        sykmeldtFnr = "080806933221",
-                        orgnummer = "orgnummer",
-                        sykmeldtNavn = "Navn",
-                        startDatoSykefravar = LocalDate.now(),
-                        orgNavn = "orgnavn",
-                        sykmeldingId = "sykmeldingId",
-                        sykmelding = createArbeidsgiverSykmelding("sykmeldingId"),
-                        soknad = soknad,
-                        lestSykmelding = false,
-                        lestSoknad = true,
-                    )
-                )
-                runBlocking {
-                    val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
-                    val mappedSoknad = mineSykeldte[0].previewSoknader[0]
-
-                    mappedSoknad.shouldBeInstance<PreviewKorrigertSoknad>()
-                    mappedSoknad.korrigertBySoknadId shouldBeEqualTo "korrigert-av"
-                    mappedSoknad.korrigererSoknadId shouldBeEqualTo "korrigerer"
                 }
             }
         }

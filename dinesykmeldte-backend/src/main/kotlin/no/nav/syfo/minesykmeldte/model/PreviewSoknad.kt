@@ -15,8 +15,7 @@ sealed interface PreviewSoknad {
 enum class SoknadStatus {
     FREMTIDIG,
     NY,
-    SENDT,
-    KORRIGERT
+    SENDT
 }
 
 data class PreviewSendtSoknad(
@@ -52,18 +51,4 @@ data class PreviewFremtidigSoknad(
     override val perioder: List<Soknadsperiode>,
 ) : PreviewSoknad {
     override val status = SoknadStatus.FREMTIDIG
-}
-
-data class PreviewKorrigertSoknad(
-    val korrigertBySoknadId: String,
-    val korrigererSoknadId: String?,
-    val lest: Boolean,
-    val sendtDato: LocalDateTime,
-    override val id: String,
-    override val sykmeldingId: String?,
-    override val fom: LocalDate?,
-    override val tom: LocalDate?,
-    override val perioder: List<Soknadsperiode>,
-) : PreviewSoknad {
-    override val status = SoknadStatus.KORRIGERT
 }

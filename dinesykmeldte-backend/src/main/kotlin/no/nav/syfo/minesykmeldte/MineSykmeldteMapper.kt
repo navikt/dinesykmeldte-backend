@@ -8,7 +8,6 @@ import no.nav.syfo.minesykmeldte.model.Hendelse
 import no.nav.syfo.minesykmeldte.model.HendelseType
 import no.nav.syfo.minesykmeldte.model.PeriodeEnum
 import no.nav.syfo.minesykmeldte.model.PreviewFremtidigSoknad
-import no.nav.syfo.minesykmeldte.model.PreviewKorrigertSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSendtSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSoknad
@@ -29,23 +28,8 @@ class MineSykmeldteMapper private constructor() {
                 SoknadsstatusDTO.NY -> getNySoknad(soknad, lest, hendelser)
                 SoknadsstatusDTO.SENDT -> getSendtSoknad(soknad, lest)
                 SoknadsstatusDTO.FREMTIDIG -> getFremtidigSoknad(soknad)
-                SoknadsstatusDTO.KORRIGERT -> getKorrigertSoknad(soknad, lest)
                 else -> throw IllegalArgumentException("Incorrect soknad status ${soknad.status}")
             }
-
-        private fun getKorrigertSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewKorrigertSoknad =
-            PreviewKorrigertSoknad(
-                id = soknad.id,
-                sykmeldingId = soknad.sykmeldingId,
-                lest = lest,
-                sendtDato = soknad.sendtArbeidsgiver ?: throw IllegalStateException("sendtArbeidsgiver is null for soknad: ${soknad.id}"),
-                fom = soknad.fom,
-                tom = soknad.tom,
-                korrigererSoknadId = soknad.korrigerer,
-                korrigertBySoknadId = soknad.korrigertAv ?: throw IllegalStateException("korrigertAv must not be null in korrigert soknad: ${soknad.id}"),
-                perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
-                    ?: throw IllegalStateException("søknadsperioder must not be null in korrigert soknad: ${soknad.id}"),
-            )
 
         private fun getSendtSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewSendtSoknad =
             PreviewSendtSoknad(
