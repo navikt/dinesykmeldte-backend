@@ -1,5 +1,6 @@
 package no.nav.syfo.narmesteleder
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.mockk
 import io.mockk.verify
@@ -8,24 +9,22 @@ import no.nav.syfo.narmesteleder.kafka.NLResponseProducer
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.insertOrUpdate
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.util.UUID
 
-class NarmestelederServiceTest : Spek({
+class NarmestelederServiceTest : FunSpec({
     val database = NarmestelederDb(TestDb.database)
     val nlResponseProducer = mockk<NLResponseProducer>(relaxed = true)
     val narmestelederService = NarmestelederService(database, nlResponseProducer)
 
-    beforeEachTest {
+    beforeEach {
         TestDb.clearAllData()
         clearMocks(nlResponseProducer)
     }
 
-    describe("Deaktiver NL-kobling") {
-        it("Deaktiverer kobling hvis finnes aktiv NL-kobling i databasen og sletter fra databasen") {
+    context("Deaktiver NL-kobling") {
+        test("Deaktiverer kobling hvis finnes aktiv NL-kobling i databasen og sletter fra databasen") {
             val id = UUID.randomUUID()
-            database.insertOrUpdate(
+            TestDb.database.insertOrUpdate(
                 id = id.toString(),
                 orgnummer = "88888888",
                 fnr = "12345678910",
@@ -42,9 +41,9 @@ class NarmestelederServiceTest : Spek({
             }
             TestDb.getNarmesteleder(pasientFnr = "12345678910").size shouldBeEqualTo 0
         }
-        it("Deaktiverer ikke kobling hvis NL-kobling i databasen gjelder annen ansatt") {
+        test("Deaktiverer ikke kobling hvis NL-kobling i databasen gjelder annen ansatt") {
             val id = UUID.randomUUID()
-            database.insertOrUpdate(
+            TestDb.database.insertOrUpdate(
                 id = id.toString(),
                 orgnummer = "88888888",
                 fnr = "12345678910",

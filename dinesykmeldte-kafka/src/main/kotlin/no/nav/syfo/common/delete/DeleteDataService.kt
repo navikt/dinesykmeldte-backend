@@ -33,7 +33,7 @@ class DeleteDataService(
                     val result = database.deleteOldData(getDateForDeletion())
                     log.info("Deleted ${result.deletedSykmelding} sykmeldinger, ${result.deletedSykmeldt} sykmeldte, ${result.deletedSoknader} soknader and ${result.deletedHendelser} hendelser")
                 } catch (ex: Exception) {
-                    log.info("Could not delete data", ex)
+                    log.error("Could not delete data", ex)
                 }
                 delay(DELAY_HOURS.hours)
             }

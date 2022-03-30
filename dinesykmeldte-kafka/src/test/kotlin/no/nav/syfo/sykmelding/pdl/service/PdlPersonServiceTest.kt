@@ -1,5 +1,6 @@
 package no.nav.syfo.sykmelding.pdl.service
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.delay
@@ -11,13 +12,11 @@ import no.nav.syfo.sykmelding.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.sykmelding.pdl.model.formatName
 import no.nav.syfo.util.HttpClientTest
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.io.File
 import java.util.UUID
 import kotlin.test.assertFailsWith
 
-class PdlPersonServiceTest : Spek({
+class PdlPersonServiceTest : FunSpec({
     val sykmeldingId = UUID.randomUUID().toString()
     val fnr = "12345678910"
     val accessTokenClient = mockk<AccessTokenClient>()
@@ -27,12 +26,12 @@ class PdlPersonServiceTest : Spek({
     val pdlClient = PdlClient(httpClient.httpClient, "graphqlend", graphQlQuery)
     val pdlPersonService = PdlPersonService(pdlClient, accessTokenClient, "scope")
 
-    beforeEachTest {
+    beforeEach {
         coEvery { accessTokenClient.getAccessToken(any()) } returns "token"
     }
 
-    describe("PdlPersonService") {
-        it("Handle error") {
+    context("PdlPersonService") {
+        test("Handle error") {
             runBlocking {
                 httpClient.respond {
                     delay(10_000)
@@ -43,7 +42,7 @@ class PdlPersonServiceTest : Spek({
                 }
             }
         }
-        it("Henter navn og aktørid for person som finnes i PDL") {
+        test("Henter navn og aktørid for person som finnes i PDL") {
             httpClient.respond(getTestData())
             runBlocking {
                 val person = pdlPersonService.getPerson(fnr, sykmeldingId)
@@ -53,7 +52,7 @@ class PdlPersonServiceTest : Spek({
             }
         }
 
-        it("Feiler hvis navn mangler i PDL") {
+        test("Feiler hvis navn mangler i PDL") {
             httpClient.respond(getTestDataUtenNavn())
             assertFailsWith<NameNotFoundInPdlException> {
                 runBlocking {
@@ -61,7 +60,7 @@ class PdlPersonServiceTest : Spek({
                 }
             }
         }
-        it("Feiler hvis aktørid mangler i PDL") {
+        test("Feiler hvis aktørid mangler i PDL") {
             httpClient.respond(getTestDataUtenAktorId())
             assertFailsWith<RuntimeException> {
                 runBlocking {
@@ -70,7 +69,7 @@ class PdlPersonServiceTest : Spek({
             }
         }
 
-        it("Feiler hvis PDL returnerer feilmelding") {
+        test("Feiler hvis PDL returnerer feilmelding") {
             httpClient.respond(getErrorResponse())
             assertFailsWith<NameNotFoundInPdlException> {
                 runBlocking {

@@ -7,18 +7,27 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.put
 import no.nav.syfo.application.BrukerPrincipal
+import no.nav.syfo.log
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.HttpErrorMessage
 import no.nav.syfo.minesykmeldte.model.HttpMessage
 import no.nav.syfo.util.getBrukerPrincipal
 import no.nav.syfo.util.getParam
 import java.util.UUID
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTimedValue
 
+@OptIn(ExperimentalTime::class)
 fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
     get("api/minesykmeldte") {
         val principal: BrukerPrincipal = call.getBrukerPrincipal()
         val lederFnr = principal.fnr
-        call.respond(mineSykmeldteService.getMineSykmeldte(lederFnr))
+        val timedValue = measureTimedValue {
+            mineSykmeldteService.getMineSykmeldte(lederFnr)
+        }
+        log.info("Getting ${timedValue.value.size} sykmeldte, duration: ${timedValue.duration.inWholeMicroseconds}")
+
+        call.respond(timedValue.value)
     }
 
     get("api/sykmelding/{sykmeldingId}") {

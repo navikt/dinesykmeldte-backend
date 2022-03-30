@@ -190,8 +190,7 @@ private fun MinSykmeldtDbModel.toSykmelding(): Sykmelding {
         fnr = this.sykmeldtFnr,
         lest = this.lestSykmelding,
         arbeidsgiver = Arbeidsgiver(
-            navn = this.orgNavn,
-            orgnummer = this.orgnummer,
+            navn = this.sykmelding.arbeidsgiver.navn,
         ),
         perioder = sykmelding.sykmeldingsperioder.map { it.toSykmeldingPeriode() },
         arbeidsforEtterPeriode = sykmelding.prognose?.arbeidsforEtterPeriode,
@@ -219,8 +218,7 @@ private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding 
         fnr = sykmelding.pasientFnr,
         lest = sykmelding.lest,
         arbeidsgiver = Arbeidsgiver(
-            navn = sykmelding.orgnavn,
-            orgnummer = sykmelding.orgnummer,
+            navn = sykmelding.sykmelding.arbeidsgiver.navn,
         ),
         perioder = sykmelding.sykmelding.sykmeldingsperioder.map { it.toSykmeldingPeriode() },
         arbeidsforEtterPeriode = sykmelding.sykmelding.prognose?.arbeidsforEtterPeriode,

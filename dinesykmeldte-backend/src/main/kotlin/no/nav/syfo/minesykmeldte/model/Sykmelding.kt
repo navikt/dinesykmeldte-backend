@@ -20,7 +20,6 @@ data class Sykmelding(
 
 data class Arbeidsgiver(
     val navn: String?,
-    val orgnummer: String,
 )
 
 data class Behandler(

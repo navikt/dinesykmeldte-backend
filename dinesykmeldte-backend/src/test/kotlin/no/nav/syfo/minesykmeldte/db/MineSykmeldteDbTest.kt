@@ -1,9 +1,9 @@
 package no.nav.syfo.minesykmeldte.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.core.spec.style.FunSpec
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.hendelser.db.HendelseDbModel
-import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.toSoknadDbModel
@@ -19,28 +19,25 @@ import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
 
-class MineSykmeldteDbTest : Spek({
-    val narmestelederDb = NarmestelederDb(TestDb.database)
+class MineSykmeldteDbTest : FunSpec({
     val minesykmeldteDb = MineSykmeldteDb(TestDb.database)
 
-    afterEachTest {
+    afterEach {
         TestDb.clearAllData()
     }
 
-    describe("Test getting sykmeldte from database") {
-        it("Should not get any") {
+    context("Test getting sykmeldte from database") {
+        test("Should not get any") {
             val sykmeldte = minesykmeldteDb.getMineSykmeldte("1")
             sykmeldte.size shouldBeEqualTo 0
         }
-        it("Should get sykmeldte without soknad") {
-            narmestelederDb.insertOrUpdate(
+        test("Should get sykmeldte without soknad") {
+            TestDb.database.insertOrUpdate(
                 id = UUID.randomUUID().toString(),
                 orgnummer = "orgnummer",
                 fnr = "12345678910",
@@ -58,8 +55,8 @@ class MineSykmeldteDbTest : Spek({
             sykmeldtDbModel[0].sykmelding shouldNotBeEqualTo null
             sykmeldtDbModel[0].soknad shouldBeEqualTo null
         }
-        it("should get sykmeldt with soknad") {
-            narmestelederDb.insertOrUpdate(
+        test("should get sykmeldt with soknad") {
+            TestDb.database.insertOrUpdate(
                 id = UUID.randomUUID().toString(),
                 orgnummer = "orgnummer",
                 fnr = "12345678910",
@@ -76,8 +73,8 @@ class MineSykmeldteDbTest : Spek({
             sykmeldtDbModel[0].soknad shouldNotBeEqualTo null
         }
 
-        it("Should get sykmeldt with 5 sykmelding and 4 soknad") {
-            narmestelederDb.insertOrUpdate(
+        test("Should get sykmeldt with 5 sykmelding and 4 soknad") {
+            TestDb.database.insertOrUpdate(
                 id = UUID.randomUUID().toString(),
                 orgnummer = "orgnummer",
                 fnr = "12345678910",
@@ -98,8 +95,8 @@ class MineSykmeldteDbTest : Spek({
 
             sykmeldtDbModel.filter { it.soknad == null }.size shouldBeEqualTo 1
         }
-        it("Should get sykmelding") {
-            narmestelederDb.insertOrUpdate(
+        test("Should get sykmelding") {
+            TestDb.database.insertOrUpdate(
                 id = UUID.randomUUID().toString(),
                 orgnummer = "orgnummer",
                 fnr = "12345678910",
@@ -115,11 +112,11 @@ class MineSykmeldteDbTest : Spek({
         }
     }
 
-    describe("Marking sykmeldinger as read") {
-        it("should mark as read when sykmelding belongs to leders ansatt") {
+    context("Marking sykmeldinger as read") {
+        test("should mark as read when sykmelding belongs to leders ansatt") {
             val sykmeldt = createSykmeldtDbModel(pasientFnr = "pasient-1")
             val sykmelding = createSykmeldingDbModel("sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
-            narmestelederDb.insertOrUpdate(
+            TestDb.database.insertOrUpdate(
                 id = UUID.randomUUID().toString(),
                 fnr = "pasient-1",
                 orgnummer = "kul-org",
@@ -134,10 +131,10 @@ class MineSykmeldteDbTest : Spek({
             oppdatertSykmelding?.lest shouldBeEqualTo true
         }
 
-        it("should not mark as read when sykmelding does not belong to leders ansatt") {
+        test("should not mark as read when sykmelding does not belong to leders ansatt") {
             val sykmeldt = createSykmeldtDbModel(pasientFnr = "pasient-1")
             val sykmelding = createSykmeldingDbModel("sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
-            narmestelederDb.insertOrUpdate(
+            TestDb.database.insertOrUpdate(
                 UUID.randomUUID().toString(),
                 fnr = "pasient-2",
                 orgnummer = "kul-org",
@@ -150,8 +147,8 @@ class MineSykmeldteDbTest : Spek({
         }
     }
 
-    describe("Marking søknader as read") {
-        it("should mark as read when søknad belongs to leders ansatt") {
+    context("Marking søknader as read") {
+        test("should mark as read when søknad belongs to leders ansatt") {
             val sykmeldt = createSykmeldtDbModel(pasientFnr = "pasient-1")
             val sykmelding = createSykmeldingDbModel("sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
             val soknad = createSoknadDbModel(
@@ -160,7 +157,7 @@ class MineSykmeldteDbTest : Spek({
                 pasientFnr = "pasient-1",
                 orgnummer = "kul-org"
             )
-            narmestelederDb.insertOrUpdate(
+            TestDb.database.insertOrUpdate(
                 UUID.randomUUID().toString(),
                 fnr = "pasient-1",
                 orgnummer = "kul-org",
@@ -175,7 +172,7 @@ class MineSykmeldteDbTest : Spek({
             oppdatertSoknad?.lest shouldBeEqualTo true
         }
 
-        it("should not mark as read when søknad does not belong to leders ansatt") {
+        test("should not mark as read when søknad does not belong to leders ansatt") {
             val sykmeldt = createSykmeldtDbModel(pasientFnr = "pasient-1")
             val sykmelding = createSykmeldingDbModel("sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
             val soknad = createSoknadDbModel(
@@ -184,7 +181,7 @@ class MineSykmeldteDbTest : Spek({
                 pasientFnr = "pasient-1",
                 orgnummer = "kul-org"
             )
-            narmestelederDb.insertOrUpdate(
+            TestDb.database.insertOrUpdate(
                 UUID.randomUUID().toString(),
                 fnr = "pasient-2",
                 orgnummer = "kul-org",
@@ -198,11 +195,11 @@ class MineSykmeldteDbTest : Spek({
         }
     }
 
-    describe("Markere hendelser som lest") {
-        it("Skal markere hendelsen som lest hvis den tilhører lederens ansatt") {
+    context("Markere hendelser som lest") {
+        test("Skal markere hendelsen som lest hvis den tilhører lederens ansatt") {
             val sykmeldt = createSykmeldtDbModel(pasientFnr = "pasient-1")
             val sykmelding = createSykmeldingDbModel("sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
-            narmestelederDb.insertOrUpdate(
+            TestDb.database.insertOrUpdate(
                 UUID.randomUUID().toString(),
                 fnr = "pasient-1",
                 orgnummer = "kul-org",
@@ -230,10 +227,10 @@ class MineSykmeldteDbTest : Spek({
             hendelseErFerdigstilt shouldBeEqualTo true
         }
 
-        it("Skal ikke markere hendelsen som lest hvis den ikke tilhører lederens ansatt") {
+        test("Skal ikke markere hendelsen som lest hvis den ikke tilhører lederens ansatt") {
             val sykmeldt = createSykmeldtDbModel(pasientFnr = "pasient-1")
             val sykmelding = createSykmeldingDbModel("sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
-            narmestelederDb.insertOrUpdate(
+            TestDb.database.insertOrUpdate(
                 UUID.randomUUID().toString(),
                 fnr = "pasient-2",
                 orgnummer = "kul-org",

@@ -1,25 +1,24 @@
 package no.nav.syfo.narmesteleder
 
+import io.kotest.core.spec.style.FunSpec
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
 import no.nav.syfo.util.TestDb
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
-class NarmestelederServiceTest : Spek({
+class NarmestelederServiceTest : FunSpec({
     val database = NarmestelederDb(TestDb.database)
     val narmestelederService = NarmestelederService(database)
 
-    beforeEachTest {
+    beforeEach {
         TestDb.clearAllData()
     }
 
-    describe("NarmestelederService") {
-        it("Legger inn ny NL-kobling") {
+    context("NarmestelederService") {
+        test("Legger inn ny NL-kobling") {
             val id = UUID.randomUUID()
             narmestelederService.updateNl(createNarmestelederLeesahKafkaMessage(id))
 
@@ -30,7 +29,7 @@ class NarmestelederServiceTest : Spek({
             nlKobling.orgnummer shouldBeEqualTo "88888888"
             nlKobling.narmestelederId shouldBeEqualTo id.toString()
         }
-        it("Sletter deaktivert NL-kobling") {
+        test("Sletter deaktivert NL-kobling") {
             val id = UUID.randomUUID()
             narmestelederService.updateNl(createNarmestelederLeesahKafkaMessage(id))
             narmestelederService.updateNl(createNarmestelederLeesahKafkaMessage(id, aktivTom = LocalDate.now()))
