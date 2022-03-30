@@ -1,5 +1,6 @@
 package no.nav.syfo.virksomhet.api
 
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
@@ -11,22 +12,20 @@ import no.nav.syfo.util.minifyApiResponse
 import no.nav.syfo.util.withKtor
 import no.nav.syfo.virksomhet.model.Virksomhet
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-object VirksomhetApiKtTest : Spek({
+object VirksomhetApiKtTest : FunSpec({
     val virksomhetService = mockk<VirksomhetService>()
     val env = mockk<Environment>()
 
-    beforeEachTest {
+    beforeEach {
         every { env.dineSykmeldteBackendTokenXClientId } returns "dummy-client-id"
     }
 
     withKtor(env, {
         registerVirksomhetApi(virksomhetService)
     }) {
-        describe("Virksomhet API") {
-            it("should return empty list") {
+        context("Virksomhet API") {
+            test("should return empty list") {
                 every { virksomhetService.getVirksomheter("08086912345") } returns emptyList()
 
                 with(
@@ -37,7 +36,7 @@ object VirksomhetApiKtTest : Spek({
                 }
             }
 
-            it("should return list of virksomheter when found") {
+            test("should return list of virksomheter when found") {
                 every { virksomhetService.getVirksomheter("08086912345") } returns listOf(
                     Virksomhet(navn = "Test virksomhet 1", orgnummer = "test-virksomhet-1"),
                     Virksomhet(navn = "Test virksomhet 2", orgnummer = "test-virksomhet-2"),

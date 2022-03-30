@@ -1,6 +1,7 @@
 package no.nav.syfo.minesykmeldte
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -51,8 +52,6 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldHaveSize
 import org.amshove.kluent.shouldNotBe
 import org.amshove.kluent.shouldNotBeNull
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -63,17 +62,17 @@ import java.util.UUID
 import kotlin.contracts.ExperimentalContracts
 
 @ExperimentalContracts
-class MineSykmeldteServiceTest : Spek({
+class MineSykmeldteServiceTest : FunSpec({
     val mineSykmeldteDb = mockk<MineSykmeldteDb>(relaxed = true)
     val mineSykmeldtService = MineSykmeldteService(mineSykmeldteDb)
 
-    afterEachTest {
+    afterEach {
         clearMocks(mineSykmeldteDb)
     }
 
-    describe("getMineSykmeldte") {
+    context("getMineSykmeldte") {
 
-        it("Should get mine sykmeldte with hendelser") {
+        test("Should get mine sykmeldte with hendelser") {
             every { mineSykmeldteDb.getHendelser("1") } returns listOf(
                 HendelseDbModel(
                     id = "12",
@@ -107,7 +106,7 @@ class MineSykmeldteServiceTest : Spek({
             }
         }
 
-        it("Should get empty list") {
+        test("Should get empty list") {
             every { mineSykmeldteDb.getMineSykmeldte("1") } returns emptyList()
             every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
             runBlocking {
@@ -115,7 +114,7 @@ class MineSykmeldteServiceTest : Spek({
             }
         }
 
-        it("should get one sykmeldt") {
+        test("should get one sykmeldt") {
             every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(1, sykmeldtFnrPrefix = "prefix")
             every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
             runBlocking {
@@ -126,7 +125,7 @@ class MineSykmeldteServiceTest : Spek({
             }
         }
 
-        it("Should get one sykmeldt with one IKKE_SENDT_SOKNAD") {
+        test("Should get one sykmeldt with one IKKE_SENDT_SOKNAD") {
             val sykmeldtData = getSykmeldtData(1, sykmeldtFnrPrefix = "prefix", soknader = 1)
                 .map { it.copy(soknad = it.soknad!!.copy(status = SoknadsstatusDTO.NY)) }
 
@@ -155,7 +154,7 @@ class MineSykmeldteServiceTest : Spek({
             }
         }
 
-        it("should group sykmeldinger and søknader by sykmeldt") {
+        test("should group sykmeldinger and søknader by sykmeldt") {
             every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
             every { mineSykmeldteDb.getMineSykmeldte("1") } returns
                 getSykmeldtData(
@@ -184,8 +183,8 @@ class MineSykmeldteServiceTest : Spek({
             }
         }
 
-        describe("sykmeldt") {
-            it("should not be friskmeldt if the latest sykmeldt period is less than 16 days ago") {
+        context("sykmeldt") {
+            test("should not be friskmeldt if the latest sykmeldt period is less than 16 days ago") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
@@ -213,7 +212,7 @@ class MineSykmeldteServiceTest : Spek({
                 }
             }
 
-            it("should be friskmeldt if the latest sykmeldt period is more than 16 days ago") {
+            test("should be friskmeldt if the latest sykmeldt period is more than 16 days ago") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
@@ -243,8 +242,8 @@ class MineSykmeldteServiceTest : Spek({
             }
         }
 
-        describe("given different types") {
-            it("should get one sykmeldt with 50% type") {
+        context("given different types") {
+            test("should get one sykmeldt with 50% type") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
@@ -272,7 +271,7 @@ class MineSykmeldteServiceTest : Spek({
                 }
             }
 
-            it("should get one sykmeldt with 20% type") {
+            test("should get one sykmeldt with 20% type") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
@@ -300,7 +299,7 @@ class MineSykmeldteServiceTest : Spek({
                 }
             }
 
-            it("should get one sykmeldt with avventende") {
+            test("should get one sykmeldt with avventende") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
@@ -328,7 +327,7 @@ class MineSykmeldteServiceTest : Spek({
                 }
             }
 
-            it("should get one sykmeldt with behandlingsdager") {
+            test("should get one sykmeldt with behandlingsdager") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
@@ -356,7 +355,7 @@ class MineSykmeldteServiceTest : Spek({
                 }
             }
 
-            it("should get one sykmeldt with reisetilskudd") {
+            test("should get one sykmeldt with reisetilskudd") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
@@ -384,7 +383,7 @@ class MineSykmeldteServiceTest : Spek({
                 }
             }
 
-            it("should pick the correct period when one period is now") {
+            test("should pick the correct period when one period is now") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
@@ -427,7 +426,7 @@ class MineSykmeldteServiceTest : Spek({
                 }
             }
 
-            it("should pick the correct period when now is end of period") {
+            test("should pick the correct period when now is end of period") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
@@ -470,7 +469,7 @@ class MineSykmeldteServiceTest : Spek({
                 }
             }
 
-            it("should pick the correct period when now is start of period") {
+            test("should pick the correct period when now is start of period") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
@@ -513,7 +512,7 @@ class MineSykmeldteServiceTest : Spek({
                 }
             }
 
-            it("should pick latest period when there are periods in the past, but one in the future") {
+            test("should pick latest period when there are periods in the past, but one in the future") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
@@ -556,7 +555,7 @@ class MineSykmeldteServiceTest : Spek({
                 }
             }
 
-            it("should pick the nearest future period, if all in the future") {
+            test("should pick the nearest future period, if all in the future") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
@@ -600,8 +599,8 @@ class MineSykmeldteServiceTest : Spek({
             }
         }
 
-        describe("when mapping søknader") {
-            it("should map to a new søknad and use tom if date is latest") {
+        context("when mapping søknader") {
+            test("should map to a new søknad and use tom if date is latest") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.NY,
@@ -633,7 +632,7 @@ class MineSykmeldteServiceTest : Spek({
                 }
             }
 
-            it("should map to a new søknad and use opprettet if date is latest") {
+            test("should map to a new søknad and use opprettet if date is latest") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.NY,
@@ -665,7 +664,7 @@ class MineSykmeldteServiceTest : Spek({
                 }
             }
 
-            it("should map to a sendt søknad") {
+            test("should map to a sendt søknad") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.SENDT,
@@ -699,7 +698,7 @@ class MineSykmeldteServiceTest : Spek({
                 }
             }
 
-            it("Should not get Korrigert soknad") {
+            test("Should not get Korrigert soknad") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val korrigertSoknad = createSykepengesoknadDto("soknad-id-korrigert", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.SENDT,
@@ -748,7 +747,7 @@ class MineSykmeldteServiceTest : Spek({
                 sendt.korrigererSoknadId shouldBeEqualTo null
             }
 
-            it("should map to a fremtidig søknad") {
+            test("should map to a fremtidig søknad") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.FREMTIDIG,
@@ -779,8 +778,8 @@ class MineSykmeldteServiceTest : Spek({
         }
     }
 
-    describe("getSykmelding") {
-        it("should map to aktivitetIkkeMulig") {
+    context("getSykmelding") {
+        test("should map to aktivitetIkkeMulig") {
             val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
             every {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
@@ -814,7 +813,7 @@ class MineSykmeldteServiceTest : Spek({
             periode.arbeidsrelatertArsak?.beskrivelse shouldBeEqualTo "Trenger ståpult"
         }
 
-        it("should map to avventende") {
+        test("should map to avventende") {
             val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
             every {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
@@ -842,7 +841,7 @@ class MineSykmeldteServiceTest : Spek({
             periode.tilrettelegging shouldBeEqualTo "Vi venter litt"
         }
 
-        it("should map to behandlingsdager") {
+        test("should map to behandlingsdager") {
             val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
             every {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
@@ -869,7 +868,7 @@ class MineSykmeldteServiceTest : Spek({
             periode.type shouldBeEqualTo PeriodeEnum.BEHANDLINGSDAGER
         }
 
-        it("should map to gradert") {
+        test("should map to gradert") {
             val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
             every {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
@@ -900,7 +899,7 @@ class MineSykmeldteServiceTest : Spek({
             periode.reisetilskudd shouldBeEqualTo true
         }
 
-        it("should map to reisetilskudd") {
+        test("should map to reisetilskudd") {
             val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
             every {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
@@ -928,9 +927,9 @@ class MineSykmeldteServiceTest : Spek({
         }
     }
 
-    describe("getSoknad") {
+    context("getSoknad") {
 
-        it("should map correct") {
+        test("should map correct") {
             val soknad = getFileAsString("src/test/resources/testSoknad.json")
             val soknadDTO = objectMapper.readValue<SykepengesoknadDTO>(soknad)
             val soknadDbModel = soknadDTO.toSoknadDbModel()
@@ -948,7 +947,7 @@ class MineSykmeldteServiceTest : Spek({
             result shouldNotBe null
         }
 
-        it("should map to Soknad") {
+        test("should map to Soknad") {
             val soknadId = "e94a7c0f-3240-4a0c-8788-c4cc3ebcdac2"
             every {
                 mineSykmeldteDb.getSoknad(soknadId, "red-2")

@@ -1,5 +1,6 @@
 package no.nav.syfo.minesykmeldte.api
 
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
@@ -27,28 +28,26 @@ import no.nav.syfo.util.addAuthorizationHeader
 import no.nav.syfo.util.minifyApiResponse
 import no.nav.syfo.util.withKtor
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.util.UUID
 
-object MineSykmeldteApiKtTest : Spek({
+object MineSykmeldteApiKtTest : FunSpec({
     val mineSykmeldteService = mockk<MineSykmeldteService>()
     val env = mockk<Environment>()
 
-    beforeEachTest {
+    beforeEach {
         every { env.dineSykmeldteBackendTokenXClientId } returns "dummy-client-id"
     }
 
-    afterEachTest {
+    afterEach {
         clearMocks(mineSykmeldteService, env)
     }
 
     withKtor(env, {
         registerMineSykmeldteApi(mineSykmeldteService)
     }) {
-        describe("/api/mineSykmeldte") {
-            it("should get empty list") {
+        context("/api/mineSykmeldte") {
+            test("should get empty list") {
                 coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
                 with(
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") { addAuthorizationHeader() }
@@ -58,7 +57,7 @@ object MineSykmeldteApiKtTest : Spek({
                 }
             }
 
-            it("should get data in list") {
+            test("should get data in list") {
                 val startdato = LocalDate.now().minusDays(14)
                 coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns listOf(
                     PreviewSykmeldt(
@@ -92,7 +91,7 @@ object MineSykmeldteApiKtTest : Spek({
                 }
             }
 
-            it("should return 401 when missing a valid bearer token") {
+            test("should return 401 when missing a valid bearer token") {
                 coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
                 with(
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") {
@@ -106,7 +105,7 @@ object MineSykmeldteApiKtTest : Spek({
                 }
             }
 
-            it("should return 401 when providing the wrong audience") {
+            test("should return 401 when providing the wrong audience") {
                 coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
                 with(
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") {
@@ -117,7 +116,7 @@ object MineSykmeldteApiKtTest : Spek({
                 }
             }
 
-            it("should return 401 when providing the wrong issuer") {
+            test("should return 401 when providing the wrong issuer") {
                 coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
                 with(
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") {
@@ -128,7 +127,7 @@ object MineSykmeldteApiKtTest : Spek({
                 }
             }
 
-            it("should return 401 when jwt has the wrong access level") {
+            test("should return 401 when jwt has the wrong access level") {
                 coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
                 with(
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") {
@@ -141,8 +140,8 @@ object MineSykmeldteApiKtTest : Spek({
                 }
             }
 
-            describe("given a søknad") {
-                it("should map a ny søknad to correct object") {
+            context("given a søknad") {
+                test("should map a ny søknad to correct object") {
                     val hendelseId = UUID.randomUUID()
                     coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns listOf(
                         PreviewSykmeldt(
@@ -201,8 +200,8 @@ object MineSykmeldteApiKtTest : Spek({
             }
         }
 
-        describe("/api/sykmelding/{id}") {
-            it("should respond with 404 Not Found if not found in the database ") {
+        context("/api/sykmelding/{id}") {
+            test("should respond with 404 Not Found if not found in the database ") {
                 every {
                     mineSykmeldteService.getSykmelding(
                         "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
@@ -220,7 +219,7 @@ object MineSykmeldteApiKtTest : Spek({
                 verify(exactly = 1) { mineSykmeldteService.getSykmelding(any(), any()) }
             }
 
-            it("should respond with the correct content if found") {
+            test("should respond with the correct content if found") {
                 every {
                     mineSykmeldteService.getSykmelding(
                         "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
@@ -246,8 +245,7 @@ object MineSykmeldteApiKtTest : Spek({
                           "fnr": "fnr",
                           "lest": false,
                           "arbeidsgiver": {
-                            "navn": "Arbeid G. Iversen",
-                            "orgnummer": "981298129812"
+                            "navn": "Arbeid G. Iversen"
                           },
                           "perioder": [],
                           "arbeidsforEtterPeriode": false,
@@ -266,8 +264,8 @@ object MineSykmeldteApiKtTest : Spek({
             }
         }
 
-        describe("/api/soknad/{id}") {
-            it("should respond with 404 Not Found if not found in the database ") {
+        context("/api/soknad/{id}") {
+            test("should respond with 404 Not Found if not found in the database ") {
                 coEvery {
                     mineSykmeldteService.getSoknad(
                         "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
@@ -285,7 +283,7 @@ object MineSykmeldteApiKtTest : Spek({
                 coVerify(exactly = 1) { mineSykmeldteService.getSoknad(any(), any()) }
             }
 
-            it("should respond with the correct content if found") {
+            test("should respond with the correct content if found") {
                 val sporsmal = listOf(
                     Sporsmal(
                         id = "890342785232",
@@ -392,7 +390,6 @@ fun createSykmeldingTestData(
     lest: Boolean = false,
     arbeidsgiver: Arbeidsgiver = Arbeidsgiver(
         navn = "Arbeid G. Iversen",
-        orgnummer = "981298129812",
     ),
     perioder: List<Periode> = emptyList(),
     arbeidsforEtterPeriode: Boolean = false,

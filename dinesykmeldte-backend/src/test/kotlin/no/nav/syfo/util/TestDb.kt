@@ -10,7 +10,6 @@ import no.nav.syfo.application.database.toList
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.log
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
-import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
 import no.nav.syfo.narmesteleder.db.toNarmestelederDbModel
 import no.nav.syfo.objectMapper
@@ -189,8 +188,8 @@ class TestDb private constructor() {
     }
 }
 
-fun NarmestelederDb.insertOrUpdate(id: String, orgnummer: String, fnr: String, narmesteLederFnr: String) {
-    database.connection.use { connection ->
+fun DatabaseInterface.insertOrUpdate(id: String, orgnummer: String, fnr: String, narmesteLederFnr: String) {
+    this.connection.use { connection ->
         connection.prepareStatement(
             """
                insert into narmesteleder(narmeste_leder_id, orgnummer, pasient_fnr, leder_fnr) 
@@ -212,7 +211,7 @@ fun Any.toPGObject() = PGobject().also {
 }
 
 fun DatabaseInterface.insertHendelse(hendelseDbModel: HendelseDbModel) {
-    database.connection.use { connection ->
+    this.connection.use { connection ->
         connection.prepareStatement(
             """
                     INSERT INTO hendelser(id, pasient_fnr, orgnummer, oppgavetype, lenke, tekst, timestamp, 
@@ -239,7 +238,7 @@ fun DatabaseInterface.insertHendelse(hendelseDbModel: HendelseDbModel) {
 }
 
 fun DatabaseInterface.insertOrUpdate(soknadDbModel: SoknadDbModel) {
-    database.connection.use { connection ->
+    this.connection.use { connection ->
         connection.prepareStatement(
             """
                insert into soknad(
@@ -279,7 +278,7 @@ fun DatabaseInterface.insertOrUpdate(soknadDbModel: SoknadDbModel) {
     }
 }
 fun DatabaseInterface.insertOrUpdate(sykmeldingDbModel: SykmeldingDbModel, sykmeldt: SykmeldtDbModel) {
-    database.connection.use { connection ->
+    this.connection.use { connection ->
         connection.insertOrUpdateSykmeldt(sykmeldt)
         connection.prepareStatement(
             """

@@ -1,5 +1,6 @@
 package no.nav.syfo.sykmelding
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -20,14 +21,12 @@ import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createArbeidsgiverSykmelding
 import org.amshove.kluent.shouldBeAfter
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 
-class SykmeldingServiceTest : Spek({
+class SykmeldingServiceTest : FunSpec({
     val database = SykmeldingDb(TestDb.database)
     val pdlPersonService = mockk<PdlPersonService>()
     val syfoSyketilfelleClient = mockk<SyfoSyketilfelleClient>()
@@ -38,7 +37,7 @@ class SykmeldingServiceTest : Spek({
         "prod-gcp"
     )
 
-    beforeEachTest {
+    beforeEach {
         TestDb.clearAllData()
         clearMocks(pdlPersonService, syfoSyketilfelleClient)
         coEvery { pdlPersonService.getPerson(any(), any()) } returns PdlPerson(
@@ -48,8 +47,8 @@ class SykmeldingServiceTest : Spek({
         coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns LocalDate.now().minusMonths(1)
     }
 
-    describe("SykmeldingService") {
-        it("Lagrer ny sendt sykmelding") {
+    context("SykmeldingService") {
+        test("Lagrer ny sendt sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
             val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
             runBlocking {
@@ -70,7 +69,7 @@ class SykmeldingServiceTest : Spek({
                 sykmelding?.latestTom shouldBeEqualTo LocalDate.now().plusDays(10)
             }
         }
-        it("Oppdaterer allerede mottatt sendt sykmelding") {
+        test("Oppdaterer allerede mottatt sendt sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
             val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
             runBlocking {
@@ -88,7 +87,7 @@ class SykmeldingServiceTest : Spek({
                 oppdatertSykmelding!!.timestamp.toLocalDateTime() shouldBeAfter sykmelding!!.timestamp.toLocalDateTime()
             }
         }
-        it("Oppdaterer navn og startdato ved mottak av neste sendte sykmelding") {
+        test("Oppdaterer navn og startdato ved mottak av neste sendte sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
             val sykmeldingId2 = UUID.randomUUID().toString()
             val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
@@ -129,7 +128,7 @@ class SykmeldingServiceTest : Spek({
                 sykmeldtOppdatert?.latestTom shouldBeEqualTo LocalDate.now().plusDays(20)
             }
         }
-        it("Ignorerer sendt sykmelding der tom er eldre enn fire måneder tilbake i tid") {
+        test("Ignorerer sendt sykmelding der tom er eldre enn fire måneder tilbake i tid") {
             val sykmeldingId = UUID.randomUUID().toString()
             val sendtSykmelding = getSendtSykmeldingKafkaMessage(
                 sykmeldingId,
@@ -152,7 +151,7 @@ class SykmeldingServiceTest : Spek({
                 TestDb.getSykmelding(sykmeldingId) shouldBeEqualTo null
             }
         }
-        it("Sletter tombstonet sykmelding") {
+        test("Sletter tombstonet sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
             val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
             runBlocking {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.client.HttpClient
@@ -25,15 +26,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.azuread.AccessTokenClient
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.net.ServerSocket
 import java.time.LocalDate
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertFailsWith
 
-object SyfoSyketilfelleClientTest : Spek({
+object SyfoSyketilfelleClientTest : FunSpec({
     val sykmeldingUUID = UUID.randomUUID()
     val oppfolgingsdato1 = LocalDate.of(2019, 9, 30)
     val oppfolgingsdato2 = LocalDate.of(2020, 1, 30)
@@ -163,16 +162,16 @@ object SyfoSyketilfelleClientTest : Spek({
         socketTimeoutClient
     )
 
-    afterGroup {
+    afterSpec {
         mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))
     }
 
-    beforeEachTest {
+    beforeEach {
         coEvery { accessTokenClient.getAccessToken(any()) } returns "token"
     }
 
-    describe("Test av SyfoSyketilfelleClient - finnStartDato") {
-        it("Should get SocketTimeoutException") {
+    context("Test av SyfoSyketilfelleClient - finnStartDato") {
+        test("Should get SocketTimeoutException") {
             runBlocking {
                 assertFailsWith<SocketTimeoutException> {
                     syfoSyketilfelletSocketTimeoutClient.finnStartdato(fnr3, sykmeldingUUID.toString())
@@ -180,13 +179,13 @@ object SyfoSyketilfelleClientTest : Spek({
             }
         }
 
-        it("Henter riktig startdato fra syfosyketilfelle") {
+        test("Henter riktig startdato fra syfosyketilfelle") {
             runBlocking {
                 val startDato = syfoSyketilfelleClient.finnStartdato(fnr1, sykmeldingUUID.toString())
                 startDato shouldBeEqualTo oppfolgingsdato2
             }
         }
-        it("Kaster feil hvis sykmelding ikke er knyttet til syketilfelle") {
+        test("Kaster feil hvis sykmelding ikke er knyttet til syketilfelle") {
             assertFailsWith<SyketilfelleNotFoundException> {
                 runBlocking {
                     syfoSyketilfelleClient.finnStartdato(fnr2, sykmeldingUUID.toString())

@@ -1,28 +1,25 @@
 package no.nav.syfo.virksomhet.db
 
-import no.nav.syfo.narmesteleder.db.NarmestelederDb
+import io.kotest.core.spec.style.FunSpec
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
 import no.nav.syfo.util.insertOrUpdate
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.shouldHaveSize
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.util.UUID
 
-object VirksomhetDbTest : Spek({
+object VirksomhetDbTest : FunSpec({
     val virksomhetDb = VirksomhetDb(TestDb.database)
-    val narmestelederDb = NarmestelederDb(TestDb.database)
 
-    afterEachTest {
+    afterEach {
         TestDb.clearAllData()
     }
 
-    describe("Virksomhet") {
-        it("Should get virksomhet that belongs to caller") {
+    context("Virksomhet") {
+        test("Should get virksomhet that belongs to caller") {
             val sykmeldt = createSykmeldtDbModel(pasientFnr = "employee-fnr")
-            narmestelederDb.insertOrUpdate(
+            TestDb.database.insertOrUpdate(
                 id = UUID.randomUUID().toString(),
                 orgnummer = "right-caller-org",
                 fnr = "employee-fnr",
@@ -43,9 +40,9 @@ object VirksomhetDbTest : Spek({
             virksomheter[0].orgnummer `should be equal to` "right-caller-org"
         }
 
-        it("Should not get virksomhet that not belongs to caller") {
+        test("Should not get virksomhet that not belongs to caller") {
             val sykmeldt = createSykmeldtDbModel(pasientFnr = "employee-fnr")
-            narmestelederDb.insertOrUpdate(
+            TestDb.database.insertOrUpdate(
                 id = UUID.randomUUID().toString(),
                 orgnummer = "right-caller-org",
                 fnr = "employee-fnr",

@@ -1,6 +1,7 @@
 package no.nav.syfo.soknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.core.spec.style.FunSpec
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
@@ -9,8 +10,6 @@ import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.util.TestDb
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -18,16 +17,16 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
-class SoknadServiceTest : Spek({
+class SoknadServiceTest : FunSpec({
     val database = SoknadDb(TestDb.database)
     val soknadService = SoknadService(database)
 
-    beforeEachTest {
+    beforeEach {
         TestDb.clearAllData()
     }
 
-    describe("SoknadService") {
-        it("Lagrer ny sendt søknad og fjerner sensitiv informasjon") {
+    context("SoknadService") {
+        test("Lagrer ny sendt søknad og fjerner sensitiv informasjon") {
             val soknadId = UUID.randomUUID().toString()
             val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
                 getFileAsString("src/test/resources/soknad.json")
@@ -57,7 +56,7 @@ class SoknadServiceTest : Spek({
             arbeidsgiverSoknadFraDb.andreInntektskilder shouldBeEqualTo null
             arbeidsgiverSoknadFraDb.sporsmal shouldBeEqualTo sporsmalArbeidsgivervisning
         }
-        it("Ignorerer søknad med tom tidligere enn 4 mnd siden") {
+        test("Ignorerer søknad med tom tidligere enn 4 mnd siden") {
             val soknadId = UUID.randomUUID().toString()
             val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
                 getFileAsString("src/test/resources/soknad.json")
@@ -72,7 +71,7 @@ class SoknadServiceTest : Spek({
 
             TestDb.getSoknad(soknadId) shouldBeEqualTo null
         }
-        it("Skal lagre soknad med ny og slette med når den bare er sendt til NAV") {
+        test("Skal lagre soknad med ny og slette med når den bare er sendt til NAV") {
             val soknadId = UUID.randomUUID().toString()
             val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
                 getFileAsString("src/test/resources/soknad.json")
@@ -89,7 +88,7 @@ class SoknadServiceTest : Spek({
             TestDb.getSoknad(soknadId) shouldBeEqualTo null
         }
 
-        it("Ignorerer søknad som ikke er sendt til arbeidsgiver") {
+        test("Ignorerer søknad som ikke er sendt til arbeidsgiver") {
             val soknadId = UUID.randomUUID().toString()
             val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
                 getFileAsString("src/test/resources/soknad.json")
@@ -104,7 +103,7 @@ class SoknadServiceTest : Spek({
 
             TestDb.getSoknad(soknadId) shouldBeEqualTo null
         }
-        it("Ignorerer ikke søknad som ikke har status sendt") {
+        test("Ignorerer ikke søknad som ikke har status sendt") {
             val soknadId = UUID.randomUUID().toString()
             val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
                 getFileAsString("src/test/resources/soknad.json")
