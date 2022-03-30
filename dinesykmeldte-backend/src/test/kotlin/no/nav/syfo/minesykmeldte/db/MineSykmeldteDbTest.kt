@@ -272,7 +272,7 @@ fun createSykepengesoknadDto(
     soknadId: String,
     sykmeldingId: String,
 ) = objectMapper.readValue<SykepengesoknadDTO>(
-    getFileAsString("/home/andreas/nav/git/dinesykmeldte-backend/dinesykmeldte-backend/src/test/resources/soknad.json")
+    getFileAsString("src/test/resources/soknad.json")
 ).copy(
     id = soknadId,
     fom = LocalDate.now().minusMonths(1),
