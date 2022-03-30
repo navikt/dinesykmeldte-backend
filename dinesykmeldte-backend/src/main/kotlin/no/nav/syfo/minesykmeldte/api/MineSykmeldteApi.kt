@@ -25,7 +25,7 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         val timedValue = measureTimedValue {
             mineSykmeldteService.getMineSykmeldte(lederFnr)
         }
-        log.info("Getting ${timedValue.value.size} sykmeldte, duration: ${timedValue.duration.inWholeMicroseconds}")
+        log.info("Getting ${timedValue.value.size} sykmeldte, duration: ${timedValue.duration.inWholeMilliseconds}")
 
         call.respond(timedValue.value)
     }
