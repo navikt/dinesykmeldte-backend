@@ -16,10 +16,10 @@ spec:
       for: 5m
       description: "App {{ $labels.app }} er nede i namespace {{ $labels.kubernetes_namespace }}"
       action: "`kubectl describe pod {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace }}` for events, og `kubectl logs {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace }}` for logger"
-    - alert: dinesykmeldte-backend-kafka-offset
-      expr: kafka_consumergroup_group_sum_lag{group=~"dinesykmeldte-backend"} > 100
-      for: 1m
-      description: "dinesykmeldte-kafka kafka-lag er høyt"
-      action: "Sjekk om dinesykmeldte-backend leser fra kafka"
+    - alert: dinesykmeldte-backend-error-logging
+      expr: sum(rate(logd_messages_total{log_app="dinesykmeldte-backend",log_level="Error",job="kubernetes-pods"}[5m])) by (log_app) > 0
+      for: 5m
+      description: "{{ $labels.log_app }} rapporterer error i loggene"
+      action: "Sjekk hvorfor {{ $labels.log_app }} har logget error i løpet av de siste 5 minuttene"
       sla: respond within 1h, during office hours
       severity: danger
