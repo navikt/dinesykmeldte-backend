@@ -7,6 +7,7 @@ enum class HendelseType {
     DIALOGMOTE_AVLYSNING,
     DIALOGMOTE_ENDRING,
     DIALOGMOTE_REFERAT,
+    DIALOGMOTE_SVAR_BEHOV,
     IKKE_SENDT_SOKNAD,
     UNKNOWN,
 }
@@ -16,6 +17,7 @@ val DialogmoteHendelser = listOf(
     HendelseType.DIALOGMOTE_AVLYSNING,
     HendelseType.DIALOGMOTE_ENDRING,
     HendelseType.DIALOGMOTE_REFERAT,
+    HendelseType.DIALOGMOTE_SVAR_BEHOV,
 )
 
 data class Hendelse(
