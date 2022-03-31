@@ -6,6 +6,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.application.metrics.SLETTET_COUNTER
 import no.nav.syfo.util.Unbounded
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -32,6 +33,10 @@ class DeleteDataService(
                 try {
                     val result = database.deleteOldData(getDateForDeletion())
                     log.info("Deleted ${result.deletedSykmelding} sykmeldinger, ${result.deletedSykmeldt} sykmeldte, ${result.deletedSoknader} soknader and ${result.deletedHendelser} hendelser")
+                    SLETTET_COUNTER.labels("sykmelding").inc(result.deletedSykmelding.toDouble())
+                    SLETTET_COUNTER.labels("sykmeldt").inc(result.deletedSykmeldt.toDouble())
+                    SLETTET_COUNTER.labels("soknad").inc(result.deletedSoknader.toDouble())
+                    SLETTET_COUNTER.labels("hendelse").inc(result.deletedHendelser.toDouble())
                 } catch (ex: Exception) {
                     log.error("Could not delete data", ex)
                 }

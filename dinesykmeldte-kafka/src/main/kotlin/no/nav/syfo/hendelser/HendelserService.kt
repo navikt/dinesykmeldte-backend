@@ -1,6 +1,7 @@
 package no.nav.syfo.hendelser
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.syfo.application.metrics.HENDELSE_TOPIC_COUNTER
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.hendelser.kafka.model.DineSykmeldteHendelse
@@ -25,8 +26,10 @@ class HendelserService(
     fun handleHendelse(dineSykmeldteHendelse: DineSykmeldteHendelse) {
         if (dineSykmeldteHendelse.opprettHendelse != null) {
             hendelserDb.insertHendelse(opprettHendelseTilHendelseDbModel(dineSykmeldteHendelse.id, dineSykmeldteHendelse.opprettHendelse))
+            HENDELSE_TOPIC_COUNTER.labels("opprett").inc()
         } else if (dineSykmeldteHendelse.ferdigstillHendelse != null) {
             hendelserDb.ferdigstillHendelse(dineSykmeldteHendelse.id, dineSykmeldteHendelse.ferdigstillHendelse.timestamp)
+            HENDELSE_TOPIC_COUNTER.labels("ferdigstill").inc()
         } else {
             log.error("Har mottatt hendelse som ikke er oppretting eller ferdigstilling for id ${dineSykmeldteHendelse.id}")
             throw IllegalStateException("Mottatt hendelse er ikke oppretting eller ferdigstilling")
