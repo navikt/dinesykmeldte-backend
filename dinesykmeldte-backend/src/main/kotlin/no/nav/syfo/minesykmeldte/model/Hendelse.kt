@@ -1,5 +1,6 @@
 package no.nav.syfo.minesykmeldte.model
 
+import java.time.OffsetDateTime
 import java.util.UUID
 
 enum class HendelseType {
@@ -8,6 +9,7 @@ enum class HendelseType {
     DIALOGMOTE_ENDRING,
     DIALOGMOTE_REFERAT,
     DIALOGMOTE_SVAR_BEHOV,
+    DIALOGMOTE_6_UKERS_VARSEL,
     IKKE_SENDT_SOKNAD,
     UNKNOWN,
 }
@@ -18,6 +20,8 @@ val DialogmoteHendelser = listOf(
     HendelseType.DIALOGMOTE_ENDRING,
     HendelseType.DIALOGMOTE_REFERAT,
     HendelseType.DIALOGMOTE_SVAR_BEHOV,
+    // TODO må endres når eSYFO bestemmer hva den skal hete
+    HendelseType.DIALOGMOTE_6_UKERS_VARSEL,
 )
 
 data class Hendelse(
@@ -26,4 +30,6 @@ data class Hendelse(
     val lenke: String?,
     val tekst: String?,
     val hendelseId: UUID,
+    val mottatt: OffsetDateTime,
+    val ferdigstilt: OffsetDateTime?,
 )

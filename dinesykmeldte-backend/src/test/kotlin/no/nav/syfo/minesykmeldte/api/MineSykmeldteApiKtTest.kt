@@ -69,7 +69,8 @@ object MineSykmeldteApiKtTest : FunSpec({
                         friskmeldt = false,
                         sykmeldinger = emptyList(),
                         previewSoknader = emptyList(),
-                        dialogmoter = emptyList()
+                        dialogmoter = emptyList(),
+                        aktivitetsvarsler = emptyList(),
                     )
                 )
                 with(
@@ -85,7 +86,8 @@ object MineSykmeldteApiKtTest : FunSpec({
                           "friskmeldt": false,
                           "sykmeldinger": [],
                           "previewSoknader": [],
-                          "dialogmoter": []
+                          "dialogmoter": [],
+                          "aktivitetsvarsler": []
                         }
                     ]""".minifyApiResponse()
                 }
@@ -163,7 +165,8 @@ object MineSykmeldteApiKtTest : FunSpec({
                                     ikkeSendtSoknadVarsel = false
                                 ),
                             ),
-                            dialogmoter = listOf(Dialogmote("hendelse-1-id", hendelseId, "Ny revidert oppfølgingplan")),
+                            dialogmoter = listOf(Dialogmote(hendelseId, "Ny revidert oppfølgingplan")),
+                            aktivitetsvarsler = emptyList(),
                         )
                     )
                     with(
@@ -192,7 +195,8 @@ object MineSykmeldteApiKtTest : FunSpec({
                                 "status": "NY"
                               }
                             ],
-                            "dialogmoter":[{"id":"hendelse-1-id","hendelseId": "$hendelseId","tekst":"Ny revidert oppfølgingplan"}]
+                            "dialogmoter":[{"hendelseId": "$hendelseId","tekst":"Ny revidert oppfølgingplan"}],
+                            "aktivitetsvarsler": []
                           }
                         ]""".minifyApiResponse()
                     }
