@@ -11,6 +11,7 @@ import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toSporsmal
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.model.AktivitetIkkeMulig
+import no.nav.syfo.minesykmeldte.model.Aktivitetsvarsel
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsak
 import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsakEnum
@@ -64,6 +65,7 @@ class MineSykmeldteService(
                 previewSoknader = getPreviewSoknader(sykmeldtEntry, hendelserMap),
                 dialogmoter = getDialogmoter(hendelserMap, sykmeldtEntry),
                 sykmeldinger = getSykmeldinger(sykmeldtEntry),
+                aktivitetsvarsler = getAktivitetsvarsler(hendelserMap, sykmeldtEntry),
             )
         }
     }
@@ -75,13 +77,12 @@ class MineSykmeldteService(
 
     private fun getDialogmoter(
         hendelserMap: Map<String, List<Hendelse>>,
-        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
+        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
     ) = (
         hendelserMap[sykmeldtEntry.key.fnr]
             ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
             ?.map {
                 Dialogmote(
-                    id = it.id,
                     hendelseId = it.hendelseId,
                     tekst = it.tekst ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}")
                 )
@@ -89,9 +90,25 @@ class MineSykmeldteService(
             ?: emptyList()
         )
 
+    private fun getAktivitetsvarsler(
+        hendelserMap: Map<String, List<Hendelse>>,
+        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
+    ): List<Aktivitetsvarsel> = (
+        hendelserMap[sykmeldtEntry.key.fnr]
+            ?.filter { ma -> ma.oppgavetype == HendelseType.DIALOGMOTE_6_UKERS_VARSEL }
+            ?.map {
+                Aktivitetsvarsel(
+                    hendelseId = it.hendelseId,
+                    mottatt = it.mottatt,
+                    lest = it.ferdigstilt
+                )
+            }
+            ?: emptyList()
+        )
+
     private fun getPreviewSoknader(
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-        hendelserMap: Map<String, List<Hendelse>>
+        hendelserMap: Map<String, List<Hendelse>>,
     ): List<PreviewSoknad> {
         val korrigerteSoknader = sykmeldtEntry.value
             .mapNotNull { it.soknad }
@@ -107,7 +124,7 @@ class MineSykmeldteService(
     private fun getHendlersforSoknad(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-        sykmeldt: MinSykmeldtDbModel
+        sykmeldt: MinSykmeldtDbModel,
     ) = hendelserMap[sykmeldtEntry.key.fnr]?.filter { it.id == sykmeldt.soknad?.id }.orEmpty()
 
     fun getSykmelding(sykmeldingId: String, lederFnr: String): Sykmelding? {
@@ -141,7 +158,7 @@ private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
 
 private fun mapNullableSoknad(
     sykmeldtDbModel: MinSykmeldtDbModel,
-    hendelser: List<Hendelse>
+    hendelser: List<Hendelse>,
 ): PreviewSoknad? =
     sykmeldtDbModel.soknad?.let {
         toPreviewSoknad(it, sykmeldtDbModel.lestSoknad, hendelser)
@@ -288,7 +305,9 @@ private fun HendelseDbModel.toHendelse() =
         hendelseId = hendelseId,
         oppgavetype = safeParseHendelseEnum(oppgavetype),
         lenke = lenke,
-        tekst = tekst
+        tekst = tekst,
+        mottatt = timestamp,
+        ferdigstilt = ferdigstiltTimestamp
     )
 
 fun safeParseHendelseEnum(oppgavetype: String): HendelseType {

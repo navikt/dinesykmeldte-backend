@@ -1,6 +1,7 @@
 package no.nav.syfo.minesykmeldte.model
 
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 data class PreviewSykmeldt(
@@ -13,10 +14,16 @@ data class PreviewSykmeldt(
     val sykmeldinger: List<Sykmelding>,
     val previewSoknader: List<PreviewSoknad>,
     val dialogmoter: List<Dialogmote>,
+    val aktivitetsvarsler: List<Aktivitetsvarsel>,
 )
 
 data class Dialogmote(
-    val id: String,
     val hendelseId: UUID,
     var tekst: String,
+)
+
+data class Aktivitetsvarsel(
+    val hendelseId: UUID,
+    val mottatt: OffsetDateTime,
+    val lest: OffsetDateTime?,
 )
