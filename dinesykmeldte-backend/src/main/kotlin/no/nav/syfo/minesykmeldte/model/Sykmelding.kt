@@ -9,6 +9,7 @@ data class Sykmelding(
     val navn: String,
     val fnr: String,
     val lest: Boolean,
+    val behandletTidspunkt: LocalDate,
     val arbeidsgiver: Arbeidsgiver,
     val perioder: List<Periode>,
     val arbeidsforEtterPeriode: Boolean?,

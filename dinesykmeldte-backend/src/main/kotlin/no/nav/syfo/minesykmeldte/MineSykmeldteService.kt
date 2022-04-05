@@ -206,6 +206,7 @@ private fun MinSykmeldtDbModel.toSykmelding(): Sykmelding {
         kontaktDato = sykmelding.kontaktMedPasient.kontaktDato,
         fnr = this.sykmeldtFnr,
         lest = this.lestSykmelding,
+        behandletTidspunkt = this.sykmelding.behandletTidspunkt.toLocalDate(),
         arbeidsgiver = Arbeidsgiver(
             navn = this.sykmelding.arbeidsgiver.navn,
         ),
@@ -234,6 +235,7 @@ private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding 
         kontaktDato = sykmelding.sykmelding.kontaktMedPasient.kontaktDato,
         fnr = sykmelding.pasientFnr,
         lest = sykmelding.lest,
+        behandletTidspunkt = sykmelding.sykmelding.behandletTidspunkt.toLocalDate(),
         arbeidsgiver = Arbeidsgiver(
             navn = sykmelding.sykmelding.arbeidsgiver.navn,
         ),
