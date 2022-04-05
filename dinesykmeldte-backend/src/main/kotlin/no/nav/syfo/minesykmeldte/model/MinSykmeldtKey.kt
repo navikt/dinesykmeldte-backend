@@ -7,5 +7,5 @@ data class MinSykmeldtKey(
     val orgnummer: String,
     val navn: String,
     val fnr: String,
-    val startDatoSykefravaer: LocalDate
+    val startDatoSykefravaer: LocalDate,
 )

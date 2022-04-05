@@ -14,6 +14,7 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
 import no.nav.syfo.Environment
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
+import no.nav.syfo.minesykmeldte.model.Aktivitetsvarsel
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.Behandler
 import no.nav.syfo.minesykmeldte.model.Dialogmote
@@ -29,6 +30,7 @@ import no.nav.syfo.util.minifyApiResponse
 import no.nav.syfo.util.withKtor
 import org.amshove.kluent.shouldBeEqualTo
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 object MineSykmeldteApiKtTest : FunSpec({
@@ -166,7 +168,13 @@ object MineSykmeldteApiKtTest : FunSpec({
                                 ),
                             ),
                             dialogmoter = listOf(Dialogmote(hendelseId, "Ny revidert oppfølgingplan")),
-                            aktivitetsvarsler = emptyList(),
+                            aktivitetsvarsler = listOf(
+                                Aktivitetsvarsel(
+                                    hendelseId,
+                                    OffsetDateTime.parse("2022-04-09T10:15:30+02:00"),
+                                    null
+                                )
+                            ),
                         )
                     )
                     with(
@@ -196,7 +204,7 @@ object MineSykmeldteApiKtTest : FunSpec({
                               }
                             ],
                             "dialogmoter":[{"hendelseId": "$hendelseId","tekst":"Ny revidert oppfølgingplan"}],
-                            "aktivitetsvarsler": []
+                            "aktivitetsvarsler": [{"hendelseId":"$hendelseId","mottatt":"2022-04-09T10:15:30+02:00","lest":null}]
                           }
                         ]""".minifyApiResponse()
                     }
@@ -233,6 +241,7 @@ object MineSykmeldteApiKtTest : FunSpec({
                     id = "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
                     startdatoSykefravar = LocalDate.parse("2021-01-01"),
                     kontaktDato = LocalDate.parse("2021-01-01"),
+                    behandletTidspunkt = LocalDate.parse("2021-01-02")
                 )
                 with(
                     handleRequest(HttpMethod.Get, "/api/sykmelding/7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657") {
@@ -248,6 +257,7 @@ object MineSykmeldteApiKtTest : FunSpec({
                           "navn": "navn",
                           "fnr": "fnr",
                           "lest": false,
+                          "behandletTidspunkt":"2021-01-02",
                           "arbeidsgiver": {
                             "navn": "Arbeid G. Iversen"
                           },
@@ -405,6 +415,7 @@ fun createSykmeldingTestData(
         hprNummer = "80802721231",
         telefon = "81549300",
     ),
+    behandletTidspunkt: LocalDate = LocalDate.now(),
 ): Sykmelding = Sykmelding(
     id = id,
     startdatoSykefravar = startdatoSykefravar,
@@ -419,4 +430,5 @@ fun createSykmeldingTestData(
     tiltakArbeidsplassen = tiltakArbeidsplassen,
     innspillArbeidsplassen = innspillArbeidsplassen,
     behandler = behandler,
+    behandletTidspunkt = behandletTidspunkt,
 )
