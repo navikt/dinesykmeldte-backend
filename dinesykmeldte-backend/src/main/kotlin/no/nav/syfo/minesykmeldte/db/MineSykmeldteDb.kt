@@ -33,7 +33,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 FROM narmesteleder AS nl
                     inner JOIN sykmeldt AS s ON s.pasient_fnr = nl.pasient_fnr
                     inner join sykmelding AS sm ON sm.pasient_fnr = nl.pasient_fnr AND sm.orgnummer = nl.orgnummer
-                    left join soknad as sk on sk.sykmelding_id = sm.sykmelding_id
+                    left join soknad as sk on sk.sykmelding_id = sm.sykmelding_id AND sk.pasient_fnr = sm.pasient_fnr
                 WHERE nl.leder_fnr = ?;
                 """
             ).use { ps ->
