@@ -259,6 +259,36 @@ class MineSykmeldteDbTest : FunSpec({
             didMarkAsRead.`should be false`()
         }
     }
+
+    context("Hente hendelse") {
+        test("Skal hente hendelse hvis utløpstidspunkt er null") {
+            val sykmeldt = createSykmeldtDbModel(pasientFnr = "pasient-1")
+            val sykmelding = createSykmeldingDbModel("sykmelding-id-1", pasientFnr = "pasient-1", orgnummer = "kul-org")
+            TestDb.database.insertOrUpdate(
+                UUID.randomUUID().toString(),
+                fnr = "pasient-1",
+                orgnummer = "kul-org",
+                narmesteLederFnr = "leder-fnr-1"
+            )
+            val hendelse = HendelseDbModel(
+                id = "hendelse-id-1",
+                pasientFnr = "pasient-1",
+                orgnummer = "kul-org",
+                oppgavetype = "OPPGAVETYPE",
+                lenke = "https://link",
+                tekst = "tekst",
+                timestamp = OffsetDateTime.now(),
+                utlopstidspunkt = null,
+                ferdigstilt = false,
+                ferdigstiltTimestamp = null,
+                hendelseId = UUID.randomUUID()
+            )
+            TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
+            TestDb.database.insertHendelse(hendelse)
+
+            minesykmeldteDb.getHendelser("leder-fnr-1").size shouldBeEqualTo 1
+        }
+    }
 })
 
 fun getSoknad(
