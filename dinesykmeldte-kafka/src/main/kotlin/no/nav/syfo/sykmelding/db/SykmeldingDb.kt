@@ -49,6 +49,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 preparedStatement.setObject(15, sykmeldingDbModel.latestTom)
                 preparedStatement.executeUpdate()
             }
+            connection.updateSoknadFnr(sykmeldingId = sykmeldingDbModel.sykmeldingId, nyttFnr = sykmeldingDbModel.pasientFnr)
             connection.commit()
         }
     }
@@ -88,6 +89,18 @@ class SykmeldingDb(private val database: DatabaseInterface) {
             preparedStatement.setObject(6, sykmeldt.startdatoSykefravaer)
             preparedStatement.setObject(7, sykmeldt.latestTom)
             preparedStatement.executeUpdate()
+        }
+    }
+
+    private fun Connection.updateSoknadFnr(sykmeldingId: String, nyttFnr: String) {
+        this.prepareStatement(
+            """
+                UPDATE soknad SET pasient_fnr=? WHERE sykmelding_id=?;
+                """
+        ).use {
+            it.setString(1, nyttFnr)
+            it.setString(2, sykmeldingId)
+            it.executeUpdate()
         }
     }
 }

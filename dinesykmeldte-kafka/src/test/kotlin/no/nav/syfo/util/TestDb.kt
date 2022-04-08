@@ -13,12 +13,14 @@ import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
 import no.nav.syfo.narmesteleder.db.toNarmestelederDbModel
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
+import no.nav.syfo.soknad.db.toPGObject
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import org.flywaydb.core.Flyway
 import org.testcontainers.containers.PostgreSQLContainer
 import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.ZoneOffset
 
@@ -170,6 +172,19 @@ class TestDb private constructor() {
             }
         }
 
+        fun getSoknadForSykmelding(sykmeldingId: String): SoknadDbModel? {
+            return database.connection.use {
+                it.prepareStatement(
+                    """
+                    SELECT * FROM soknad WHERE sykmelding_id = ?;
+                """
+                ).use { ps ->
+                    ps.setString(1, sykmeldingId)
+                    ps.executeQuery().toList { toSoknadDbModel() }.firstOrNull()
+                }
+            }
+        }
+
         private fun ResultSet.toSoknadDbModel(): SoknadDbModel =
             SoknadDbModel(
                 soknadId = getString("soknad_id"),
@@ -209,5 +224,46 @@ class TestDb private constructor() {
                 ferdigstilt = getBoolean("ferdigstilt"),
                 ferdigstiltTimestamp = getTimestamp("ferdigstilt_timestamp")?.toInstant()?.atOffset(ZoneOffset.UTC)
             )
+    }
+}
+
+fun DatabaseInterface.insertOrUpdate(soknadDbModel: SoknadDbModel) {
+    this.connection.use { connection ->
+        connection.prepareStatement(
+            """
+               insert into soknad(
+                        soknad_id, 
+                        sykmelding_id, 
+                        pasient_fnr, 
+                        orgnummer, 
+                        soknad,
+                        sendt_dato, 
+                        lest, 
+                        timestamp, 
+                        tom) 
+                    values (?, ?, ?, ?, ?, ?, ?, ?, ?) on CONFLICT(soknad_id) do update 
+                        set soknad = excluded.soknad,
+                        sykmelding_id = excluded.sykmelding_id,
+                        pasient_fnr = excluded.pasient_fnr,
+                        orgnummer = excluded.orgnummer,
+                        timestamp = excluded.timestamp,
+                        sendt_dato = excluded.sendt_dato,
+                        lest = excluded.lest,
+                        tom = excluded.tom
+                    ;
+            """
+        ).use { preparedStatement ->
+            preparedStatement.setString(1, soknadDbModel.soknadId)
+            preparedStatement.setString(2, soknadDbModel.sykmeldingId)
+            preparedStatement.setString(3, soknadDbModel.pasientFnr)
+            preparedStatement.setString(4, soknadDbModel.orgnummer)
+            preparedStatement.setObject(5, soknadDbModel.soknad.toPGObject())
+            preparedStatement.setObject(6, soknadDbModel.sendtDato)
+            preparedStatement.setBoolean(7, soknadDbModel.lest)
+            preparedStatement.setTimestamp(8, Timestamp.from(soknadDbModel.timestamp.toInstant()))
+            preparedStatement.setObject(9, soknadDbModel.tom)
+            preparedStatement.executeUpdate()
+        }
+        connection.commit()
     }
 }
