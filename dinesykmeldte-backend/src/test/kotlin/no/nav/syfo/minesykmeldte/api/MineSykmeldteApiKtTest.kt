@@ -18,6 +18,7 @@ import no.nav.syfo.minesykmeldte.model.Aktivitetsvarsel
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.Behandler
 import no.nav.syfo.minesykmeldte.model.Dialogmote
+import no.nav.syfo.minesykmeldte.model.Oppfolgningsplan
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
@@ -73,6 +74,7 @@ object MineSykmeldteApiKtTest : FunSpec({
                         previewSoknader = emptyList(),
                         dialogmoter = emptyList(),
                         aktivitetsvarsler = emptyList(),
+                        oppfolgningsplaner = emptyList()
                     )
                 )
                 with(
@@ -89,7 +91,8 @@ object MineSykmeldteApiKtTest : FunSpec({
                           "sykmeldinger": [],
                           "previewSoknader": [],
                           "dialogmoter": [],
-                          "aktivitetsvarsler": []
+                          "aktivitetsvarsler": [],
+                          "oppfolgningsplaner": []
                         }
                     ]""".minifyApiResponse()
                 }
@@ -175,6 +178,7 @@ object MineSykmeldteApiKtTest : FunSpec({
                                     null
                                 )
                             ),
+                            oppfolgningsplaner = listOf(Oppfolgningsplan(hendelseId, "ny oppfolgningsplan"))
                         )
                     )
                     with(
@@ -204,7 +208,8 @@ object MineSykmeldteApiKtTest : FunSpec({
                               }
                             ],
                             "dialogmoter":[{"hendelseId": "$hendelseId","tekst":"Ny revidert oppfølgingplan"}],
-                            "aktivitetsvarsler": [{"hendelseId":"$hendelseId","mottatt":"2022-04-09T10:15:30+02:00","lest":null}]
+                            "aktivitetsvarsler": [{"hendelseId":"$hendelseId","mottatt":"2022-04-09T10:15:30+02:00","lest":null}],
+                            "oppfolgningsplaner": [{"hendelseId": "$hendelseId","tekst":"ny oppfolgningsplan"}]
                           }
                         ]""".minifyApiResponse()
                     }

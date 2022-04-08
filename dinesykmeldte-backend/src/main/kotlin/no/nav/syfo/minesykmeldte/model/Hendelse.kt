@@ -11,6 +11,8 @@ enum class HendelseType {
     DIALOGMOTE_SVAR_BEHOV,
     DIALOGMOTE_6_UKERS_VARSEL,
     IKKE_SENDT_SOKNAD,
+    OPPFOLGINGSPLAN_OPPRETTET,
+    OPPFOLGINGSPLAN_TIL_GODKJENNING,
     UNKNOWN,
 }
 
@@ -22,6 +24,11 @@ val DialogmoteHendelser = listOf(
     HendelseType.DIALOGMOTE_SVAR_BEHOV,
     // TODO må endres når eSYFO bestemmer hva den skal hete
     HendelseType.DIALOGMOTE_6_UKERS_VARSEL,
+)
+
+val OppfolgningsplanerHendelser = listOf(
+    HendelseType.OPPFOLGINGSPLAN_OPPRETTET,
+    HendelseType.OPPFOLGINGSPLAN_TIL_GODKJENNING
 )
 
 data class Hendelse(

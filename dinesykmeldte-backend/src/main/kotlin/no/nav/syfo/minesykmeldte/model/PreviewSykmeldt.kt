@@ -15,6 +15,12 @@ data class PreviewSykmeldt(
     val previewSoknader: List<PreviewSoknad>,
     val dialogmoter: List<Dialogmote>,
     val aktivitetsvarsler: List<Aktivitetsvarsel>,
+    val oppfolgningsplaner: List<Oppfolgningsplan>,
+)
+
+data class Oppfolgningsplan(
+    val hendelseId: UUID,
+    var tekst: String,
 )
 
 data class Dialogmote(

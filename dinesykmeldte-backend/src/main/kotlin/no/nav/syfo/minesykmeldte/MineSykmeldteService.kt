@@ -24,6 +24,8 @@ import no.nav.syfo.minesykmeldte.model.Gradert
 import no.nav.syfo.minesykmeldte.model.Hendelse
 import no.nav.syfo.minesykmeldte.model.HendelseType
 import no.nav.syfo.minesykmeldte.model.MinSykmeldtKey
+import no.nav.syfo.minesykmeldte.model.Oppfolgningsplan
+import no.nav.syfo.minesykmeldte.model.OppfolgningsplanerHendelser
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PreviewSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
@@ -66,9 +68,20 @@ class MineSykmeldteService(
                 dialogmoter = getDialogmoter(hendelserMap, sykmeldtEntry),
                 sykmeldinger = getSykmeldinger(sykmeldtEntry),
                 aktivitetsvarsler = getAktivitetsvarsler(hendelserMap, sykmeldtEntry),
+                oppfolgningsplaner = getOppfolgningsplaner(hendelserMap, sykmeldtEntry),
             )
         }
     }
+
+    private fun getOppfolgningsplaner(
+        hendelserMap: Map<String, List<Hendelse>>,
+        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
+    ) = hendelserMap[sykmeldtEntry.key.fnr]
+        ?.filter { OppfolgningsplanerHendelser.contains(it.oppgavetype) }
+        ?.map {
+            Oppfolgningsplan(it.hendelseId, it.tekst ?: throw IllegalStateException("Oppfølgningsplan uten tekst: ${it.id}"))
+        }
+        ?: emptyList()
 
     private fun getSykmeldinger(sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>) =
         sykmeldtEntry.value.distinctBy { it.sykmeldingId }.map { sykmeldtDbModel ->
@@ -78,17 +91,15 @@ class MineSykmeldteService(
     private fun getDialogmoter(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-    ) = (
-        hendelserMap[sykmeldtEntry.key.fnr]
-            ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
-            ?.map {
-                Dialogmote(
-                    hendelseId = it.hendelseId,
-                    tekst = it.tekst ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}")
-                )
-            }
-            ?: emptyList()
-        )
+    ) = hendelserMap[sykmeldtEntry.key.fnr]
+        ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
+        ?.map {
+            Dialogmote(
+                hendelseId = it.hendelseId,
+                tekst = it.tekst ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}")
+            )
+        }
+        ?: emptyList()
 
     private fun getAktivitetsvarsler(
         hendelserMap: Map<String, List<Hendelse>>,
