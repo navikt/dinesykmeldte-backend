@@ -12,6 +12,7 @@ spec:
       - name: dinesykmeldte-backend-db-instance
         type: POSTGRES_12
         diskSize: 10
+        tier: db-custom-2-5120
         databases:
           - name: dinesykmeldte-backend
             envVarPrefix: NAIS_DATABASE
