@@ -21,10 +21,10 @@ class GcpDatabase(credentials: GcpDatabaseCredentials, database: String) : Datab
                 jdbcUrl = "jdbc:postgresql:///$database"
                 username = credentials.username
                 password = credentials.password
-                maximumPoolSize = 1
+                maximumPoolSize = 2
                 minimumIdle = 1
                 isAutoCommit = false
-                connectionTimeout = 10_000
+                connectionTimeout = 30_000
                 transactionIsolation = "TRANSACTION_REPEATABLE_READ"
                 validate()
             }
