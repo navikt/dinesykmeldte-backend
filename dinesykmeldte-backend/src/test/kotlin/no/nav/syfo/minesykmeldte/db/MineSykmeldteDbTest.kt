@@ -110,6 +110,23 @@ class MineSykmeldteDbTest : FunSpec({
 
             sykmelding shouldNotBeEqualTo null
         }
+        test("henter ikke søknad på annet fnr (byttet fnr)") {
+            TestDb.database.insertOrUpdate(
+                id = UUID.randomUUID().toString(),
+                orgnummer = "orgnummer",
+                fnr = "12345678910",
+                narmesteLederFnr = "01987654321"
+            )
+            val sykmeldingId = UUID.randomUUID().toString()
+            TestDb.database.insertOrUpdate(createSykmeldingDbModel(sykmeldingId), createSykmeldtDbModel())
+
+            TestDb.database.insertOrUpdate(getSoknad(sykmeldingId = sykmeldingId, fnr = "11223344556"))
+
+            val sykmeldtDbModel = minesykmeldteDb.getMineSykmeldte("01987654321")
+            sykmeldtDbModel.size shouldBeEqualTo 1
+            sykmeldtDbModel[0].sykmelding shouldNotBeEqualTo null
+            sykmeldtDbModel[0].soknad shouldBeEqualTo null
+        }
     }
 
     context("Marking sykmeldinger as read") {
@@ -294,17 +311,20 @@ class MineSykmeldteDbTest : FunSpec({
 fun getSoknad(
     sykmeldingId: String = UUID.randomUUID().toString(),
     soknadId: String = UUID.randomUUID().toString(),
+    fnr: String = "12345678910"
 ): SoknadDbModel {
-    return createSykepengesoknadDto(soknadId, sykmeldingId).toSoknadDbModel()
+    return createSykepengesoknadDto(soknadId, sykmeldingId, fnr).toSoknadDbModel()
 }
 
 fun createSykepengesoknadDto(
     soknadId: String,
     sykmeldingId: String,
+    fnr: String = "12345678910"
 ) = objectMapper.readValue<SykepengesoknadDTO>(
     getFileAsString("src/test/resources/soknad.json")
 ).copy(
     id = soknadId,
+    fnr = fnr,
     fom = LocalDate.now().minusMonths(1),
     tom = LocalDate.now().minusWeeks(2),
     sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
