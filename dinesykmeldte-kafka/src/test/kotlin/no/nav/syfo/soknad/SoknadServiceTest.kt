@@ -5,9 +5,13 @@ import io.kotest.core.spec.style.FunSpec
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
+import no.nav.syfo.hendelser.createSykmeldtDbModel
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDb
+import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.util.TestDb
+import no.nav.syfo.util.createSoknadDbModel
+import no.nav.syfo.util.createSykmeldingDbModel
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
 import java.nio.charset.StandardCharsets
@@ -20,7 +24,7 @@ import java.util.UUID
 class SoknadServiceTest : FunSpec({
     val database = SoknadDb(TestDb.database)
     val soknadService = SoknadService(database)
-
+    val sykmeldingDb = SykmeldingDb(TestDb.database)
     beforeEach {
         TestDb.clearAllData()
     }
@@ -118,6 +122,26 @@ class SoknadServiceTest : FunSpec({
             soknadService.handleSykepengesoknad(sykepengesoknadDTO)
 
             TestDb.getSoknad(soknadId) shouldNotBeEqualTo null
+        }
+
+        test("ikke oppdater fnr når sykmelding ikke er i db") {
+            val soknadId = UUID.randomUUID().toString()
+            val soknadDbModel = createSoknadDbModel(soknadId = soknadId, pasientFnr = "OLD")
+            database.insertOrUpdate(soknadDbModel)
+            val soknad = TestDb.getSoknad(soknadId)
+            soknad?.pasientFnr shouldBeEqualTo "OLD"
+        }
+        test("oppdater fnr på søknad ved mottak av søknad ved gammel fnr") {
+            val sykmeldingId = UUID.randomUUID().toString()
+            val sykmelding = createSykmeldingDbModel(sykmeldingId, pasientFnr = "NEW")
+            val sykmeldtDbModel = createSykmeldtDbModel(pasientFnr = "NEW")
+            sykmeldingDb.insertOrUpdate(sykmelding, sykmeldtDbModel)
+
+            val soknadId = UUID.randomUUID().toString()
+            val soknadDbModel = createSoknadDbModel(soknadId = soknadId, sykmeldingId = sykmeldingId, pasientFnr = "OLD")
+            database.insertOrUpdate(soknadDbModel)
+            val soknad = TestDb.getSoknad(soknadId)
+            soknad?.pasientFnr shouldBeEqualTo "NEW"
         }
     }
 })

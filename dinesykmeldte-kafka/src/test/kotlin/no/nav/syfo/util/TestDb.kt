@@ -26,7 +26,7 @@ import java.time.ZoneOffset
 
 class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
 
-class GcpTestDB(credentials: GcpDatabaseCredentials, database: String) : DatabaseInterface {
+class GcpTestDB(credentials: GcpDatabaseCredentials) : DatabaseInterface {
     private val dataSource: HikariDataSource
     override val connection: Connection
         get() = dataSource.connection
@@ -76,7 +76,7 @@ class TestDb private constructor() {
                     password = "password",
                     connectionName = psqlContainer.jdbcUrl
                 )
-                database = GcpTestDB(gcpDatabaseCredentials, "database")
+                database = GcpTestDB(gcpDatabaseCredentials)
             } catch (ex: Exception) {
                 log.error("Error", ex)
                 throw ex
