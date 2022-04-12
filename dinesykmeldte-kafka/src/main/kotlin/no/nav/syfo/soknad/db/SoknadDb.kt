@@ -1,12 +1,14 @@
 package no.nav.syfo.soknad.db
 
 import no.nav.syfo.database.DatabaseInterface
+import java.sql.Connection
 import java.sql.Timestamp
 
 class SoknadDb(private val database: DatabaseInterface) {
 
     fun insertOrUpdate(soknadDbModel: SoknadDbModel) {
         database.connection.use { connection ->
+            val fnr = connection.getFnr(soknadDbModel.sykmeldingId.toString()) ?: soknadDbModel.pasientFnr
             connection.prepareStatement(
                 """
                insert into soknad(
@@ -33,7 +35,7 @@ class SoknadDb(private val database: DatabaseInterface) {
             ).use { preparedStatement ->
                 preparedStatement.setString(1, soknadDbModel.soknadId)
                 preparedStatement.setString(2, soknadDbModel.sykmeldingId)
-                preparedStatement.setString(3, soknadDbModel.pasientFnr)
+                preparedStatement.setString(3, fnr)
                 preparedStatement.setString(4, soknadDbModel.orgnummer)
                 preparedStatement.setObject(5, soknadDbModel.soknad.toPGObject())
                 preparedStatement.setObject(6, soknadDbModel.sendtDato)
@@ -57,6 +59,22 @@ class SoknadDb(private val database: DatabaseInterface) {
                 ps.executeUpdate()
             }
             connection.commit()
+        }
+    }
+
+    private fun Connection.getFnr(sykmeldingId: String): String? {
+        return this.prepareStatement(
+            """
+            select pasient_fnr from sykmelding where sykmelding_id = ?;
+            """
+        ).use { preparedStatement ->
+            preparedStatement.setString(1, sykmeldingId)
+            preparedStatement.executeQuery().use {
+                when (it.next()) {
+                    true -> it.getString("pasient_fnr")
+                    else -> null
+                }
+            }
         }
     }
 }
