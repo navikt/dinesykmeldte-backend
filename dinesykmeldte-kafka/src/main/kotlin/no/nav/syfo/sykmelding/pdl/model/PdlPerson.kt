@@ -1,10 +1,12 @@
 package no.nav.syfo.sykmelding.pdl.model
 
 import no.nav.syfo.util.toFormattedNameString
+import java.time.LocalDate
 
 data class PdlPerson(
     val navn: Navn,
-    val aktorId: String?
+    val aktorId: String?,
+    val fodselsdato: LocalDate?
 )
 
 data class Navn(

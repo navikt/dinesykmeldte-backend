@@ -131,7 +131,8 @@ class TestDb private constructor() {
                 pasientFnr = getString("pasient_fnr"),
                 pasientNavn = getString("pasient_navn"),
                 startdatoSykefravaer = getObject("startdato_sykefravaer", LocalDate::class.java),
-                latestTom = getObject("latest_tom", LocalDate::class.java)
+                latestTom = getObject("latest_tom", LocalDate::class.java),
+                fodselsdato = getObject("fodselsdato", LocalDate::class.java)
             )
 
         fun getSykmelding(sykmeldingId: String): SykmeldingDbModel? {

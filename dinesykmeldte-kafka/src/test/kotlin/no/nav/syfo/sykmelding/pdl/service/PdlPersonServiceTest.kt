@@ -13,12 +13,14 @@ import no.nav.syfo.sykmelding.pdl.model.formatName
 import no.nav.syfo.util.HttpClientTest
 import org.amshove.kluent.shouldBeEqualTo
 import java.io.File
+import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertFailsWith
 
 class PdlPersonServiceTest : FunSpec({
     val sykmeldingId = UUID.randomUUID().toString()
     val fnr = "12345678910"
+    val fnrGyldigDato = "12125678910"
     val accessTokenClient = mockk<AccessTokenClient>()
     val httpClient = HttpClientTest()
 
@@ -32,24 +34,38 @@ class PdlPersonServiceTest : FunSpec({
 
     context("PdlPersonService") {
         test("Handle error") {
-            runBlocking {
-                httpClient.respond {
-                    delay(10_000)
-                    null
-                }
-                assertFailsWith<ServiceUnavailableException> {
-                    pdlPersonService.getPerson(fnr, sykmeldingId)
-                }
+            httpClient.respond {
+                delay(10_000)
+                null
+            }
+            assertFailsWith<ServiceUnavailableException> {
+                pdlPersonService.getPerson(fnr, sykmeldingId)
             }
         }
-        test("Henter navn og aktørid for person som finnes i PDL") {
+        test("Henter navn, aktørid og fødselsdato for person som finnes i PDL") {
             httpClient.respond(getTestData())
-            runBlocking {
-                val person = pdlPersonService.getPerson(fnr, sykmeldingId)
+            val person = pdlPersonService.getPerson(fnr, sykmeldingId)
 
-                person.aktorId shouldBeEqualTo "99999999999"
-                person.navn.formatName() shouldBeEqualTo "Rask Saks"
-            }
+            person.aktorId shouldBeEqualTo "99999999999"
+            person.navn.formatName() shouldBeEqualTo "Rask Saks"
+            person.fodselsdato shouldBeEqualTo LocalDate.of(1980, 1, 1)
+        }
+        test("Henter navn og aktørid og beregner fødselsdato for person som finnes i PDL") {
+            httpClient.respond(getTestDataUtenFodselsdato())
+            val person = pdlPersonService.getPerson(fnrGyldigDato, sykmeldingId)
+
+            person.aktorId shouldBeEqualTo "99999999999"
+            person.navn.formatName() shouldBeEqualTo "Rask Saks"
+            person.fodselsdato shouldBeEqualTo LocalDate.of(1956, 12, 12)
+        }
+
+        test("Feiler ikke hvis vi ikke finner fødselsdato") {
+            httpClient.respond(getTestDataUtenFodselsdato())
+            val person = pdlPersonService.getPerson(fnr, sykmeldingId)
+
+            person.aktorId shouldBeEqualTo "99999999999"
+            person.navn.formatName() shouldBeEqualTo "Rask Saks"
+            person.fodselsdato shouldBeEqualTo null
         }
 
         test("Feiler hvis navn mangler i PDL") {

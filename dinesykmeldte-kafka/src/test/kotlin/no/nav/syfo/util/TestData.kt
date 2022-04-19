@@ -17,7 +17,6 @@ import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.toSoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
-import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -35,15 +34,6 @@ fun createSykmeldingDbModel(
         sykmelding = createArbeidsgiverSykmelding(sykmeldingId = sykmeldingId),
         lest = false,
         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-        latestTom = LocalDate.now().minusWeeks(2)
-    )
-}
-
-fun createSykmeldtDbModel(pasientFnr: String = "12345678910"): SykmeldtDbModel {
-    return SykmeldtDbModel(
-        pasientFnr = pasientFnr,
-        pasientNavn = "Navn Navnesen",
-        startdatoSykefravaer = LocalDate.now().minusMonths(2),
         latestTom = LocalDate.now().minusWeeks(2)
     )
 }

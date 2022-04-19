@@ -280,7 +280,8 @@ fun createSykmeldtDbModel(pasientFnr: String = "12345678910"): SykmeldtDbModel {
         pasientFnr = pasientFnr,
         pasientNavn = "Navn Navnesen",
         startdatoSykefravaer = LocalDate.now().minusMonths(2),
-        latestTom = LocalDate.now().minusWeeks(2)
+        latestTom = LocalDate.now().minusWeeks(2),
+        fodselsdato = LocalDate.now().minusYears(40)
     )
 }
 

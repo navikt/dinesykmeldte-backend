@@ -49,7 +49,8 @@ class SykmeldingServiceTest : FunSpec({
         clearMocks(pdlPersonService, syfoSyketilfelleClient)
         coEvery { pdlPersonService.getPerson(any(), any()) } returns PdlPerson(
             Navn("Syk", null, "Sykesen"),
-            "321654987"
+            "321654987",
+            LocalDate.now().minusYears(40)
         )
         coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns LocalDate.now().minusMonths(1)
     }
@@ -65,6 +66,7 @@ class SykmeldingServiceTest : FunSpec({
             sykmeldt?.pasientNavn shouldBeEqualTo "Syk Sykesen"
             sykmeldt?.startdatoSykefravaer shouldBeEqualTo LocalDate.now().minusMonths(1)
             sykmeldt?.latestTom shouldBeEqualTo LocalDate.now().plusDays(10)
+            sykmeldt?.fodselsdato shouldBeEqualTo LocalDate.now().minusYears(40)
 
             val sykmelding = TestDb.getSykmelding(sykmeldingId)
             sykmelding?.pasientFnr shouldBeEqualTo "12345678910"
@@ -117,10 +119,12 @@ class SykmeldingServiceTest : FunSpec({
             sykmeldt?.pasientNavn shouldBeEqualTo "Syk Sykesen"
             sykmeldt?.startdatoSykefravaer shouldBeEqualTo LocalDate.now().minusMonths(1)
             sykmeldt?.latestTom shouldBeEqualTo LocalDate.now().plusDays(10)
+            sykmeldt?.fodselsdato shouldBeEqualTo LocalDate.now().minusYears(40)
 
             coEvery { pdlPersonService.getPerson(any(), any()) } returns PdlPerson(
                 Navn("Per", null, "Persen"),
-                "321654987"
+                "321654987",
+                LocalDate.now().minusYears(40)
             )
             coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns LocalDate.now().minusMonths(2)
 

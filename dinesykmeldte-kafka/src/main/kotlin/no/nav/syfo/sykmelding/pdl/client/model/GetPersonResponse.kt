@@ -20,13 +20,18 @@ data class Ident(
 )
 
 data class PersonResponse(
-    val navn: List<Navn>?
+    val navn: List<Navn>?,
+    val foedsel: List<Foedsel>?
 )
 
 data class Navn(
     val fornavn: String,
     val mellomnavn: String?,
     val etternavn: String
+)
+
+data class Foedsel(
+    val foedselsdato: String?
 )
 
 data class ResponseError(
