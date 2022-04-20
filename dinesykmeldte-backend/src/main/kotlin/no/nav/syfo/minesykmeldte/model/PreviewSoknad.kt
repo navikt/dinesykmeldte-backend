@@ -32,7 +32,7 @@ data class PreviewSendtSoknad(
 }
 
 data class PreviewNySoknad(
-    val varsel: Boolean,
+    val lest: Boolean,
     val ikkeSendtSoknadVarsel: Boolean,
     override val id: String,
     override val sykmeldingId: String?,

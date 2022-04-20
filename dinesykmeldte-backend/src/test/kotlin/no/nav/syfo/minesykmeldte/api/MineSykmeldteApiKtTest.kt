@@ -165,7 +165,7 @@ object MineSykmeldteApiKtTest : FunSpec({
                                     sykmeldingId = "sykmelding-id-1",
                                     fom = LocalDate.parse("2020-01-01"),
                                     tom = LocalDate.parse("2020-02-01"),
-                                    varsel = true,
+                                    lest = false,
                                     perioder = listOf(),
                                     ikkeSendtSoknadVarsel = false
                                 ),
@@ -197,7 +197,7 @@ object MineSykmeldteApiKtTest : FunSpec({
                             "sykmeldinger": [],
                             "previewSoknader": [
                               {
-                                "varsel": true,
+                                "lest": false,
                                 "ikkeSendtSoknadVarsel": false,
                                 "id": "soknad-1-id",
                                 "sykmeldingId": "sykmelding-id-1",

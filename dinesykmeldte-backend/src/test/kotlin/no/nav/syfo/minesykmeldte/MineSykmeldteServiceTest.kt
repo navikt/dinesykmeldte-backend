@@ -653,7 +653,7 @@ class MineSykmeldteServiceTest : FunSpec({
                     val mappedSoknad = mineSykeldte[0].previewSoknader[0]
 
                     mappedSoknad.shouldBeInstance<PreviewNySoknad>()
-                    mappedSoknad.varsel shouldBeEqualTo true
+                    mappedSoknad.lest shouldBeEqualTo false
                 }
             }
 
@@ -685,7 +685,7 @@ class MineSykmeldteServiceTest : FunSpec({
                     val mappedSoknad = mineSykeldte[0].previewSoknader[0]
 
                     mappedSoknad.shouldBeInstance<PreviewNySoknad>()
-                    mappedSoknad.varsel shouldBeEqualTo false
+                    mappedSoknad.lest shouldBeEqualTo true
                 }
             }
 
