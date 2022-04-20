@@ -26,7 +26,7 @@ val DialogmoteHendelser = listOf(
     HendelseType.DIALOGMOTE_6_UKERS_VARSEL,
 )
 
-val OppfolgningsplanerHendelser = listOf(
+val OppfolgingsplanerHendelser = listOf(
     HendelseType.OPPFOLGINGSPLAN_OPPRETTET,
     HendelseType.OPPFOLGINGSPLAN_TIL_GODKJENNING
 )

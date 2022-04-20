@@ -72,7 +72,7 @@ class MineSykmeldteServiceTest : FunSpec({
 
     context("getMineSykmeldte") {
 
-        test("Should get mine sykmeldte with oppfolgningsplan hendelse") {
+        test("Should get mine sykmeldte with oppfolgingsplan hendelse") {
             val hendelseid = UUID.randomUUID()
             every { mineSykmeldteDb.getHendelser("1") } returns listOf(
                 HendelseDbModel(
@@ -81,7 +81,7 @@ class MineSykmeldteServiceTest : FunSpec({
                     orgnummer = "orgnummer",
                     oppgavetype = "OPPFOLGINGSPLAN_OPPRETTET",
                     lenke = "localhost",
-                    tekst = "Ny oppfolgningsplan",
+                    tekst = "Ny oppfolgingsplan",
                     timestamp = OffsetDateTime.now(),
                     utlopstidspunkt = null,
                     ferdigstilt = false,
@@ -92,10 +92,10 @@ class MineSykmeldteServiceTest : FunSpec({
             every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(1, sykmeldtFnrPrefix = "prefix")
             val sykmeldte = runBlocking { mineSykmeldtService.getMineSykmeldte("1") }
             sykmeldte.size shouldBeEqualTo 1
-            val oppfolningsplaner = sykmeldte.first().oppfolgningsplaner
+            val oppfolningsplaner = sykmeldte.first().oppfolgingsplaner
             oppfolningsplaner.size shouldBeEqualTo 1
             oppfolningsplaner.first().hendelseId shouldBeEqualTo hendelseid
-            oppfolningsplaner.first().tekst shouldBeEqualTo "Ny oppfolgningsplan"
+            oppfolningsplaner.first().tekst shouldBeEqualTo "Ny oppfolgingsplan"
         }
         test("Should get mine sykmeldte with hendelser") {
             every { mineSykmeldteDb.getHendelser("1") } returns listOf(

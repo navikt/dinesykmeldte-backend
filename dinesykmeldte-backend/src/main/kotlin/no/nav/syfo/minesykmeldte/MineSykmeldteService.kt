@@ -24,8 +24,8 @@ import no.nav.syfo.minesykmeldte.model.Gradert
 import no.nav.syfo.minesykmeldte.model.Hendelse
 import no.nav.syfo.minesykmeldte.model.HendelseType
 import no.nav.syfo.minesykmeldte.model.MinSykmeldtKey
-import no.nav.syfo.minesykmeldte.model.Oppfolgningsplan
-import no.nav.syfo.minesykmeldte.model.OppfolgningsplanerHendelser
+import no.nav.syfo.minesykmeldte.model.Oppfolgingsplan
+import no.nav.syfo.minesykmeldte.model.OppfolgingsplanerHendelser
 import no.nav.syfo.minesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.model.PreviewSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
@@ -68,18 +68,18 @@ class MineSykmeldteService(
                 dialogmoter = getDialogmoter(hendelserMap, sykmeldtEntry),
                 sykmeldinger = getSykmeldinger(sykmeldtEntry),
                 aktivitetsvarsler = getAktivitetsvarsler(hendelserMap, sykmeldtEntry),
-                oppfolgningsplaner = getOppfolgningsplaner(hendelserMap, sykmeldtEntry),
+                oppfolgingsplaner = getOppfolgingsplaner(hendelserMap, sykmeldtEntry),
             )
         }
     }
 
-    private fun getOppfolgningsplaner(
+    private fun getOppfolgingsplaner(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
     ) = hendelserMap[sykmeldtEntry.key.fnr]
-        ?.filter { OppfolgningsplanerHendelser.contains(it.oppgavetype) }
+        ?.filter { OppfolgingsplanerHendelser.contains(it.oppgavetype) }
         ?.map {
-            Oppfolgningsplan(it.hendelseId, it.tekst ?: throw IllegalStateException("Oppfølgningsplan uten tekst: ${it.id}"))
+            Oppfolgingsplan(it.hendelseId, it.tekst ?: throw IllegalStateException("Oppfølgningsplan uten tekst: ${it.id}"))
         }
         ?: emptyList()
 
