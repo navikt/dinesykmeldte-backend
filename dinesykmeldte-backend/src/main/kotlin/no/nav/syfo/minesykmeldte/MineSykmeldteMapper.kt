@@ -57,14 +57,14 @@ class MineSykmeldteMapper private constructor() {
 
         private fun getNySoknad(soknad: SykepengesoknadDTO, lest: Boolean, hendelser: List<Hendelse>): PreviewNySoknad =
             PreviewNySoknad(
-                varsel = !lest,
+                lest = lest,
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
                 tom = soknad.tom,
                 perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
                     ?: throw IllegalStateException("søknadsperioder must not be null in ny soknad: ${soknad.id}"),
-                ikkeSendtSoknadVarsel = hendelser.any { it.id == soknad.id && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD }
+                ikkeSendtSoknadVarsel = hendelser.any { it.id == soknad.id && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD },
             )
 
         fun SoknadsperiodeDTO.toSoknadsperiode(): Soknadsperiode = Soknadsperiode(
