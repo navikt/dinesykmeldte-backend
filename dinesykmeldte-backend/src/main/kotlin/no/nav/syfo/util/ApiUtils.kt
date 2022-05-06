@@ -1,7 +1,7 @@
 package no.nav.syfo.util
 
-import io.ktor.application.ApplicationCall
-import io.ktor.auth.authentication
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.auth.authentication
 import no.nav.syfo.application.BrukerPrincipal
 
 fun ApplicationCall.getBrukerPrincipal(): BrukerPrincipal {

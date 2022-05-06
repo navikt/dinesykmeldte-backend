@@ -1,10 +1,10 @@
 package no.nav.syfo.narmesteleder.api
 
-import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.routing.post
+import io.ktor.server.application.call
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.post
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.application.metrics.DEAKTIVERT_LEDER_COUNTER
 import no.nav.syfo.log
