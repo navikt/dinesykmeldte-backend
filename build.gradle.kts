@@ -98,6 +98,7 @@ subprojects {
         implementation("org.flywaydb:flyway-core:$flywayVersion")
         implementation("org.postgresql:postgresql:$postgresVersion")
         implementation("com.google.cloud.sql:postgres-socket-factory:1.6.0")
+        implementation("com.google.oauth-client:google-oauth-client:1.33.3")
 
         swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
 
