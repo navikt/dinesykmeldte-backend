@@ -996,6 +996,8 @@ class MineSykmeldteServiceTest : FunSpec({
                                 sykmeldingstype = SykmeldingstypeDTO.AKTIVITET_IKKE_MULIG,
                             )
                         )
+                        every { it.sendtNav } returns LocalDateTime.parse("2022-05-09T08:56:24")
+                        every { it.sendtArbeidsgiver } returns LocalDateTime.parse("2022-05-10T08:56:24")
                         every { it.sporsmal } returns listOf(
                             SporsmalDTO(
                                 id = "54217564",

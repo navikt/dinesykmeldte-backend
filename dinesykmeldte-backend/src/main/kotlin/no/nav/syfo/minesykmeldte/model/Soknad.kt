@@ -3,6 +3,7 @@ package no.nav.syfo.minesykmeldte.model
 import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class Soknad(
     val id: String,
@@ -12,6 +13,8 @@ data class Soknad(
     val navn: String,
     val fnr: String,
     val lest: Boolean,
+    val sendtDato: LocalDateTime,
+    val sendtTilNavDato: LocalDateTime?,
     val korrigererSoknadId: String?,
     val korrigertBySoknadId: String?,
     val perioder: List<Soknadsperiode>,
