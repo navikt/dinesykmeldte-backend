@@ -41,6 +41,7 @@ class MineSykmeldteMapper private constructor() {
                 korrigererSoknadId = soknad.korrigerer,
                 sendtDato = soknad.sendtArbeidsgiver
                     ?: throw IllegalStateException("sendtArbeidsgiver is null for soknad: ${soknad.id}"),
+                sendtTilNavDato = soknad.sendtNav,
                 perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
                     ?: throw IllegalStateException("søknadsperioder must not be null in sendt soknad: ${soknad.id}"),
             )
