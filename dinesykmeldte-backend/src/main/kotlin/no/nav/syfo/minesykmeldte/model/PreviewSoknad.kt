@@ -22,6 +22,7 @@ data class PreviewSendtSoknad(
     val korrigererSoknadId: String?,
     val lest: Boolean,
     val sendtDato: LocalDateTime,
+    val sendtTilNavDato: LocalDateTime?,
     override val id: String,
     override val sykmeldingId: String?,
     override val fom: LocalDate?,
