@@ -1,11 +1,11 @@
 package no.nav.syfo.minesykmeldte.api
 
-import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.routing.get
-import io.ktor.routing.put
+import io.ktor.server.application.call
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.put
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.log
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
@@ -17,7 +17,7 @@ import java.util.UUID
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
-@OptIn(ExperimentalTime::class)
+@ExperimentalTime
 fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
     get("api/minesykmeldte") {
         val principal: BrukerPrincipal = call.getBrukerPrincipal()

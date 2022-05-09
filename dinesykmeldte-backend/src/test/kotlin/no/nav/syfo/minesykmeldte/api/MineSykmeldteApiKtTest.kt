@@ -33,8 +33,10 @@ import org.amshove.kluent.shouldBeEqualTo
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
+import kotlin.time.ExperimentalTime
 
-object MineSykmeldteApiKtTest : FunSpec({
+@ExperimentalTime
+class MineSykmeldteApiKtTest : FunSpec({
     val mineSykmeldteService = mockk<MineSykmeldteService>()
     val env = mockk<Environment>()
 

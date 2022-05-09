@@ -5,36 +5,36 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.6.0"
+val coroutinesVersion = "1.6.1"
 val jacksonVersion = "2.13.2"
-val jacksonPatchVersion = "2.13.2.1"
-val jacksonBomVersion = "2.13.2.20220324"
+val jacksonPatchVersion = "2.13.2.2"
+val jacksonBomVersion = "2.13.2.20220328"
 val kluentVersion = "1.68"
-val ktorVersion = "1.6.8"
-val logbackVersion = "1.2.10"
-val logstashEncoderVersion = "7.0.1"
+val ktorVersion = "2.0.0"
+val logbackVersion = "1.2.11"
+val logstashEncoderVersion = "7.1.1"
 val prometheusVersion = "0.15.0"
-val smCommonVersion = "1.a92720c"
-val mockkVersion = "1.12.2"
-val nimbusdsVersion = "9.19"
+val smCommonVersion = "1.c55f4d2"
+val mockkVersion = "1.12.3"
+val nimbusdsVersion = "9.22"
 val hikariVersion = "5.0.1"
-val flywayVersion = "8.5.0"
-val postgresVersion = "42.3.2"
-val testContainerVersion = "1.16.3"
-val kotlinVersion = "1.6.0"
+val flywayVersion = "8.5.10"
+val postgresVersion = "42.3.4"
+val testContainerVersion = "1.17.1"
+val kotlinVersion = "1.6.20"
 val sykepengesoknadKafkaVersion = "2022.02.10-16.07-0892e94a"
-val swaggerUiVersion = "4.5.0"
-val kotestVersion = "5.1.0"
+val swaggerUiVersion = "4.10.3"
+val kotestVersion = "5.2.3"
 
 tasks.withType<Jar> {
     manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
 }
 
 plugins {
-    id("org.jmailen.kotlinter") version "3.6.0"
-    kotlin("jvm") version "1.6.0"
-    id("com.diffplug.spotless") version "5.16.0"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("org.jmailen.kotlinter") version "3.10.0"
+    kotlin("jvm") version "1.6.20"
+    id("com.diffplug.spotless") version "6.5.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.hidetake.swagger.generator") version "2.18.2" apply true
 }
 
@@ -68,13 +68,18 @@ subprojects {
         implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
         implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
+        implementation("io.ktor:ktor-server-core:$ktorVersion")
         implementation("io.ktor:ktor-server-netty:$ktorVersion")
+        implementation("io.ktor:ktor-server-auth:$ktorVersion")
+        implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
+        implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+        implementation("io.ktor:ktor-server-cors:$ktorVersion")
+        implementation("io.ktor:ktor-server-call-id:$ktorVersion")
+        implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
+        implementation("io.ktor:ktor-client-core:$ktorVersion")
         implementation("io.ktor:ktor-client-apache:$ktorVersion")
-        implementation("io.ktor:ktor-client-auth-basic:$ktorVersion")
-        implementation("io.ktor:ktor-client-jackson:$ktorVersion")
-        implementation("io.ktor:ktor-jackson:$ktorVersion")
-        implementation("io.ktor:ktor-auth:$ktorVersion")
-        implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
+        implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+        implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
         implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
         implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
@@ -92,7 +97,8 @@ subprojects {
         implementation("com.zaxxer:HikariCP:$hikariVersion")
         implementation("org.flywaydb:flyway-core:$flywayVersion")
         implementation("org.postgresql:postgresql:$postgresVersion")
-        implementation("com.google.cloud.sql:postgres-socket-factory:1.4.3")
+        implementation("com.google.cloud.sql:postgres-socket-factory:1.6.0")
+        implementation("com.google.oauth-client:google-oauth-client:1.33.3")
 
         swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
 

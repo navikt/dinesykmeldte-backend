@@ -5,21 +5,19 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
-import io.ktor.application.call
-import io.ktor.application.install
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
-import io.ktor.client.features.HttpTimeout
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.features.ContentNegotiation
-import io.ktor.jackson.jackson
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.network.sockets.SocketTimeoutException
-import io.ktor.response.respond
-import io.ktor.routing.get
-import io.ktor.routing.routing
+import io.ktor.serialization.jackson.jackson
+import io.ktor.server.application.call
+import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.response.respond
+import io.ktor.server.routing.get
+import io.ktor.server.routing.routing
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.delay
@@ -32,7 +30,7 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertFailsWith
 
-object SyfoSyketilfelleClientTest : FunSpec({
+class SyfoSyketilfelleClientTest : FunSpec({
     val sykmeldingUUID = UUID.randomUUID()
     val oppfolgingsdato1 = LocalDate.of(2019, 9, 30)
     val oppfolgingsdato2 = LocalDate.of(2020, 1, 30)
@@ -43,8 +41,8 @@ object SyfoSyketilfelleClientTest : FunSpec({
     val fnr3 = "1234567"
     val accessTokenClient = mockk<AccessTokenClient>()
     val httpClient = HttpClient(Apache) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
+        install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+            jackson {
                 registerKotlinModule()
                 registerModule(JavaTimeModule())
                 configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
@@ -54,8 +52,8 @@ object SyfoSyketilfelleClientTest : FunSpec({
     }
 
     val socketTimeoutClient = HttpClient(Apache) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
+        install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+            jackson {
                 registerKotlinModule()
                 registerModule(JavaTimeModule())
                 configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
@@ -172,18 +170,14 @@ object SyfoSyketilfelleClientTest : FunSpec({
 
     context("Test av SyfoSyketilfelleClient - finnStartDato") {
         test("Should get SocketTimeoutException") {
-            runBlocking {
-                assertFailsWith<SocketTimeoutException> {
-                    syfoSyketilfelletSocketTimeoutClient.finnStartdato(fnr3, sykmeldingUUID.toString())
-                }
+            assertFailsWith<SocketTimeoutException> {
+                syfoSyketilfelletSocketTimeoutClient.finnStartdato(fnr3, sykmeldingUUID.toString())
             }
         }
 
         test("Henter riktig startdato fra syfosyketilfelle") {
-            runBlocking {
-                val startDato = syfoSyketilfelleClient.finnStartdato(fnr1, sykmeldingUUID.toString())
-                startDato shouldBeEqualTo oppfolgingsdato2
-            }
+            val startDato = syfoSyketilfelleClient.finnStartdato(fnr1, sykmeldingUUID.toString())
+            startDato shouldBeEqualTo oppfolgingsdato2
         }
         test("Kaster feil hvis sykmelding ikke er knyttet til syketilfelle") {
             assertFailsWith<SyketilfelleNotFoundException> {

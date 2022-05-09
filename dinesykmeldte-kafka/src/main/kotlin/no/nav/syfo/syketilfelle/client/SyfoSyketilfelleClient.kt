@@ -1,6 +1,7 @@
 package no.nav.syfo.syketilfelle.client
 
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
@@ -38,7 +39,7 @@ class SyfoSyketilfelleClient(
                 append("Authorization", "Bearer $token")
                 append("fnr", fnr)
             }
-        }
+        }.body()
 }
 
 data class Sykeforloep(

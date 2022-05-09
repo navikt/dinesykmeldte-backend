@@ -4,31 +4,29 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.application.call
-import io.ktor.application.install
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
-import io.ktor.client.features.HttpResponseValidator
-import io.ktor.client.features.HttpTimeout
-import io.ktor.client.features.defaultRequest
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.request.host
-import io.ktor.client.request.port
-import io.ktor.features.ContentNegotiation
+import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
-import io.ktor.jackson.jackson
 import io.ktor.network.sockets.SocketTimeoutException
-import io.ktor.response.respond
-import io.ktor.response.respondText
-import io.ktor.routing.get
-import io.ktor.routing.routing
+import io.ktor.serialization.jackson.jackson
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.application.call
+import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.routing
+import io.ktor.util.pipeline.PipelineContext
 import no.nav.syfo.common.exception.ServiceUnavailableException
 import java.net.ServerSocket
 
@@ -53,16 +51,23 @@ class HttpClientTest {
         }
         routing {
             get("*") {
-                when (val response = responseFunction.invoke()) {
-                    null -> call.respond(HttpStatusCode.OK)
-                    else -> {
-                        call.respondText(response.content, ContentType.Application.Json, response.httpStatusCode)
-                        call.respond(response.httpStatusCode, response.content)
-                    }
-                }
+                response()
+            }
+            post("*") {
+                response()
             }
         }
     }.start(false)
+
+    private suspend fun PipelineContext<Unit, ApplicationCall>.response() {
+        when (val response = responseFunction.invoke()) {
+            null -> call.respond(HttpStatusCode.OK)
+            else -> {
+                call.respondText(response.content, ContentType.Application.Json, response.httpStatusCode)
+                call.respond(response.httpStatusCode, response.content)
+            }
+        }
+    }
 
     var responseFunction: suspend () -> ResponseData? = {
         responseData
@@ -84,19 +89,18 @@ class HttpClientTest {
 
     val httpClient = HttpClient(Apache) {
         defaultRequest {
-            method = HttpMethod.Get
             host = "localhost"
             port = mockHttpServerPort
         }
         HttpResponseValidator {
-            handleResponseException { exception ->
+            handleResponseExceptionWithRequest { exception, _ ->
                 when (exception) {
                     is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
                 }
             }
         }
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
+        install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+            jackson {
                 registerKotlinModule()
                 registerModule(JavaTimeModule())
                 configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
