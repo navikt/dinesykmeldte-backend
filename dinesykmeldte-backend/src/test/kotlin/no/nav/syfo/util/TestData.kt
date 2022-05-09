@@ -36,7 +36,8 @@ fun createSykmeldingDbModel(
         sykmelding = createArbeidsgiverSykmelding(sykmeldingId = sykmeldingId),
         lest = false,
         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-        latestTom = LocalDate.now().minusWeeks(2)
+        latestTom = LocalDate.now().minusWeeks(2),
+        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
     )
 }
 

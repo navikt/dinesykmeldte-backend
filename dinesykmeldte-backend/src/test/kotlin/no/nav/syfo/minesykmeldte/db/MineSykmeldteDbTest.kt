@@ -22,6 +22,7 @@ import org.amshove.kluent.shouldNotBeEqualTo
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
 class MineSykmeldteDbTest : FunSpec({
@@ -229,7 +230,7 @@ class MineSykmeldteDbTest : FunSpec({
                 oppgavetype = "OPPGAVETYPE",
                 lenke = "https://link",
                 tekst = "tekst",
-                timestamp = OffsetDateTime.now(),
+                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                 utlopstidspunkt = null,
                 ferdigstilt = false,
                 ferdigstiltTimestamp = null,
@@ -260,7 +261,7 @@ class MineSykmeldteDbTest : FunSpec({
                 oppgavetype = "OPPGAVETYPE",
                 lenke = null,
                 tekst = null,
-                timestamp = OffsetDateTime.now(),
+                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                 utlopstidspunkt = null,
                 ferdigstilt = false,
                 ferdigstiltTimestamp = null,
@@ -294,7 +295,7 @@ class MineSykmeldteDbTest : FunSpec({
                 oppgavetype = "OPPGAVETYPE",
                 lenke = "https://link",
                 tekst = "tekst",
-                timestamp = OffsetDateTime.now(),
+                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                 utlopstidspunkt = null,
                 ferdigstilt = false,
                 ferdigstiltTimestamp = null,

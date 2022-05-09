@@ -13,4 +13,5 @@ data class SykmeldingDbModel(
     val lest: Boolean,
     val timestamp: OffsetDateTime,
     val latestTom: LocalDate,
+    val sendtTilArbeidsgiverDato: OffsetDateTime?,
 )

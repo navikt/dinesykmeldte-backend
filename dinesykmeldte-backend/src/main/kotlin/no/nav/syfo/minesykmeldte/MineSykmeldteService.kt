@@ -79,8 +79,10 @@ class MineSykmeldteService(
     ) = hendelserMap[sykmeldtEntry.key.fnr]
         ?.filter { OppfolgingsplanerHendelser.contains(it.oppgavetype) }
         ?.map {
-            Oppfolgingsplan(it.hendelseId,
-                it.tekst ?: throw IllegalStateException("Oppfølgningsplan uten tekst: ${it.id}"))
+            Oppfolgingsplan(
+                it.hendelseId,
+                it.tekst ?: throw IllegalStateException("Oppfølgningsplan uten tekst: ${it.id}")
+            )
         }
         ?: emptyList()
 
@@ -239,6 +241,7 @@ private fun MinSykmeldtDbModel.toSykmelding(): Sykmelding {
         },
         startdatoSykefravar = this.startDatoSykefravar,
         navn = this.sykmeldtNavn,
+        sendtTilArbeidsgiverDato = this.sendtTilArbeidsgiverDato,
     )
 }
 
@@ -268,6 +271,7 @@ private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding 
         },
         startdatoSykefravar = sykmeldt.startdatoSykefravaer,
         navn = sykmeldt.pasientNavn,
+        sendtTilArbeidsgiverDato = sykmelding.sendtTilArbeidsgiverDato,
     )
 }
 

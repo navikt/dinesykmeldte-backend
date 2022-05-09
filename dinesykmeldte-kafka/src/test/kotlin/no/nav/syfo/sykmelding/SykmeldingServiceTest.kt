@@ -31,6 +31,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.time.Clock
 import java.util.UUID
 
 class SykmeldingServiceTest : FunSpec({
@@ -57,7 +58,8 @@ class SykmeldingServiceTest : FunSpec({
     context("SykmeldingService") {
         test("Lagrer ny sendt sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
-            val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
+            val sendtTilArbeidsgiverDato = OffsetDateTime.now(Clock.tickMillis(ZoneOffset.UTC))
+            val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId = sykmeldingId, sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato)
 
             sykmeldingService.handleSendtSykmelding(sykmeldingId, sendtSykmelding)
 
@@ -74,6 +76,7 @@ class SykmeldingServiceTest : FunSpec({
             sykmelding?.lest shouldBeEqualTo false
             sykmelding?.timestamp?.toLocalDate() shouldBeEqualTo LocalDate.now()
             sykmelding?.latestTom shouldBeEqualTo LocalDate.now().plusDays(10)
+            sykmelding?.sendtTilArbeidsgiverDato shouldBeEqualTo sendtTilArbeidsgiverDato
         }
         test("Oppdaterer allerede mottatt sendt sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
@@ -197,13 +200,14 @@ fun getSendtSykmeldingKafkaMessage(
             AktivitetIkkeMuligAGDTO(null),
             false
         )
-    )
+    ),
+    sendtTilArbeidsgiverDato: OffsetDateTime = OffsetDateTime.now(Clock.tickMillis(ZoneOffset.UTC))
 ) = SendtSykmeldingKafkaMessage(
     createArbeidsgiverSykmelding(sykmeldingId, perioder),
     KafkaMetadataDTO(sykmeldingId, OffsetDateTime.now(ZoneOffset.UTC), "12345678910", "user"),
     SykmeldingStatusKafkaEventDTO(
         sykmeldingId,
-        OffsetDateTime.now(ZoneOffset.UTC),
+        sendtTilArbeidsgiverDato,
         "SENDT",
         ArbeidsgiverStatusDTO("88888888", null, "Bedriften AS"),
         null

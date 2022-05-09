@@ -7,6 +7,7 @@ import no.nav.syfo.util.TestDb
 import org.amshove.kluent.shouldBeEqualTo
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
 class NarmestelederServiceTest : FunSpec({
@@ -56,5 +57,5 @@ fun createNarmestelederLeesahKafkaMessage(
         aktivFom = LocalDate.of(2020, 1, 1),
         arbeidsgiverForskutterer = null,
         aktivTom = aktivTom,
-        timestamp = OffsetDateTime.now()
+        timestamp = OffsetDateTime.now(ZoneOffset.UTC)
     )
