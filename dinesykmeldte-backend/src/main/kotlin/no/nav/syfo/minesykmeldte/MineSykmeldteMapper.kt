@@ -15,7 +15,6 @@ import no.nav.syfo.minesykmeldte.model.Soknadsperiode
 import no.nav.syfo.minesykmeldte.model.Sporsmal
 import no.nav.syfo.minesykmeldte.model.Svar
 import no.nav.syfo.minesykmeldte.model.Undersporsmal
-import java.util.Collections.max
 
 class MineSykmeldteMapper private constructor() {
     companion object {
@@ -41,7 +40,6 @@ class MineSykmeldteMapper private constructor() {
                 korrigererSoknadId = soknad.korrigerer,
                 sendtDato = soknad.sendtArbeidsgiver
                     ?: throw IllegalStateException("sendtArbeidsgiver is null for soknad: ${soknad.id}"),
-                sendtTilNavDato = soknad.sendtNav,
                 perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
                     ?: throw IllegalStateException("søknadsperioder must not be null in sendt soknad: ${soknad.id}"),
             )

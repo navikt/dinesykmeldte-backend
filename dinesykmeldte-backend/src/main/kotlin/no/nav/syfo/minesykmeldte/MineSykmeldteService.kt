@@ -75,11 +75,12 @@ class MineSykmeldteService(
 
     private fun getOppfolgingsplaner(
         hendelserMap: Map<String, List<Hendelse>>,
-        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
+        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
     ) = hendelserMap[sykmeldtEntry.key.fnr]
         ?.filter { OppfolgingsplanerHendelser.contains(it.oppgavetype) }
         ?.map {
-            Oppfolgingsplan(it.hendelseId, it.tekst ?: throw IllegalStateException("Oppfølgningsplan uten tekst: ${it.id}"))
+            Oppfolgingsplan(it.hendelseId,
+                it.tekst ?: throw IllegalStateException("Oppfølgningsplan uten tekst: ${it.id}"))
         }
         ?: emptyList()
 
@@ -200,6 +201,9 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         fom = soknadDb.soknad.fom!!,
         tom = soknadDb.tom,
         lest = soknadDb.lest,
+        sendtDato = soknadDb.soknad.sendtArbeidsgiver
+            ?: throw IllegalStateException("Søknad uten sendt dato: ${soknadDb.soknadId}"),
+        sendtTilNavDato = soknadDb.soknad.sendtNav,
         korrigererSoknadId = soknadDb.soknad.korrigerer,
         korrigertBySoknadId = soknadDb.soknad.korrigertAv,
         perioder = soknadDb.soknad.soknadsperioder?.map { it.toSoknadsperiode() }

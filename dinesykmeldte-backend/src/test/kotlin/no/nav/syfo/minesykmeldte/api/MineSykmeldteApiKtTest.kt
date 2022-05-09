@@ -31,6 +31,7 @@ import no.nav.syfo.util.minifyApiResponse
 import no.nav.syfo.util.withKtor
 import org.amshove.kluent.shouldBeEqualTo
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.time.ExperimentalTime
@@ -351,6 +352,8 @@ class MineSykmeldteApiKtTest : FunSpec({
                          "navn": "Navn N. Navnessen",
                          "fnr": "08088012345",
                          "lest": false,
+                         "sendtDato":"2022-05-09T08:56:24",
+                         "sendtTilNavDato":"2022-05-09T08:56:24",
                          "korrigererSoknadId":null,
                          "korrigertBySoknadId": "0422-4a5e-b779-a8819abf",
                          "perioder": [],
@@ -383,6 +386,8 @@ fun createSoknadTestData(
     navn: String = "Navn N. Navnessen",
     fnr: String = "08088012345",
     lest: Boolean = false,
+    sendtDato: LocalDateTime = LocalDateTime.parse("2022-05-09T08:56:24"),
+    sendtTilNavoDato: LocalDateTime = LocalDateTime.parse("2022-05-09T08:56:24"),
     tom: LocalDate = LocalDate.now(),
     fom: LocalDate = LocalDate.parse("2021-05-01"),
     korrigererSoknadId: String? = null,
@@ -396,6 +401,8 @@ fun createSoknadTestData(
     tom = tom,
     fom = fom,
     lest = lest,
+    sendtDato = sendtDato,
+    sendtTilNavDato = sendtTilNavoDato,
     korrigererSoknadId = korrigererSoknadId,
     korrigertBySoknadId = korrigertBySoknadId,
     perioder = listOf(),
