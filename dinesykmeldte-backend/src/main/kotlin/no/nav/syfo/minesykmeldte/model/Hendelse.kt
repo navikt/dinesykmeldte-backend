@@ -9,7 +9,7 @@ enum class HendelseType {
     DIALOGMOTE_ENDRING,
     DIALOGMOTE_REFERAT,
     DIALOGMOTE_SVAR_BEHOV,
-    DIALOGMOTE_6_UKERS_VARSEL,
+    AKTIVITETSKRAV,
     IKKE_SENDT_SOKNAD,
     OPPFOLGINGSPLAN_OPPRETTET,
     OPPFOLGINGSPLAN_TIL_GODKJENNING,
@@ -22,8 +22,6 @@ val DialogmoteHendelser = listOf(
     HendelseType.DIALOGMOTE_ENDRING,
     HendelseType.DIALOGMOTE_REFERAT,
     HendelseType.DIALOGMOTE_SVAR_BEHOV,
-    // TODO må endres når eSYFO bestemmer hva den skal hete
-    HendelseType.DIALOGMOTE_6_UKERS_VARSEL,
 )
 
 val OppfolgingsplanerHendelser = listOf(
