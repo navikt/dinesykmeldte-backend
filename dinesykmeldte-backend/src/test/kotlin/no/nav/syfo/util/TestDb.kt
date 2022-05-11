@@ -130,6 +130,7 @@ class TestDb private constructor() {
                 lest = getBoolean("lest"),
                 timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
                 latestTom = getObject("latest_tom", LocalDate::class.java),
+                sendtTilArbeidsgiverDato = getTimestamp("sendt_til_arbeidsgiver_dato")?.toInstant()?.atOffset(ZoneOffset.UTC),
             )
 
         fun getSoknad(soknadId: String): SoknadDbModel? {
@@ -290,8 +291,9 @@ fun DatabaseInterface.insertOrUpdate(sykmeldingDbModel: SykmeldingDbModel, sykme
                         sykmelding, 
                         lest, 
                         timestamp, 
-                        latest_tom) 
-                    values (?, ?, ?, ?, ?, ?, ?, ?) 
+                        latest_tom,
+                        sendt_til_arbeidsgiver_dato) 
+                    values (?, ?, ?, ?, ?, ?, ?, ?, ?) 
                on conflict (sykmelding_id) do update 
                     set pasient_fnr = ?,
                         orgnummer = ?,
@@ -299,9 +301,12 @@ fun DatabaseInterface.insertOrUpdate(sykmeldingDbModel: SykmeldingDbModel, sykme
                         sykmelding = ?,
                         lest = ?,
                         timestamp = ?,
-                        latest_tom = ?;
+                        latest_tom = ?,
+                        sendt_til_arbeidsgiver_dato = ?;
             """
         ).use { preparedStatement ->
+            val sendtTilArbeidsgiverDato =
+                if (sykmeldingDbModel.sendtTilArbeidsgiverDato != null) Timestamp.from(sykmeldingDbModel.sendtTilArbeidsgiverDato!!.toInstant()) else null
             preparedStatement.setString(1, sykmeldingDbModel.sykmeldingId)
             // insert
             preparedStatement.setString(2, sykmeldingDbModel.pasientFnr)
@@ -311,14 +316,16 @@ fun DatabaseInterface.insertOrUpdate(sykmeldingDbModel: SykmeldingDbModel, sykme
             preparedStatement.setBoolean(6, sykmeldingDbModel.lest)
             preparedStatement.setTimestamp(7, Timestamp.from(sykmeldingDbModel.timestamp.toInstant()))
             preparedStatement.setObject(8, sykmeldingDbModel.latestTom)
+            preparedStatement.setTimestamp(9, sendtTilArbeidsgiverDato)
             // update
-            preparedStatement.setString(9, sykmeldingDbModel.pasientFnr)
-            preparedStatement.setString(10, sykmeldingDbModel.orgnummer)
-            preparedStatement.setString(11, sykmeldingDbModel.orgnavn)
-            preparedStatement.setObject(12, sykmeldingDbModel.sykmelding.toPGObject())
-            preparedStatement.setBoolean(13, sykmeldingDbModel.lest)
-            preparedStatement.setTimestamp(14, Timestamp.from(sykmeldingDbModel.timestamp.toInstant()))
-            preparedStatement.setObject(15, sykmeldingDbModel.latestTom)
+            preparedStatement.setString(10, sykmeldingDbModel.pasientFnr)
+            preparedStatement.setString(11, sykmeldingDbModel.orgnummer)
+            preparedStatement.setString(12, sykmeldingDbModel.orgnavn)
+            preparedStatement.setObject(13, sykmeldingDbModel.sykmelding.toPGObject())
+            preparedStatement.setBoolean(14, sykmeldingDbModel.lest)
+            preparedStatement.setTimestamp(15, Timestamp.from(sykmeldingDbModel.timestamp.toInstant()))
+            preparedStatement.setObject(16, sykmeldingDbModel.latestTom)
+            preparedStatement.setTimestamp(17, sendtTilArbeidsgiverDato)
             preparedStatement.executeUpdate()
         }
         connection.commit()

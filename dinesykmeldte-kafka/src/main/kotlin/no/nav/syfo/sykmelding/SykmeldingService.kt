@@ -62,7 +62,7 @@ class SykmeldingService(
                         pasientFnr = sykmelding.kafkaMetadata.fnr,
                         pasientNavn = person.navn.formatName(),
                         startdatoSykefravaer = startdato,
-                        latestTom = sisteTom
+                        latestTom = sisteTom,
                     )
                 )
             }

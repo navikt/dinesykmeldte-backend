@@ -1,6 +1,7 @@
 package no.nav.syfo.minesykmeldte.model
 
 import java.time.LocalDate
+import java.time.OffsetDateTime
 
 data class Sykmelding(
     val id: String,
@@ -17,6 +18,7 @@ data class Sykmelding(
     val tiltakArbeidsplassen: String?,
     val innspillArbeidsplassen: String?,
     val behandler: Behandler,
+    val sendtTilArbeidsgiverDato: OffsetDateTime?,
 )
 
 data class Arbeidsgiver(

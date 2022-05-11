@@ -58,6 +58,7 @@ import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.contracts.ExperimentalContracts
 
@@ -82,7 +83,7 @@ class MineSykmeldteServiceTest : FunSpec({
                     oppgavetype = "OPPFOLGINGSPLAN_OPPRETTET",
                     lenke = "localhost",
                     tekst = "Ny oppfolgingsplan",
-                    timestamp = OffsetDateTime.now(),
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                     utlopstidspunkt = null,
                     ferdigstilt = false,
                     ferdigstiltTimestamp = null,
@@ -106,7 +107,7 @@ class MineSykmeldteServiceTest : FunSpec({
                     oppgavetype = "DIALOGMOTE_INNKALLING",
                     lenke = "localhost",
                     tekst = "Innkalling til dialogmøte",
-                    timestamp = OffsetDateTime.now(),
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                     utlopstidspunkt = null,
                     ferdigstilt = false,
                     ferdigstiltTimestamp = null,
@@ -162,7 +163,7 @@ class MineSykmeldteServiceTest : FunSpec({
                     oppgavetype = "IKKE_SENDT_SOKNAD",
                     lenke = null,
                     tekst = null,
-                    timestamp = OffsetDateTime.now(),
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                     utlopstidspunkt = null,
                     ferdigstilt = false,
                     ferdigstiltTimestamp = null,
@@ -646,6 +647,7 @@ class MineSykmeldteServiceTest : FunSpec({
                         soknad = soknad,
                         lestSykmelding = false,
                         lestSoknad = false,
+                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
                     )
                 )
                 runBlocking {
@@ -678,6 +680,7 @@ class MineSykmeldteServiceTest : FunSpec({
                         soknad = soknad,
                         lestSykmelding = false,
                         lestSoknad = true,
+                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
                     )
                 )
                 runBlocking {
@@ -710,6 +713,7 @@ class MineSykmeldteServiceTest : FunSpec({
                         soknad = soknad,
                         lestSykmelding = false,
                         lestSoknad = true,
+                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
                     )
                 )
                 runBlocking {
@@ -747,6 +751,7 @@ class MineSykmeldteServiceTest : FunSpec({
                     soknad = korrigertSoknad,
                     lestSykmelding = false,
                     lestSoknad = true,
+                    sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
                 )
 
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
@@ -791,6 +796,7 @@ class MineSykmeldteServiceTest : FunSpec({
                         soknad = soknad,
                         lestSykmelding = false,
                         lestSoknad = true,
+                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
                     )
                 )
                 runBlocking {
@@ -1056,7 +1062,7 @@ private fun createSoknadDbModel(
     sendtDato: LocalDate = LocalDate.now(),
     tom: LocalDate = LocalDate.now(),
     lest: Boolean = false,
-    timestamp: OffsetDateTime = OffsetDateTime.now(),
+    timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
 ): SoknadDbModel = SoknadDbModel(
     soknadId = soknadId,
     sykmeldingId = sykmeldingId,
@@ -1076,8 +1082,9 @@ private fun createSykmeldingDbModel(
     orgnavn: String = "Baker Frank",
     sykmelding: ArbeidsgiverSykmelding = createArbeidsgiverSykmelding(sykmeldingId),
     lest: Boolean = false,
-    timestamp: OffsetDateTime = OffsetDateTime.now(),
+    timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
     latestTom: LocalDate = LocalDate.now(),
+    sendtTilArbeidsgiverDato: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
 ) = SykmeldingDbModel(
     sykmeldingId = sykmeldingId,
     pasientFnr = pasientFnr,
@@ -1087,6 +1094,7 @@ private fun createSykmeldingDbModel(
     lest = lest,
     timestamp = timestamp,
     latestTom = latestTom,
+    sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato,
 )
 
 private fun createSykmeldtDbModel(
@@ -1134,9 +1142,11 @@ fun getSykmeldtData(
                 ) else null,
                 lestSoknad = false,
                 lestSykmelding = false,
+                sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
             )
         }
     }
+
 fun getFileAsString(filePath: String) = String(
     Files.readAllBytes(
         Paths.get(filePath)

@@ -33,6 +33,7 @@ import org.amshove.kluent.shouldBeEqualTo
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.time.ExperimentalTime
 
@@ -249,7 +250,8 @@ class MineSykmeldteApiKtTest : FunSpec({
                     id = "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
                     startdatoSykefravar = LocalDate.parse("2021-01-01"),
                     kontaktDato = LocalDate.parse("2021-01-01"),
-                    behandletTidspunkt = LocalDate.parse("2021-01-02")
+                    behandletTidspunkt = LocalDate.parse("2021-01-02"),
+                    sendtTilArbeidsgiverDato = OffsetDateTime.parse("2022-05-09T13:20:04+00:00")
                 )
                 with(
                     handleRequest(HttpMethod.Get, "/api/sykmelding/7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657") {
@@ -278,7 +280,8 @@ class MineSykmeldteApiKtTest : FunSpec({
                             "navn": "Beh. Handler",
                             "hprNummer": "80802721231",
                             "telefon": "81549300"
-                          }
+                          },
+                          "sendtTilArbeidsgiverDato":"2022-05-09T13:20:04Z"
                         }
                     """.minifyApiResponse()
                 }
@@ -430,6 +433,7 @@ fun createSykmeldingTestData(
         telefon = "81549300",
     ),
     behandletTidspunkt: LocalDate = LocalDate.now(),
+    sendtTilArbeidsgiverDato: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
 ): Sykmelding = Sykmelding(
     id = id,
     startdatoSykefravar = startdatoSykefravar,
@@ -445,4 +449,5 @@ fun createSykmeldingTestData(
     innspillArbeidsplassen = innspillArbeidsplassen,
     behandler = behandler,
     behandletTidspunkt = behandletTidspunkt,
+    sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato,
 )

@@ -20,6 +20,7 @@ class SykmeldingMapper private constructor() {
             lest = false, // fra strangler
             timestamp = OffsetDateTime.now(ZoneOffset.UTC),
             latestTom = sisteTom,
+            sendtTilArbeidsgiverDato = sykmelding.event.timestamp,
         )
     }
 }

@@ -2,7 +2,7 @@ name: Deploy dinesykmeldte-kafka app to dev
 on:
   push:
     branches:
-      - '*'
+      - '**'
       - '!master'
     paths:
       - 'dinesykmeldte-kafka/**'
