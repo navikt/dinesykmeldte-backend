@@ -107,7 +107,7 @@ class MineSykmeldteService(
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
     ): List<Aktivitetsvarsel> = (
         hendelserMap[sykmeldtEntry.key.fnr]
-            ?.filter { ma -> ma.oppgavetype == HendelseType.DIALOGMOTE_6_UKERS_VARSEL }
+            ?.filter { ma -> ma.oppgavetype == HendelseType.AKTIVITETSKRAV }
             ?.map {
                 Aktivitetsvarsel(
                     hendelseId = it.hendelseId,
