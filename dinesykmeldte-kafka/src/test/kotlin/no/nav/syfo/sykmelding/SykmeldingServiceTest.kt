@@ -27,11 +27,11 @@ import no.nav.syfo.util.createArbeidsgiverSykmelding
 import no.nav.syfo.util.insertOrUpdate
 import org.amshove.kluent.shouldBeAfter
 import org.amshove.kluent.shouldBeEqualTo
+import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.time.Clock
 import java.util.UUID
 
 class SykmeldingServiceTest : FunSpec({
