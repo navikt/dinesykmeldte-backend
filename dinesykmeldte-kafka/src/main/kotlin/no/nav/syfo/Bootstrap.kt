@@ -65,8 +65,6 @@ fun main() {
         env,
         applicationState
     )
-    val applicationServer = ApplicationServer(applicationEngine, applicationState)
-    applicationServer.start()
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(ContentNegotiation) {
             jackson {
@@ -125,7 +123,7 @@ fun main() {
         soknadService,
         hendelserService
     )
-    applicationState.ready = true
     commonKafkaService.startConsumer()
     DeleteDataService(DeleteDataDb(database), applicationState).start()
+    ApplicationServer(applicationEngine, applicationState).start()
 }

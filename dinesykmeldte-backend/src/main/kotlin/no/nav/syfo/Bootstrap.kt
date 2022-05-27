@@ -105,9 +105,7 @@ fun main() {
         VirksomhetService(VirksomhetDb(database)),
         narmestelederService
     )
-    val applicationServer = ApplicationServer(applicationEngine, applicationState)
-    applicationServer.start()
-    applicationState.ready = true
+    ApplicationServer(applicationEngine, applicationState).start()
 }
 
 fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) =
