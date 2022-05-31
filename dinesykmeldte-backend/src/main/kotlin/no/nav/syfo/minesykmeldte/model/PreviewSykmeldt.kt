@@ -7,6 +7,7 @@ import java.util.UUID
 data class PreviewSykmeldt(
     val narmestelederId: String,
     val orgnummer: String,
+    val orgnavn: String,
     val fnr: String,
     val navn: String,
     val startdatoSykefravar: LocalDate,

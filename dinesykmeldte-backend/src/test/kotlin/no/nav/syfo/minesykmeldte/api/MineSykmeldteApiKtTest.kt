@@ -70,6 +70,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                     PreviewSykmeldt(
                         narmestelederId = "08086912345",
                         orgnummer = "orgnummer",
+                        orgnavn = "Bedrift AS",
                         fnr = "fnr",
                         navn = "navn",
                         startdatoSykefravar = LocalDate.now().minusDays(14),
@@ -88,6 +89,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                     response.content shouldBeEqualTo """[ {
                           "narmestelederId": "08086912345",
                           "orgnummer": "orgnummer",
+                          "orgnavn": "Bedrift AS",
                           "fnr": "fnr",
                           "navn": "navn",
                           "startdatoSykefravar": "$startdato",
@@ -158,6 +160,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                         PreviewSykmeldt(
                             narmestelederId = "08086912345",
                             orgnummer = "orgnummer",
+                            orgnavn = "Bedrift AS",
                             fnr = "fnr",
                             navn = "navn",
                             startdatoSykefravar = LocalDate.now().minusDays(14),
@@ -194,6 +197,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                           {
                             "narmestelederId": "08086912345",
                             "orgnummer": "orgnummer",
+                            "orgnavn": "Bedrift AS",
                             "fnr": "fnr",
                             "navn": "navn",
                             "startdatoSykefravar": "${LocalDate.now().minusDays(14)}",

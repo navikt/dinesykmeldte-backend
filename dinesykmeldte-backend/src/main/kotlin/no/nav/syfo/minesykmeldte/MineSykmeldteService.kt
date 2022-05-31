@@ -60,6 +60,7 @@ class MineSykmeldteService(
             PreviewSykmeldt(
                 narmestelederId = sykmeldtEntry.key.narmestelederId,
                 orgnummer = sykmeldtEntry.key.orgnummer,
+                orgnavn = sykmeldtEntry.key.orgnavn,
                 fnr = sykmeldtEntry.key.fnr,
                 navn = sykmeldtEntry.key.navn,
                 startdatoSykefravar = sykmeldtEntry.key.startDatoSykefravaer,
@@ -181,6 +182,7 @@ private fun mapNullableSoknad(
 private fun MinSykmeldtDbModel.toMinSykmeldtKey(): MinSykmeldtKey = MinSykmeldtKey(
     narmestelederId = this.narmestelederId,
     orgnummer = this.orgnummer,
+    orgnavn = this.orgNavn,
     navn = this.sykmeldtNavn,
     fnr = this.sykmeldtFnr,
     startDatoSykefravaer = this.startDatoSykefravar,
