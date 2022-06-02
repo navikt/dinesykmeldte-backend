@@ -34,14 +34,6 @@ class HendelserDb(private val database: DatabaseInterface) {
         }
     }
 
-    fun ferdigstillLestSykmeldingEllerSoknadHendelse(id: String) {
-        database.connection.use { connection ->
-            connection.settSykmeldingLest(id)
-            connection.settSoknadLest(id)
-            connection.commit()
-        }
-    }
-
     fun ferdigstillHendelse(id: String, ferdigstiltTimestamp: OffsetDateTime) {
         database.connection.use { connection ->
             connection.ferdigstillHendelse(id, ferdigstiltTimestamp)
@@ -59,30 +51,6 @@ class HendelserDb(private val database: DatabaseInterface) {
             it.setBoolean(1, true)
             it.setTimestamp(2, Timestamp.from(ferdigstiltTimestamp.toInstant()))
             it.setString(3, id)
-            it.executeUpdate()
-        }
-    }
-
-    private fun Connection.settSykmeldingLest(id: String) {
-        this.prepareStatement(
-            """
-                UPDATE sykmelding SET lest=? WHERE sykmelding_id=?;
-                """
-        ).use {
-            it.setBoolean(1, true)
-            it.setString(2, id)
-            it.executeUpdate()
-        }
-    }
-
-    private fun Connection.settSoknadLest(id: String) {
-        this.prepareStatement(
-            """
-                UPDATE soknad SET lest=? WHERE soknad_id=?;
-                """
-        ).use {
-            it.setBoolean(1, true)
-            it.setString(2, id)
             it.executeUpdate()
         }
     }
