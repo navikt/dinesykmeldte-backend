@@ -9,19 +9,12 @@ import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.hendelser.kafka.model.DineSykmeldteHendelse
 import no.nav.syfo.hendelser.kafka.model.FerdigstillHendelse
 import no.nav.syfo.hendelser.kafka.model.OpprettHendelse
-import no.nav.syfo.hendelser.kafka.model.sykmeldingsoknad.FerdigstillLestSykmeldingEllerSoknadHendelse
-import no.nav.syfo.hendelser.kafka.model.sykmeldingsoknad.LestSykmeldingEllerSoknadHendelse
-import no.nav.syfo.hendelser.kafka.model.sykmeldingsoknad.OpprettLestSykmeldingEllerSoknadHendelse
 import no.nav.syfo.objectMapper
-import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.getFileAsString
 import no.nav.syfo.soknad.toSoknadDbModel
-import no.nav.syfo.sykmelding.db.SykmeldingDb
-import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.TestDb
-import no.nav.syfo.util.createArbeidsgiverSykmelding
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
 import java.time.Clock
@@ -31,140 +24,11 @@ import java.time.ZoneOffset
 import java.util.UUID
 
 class HendelserServiceTest : FunSpec({
-    val sykmeldingDb = SykmeldingDb(TestDb.database)
-    val soknadDb = SoknadDb(TestDb.database)
     val hendelserDb = HendelserDb(TestDb.database)
     val hendelserService = HendelserService(hendelserDb)
 
     afterEach {
         TestDb.clearAllData()
-    }
-
-    context("HendelseService - sykmelding og soknad") {
-        test("Oppretter ikke hendelse for les av sykmelding") {
-            val sykmeldingId = UUID.randomUUID().toString()
-            val dineSykmeldteHendelse = LestSykmeldingEllerSoknadHendelse(
-                id = sykmeldingId,
-                opprettHendelse = OpprettLestSykmeldingEllerSoknadHendelse(
-                    id = sykmeldingId,
-                    ansattFnr = null,
-                    orgnummer = null,
-                    oppgavetype = OPPGAVETYPE_LES_SYKMELDING,
-                    lenke = null,
-                    tekst = null,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    utlopstidspunkt = null
-                ),
-                ferdigstillHendelse = null
-            )
-
-            hendelserService.handleLestSykmeldingEllerSoknadHendelse(dineSykmeldteHendelse)
-
-            val hendelse = TestDb.getHendelse(sykmeldingId)
-            hendelse shouldBeEqualTo null
-        }
-        test("Oppretter ikke hendelse for les av søknad") {
-            val soknadId = UUID.randomUUID().toString()
-            val dineSykmeldteHendelse = LestSykmeldingEllerSoknadHendelse(
-                id = soknadId,
-                opprettHendelse = OpprettLestSykmeldingEllerSoknadHendelse(
-                    id = soknadId,
-                    ansattFnr = null,
-                    orgnummer = null,
-                    oppgavetype = OPPGAVETYPE_LES_SOKNAD,
-                    lenke = null,
-                    tekst = null,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    utlopstidspunkt = null
-                ),
-                ferdigstillHendelse = null
-            )
-
-            hendelserService.handleLestSykmeldingEllerSoknadHendelse(dineSykmeldteHendelse)
-
-            val hendelse = TestDb.getHendelse(soknadId)
-            hendelse shouldBeEqualTo null
-        }
-        test("Ferdigstilling av les sykmelding-hendelse setter sykmelding som lest") {
-            val sykmeldingId = UUID.randomUUID().toString()
-            sykmeldingDb.insertOrUpdate(createSykmeldingDbModel(sykmeldingId), createSykmeldtDbModel())
-            val dineSykmeldteHendelseFerdigstill = LestSykmeldingEllerSoknadHendelse(
-                id = sykmeldingId,
-                opprettHendelse = null,
-                ferdigstillHendelse = FerdigstillLestSykmeldingEllerSoknadHendelse(
-                    id = sykmeldingId,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    oppgavetype = OPPGAVETYPE_LES_SYKMELDING
-                )
-            )
-
-            hendelserService.handleLestSykmeldingEllerSoknadHendelse(dineSykmeldteHendelseFerdigstill)
-
-            val hendelse = TestDb.getHendelse(sykmeldingId)
-            hendelse shouldBeEqualTo null
-            val sykmelding = TestDb.getSykmelding(sykmeldingId)
-            sykmelding?.lest shouldBeEqualTo true
-        }
-        test("Ferdigstilling av les sykmelding-hendelse setter sykmelding som lest hvis oppgavetype mangler") {
-            val sykmeldingId = UUID.randomUUID().toString()
-            sykmeldingDb.insertOrUpdate(createSykmeldingDbModel(sykmeldingId), createSykmeldtDbModel())
-            val dineSykmeldteHendelseFerdigstill = LestSykmeldingEllerSoknadHendelse(
-                id = sykmeldingId,
-                opprettHendelse = null,
-                ferdigstillHendelse = FerdigstillLestSykmeldingEllerSoknadHendelse(
-                    id = sykmeldingId,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    oppgavetype = null
-                )
-            )
-
-            hendelserService.handleLestSykmeldingEllerSoknadHendelse(dineSykmeldteHendelseFerdigstill)
-
-            val hendelse = TestDb.getHendelse(sykmeldingId)
-            hendelse shouldBeEqualTo null
-            val sykmelding = TestDb.getSykmelding(sykmeldingId)
-            sykmelding?.lest shouldBeEqualTo true
-        }
-        test("Ferdigstilling av les søknad-hendelse setter søknad som lest") {
-            val soknadId = UUID.randomUUID().toString()
-            soknadDb.insertOrUpdate(createSoknadDbModel(soknadId))
-            val dineSykmeldteHendelseFerdigstill = LestSykmeldingEllerSoknadHendelse(
-                id = soknadId,
-                opprettHendelse = null,
-                ferdigstillHendelse = FerdigstillLestSykmeldingEllerSoknadHendelse(
-                    id = soknadId,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    oppgavetype = OPPGAVETYPE_LES_SOKNAD
-                )
-            )
-
-            hendelserService.handleLestSykmeldingEllerSoknadHendelse(dineSykmeldteHendelseFerdigstill)
-
-            val hendelse = TestDb.getHendelse(soknadId)
-            hendelse shouldBeEqualTo null
-            val soknad = TestDb.getSoknad(soknadId)
-            soknad?.lest shouldBeEqualTo true
-        }
-        test("Ferdigstilling av les søknad-hendelse setter søknad som lest hvis oppgavetype mangler") {
-            val soknadId = UUID.randomUUID().toString()
-            soknadDb.insertOrUpdate(createSoknadDbModel(soknadId))
-            val dineSykmeldteHendelseFerdigstill = LestSykmeldingEllerSoknadHendelse(
-                id = soknadId,
-                opprettHendelse = null,
-                ferdigstillHendelse = FerdigstillLestSykmeldingEllerSoknadHendelse(
-                    id = soknadId,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    oppgavetype = null
-                )
-            )
-
-            hendelserService.handleLestSykmeldingEllerSoknadHendelse(dineSykmeldteHendelseFerdigstill)
-
-            val hendelse = TestDb.getHendelse(soknadId)
-            hendelse shouldBeEqualTo null
-            val soknad = TestDb.getSoknad(soknadId)
-            soknad?.lest shouldBeEqualTo true
-        }
     }
 
     context("HendelseService") {
@@ -257,24 +121,6 @@ class HendelserServiceTest : FunSpec({
         }
     }
 })
-
-fun createSykmeldingDbModel(
-    sykmeldingId: String,
-    pasientFnr: String = "12345678910",
-    orgnummer: String = "orgnummer",
-): SykmeldingDbModel {
-    return SykmeldingDbModel(
-        sykmeldingId = sykmeldingId,
-        pasientFnr = pasientFnr,
-        orgnummer = orgnummer,
-        orgnavn = "Navn AS",
-        sykmelding = createArbeidsgiverSykmelding(sykmeldingId = sykmeldingId),
-        lest = false,
-        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-        latestTom = LocalDate.now().minusWeeks(2),
-        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC)
-    )
-}
 
 fun createSykmeldtDbModel(pasientFnr: String = "12345678910"): SykmeldtDbModel {
     return SykmeldtDbModel(

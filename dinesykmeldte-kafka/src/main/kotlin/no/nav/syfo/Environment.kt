@@ -18,7 +18,6 @@ data class Environment(
     val narmestelederLeesahTopic: String = "teamsykmelding.syfo-narmesteleder-leesah",
     val sendtSykmeldingTopic: String = "teamsykmelding.syfo-sendt-sykmelding",
     val sykepengesoknadTopic: String = "flex.sykepengesoknad",
-    val lestSykmeldingSoknadTopic: String = "teamsykmelding.dinesykmeldte-hendelser",
     val hendelserTopic: String = "teamsykmelding.dinesykmeldte-hendelser-v2",
 )
 
