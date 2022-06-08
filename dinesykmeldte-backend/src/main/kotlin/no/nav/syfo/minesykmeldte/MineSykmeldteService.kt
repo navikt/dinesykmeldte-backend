@@ -40,7 +40,6 @@ import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
 import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class MineSykmeldteService(
@@ -168,7 +167,7 @@ private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
         .flatMap { it.sykmelding.sykmeldingsperioder }
         .maxOf { it.tom }
 
-    return ChronoUnit.DAYS.between(latestTom, LocalDate.now()) > 16
+    return LocalDate.now().isAfter(latestTom)
 }
 
 private fun mapNullableSoknad(

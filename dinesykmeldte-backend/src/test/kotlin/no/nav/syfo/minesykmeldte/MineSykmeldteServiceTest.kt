@@ -210,7 +210,7 @@ class MineSykmeldteServiceTest : FunSpec({
         }
 
         context("sykmeldt") {
-            test("should not be friskmeldt if the latest sykmeldt period is less than 16 days ago") {
+            test("should not be friskmeldt if the latest sykmeldt period is tomorrow") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
@@ -222,7 +222,7 @@ class MineSykmeldteServiceTest : FunSpec({
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().minusDays(24),
-                                    tom = LocalDate.now().minusDays(16),
+                                    tom = LocalDate.now().plusDays(1),
                                     type = PeriodetypeDTO.GRADERT,
                                     gradert = GradertDTO(50, false),
                                 )
@@ -238,7 +238,7 @@ class MineSykmeldteServiceTest : FunSpec({
                 }
             }
 
-            test("should be friskmeldt if the latest sykmeldt period is more than 16 days ago") {
+            test("should be friskmeldt if the latest sykmeldt period is 1 day ago") {
                 every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
@@ -250,7 +250,7 @@ class MineSykmeldteServiceTest : FunSpec({
                                     aktivitetIkkeMulig = null,
                                     behandlingsdager = 0,
                                     fom = LocalDate.now().minusDays(24),
-                                    tom = LocalDate.now().minusDays(17),
+                                    tom = LocalDate.now().minusDays(1),
                                     type = PeriodetypeDTO.GRADERT,
                                     gradert = GradertDTO(50, false),
                                 )
