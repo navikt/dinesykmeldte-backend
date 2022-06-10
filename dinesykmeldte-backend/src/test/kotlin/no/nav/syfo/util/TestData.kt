@@ -27,17 +27,19 @@ fun createSykmeldingDbModel(
     sykmeldingId: String,
     pasientFnr: String = "12345678910",
     orgnummer: String = "orgnummer",
+    orgnavn: String = "Navn AS",
+    sendtTilArbeidsgiverDato: OffsetDateTime? = OffsetDateTime.now(ZoneOffset.UTC)
 ): SykmeldingDbModel {
     return SykmeldingDbModel(
         sykmeldingId = sykmeldingId,
         pasientFnr = pasientFnr,
         orgnummer = orgnummer,
-        orgnavn = "Navn AS",
+        orgnavn = orgnavn,
         sykmelding = createArbeidsgiverSykmelding(sykmeldingId = sykmeldingId),
         lest = false,
         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
         latestTom = LocalDate.now().minusWeeks(2),
-        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
+        sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato
     )
 }
 

@@ -56,13 +56,14 @@ class MineSykmeldteService(
         val sykmeldteMap = sykmeldteMapJob.await()
 
         return@withContext sykmeldteMap.map { sykmeldtEntry ->
+            val nyesteSendteSykmelding = sykmeldtEntry.value.sortedBy { it.sendtTilArbeidsgiverDato }.last()
             PreviewSykmeldt(
                 narmestelederId = sykmeldtEntry.key.narmestelederId,
                 orgnummer = sykmeldtEntry.key.orgnummer,
-                orgnavn = sykmeldtEntry.key.orgnavn,
+                orgnavn = nyesteSendteSykmelding.orgNavn,
                 fnr = sykmeldtEntry.key.fnr,
-                navn = sykmeldtEntry.key.navn,
-                startdatoSykefravar = sykmeldtEntry.key.startDatoSykefravaer,
+                navn = nyesteSendteSykmelding.sykmeldtNavn,
+                startdatoSykefravar = nyesteSendteSykmelding.startDatoSykefravar,
                 friskmeldt = isFriskmeldt(sykmeldtEntry),
                 previewSoknader = getPreviewSoknader(sykmeldtEntry, hendelserMap),
                 dialogmoter = getDialogmoter(hendelserMap, sykmeldtEntry),
@@ -181,10 +182,7 @@ private fun mapNullableSoknad(
 private fun MinSykmeldtDbModel.toMinSykmeldtKey(): MinSykmeldtKey = MinSykmeldtKey(
     narmestelederId = this.narmestelederId,
     orgnummer = this.orgnummer,
-    orgnavn = this.orgNavn,
-    navn = this.sykmeldtNavn,
-    fnr = this.sykmeldtFnr,
-    startDatoSykefravaer = this.startDatoSykefravar,
+    fnr = this.sykmeldtFnr
 )
 
 private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
