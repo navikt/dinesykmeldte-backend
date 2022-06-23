@@ -20,11 +20,6 @@ class SelftestSpec : FunSpec({
             applicationState.alive = true
             application.routing { registerNaisApi(applicationState) }
 
-            test("test") {
-                val lastTimestamp = OffsetDateTime.MIN
-                val r = lastTimestamp > OffsetDateTime.now().minusHours(5)
-                r shouldBeEqualTo false
-            }
             test("Returns ok on is_alive") {
                 with(handleRequest(HttpMethod.Get, "/internal/is_alive")) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK

@@ -20,6 +20,8 @@ import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.azuread.AccessTokenClient
+import no.nav.syfo.common.delete.DeleteDataDb
+import no.nav.syfo.common.delete.DeleteDataService
 import no.nav.syfo.common.exception.ServiceUnavailableException
 import no.nav.syfo.common.kafka.CommonKafkaService
 import no.nav.syfo.database.GcpDatabase
@@ -127,13 +129,13 @@ fun main() {
     val updateSykmeldtKafkaConsumer = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also {
             it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
         }.toConsumerConfig("update-sykmeldt-backend", StringDeserializer::class),
         StringDeserializer(),
         StringDeserializer()
     )
     UpdateSykmeldtService(updateSykmeldtKafkaConsumer, sykmeldingService, env).startConsumer()
-//    commonKafkaService.startConsumer()
-//    DeleteDataService(DeleteDataDb(database), applicationState).start()
+    commonKafkaService.startConsumer()
+    DeleteDataService(DeleteDataDb(database), applicationState).start()
     ApplicationServer(applicationEngine, applicationState).start()
 }

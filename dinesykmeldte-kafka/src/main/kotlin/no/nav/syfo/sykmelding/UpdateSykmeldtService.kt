@@ -4,8 +4,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,12 +28,13 @@ class UpdateSykmeldtService(
 ) {
     var lastTimestamp = OffsetDateTime.MIN
     var shouldRun = true
+
     @OptIn(DelicateCoroutinesApi::class)
     fun startConsumer() {
         GlobalScope.launch(Dispatchers.Unbounded) {
             while (shouldRun) {
                 log.info("last timestamp: $lastTimestamp")
-                delay(Duration.ofSeconds(10).toMillis())
+                delay(Duration.ofMinutes(10).toMillis())
             }
             log.info("last timestamp: $lastTimestamp")
         }
@@ -61,35 +60,33 @@ class UpdateSykmeldtService(
 
     @OptIn(DelicateCoroutinesApi::class)
     suspend fun start() = withContext(Dispatchers.Unbounded) {
-        val endDateTime = OffsetDateTime.now(ZoneOffset.UTC).minusHours(5)
+        val endDateTime = OffsetDateTime.now(ZoneOffset.UTC).minusHours(10)
         while (shouldRun) {
-            val records = kafkaConsumer.poll(Duration.ofSeconds(1))
-            val jobs = records.map { record ->
-                async(Dispatchers.Unbounded) {
-                    when (val sykmelding = record.value()) {
-                        null -> {
-                            println("Sykmelding er null")
-                        }
-                        else -> {
-                            val sykmeldingKafkaMessage = objectMapper.readValue<SendtSykmeldingKafkaMessage>(sykmelding)
-                            if (sykmeldingKafkaMessage.sykmelding.sykmeldingsperioder.maxOf { it.tom }
+            val records = kafkaConsumer.poll(Duration.ofSeconds(10))
+            records.forEach { record ->
+                when (val sykmelding = record.value()) {
+                    null -> {
+                        println("Sykmelding er null")
+                    }
+                    else -> {
+                        val sykmeldingKafkaMessage = objectMapper.readValue<SendtSykmeldingKafkaMessage>(sykmelding)
+                        if (sykmeldingKafkaMessage.sykmelding.sykmeldingsperioder.maxOf { it.tom }
                                 .isAfter(LocalDate.now().minusMonths(4))
-                            ) {
-                                try {
-                                    sykmeldingService.updateSykmeldt(sykmeldingKafkaMessage.kafkaMetadata.fnr)
-                                } catch (e: SyketilfelleNotFoundException) {
-                                    log.warn("Fant ikke syketilfelle for sykmelding med id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}")
-                                } catch (e: NameNotFoundInPdlException) {
-                                    log.warn("Fant ikke navn for sykmeldt med sykmelding_id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}")
-                                }
+                        ) {
+                            try {
+                                sykmeldingService.updateSykmeldt(sykmeldingKafkaMessage.kafkaMetadata.fnr)
+                            } catch (e: SyketilfelleNotFoundException) {
+                                log.warn("Fant ikke syketilfelle for sykmelding med id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}")
+                            } catch (e: NameNotFoundInPdlException) {
+                                log.warn("Fant ikke navn for sykmeldt med sykmelding_id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}")
                             }
                         }
                     }
                 }
             }
-            jobs.awaitAll()
             if (records.count() > 0) {
-                lastTimestamp = OffsetDateTime.ofInstant(Instant.ofEpochMilli(records.last().timestamp()), ZoneOffset.UTC)
+                lastTimestamp =
+                    OffsetDateTime.ofInstant(Instant.ofEpochMilli(records.last().timestamp()), ZoneOffset.UTC)
             }
 
             if (lastTimestamp > endDateTime) {
