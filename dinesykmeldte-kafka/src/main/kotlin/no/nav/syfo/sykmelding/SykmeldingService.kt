@@ -25,7 +25,10 @@ class SykmeldingService(
 ) {
     suspend fun handleSendtSykmelding(record: ConsumerRecord<String, String?>) {
         try {
-            handleSendtSykmelding(record.key(), record.value()?.let { objectMapper.readValue<SendtSykmeldingKafkaMessage>(it) })
+            handleSendtSykmelding(
+                record.key(),
+                record.value()?.let { objectMapper.readValue<SendtSykmeldingKafkaMessage>(it) }
+            )
         } catch (ex: NameNotFoundInPdlException) {
             if (cluster != "dev-gcp") {
                 throw ex
@@ -47,30 +50,51 @@ class SykmeldingService(
     suspend fun handleSendtSykmelding(sykmeldingId: String, sykmelding: SendtSykmeldingKafkaMessage?) {
         if (sykmelding == null) {
             log.info("Sletter sykmelding med id $sykmeldingId")
-            sykmeldingDb.remove(sykmeldingId)
+            val existingSykmelding = sykmeldingDb.getSykmeldingInfo(sykmeldingId)
+            if (existingSykmelding != null) {
+                sykmeldingDb.remove(sykmeldingId)
+                updateSykmeldt(existingSykmelding.fnr)
+            }
         } else {
             val sisteTom = finnSisteTom(sykmelding.sykmelding.sykmeldingsperioder)
             if (sisteTom.isAfter(LocalDate.now().minusMonths(4))) {
                 if (sykmelding.event.arbeidsgiver == null) {
                     throw IllegalStateException("Mottatt sendt sykmelding uten arbeidsgiver, $sykmeldingId")
                 }
-                val person = pdlPersonService.getPerson(fnr = sykmelding.kafkaMetadata.fnr, callId = sykmeldingId)
-                val startdato = syfoSyketilfelleClient.finnStartdato(fnr = sykmelding.kafkaMetadata.fnr, sykmeldingId = sykmeldingId)
-                sykmeldingDb.insertOrUpdate(
-                    toSykmeldingDbModel(sykmelding, sisteTom),
+                sykmeldingDb.insertOrUpdateSykmelding(toSykmeldingDbModel(sykmelding, sisteTom))
+                updateSykmeldt(sykmelding.kafkaMetadata.fnr)
+            }
+        }
+
+        SYKMELDING_TOPIC_COUNTER.inc()
+    }
+
+    private suspend fun updateSykmeldt(fnr: String) {
+        val sykmeldingInfos = sykmeldingDb.getSykmeldingInfos(fnr)
+
+        val latestSykmelding = sykmeldingInfos.maxByOrNull { it.latestTom }
+        when (latestSykmelding) {
+            null -> sykmeldingDb.deleteSykmeldt(fnr)
+            else -> {
+                val person = pdlPersonService.getPerson(fnr = fnr, callId = latestSykmelding.sykmeldingId)
+                val startdato = syfoSyketilfelleClient.finnStartdato(
+                    fnr = fnr,
+                    sykmeldingId = latestSykmelding.sykmeldingId,
+                )
+                sykmeldingDb.insertOrUpdateSykmeldt(
                     SykmeldtDbModel(
-                        pasientFnr = sykmelding.kafkaMetadata.fnr,
+                        pasientFnr = fnr,
                         pasientNavn = person.navn.formatName(),
                         startdatoSykefravaer = startdato,
-                        latestTom = sisteTom,
+                        latestTom = latestSykmelding.latestTom,
                     )
                 )
             }
         }
-        SYKMELDING_TOPIC_COUNTER.inc()
     }
 
     private fun finnSisteTom(perioder: List<SykmeldingsperiodeAGDTO>): LocalDate {
-        return perioder.maxByOrNull { it.tom }?.tom ?: throw IllegalStateException("Skal ikke kunne ha periode uten tom")
+        return perioder.maxByOrNull { it.tom }?.tom
+            ?: throw IllegalStateException("Skal ikke kunne ha periode uten tom")
     }
 }
