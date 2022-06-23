@@ -25,52 +25,68 @@ class UpdateSykmeldtService(
     private val sykmeldingService: SykmeldingService,
     private val environment: Environment
 ) {
+    var lastTimestamp = OffsetDateTime.MIN
+    var shouldRun = true
+    @OptIn(DelicateCoroutinesApi::class)
+    fun startConsumer() {
+        GlobalScope.launch(Dispatchers.Unbounded) {
+            while (shouldRun) {
+                log.info("last timestamp: $lastTimestamp")
+                delay(Duration.ofSeconds(10).toMillis())
+            }
+            log.info("last timestamp: $lastTimestamp")
+        }
+        GlobalScope.launch(Dispatchers.Unbounded) {
+            while (shouldRun) {
+                try {
+                    log.info("Starting consuming topics")
+                    kafkaConsumer.subscribe(
+                        listOf(
+                            environment.sendtSykmeldingTopic,
+                        )
+                    )
+                    start()
+                    shouldRun = false
+                } catch (ex: Exception) {
+                    log.error("Error running kafka consumer, unsubscribing and waiting 10 seconds for retry", ex)
+                    kafkaConsumer.unsubscribe()
+                    delay(10_000)
+                }
+            }
+        }
+    }
 
     @OptIn(DelicateCoroutinesApi::class)
-    fun start() {
-        kafkaConsumer.subscribe(listOf(environment.sendtSykmeldingTopic))
-        GlobalScope.launch(Dispatchers.Unbounded) {
-
-            val endDateTime = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1)
-            var shouldRun = true
-
-            var lastTimestamp = OffsetDateTime.MIN
-            GlobalScope.launch(Dispatchers.Unbounded) {
-                while (shouldRun) {
-                    log.info("last timestamp: $lastTimestamp")
-                    delay(Duration.ofSeconds(10).toMillis())
-                }
-                log.info("last timestamp: $lastTimestamp")
-            }
-            while (shouldRun) {
-                val records = kafkaConsumer.poll(Duration.ofSeconds(1000))
-                records.forEach { record ->
-                    when (val sykmelding = record.value()) {
-                        null -> {
-                            println("Sykmelding er null")
-                        }
-                        else -> {
-                            val sykmeldingKafkaMessage = objectMapper.readValue<SendtSykmeldingKafkaMessage>(sykmelding)
-                            if (sykmeldingKafkaMessage.sykmelding.sykmeldingsperioder.maxOf { it.tom }
-                                .isAfter(LocalDate.now().minusMonths(4))
-                            ) {
-                                try {
-                                    sykmeldingService.updateSykmeldt(sykmeldingKafkaMessage.kafkaMetadata.fnr)
-                                } catch (e: SyketilfelleNotFoundException) {
-                                    log.warn("Fant ikke syketilfelle for sykmelding med id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}")
-                                } catch (e: NameNotFoundInPdlException) {
-                                    log.warn("Fant ikke navn for sykmeldt med sykmelding_id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}")
-                                }
+    suspend fun start() {
+        val endDateTime = OffsetDateTime.now(ZoneOffset.UTC).minusHours(5)
+        while (shouldRun) {
+            val records = kafkaConsumer.poll(Duration.ofSeconds(1000))
+            records.forEach { record ->
+                when (val sykmelding = record.value()) {
+                    null -> {
+                        println("Sykmelding er null")
+                    }
+                    else -> {
+                        val sykmeldingKafkaMessage = objectMapper.readValue<SendtSykmeldingKafkaMessage>(sykmelding)
+                        if (sykmeldingKafkaMessage.sykmelding.sykmeldingsperioder.maxOf { it.tom }
+                            .isAfter(LocalDate.now().minusMonths(4))
+                        ) {
+                            try {
+                                sykmeldingService.updateSykmeldt(sykmeldingKafkaMessage.kafkaMetadata.fnr)
+                            } catch (e: SyketilfelleNotFoundException) {
+                                log.warn("Fant ikke syketilfelle for sykmelding med id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}")
+                            } catch (e: NameNotFoundInPdlException) {
+                                log.warn("Fant ikke navn for sykmeldt med sykmelding_id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}")
                             }
                         }
                     }
-                    lastTimestamp = OffsetDateTime.ofInstant(Instant.ofEpochMilli(record.timestamp()), ZoneOffset.UTC)
-                    if (record.timestamp() > endDateTime.toInstant().toEpochMilli()) {
-                        shouldRun = false
-                    }
+                }
+                lastTimestamp = OffsetDateTime.ofInstant(Instant.ofEpochMilli(record.timestamp()), ZoneOffset.UTC)
+                if (record.timestamp() > endDateTime.toInstant().toEpochMilli()) {
+                    shouldRun = false
                 }
             }
-            log.info("Done with updating sykmeldt")
         }
+        log.info("Done with updating sykmeldt")
     }
 }

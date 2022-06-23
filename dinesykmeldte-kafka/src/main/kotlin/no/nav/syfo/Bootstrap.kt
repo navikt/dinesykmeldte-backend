@@ -20,8 +20,6 @@ import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.azuread.AccessTokenClient
-import no.nav.syfo.common.delete.DeleteDataDb
-import no.nav.syfo.common.delete.DeleteDataService
 import no.nav.syfo.common.exception.ServiceUnavailableException
 import no.nav.syfo.common.kafka.CommonKafkaService
 import no.nav.syfo.database.GcpDatabase
@@ -133,8 +131,8 @@ fun main() {
         StringDeserializer(),
         StringDeserializer()
     )
-    UpdateSykmeldtService(updateSykmeldtKafkaConsumer, sykmeldingService, env).start()
-    commonKafkaService.startConsumer()
-    DeleteDataService(DeleteDataDb(database), applicationState).start()
+    UpdateSykmeldtService(updateSykmeldtKafkaConsumer, sykmeldingService, env).startConsumer()
+    //  commonKafkaService.startConsumer()
+    //  DeleteDataService(DeleteDataDb(database), applicationState).start()
     ApplicationServer(applicationEngine, applicationState).start()
 }
