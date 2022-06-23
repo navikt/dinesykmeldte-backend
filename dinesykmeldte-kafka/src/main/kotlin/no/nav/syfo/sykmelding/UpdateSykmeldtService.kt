@@ -11,6 +11,7 @@ import no.nav.syfo.log
 import no.nav.syfo.objectMapper
 import no.nav.syfo.syketilfelle.client.SyketilfelleNotFoundException
 import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage
+import no.nav.syfo.sykmelding.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.util.Unbounded
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import java.time.Duration
@@ -57,6 +58,8 @@ class UpdateSykmeldtService(
                                     sykmeldingService.updateSykmeldt(sykmeldingKafkaMessage.kafkaMetadata.fnr)
                                 } catch (e: SyketilfelleNotFoundException) {
                                     log.warn("Fant ikke syketilfelle for sykmelding med id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}", e)
+                                } catch (e: NameNotFoundInPdlException) {
+                                    log.warn("Fant ikke navn for sykmeldt med sykmelding_id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}", e)
                                 }
                             }
                         }
