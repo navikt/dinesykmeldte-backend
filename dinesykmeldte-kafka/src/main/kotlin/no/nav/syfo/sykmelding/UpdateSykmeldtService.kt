@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import no.nav.syfo.Environment
 import no.nav.syfo.log
 import no.nav.syfo.objectMapper
+import no.nav.syfo.syketilfelle.client.SyketilfelleNotFoundException
 import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage
 import no.nav.syfo.util.Unbounded
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -52,7 +53,11 @@ class UpdateSykmeldtService(
                             if (sykmeldingKafkaMessage.sykmelding.sykmeldingsperioder.maxOf { it.tom }
                                 .isAfter(LocalDate.now().minusMonths(4))
                             ) {
-                                sykmeldingService.updateSykmeldt(sykmeldingKafkaMessage.kafkaMetadata.fnr)
+                                try {
+                                    sykmeldingService.updateSykmeldt(sykmeldingKafkaMessage.kafkaMetadata.fnr)
+                                } catch (e: SyketilfelleNotFoundException) {
+                                    log.warn("Fant ikke syketilfelle for sykmelding med id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}", e)
+                                }
                             }
                         }
                     }

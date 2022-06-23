@@ -89,10 +89,12 @@ class SykmeldingService(
             null -> sykmeldingDb.deleteSykmeldt(fnr)
             else -> {
                 val person = pdlPersonService.getPerson(fnr = fnr, callId = latestSykmelding.sykmeldingId)
+
                 val startdato = syfoSyketilfelleClient.finnStartdato(
                     fnr = fnr,
                     sykmeldingId = latestSykmelding.sykmeldingId,
                 )
+
                 sykmeldingDb.insertOrUpdateSykmeldt(
                     SykmeldtDbModel(
                         pasientFnr = fnr,
