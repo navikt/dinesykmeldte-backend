@@ -4,8 +4,11 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import no.nav.syfo.Environment
 import no.nav.syfo.log
 import no.nav.syfo.objectMapper
@@ -57,34 +60,37 @@ class UpdateSykmeldtService(
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    suspend fun start() {
+    suspend fun start() = withContext(Dispatchers.Unbounded) {
         val endDateTime = OffsetDateTime.now(ZoneOffset.UTC).minusHours(5)
         while (shouldRun) {
-            val records = kafkaConsumer.poll(Duration.ofSeconds(1000))
-            records.forEach { record ->
-                when (val sykmelding = record.value()) {
-                    null -> {
-                        println("Sykmelding er null")
-                    }
-                    else -> {
-                        val sykmeldingKafkaMessage = objectMapper.readValue<SendtSykmeldingKafkaMessage>(sykmelding)
-                        if (sykmeldingKafkaMessage.sykmelding.sykmeldingsperioder.maxOf { it.tom }
-                            .isAfter(LocalDate.now().minusMonths(4))
-                        ) {
-                            try {
-                                sykmeldingService.updateSykmeldt(sykmeldingKafkaMessage.kafkaMetadata.fnr)
-                            } catch (e: SyketilfelleNotFoundException) {
-                                log.warn("Fant ikke syketilfelle for sykmelding med id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}")
-                            } catch (e: NameNotFoundInPdlException) {
-                                log.warn("Fant ikke navn for sykmeldt med sykmelding_id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}")
+            val records = kafkaConsumer.poll(Duration.ofSeconds(1))
+            val jobs = records.map { record ->
+                async(Dispatchers.Unbounded) {
+                    when (val sykmelding = record.value()) {
+                        null -> {
+                            println("Sykmelding er null")
+                        }
+                        else -> {
+                            val sykmeldingKafkaMessage = objectMapper.readValue<SendtSykmeldingKafkaMessage>(sykmelding)
+                            if (sykmeldingKafkaMessage.sykmelding.sykmeldingsperioder.maxOf { it.tom }
+                                .isAfter(LocalDate.now().minusMonths(4))
+                            ) {
+                                try {
+                                    sykmeldingService.updateSykmeldt(sykmeldingKafkaMessage.kafkaMetadata.fnr)
+                                } catch (e: SyketilfelleNotFoundException) {
+                                    log.warn("Fant ikke syketilfelle for sykmelding med id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}")
+                                } catch (e: NameNotFoundInPdlException) {
+                                    log.warn("Fant ikke navn for sykmeldt med sykmelding_id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}")
+                                }
                             }
                         }
                     }
                 }
-                lastTimestamp = OffsetDateTime.ofInstant(Instant.ofEpochMilli(record.timestamp()), ZoneOffset.UTC)
-                if (record.timestamp() > endDateTime.toInstant().toEpochMilli()) {
-                    shouldRun = false
-                }
+            }
+            jobs.awaitAll()
+            lastTimestamp = OffsetDateTime.ofInstant(Instant.ofEpochMilli(records.last().timestamp()), ZoneOffset.UTC)
+            if (lastTimestamp.toInstant().toEpochMilli() > endDateTime.toInstant().toEpochMilli()) {
+                shouldRun = false
             }
         }
         log.info("Done with updating sykmeldt")

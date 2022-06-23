@@ -108,8 +108,9 @@ fun main() {
     val credentials: GcpDatabaseCredentials = objectMapper.readValue(getFileAsString("/run/secrets/secret"))
     val database = GcpDatabase(credentials, "dinesykmeldte-backend")
 
-    val narmestelederService = NarmestelederService(NarmestelederDb(database),)
-    val sykmeldingService = SykmeldingService(SykmeldingDb(database), pdlPersonService, syfoSyketilfelleClient, env.cluster)
+    val narmestelederService = NarmestelederService(NarmestelederDb(database))
+    val sykmeldingService =
+        SykmeldingService(SykmeldingDb(database), pdlPersonService, syfoSyketilfelleClient, env.cluster)
     val soknadService = SoknadService(SoknadDb(database))
     val hendelserService = HendelserService(HendelserDb(database))
 
@@ -125,14 +126,14 @@ fun main() {
 
     val updateSykmeldtKafkaConsumer = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also {
-            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
+            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
         }.toConsumerConfig("update-sykmeldt-backend", StringDeserializer::class),
         StringDeserializer(),
         StringDeserializer()
     )
     UpdateSykmeldtService(updateSykmeldtKafkaConsumer, sykmeldingService, env).startConsumer()
-    //  commonKafkaService.startConsumer()
-    //  DeleteDataService(DeleteDataDb(database), applicationState).start()
+//    commonKafkaService.startConsumer()
+//    DeleteDataService(DeleteDataDb(database), applicationState).start()
     ApplicationServer(applicationEngine, applicationState).start()
 }
