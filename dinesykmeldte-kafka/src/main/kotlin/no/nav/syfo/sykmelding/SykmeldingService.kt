@@ -82,18 +82,19 @@ class SykmeldingService(
         }
     }
 
-    private suspend fun updateSykmeldt(fnr: String) {
+    suspend fun updateSykmeldt(fnr: String) {
         val sykmeldingInfos = sykmeldingDb.getSykmeldingInfos(fnr)
 
-        val latestSykmelding = sykmeldingInfos.maxByOrNull { it.latestTom }
-        when (latestSykmelding) {
+        when (val latestSykmelding = sykmeldingInfos.maxByOrNull { it.latestTom }) {
             null -> sykmeldingDb.deleteSykmeldt(fnr)
             else -> {
                 val person = pdlPersonService.getPerson(fnr = fnr, callId = latestSykmelding.sykmeldingId)
+
                 val startdato = syfoSyketilfelleClient.finnStartdato(
                     fnr = fnr,
                     sykmeldingId = latestSykmelding.sykmeldingId,
                 )
+
                 sykmeldingDb.insertOrUpdateSykmeldt(
                     SykmeldtDbModel(
                         pasientFnr = fnr,
