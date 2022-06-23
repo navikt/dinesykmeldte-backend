@@ -9,6 +9,7 @@ import io.ktor.server.testing.handleRequest
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.api.registerNaisApi
 import org.amshove.kluent.shouldBeEqualTo
+import java.time.OffsetDateTime
 
 class SelftestSpec : FunSpec({
     context("Successfull liveness and readyness tests") {
@@ -19,6 +20,11 @@ class SelftestSpec : FunSpec({
             applicationState.alive = true
             application.routing { registerNaisApi(applicationState) }
 
+            test("test") {
+                val lastTimestamp = OffsetDateTime.MIN
+                val r = lastTimestamp > OffsetDateTime.now().minusHours(5)
+                r shouldBeEqualTo false
+            }
             test("Returns ok on is_alive") {
                 with(handleRequest(HttpMethod.Get, "/internal/is_alive")) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK

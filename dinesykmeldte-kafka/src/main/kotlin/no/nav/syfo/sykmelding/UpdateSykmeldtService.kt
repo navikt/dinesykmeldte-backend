@@ -88,8 +88,11 @@ class UpdateSykmeldtService(
                 }
             }
             jobs.awaitAll()
-            lastTimestamp = OffsetDateTime.ofInstant(Instant.ofEpochMilli(records.last().timestamp()), ZoneOffset.UTC)
-            if (lastTimestamp.toInstant().toEpochMilli() > endDateTime.toInstant().toEpochMilli()) {
+            if (records.count() > 0) {
+                lastTimestamp = OffsetDateTime.ofInstant(Instant.ofEpochMilli(records.last().timestamp()), ZoneOffset.UTC)
+            }
+
+            if (lastTimestamp > endDateTime) {
                 shouldRun = false
             }
         }
