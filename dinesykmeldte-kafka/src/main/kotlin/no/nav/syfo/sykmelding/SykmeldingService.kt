@@ -68,7 +68,7 @@ class SykmeldingService(
                 throw IllegalStateException("Mottatt sendt sykmelding uten arbeidsgiver, $sykmeldingId")
             }
             sykmeldingDb.insertOrUpdateSykmelding(toSykmeldingDbModel(sykmelding, sisteTom))
-            handleSendtSykmelding(sykmelding.kafkaMetadata.fnr)
+            updateSykmeldt(sykmelding.kafkaMetadata.fnr)
         } else if (existingSykmelding != null) {
             deleteSykmelding(existingSykmelding.sykmeldingId, existingSykmelding)
         }
@@ -78,11 +78,11 @@ class SykmeldingService(
         if (existingSykmelding != null) {
             log.info("Sletter sykmelding med id $sykmeldingId")
             sykmeldingDb.remove(sykmeldingId)
-            handleSendtSykmelding(existingSykmelding.fnr)
+            updateSykmeldt(existingSykmelding.fnr)
         }
     }
 
-    private suspend fun handleSendtSykmelding(fnr: String) {
+    private suspend fun updateSykmeldt(fnr: String) {
         val sykmeldingInfos = sykmeldingDb.getSykmeldingInfos(fnr)
 
         val latestSykmelding = sykmeldingInfos.maxByOrNull { it.latestTom }
