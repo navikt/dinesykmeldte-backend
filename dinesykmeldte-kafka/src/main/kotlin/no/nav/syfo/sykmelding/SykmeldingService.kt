@@ -8,6 +8,7 @@ import no.nav.syfo.objectMapper
 import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
 import no.nav.syfo.syketilfelle.client.SyketilfelleNotFoundException
 import no.nav.syfo.sykmelding.db.SykmeldingDb
+import no.nav.syfo.sykmelding.db.SykmeldingInfo
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage
 import no.nav.syfo.sykmelding.mapper.SykmeldingMapper.Companion.toSykmeldingDbModel
@@ -23,9 +24,9 @@ class SykmeldingService(
     private val syfoSyketilfelleClient: SyfoSyketilfelleClient,
     private val cluster: String
 ) {
-    suspend fun handleSendtSykmelding(record: ConsumerRecord<String, String?>) {
+    suspend fun handleSendtSykmeldingKafkaMessage(record: ConsumerRecord<String, String?>) {
         try {
-            handleSendtSykmelding(
+            handleSendtSykmeldingKafkaMessage(
                 record.key(),
                 record.value()?.let { objectMapper.readValue<SendtSykmeldingKafkaMessage>(it) }
             )
@@ -47,29 +48,41 @@ class SykmeldingService(
         }
     }
 
-    suspend fun handleSendtSykmelding(sykmeldingId: String, sykmelding: SendtSykmeldingKafkaMessage?) {
-        if (sykmelding == null) {
-            log.info("Sletter sykmelding med id $sykmeldingId")
-            val existingSykmelding = sykmeldingDb.getSykmeldingInfo(sykmeldingId)
-            if (existingSykmelding != null) {
-                sykmeldingDb.remove(sykmeldingId)
-                updateSykmeldt(existingSykmelding.fnr)
-            }
-        } else {
-            val sisteTom = finnSisteTom(sykmelding.sykmelding.sykmeldingsperioder)
-            if (sisteTom.isAfter(LocalDate.now().minusMonths(4))) {
-                if (sykmelding.event.arbeidsgiver == null) {
-                    throw IllegalStateException("Mottatt sendt sykmelding uten arbeidsgiver, $sykmeldingId")
-                }
-                sykmeldingDb.insertOrUpdateSykmelding(toSykmeldingDbModel(sykmelding, sisteTom))
-                updateSykmeldt(sykmelding.kafkaMetadata.fnr)
-            }
+    suspend fun handleSendtSykmeldingKafkaMessage(sykmeldingId: String, sykmelding: SendtSykmeldingKafkaMessage?) {
+        val existingSykmelding = sykmeldingDb.getSykmeldingInfo(sykmeldingId)
+        when (sykmelding) {
+            null -> deleteSykmelding(sykmeldingId, existingSykmelding)
+            else -> handleSendtSykmelding(sykmelding, sykmeldingId, existingSykmelding)
         }
-
         SYKMELDING_TOPIC_COUNTER.inc()
     }
 
-    private suspend fun updateSykmeldt(fnr: String) {
+    private suspend fun handleSendtSykmelding(
+        sykmelding: SendtSykmeldingKafkaMessage,
+        sykmeldingId: String,
+        existingSykmelding: SykmeldingInfo?
+    ) {
+        val sisteTom = finnSisteTom(sykmelding.sykmelding.sykmeldingsperioder)
+        if (sisteTom.isAfter(LocalDate.now().minusMonths(4))) {
+            if (sykmelding.event.arbeidsgiver == null) {
+                throw IllegalStateException("Mottatt sendt sykmelding uten arbeidsgiver, $sykmeldingId")
+            }
+            sykmeldingDb.insertOrUpdateSykmelding(toSykmeldingDbModel(sykmelding, sisteTom))
+            handleSendtSykmelding(sykmelding.kafkaMetadata.fnr)
+        } else if (existingSykmelding != null) {
+            deleteSykmelding(existingSykmelding.sykmeldingId, existingSykmelding)
+        }
+    }
+
+    private suspend fun deleteSykmelding(sykmeldingId: String, existingSykmelding: SykmeldingInfo?) {
+        if (existingSykmelding != null) {
+            log.info("Sletter sykmelding med id $sykmeldingId")
+            sykmeldingDb.remove(sykmeldingId)
+            handleSendtSykmelding(existingSykmelding.fnr)
+        }
+    }
+
+    private suspend fun handleSendtSykmelding(fnr: String) {
         val sykmeldingInfos = sykmeldingDb.getSykmeldingInfos(fnr)
 
         val latestSykmelding = sykmeldingInfos.maxByOrNull { it.latestTom }
