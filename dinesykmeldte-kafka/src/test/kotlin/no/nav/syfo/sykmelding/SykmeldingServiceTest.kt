@@ -25,8 +25,10 @@ import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createArbeidsgiverSykmelding
 import no.nav.syfo.util.insertOrUpdate
+import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeAfter
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldNotBe
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -56,12 +58,106 @@ class SykmeldingServiceTest : FunSpec({
     }
 
     context("SykmeldingService") {
+
+        test("Ved oppdatering av sykmelding skal den slettes om ny TOM er eldre enn 4mnd") {
+            val sykmelding = getSendtSykmeldingKafkaMessage(UUID.randomUUID().toString())
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmelding.kafkaMetadata.sykmeldingId, sykmelding)
+            val oppdatertSykmelding = getSendtSykmeldingKafkaMessage(
+                sykmelding.kafkaMetadata.sykmeldingId,
+                perioder = listOf(
+                    getPeriode(LocalDate.now().minusMonths(5))
+                )
+            )
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmelding.kafkaMetadata.sykmeldingId, oppdatertSykmelding)
+
+            val sykmeldt = TestDb.getSykmeldt("12345678910")
+            sykmeldt shouldBe null
+        }
+
+        test("Skal slette sykmelding og sykmeldt ved sletting og det bare finnes en sykmelding") {
+            val sykmelding = getSendtSykmeldingKafkaMessage(UUID.randomUUID().toString())
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmelding.kafkaMetadata.sykmeldingId, sykmelding)
+
+            val sykmeldt = TestDb.getSykmeldt("12345678910")
+            sykmeldt shouldNotBe null
+
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmelding.kafkaMetadata.sykmeldingId, null)
+
+            val sykmeldt2 = TestDb.getSykmeldt("12345678910")
+            sykmeldt2 shouldBe null
+        }
+
+        test("Sletting av sykmelding skal oppdatere sykmeldt latest_tom") {
+            val firstFomTom = LocalDate.now().minusMonths(1)
+            val firstSykmelding = getSendtSykmeldingKafkaMessage(
+                UUID.randomUUID().toString(),
+                perioder = listOf(
+                    getPeriode(firstFomTom)
+                )
+            )
+
+            val secondTom = LocalDate.now()
+            val secondSykmelding = getSendtSykmeldingKafkaMessage(
+                UUID.randomUUID().toString(),
+                perioder = listOf(
+                    getPeriode(secondTom)
+                )
+            )
+
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(firstSykmelding.sykmelding.id, firstSykmelding)
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(secondSykmelding.sykmelding.id, secondSykmelding)
+
+            val sykmeldt = TestDb.getSykmeldt(firstSykmelding.kafkaMetadata.fnr)
+            sykmeldt?.latestTom shouldBeEqualTo secondTom
+
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(secondSykmelding.sykmelding.id, null)
+
+            val updatedSykmeldt = TestDb.getSykmeldt(firstSykmelding.kafkaMetadata.fnr)
+            updatedSykmeldt?.latestTom shouldBeEqualTo firstFomTom
+        }
+
+        test("resending av gammel sykmelding skal ikke oppdatere latest_tom til sykmeldt") {
+            val sykmeldingId = UUID.randomUUID().toString()
+            val sendtTilArbeidsgiverDato = OffsetDateTime.now(Clock.tickMillis(ZoneOffset.UTC))
+            val sendtSykmelding = getSendtSykmeldingKafkaMessage(
+                sykmeldingId = sykmeldingId,
+                sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato,
+            )
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
+            val fom = LocalDate.now().minusMonths(4)
+            val tom = LocalDate.now().minusMonths(3)
+            val oldSykmeldingg = getSendtSykmeldingKafkaMessage(
+                sykmeldingId = sykmeldingId,
+                sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato,
+                perioder = listOf(
+                    SykmeldingsperiodeAGDTO(
+                        fom,
+                        tom,
+                        null,
+                        null,
+                        null,
+                        PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                        AktivitetIkkeMuligAGDTO(null),
+                        false
+                    )
+                )
+            )
+
+            coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns LocalDate.now().minusMonths(2)
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, oldSykmeldingg)
+            val sykmeldt = TestDb.getSykmeldt("12345678910")
+            sykmeldt?.pasientNavn shouldBeEqualTo "Syk Sykesen"
+            sykmeldt?.latestTom shouldBeEqualTo tom
+        }
         test("Lagrer ny sendt sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
             val sendtTilArbeidsgiverDato = OffsetDateTime.now(Clock.tickMillis(ZoneOffset.UTC))
-            val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId = sykmeldingId, sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato)
+            val sendtSykmelding = getSendtSykmeldingKafkaMessage(
+                sykmeldingId = sykmeldingId,
+                sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato
+            )
 
-            sykmeldingService.handleSendtSykmelding(sykmeldingId, sendtSykmelding)
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
 
             val sykmeldt = TestDb.getSykmeldt("12345678910")
             sykmeldt?.pasientNavn shouldBeEqualTo "Syk Sykesen"
@@ -82,9 +178,9 @@ class SykmeldingServiceTest : FunSpec({
             val sykmeldingId = UUID.randomUUID().toString()
             val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
 
-            sykmeldingService.handleSendtSykmelding(sykmeldingId, sendtSykmelding)
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
             val sykmelding = TestDb.getSykmelding(sykmeldingId)
-            sykmeldingService.handleSendtSykmelding(
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(
                 sykmeldingId,
                 sendtSykmelding.copy(
                     sykmelding = sendtSykmelding.sykmelding.copy(tiltakArbeidsplassen = "Masse fine tiltak som vi glemte sist")
@@ -114,7 +210,7 @@ class SykmeldingServiceTest : FunSpec({
                     )
                 )
             )
-            sykmeldingService.handleSendtSykmelding(sykmeldingId, sendtSykmelding)
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
 
             val sykmeldt = TestDb.getSykmeldt("12345678910")
             sykmeldt?.pasientNavn shouldBeEqualTo "Syk Sykesen"
@@ -127,7 +223,7 @@ class SykmeldingServiceTest : FunSpec({
             )
             coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns LocalDate.now().minusMonths(2)
 
-            sykmeldingService.handleSendtSykmelding(sykmeldingId2, sendtSykmelding2)
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId2, sendtSykmelding2)
 
             val sykmeldtOppdatert = TestDb.getSykmeldt("12345678910")
             sykmeldtOppdatert?.pasientNavn shouldBeEqualTo "Per Persen"
@@ -151,7 +247,7 @@ class SykmeldingServiceTest : FunSpec({
                     )
                 )
             )
-            sykmeldingService.handleSendtSykmelding(sykmeldingId, sendtSykmelding)
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
 
             TestDb.getSykmelding(sykmeldingId) shouldBeEqualTo null
         }
@@ -159,19 +255,19 @@ class SykmeldingServiceTest : FunSpec({
             val sykmeldingId = UUID.randomUUID().toString()
             val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
 
-            sykmeldingService.handleSendtSykmelding(sykmeldingId, sendtSykmelding)
-            sykmeldingService.handleSendtSykmelding(sykmeldingId, null)
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, null)
 
             TestDb.getSykmelding(sykmeldingId) shouldBeEqualTo null
         }
         test("Oppdaterer fnr på søknad som tilhører oppdatert sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
             val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
-            sykmeldingService.handleSendtSykmelding(sykmeldingId, sendtSykmelding)
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
             TestDb.database.insertOrUpdate(getSoknad(sykmeldingId = sykmeldingId))
 
             val sykmelding = TestDb.getSykmelding(sykmeldingId)
-            sykmeldingService.handleSendtSykmelding(
+            sykmeldingService.handleSendtSykmeldingKafkaMessage(
                 sykmeldingId,
                 sendtSykmelding.copy(
                     kafkaMetadata = sendtSykmelding.kafkaMetadata.copy(fnr = "11223344556")
@@ -186,6 +282,17 @@ class SykmeldingServiceTest : FunSpec({
         }
     }
 })
+
+private fun getPeriode(fom: LocalDate, tom: LocalDate = fom) = SykmeldingsperiodeAGDTO(
+    fom,
+    tom,
+    null,
+    null,
+    null,
+    PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+    AktivitetIkkeMuligAGDTO(null),
+    false
+)
 
 fun getSendtSykmeldingKafkaMessage(
     sykmeldingId: String,

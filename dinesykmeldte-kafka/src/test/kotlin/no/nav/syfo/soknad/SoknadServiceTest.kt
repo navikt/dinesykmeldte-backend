@@ -5,7 +5,6 @@ import io.kotest.core.spec.style.FunSpec
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
-import no.nav.syfo.hendelser.createSykmeldtDbModel
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.sykmelding.db.SykmeldingDb
@@ -134,8 +133,7 @@ class SoknadServiceTest : FunSpec({
         test("oppdater fnr på søknad ved mottak av søknad ved gammel fnr") {
             val sykmeldingId = UUID.randomUUID().toString()
             val sykmelding = createSykmeldingDbModel(sykmeldingId, pasientFnr = "NEW")
-            val sykmeldtDbModel = createSykmeldtDbModel(pasientFnr = "NEW")
-            sykmeldingDb.insertOrUpdate(sykmelding, sykmeldtDbModel)
+            sykmeldingDb.insertOrUpdateSykmelding(sykmelding)
 
             val soknadId = UUID.randomUUID().toString()
             val soknadDbModel = createSoknadDbModel(soknadId = soknadId, sykmeldingId = sykmeldingId, pasientFnr = "OLD")

@@ -60,7 +60,7 @@ class CommonKafkaService(
             records.forEach {
                 when (it.topic()) {
                     environment.narmestelederLeesahTopic -> narmestelederService.updateNl(it)
-                    environment.sendtSykmeldingTopic -> sykmeldingService.handleSendtSykmelding(it)
+                    environment.sendtSykmeldingTopic -> sykmeldingService.handleSendtSykmeldingKafkaMessage(it)
                     environment.sykepengesoknadTopic -> soknadService.handleSykepengesoknad(it)
                     environment.hendelserTopic -> hendelserService.handleHendelse(it)
                     else -> throw IllegalStateException("Har mottatt melding på ukjent topic: ${it.topic()}")
