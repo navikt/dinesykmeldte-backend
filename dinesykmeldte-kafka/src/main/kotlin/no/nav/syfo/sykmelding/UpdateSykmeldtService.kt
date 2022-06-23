@@ -57,9 +57,9 @@ class UpdateSykmeldtService(
                                 try {
                                     sykmeldingService.updateSykmeldt(sykmeldingKafkaMessage.kafkaMetadata.fnr)
                                 } catch (e: SyketilfelleNotFoundException) {
-                                    log.warn("Fant ikke syketilfelle for sykmelding med id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}", e)
+                                    log.warn("Fant ikke syketilfelle for sykmelding med id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}")
                                 } catch (e: NameNotFoundInPdlException) {
-                                    log.warn("Fant ikke navn for sykmeldt med sykmelding_id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}", e)
+                                    log.warn("Fant ikke navn for sykmeldt med sykmelding_id: ${sykmeldingKafkaMessage.kafkaMetadata.sykmeldingId}")
                                 }
                             }
                         }
