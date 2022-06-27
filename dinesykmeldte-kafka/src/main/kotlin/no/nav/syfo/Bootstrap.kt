@@ -36,7 +36,6 @@ import no.nav.syfo.soknad.SoknadService
 import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
 import no.nav.syfo.sykmelding.SykmeldingService
-import no.nav.syfo.sykmelding.UpdateSykmeldtService
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.pdl.client.PdlClient
 import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
@@ -125,16 +124,6 @@ fun main() {
         soknadService,
         hendelserService
     )
-
-    val updateSykmeldtKafkaConsumer = KafkaConsumer(
-        KafkaUtils.getAivenKafkaConfig().also {
-            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
-        }.toConsumerConfig("update-sykmeldt-backend", StringDeserializer::class),
-        StringDeserializer(),
-        StringDeserializer()
-    )
-    UpdateSykmeldtService(updateSykmeldtKafkaConsumer, sykmeldingService, env).startConsumer()
     commonKafkaService.startConsumer()
     DeleteDataService(DeleteDataDb(database), applicationState).start()
     ApplicationServer(applicationEngine, applicationState).start()
