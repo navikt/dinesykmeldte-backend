@@ -9,7 +9,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
 import no.nav.syfo.Environment
@@ -227,7 +226,7 @@ class MineSykmeldteApiKtTest : FunSpec({
 
         context("/api/sykmelding/{id}") {
             test("should respond with 404 Not Found if not found in the database ") {
-                every {
+                coEvery {
                     mineSykmeldteService.getSykmelding(
                         "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
                         any()
@@ -241,11 +240,11 @@ class MineSykmeldteApiKtTest : FunSpec({
                     response.status() shouldBeEqualTo HttpStatusCode.NotFound
                     response.content shouldBeEqualTo """{ "message": "Sykmeldingen finnes ikke" }""".minifyApiResponse()
                 }
-                verify(exactly = 1) { mineSykmeldteService.getSykmelding(any(), any()) }
+                coVerify(exactly = 1) { mineSykmeldteService.getSykmelding(any(), any()) }
             }
 
             test("should respond with the correct content if found") {
-                every {
+                coEvery {
                     mineSykmeldteService.getSykmelding(
                         "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
                         any()
@@ -289,7 +288,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                         }
                     """.minifyApiResponse()
                 }
-                verify(exactly = 1) { mineSykmeldteService.getSykmelding(any(), any()) }
+                coVerify(exactly = 1) { mineSykmeldteService.getSykmelding(any(), any()) }
             }
         }
 

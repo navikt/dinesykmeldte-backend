@@ -3,6 +3,7 @@ package no.nav.syfo.minesykmeldte
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -75,7 +76,7 @@ class MineSykmeldteServiceTest : FunSpec({
 
         test("Should get mine sykmeldte with oppfolgingsplan hendelse") {
             val hendelseid = UUID.randomUUID()
-            every { mineSykmeldteDb.getHendelser("1") } returns listOf(
+            coEvery { mineSykmeldteDb.getHendelser("1") } returns listOf(
                 HendelseDbModel(
                     id = "12",
                     pasientFnr = "prefix-0",
@@ -90,7 +91,7 @@ class MineSykmeldteServiceTest : FunSpec({
                     hendelseId = hendelseid
                 )
             )
-            every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(1, sykmeldtFnrPrefix = "prefix")
+            coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(1, sykmeldtFnrPrefix = "prefix")
             val sykmeldte = runBlocking { mineSykmeldtService.getMineSykmeldte("1") }
             sykmeldte.size shouldBeEqualTo 1
             val oppfolningsplaner = sykmeldte.first().oppfolgingsplaner
@@ -99,7 +100,7 @@ class MineSykmeldteServiceTest : FunSpec({
             oppfolningsplaner.first().tekst shouldBeEqualTo "Ny oppfolgingsplan"
         }
         test("Should get mine sykmeldte with hendelser") {
-            every { mineSykmeldteDb.getHendelser("1") } returns listOf(
+            coEvery { mineSykmeldteDb.getHendelser("1") } returns listOf(
                 HendelseDbModel(
                     id = "12",
                     pasientFnr = "avdeling-1-0",
@@ -114,7 +115,7 @@ class MineSykmeldteServiceTest : FunSpec({
                     hendelseId = UUID.randomUUID()
                 )
             )
-            every { mineSykmeldteDb.getMineSykmeldte("1") } returns
+            coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
                 getSykmeldtData(
                     sykmeldte = 2,
                     sykmeldinger = listOf(
@@ -133,16 +134,16 @@ class MineSykmeldteServiceTest : FunSpec({
         }
 
         test("Should get empty list") {
-            every { mineSykmeldteDb.getMineSykmeldte("1") } returns emptyList()
-            every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+            coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns emptyList()
+            coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
             runBlocking {
                 mineSykmeldtService.getMineSykmeldte("1").size shouldBeEqualTo 0
             }
         }
 
         test("should get one sykmeldt") {
-            every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(1, sykmeldtFnrPrefix = "prefix")
-            every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+            coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(1, sykmeldtFnrPrefix = "prefix")
+            coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
             runBlocking {
                 val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
@@ -155,7 +156,7 @@ class MineSykmeldteServiceTest : FunSpec({
             val sykmeldtData = getSykmeldtData(1, sykmeldtFnrPrefix = "prefix", soknader = 1)
                 .map { it.copy(soknad = it.soknad!!.copy(status = SoknadsstatusDTO.NY)) }
 
-            every { mineSykmeldteDb.getHendelser("1") } returns listOf(
+            coEvery { mineSykmeldteDb.getHendelser("1") } returns listOf(
                 HendelseDbModel(
                     id = sykmeldtData.first().soknad!!.id,
                     pasientFnr = "prefix-0",
@@ -171,7 +172,7 @@ class MineSykmeldteServiceTest : FunSpec({
                 )
             )
 
-            every { mineSykmeldteDb.getMineSykmeldte("1") } returns sykmeldtData
+            coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns sykmeldtData
             runBlocking {
                 val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                 mineSykmeldte.size shouldBeEqualTo 1
@@ -181,8 +182,8 @@ class MineSykmeldteServiceTest : FunSpec({
         }
 
         test("should group sykmeldinger and søknader by sykmeldt") {
-            every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-            every { mineSykmeldteDb.getMineSykmeldte("1") } returns
+            coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+            coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
                 getSykmeldtData(
                     sykmeldte = 3,
                     sykmeldinger = listOf(
@@ -211,8 +212,8 @@ class MineSykmeldteServiceTest : FunSpec({
 
         context("sykmeldt") {
             test("should not be friskmeldt if the latest sykmeldt period is tomorrow") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         createArbeidsgiverSykmelding(
@@ -239,8 +240,8 @@ class MineSykmeldteServiceTest : FunSpec({
             }
 
             test("should be friskmeldt if the latest sykmeldt period is 1 day ago") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         createArbeidsgiverSykmelding(
@@ -270,8 +271,8 @@ class MineSykmeldteServiceTest : FunSpec({
 
         context("given different types") {
             test("should get one sykmeldt with 50% type") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         createArbeidsgiverSykmelding(
@@ -298,8 +299,8 @@ class MineSykmeldteServiceTest : FunSpec({
             }
 
             test("should get one sykmeldt with 20% type") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         createArbeidsgiverSykmelding(
@@ -326,8 +327,8 @@ class MineSykmeldteServiceTest : FunSpec({
             }
 
             test("should get one sykmeldt with avventende") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         createArbeidsgiverSykmelding(
@@ -354,8 +355,8 @@ class MineSykmeldteServiceTest : FunSpec({
             }
 
             test("should get one sykmeldt with behandlingsdager") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         createArbeidsgiverSykmelding(
@@ -382,8 +383,8 @@ class MineSykmeldteServiceTest : FunSpec({
             }
 
             test("should get one sykmeldt with reisetilskudd") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         createArbeidsgiverSykmelding(
@@ -410,8 +411,8 @@ class MineSykmeldteServiceTest : FunSpec({
             }
 
             test("should pick the correct period when one period is now") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         createArbeidsgiverSykmelding(
@@ -453,8 +454,8 @@ class MineSykmeldteServiceTest : FunSpec({
             }
 
             test("should pick the correct period when now is end of period") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         createArbeidsgiverSykmelding(
@@ -496,8 +497,8 @@ class MineSykmeldteServiceTest : FunSpec({
             }
 
             test("should pick the correct period when now is start of period") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         createArbeidsgiverSykmelding(
@@ -539,8 +540,8 @@ class MineSykmeldteServiceTest : FunSpec({
             }
 
             test("should pick latest period when there are periods in the past, but one in the future") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         createArbeidsgiverSykmelding(
@@ -582,8 +583,8 @@ class MineSykmeldteServiceTest : FunSpec({
             }
 
             test("should pick the nearest future period, if all in the future") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(
                     1,
                     listOf(
                         createArbeidsgiverSykmelding(
@@ -627,14 +628,14 @@ class MineSykmeldteServiceTest : FunSpec({
 
         context("when mapping søknader") {
             test("should map to a new søknad and use tom if date is latest") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.NY,
                     tom = LocalDate.parse("2020-05-02"),
                     opprettet = LocalDateTime.parse("2020-04-05T18:00:50.63"),
                 )
 
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
                     MinSykmeldtDbModel(
                         narmestelederId = UUID.randomUUID().toString(),
                         sykmeldtFnr = "080806933221",
@@ -660,14 +661,14 @@ class MineSykmeldteServiceTest : FunSpec({
             }
 
             test("should map to a new søknad and use opprettet if date is latest") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.NY,
                     tom = LocalDate.parse("2020-05-02"),
                     opprettet = LocalDateTime.parse("2020-06-05T18:00:50.63"),
                 )
 
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
                     MinSykmeldtDbModel(
                         narmestelederId = UUID.randomUUID().toString(),
                         sykmeldtFnr = "080806933221",
@@ -693,14 +694,14 @@ class MineSykmeldteServiceTest : FunSpec({
             }
 
             test("should map to a sendt søknad") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.SENDT,
                     korrigerer = "korrigerer-id",
                     sendtArbeidsgiver = LocalDateTime.parse("2020-06-07T19:34:50.63")
                 )
 
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
                     MinSykmeldtDbModel(
                         narmestelederId = UUID.randomUUID().toString(),
                         sykmeldtFnr = "080806933221",
@@ -728,7 +729,7 @@ class MineSykmeldteServiceTest : FunSpec({
             }
 
             test("Should not get Korrigert soknad") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val korrigertSoknad = createSykepengesoknadDto("soknad-id-korrigert", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.SENDT,
                 )
@@ -754,7 +755,7 @@ class MineSykmeldteServiceTest : FunSpec({
                     sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
                 )
 
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
                     mineSykmeldteModel,
                     mineSykmeldteModel.copy(soknad = korrigererSoknad),
                     mineSykmeldteModel.copy(soknad = sendtSoknad)
@@ -778,12 +779,12 @@ class MineSykmeldteServiceTest : FunSpec({
             }
 
             test("should map to a fremtidig søknad") {
-                every { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.FREMTIDIG,
                 )
 
-                every { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
+                coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
                     MinSykmeldtDbModel(
                         narmestelederId = UUID.randomUUID().toString(),
                         sykmeldtFnr = "080806933221",
@@ -812,7 +813,7 @@ class MineSykmeldteServiceTest : FunSpec({
     context("getSykmelding") {
         test("should map to aktivitetIkkeMulig") {
             val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
-            every {
+            coEvery {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
             } returns (
                 createSykmeldtDbModel() to createSykmeldingDbModel(
@@ -846,7 +847,7 @@ class MineSykmeldteServiceTest : FunSpec({
 
         test("should map to avventende") {
             val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
-            every {
+            coEvery {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
             } returns (
                 createSykmeldtDbModel() to createSykmeldingDbModel(
@@ -874,7 +875,7 @@ class MineSykmeldteServiceTest : FunSpec({
 
         test("should map to behandlingsdager") {
             val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
-            every {
+            coEvery {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
             } returns (
                 createSykmeldtDbModel() to createSykmeldingDbModel(
@@ -901,7 +902,7 @@ class MineSykmeldteServiceTest : FunSpec({
 
         test("should map to gradert") {
             val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
-            every {
+            coEvery {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
             } returns (
                 createSykmeldtDbModel() to createSykmeldingDbModel(
@@ -932,7 +933,7 @@ class MineSykmeldteServiceTest : FunSpec({
 
         test("should map to reisetilskudd") {
             val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
-            every {
+            coEvery {
                 mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1")
             } returns (
                 createSykmeldtDbModel() to createSykmeldingDbModel(
@@ -970,7 +971,7 @@ class MineSykmeldteServiceTest : FunSpec({
                 startdatoSykefravaer = LocalDate.now(),
                 latestTom = LocalDate.now()
             )
-            every {
+            coEvery {
                 mineSykmeldteDb.getSoknad(soknadDbModel.soknadId, "red-2")
             } returns (sykmeldtDbModel to soknadDbModel)
 
@@ -980,7 +981,7 @@ class MineSykmeldteServiceTest : FunSpec({
 
         test("should map to Soknad") {
             val soknadId = "e94a7c0f-3240-4a0c-8788-c4cc3ebcdac2"
-            every {
+            coEvery {
                 mineSykmeldteDb.getSoknad(soknadId, "red-2")
             } returns (
                 createSykmeldtDbModel(

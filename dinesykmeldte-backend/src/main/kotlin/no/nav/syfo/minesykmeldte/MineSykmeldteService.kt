@@ -142,23 +142,23 @@ class MineSykmeldteService(
         sykmeldt: MinSykmeldtDbModel,
     ) = hendelserMap[sykmeldtEntry.key.fnr]?.filter { it.id == sykmeldt.soknad?.id }.orEmpty()
 
-    fun getSykmelding(sykmeldingId: String, lederFnr: String): Sykmelding? {
+    suspend fun getSykmelding(sykmeldingId: String, lederFnr: String): Sykmelding? {
         return mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr)?.toSykmelding()
     }
 
-    fun getSoknad(soknadId: String, lederFnr: String): Soknad? {
+    suspend fun getSoknad(soknadId: String, lederFnr: String): Soknad? {
         return mineSykmeldteDb.getSoknad(soknadId, lederFnr)?.toSoknad()
     }
 
-    fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): Boolean {
+    suspend fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): Boolean {
         return mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr)
     }
 
-    fun markSoknadRead(soknadId: String, lederFnr: String): Boolean {
+    suspend fun markSoknadRead(soknadId: String, lederFnr: String): Boolean {
         return mineSykmeldteDb.markSoknadRead(soknadId, lederFnr)
     }
 
-    fun markHendelseRead(hendelseId: UUID, lederFnr: String): Boolean {
+    suspend fun markHendelseRead(hendelseId: UUID, lederFnr: String): Boolean {
         return mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr)
     }
 }

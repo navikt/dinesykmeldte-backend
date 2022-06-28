@@ -15,7 +15,7 @@ class NarmestelederService(
     private val nlResponseProducer: NLResponseProducer,
 ) {
 
-    fun deaktiverNarmesteLeder(fnrLeder: String, narmestelederId: String, callId: UUID) {
+    suspend fun deaktiverNarmesteLeder(fnrLeder: String, narmestelederId: String, callId: UUID) {
         val nlKoblinger = narmestelederDb.finnNarmestelederkoblinger(
             narmesteLederFnr = fnrLeder,
             narmestelederId = narmestelederId
@@ -32,7 +32,7 @@ class NarmestelederService(
         }
     }
 
-    private fun deaktiverNarmesteLeder(orgnummer: String, fnrSykmeldt: String) {
+    private suspend fun deaktiverNarmesteLeder(orgnummer: String, fnrSykmeldt: String) {
         nlResponseProducer.send(
             NlResponseKafkaMessage(
                 kafkaMetadata = KafkaMetadata(

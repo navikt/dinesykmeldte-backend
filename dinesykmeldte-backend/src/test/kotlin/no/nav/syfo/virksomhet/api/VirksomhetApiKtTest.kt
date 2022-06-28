@@ -4,6 +4,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.syfo.Environment
@@ -26,7 +27,7 @@ object VirksomhetApiKtTest : FunSpec({
     }) {
         context("Virksomhet API") {
             test("should return empty list") {
-                every { virksomhetService.getVirksomheter("08086912345") } returns emptyList()
+                coEvery { virksomhetService.getVirksomheter("08086912345") } returns emptyList()
 
                 with(
                     handleRequest(HttpMethod.Get, "/api/virksomheter") { addAuthorizationHeader() }
@@ -37,7 +38,7 @@ object VirksomhetApiKtTest : FunSpec({
             }
 
             test("should return list of virksomheter when found") {
-                every { virksomhetService.getVirksomheter("08086912345") } returns listOf(
+                coEvery { virksomhetService.getVirksomheter("08086912345") } returns listOf(
                     Virksomhet(navn = "Test virksomhet 1", orgnummer = "test-virksomhet-1"),
                     Virksomhet(navn = "Test virksomhet 2", orgnummer = "test-virksomhet-2"),
                 )

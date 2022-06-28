@@ -1,5 +1,7 @@
 package no.nav.syfo.virksomhet.db
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import java.sql.ResultSet
@@ -7,7 +9,7 @@ import java.sql.ResultSet
 class VirksomhetDb(
     private val database: DatabaseInterface,
 ) {
-    fun getVirksomheter(lederFnr: String): List<VirksomhetDbModel> =
+    suspend fun getVirksomheter(lederFnr: String): List<VirksomhetDbModel> = withContext(Dispatchers.IO) {
         database.connection.use { connection ->
             connection.prepareStatement(
                 """
@@ -22,6 +24,7 @@ class VirksomhetDb(
                 ps.executeQuery().toList { toVirksomhetDbModel() }
             }
         }
+    }
 }
 
 private fun ResultSet.toVirksomhetDbModel(): VirksomhetDbModel = VirksomhetDbModel(
