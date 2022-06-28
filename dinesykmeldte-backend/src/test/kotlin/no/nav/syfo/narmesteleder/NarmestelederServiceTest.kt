@@ -2,8 +2,8 @@ package no.nav.syfo.narmesteleder
 
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
+import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.NLResponseProducer
 import no.nav.syfo.util.TestDb
@@ -32,7 +32,7 @@ class NarmestelederServiceTest : FunSpec({
             )
             narmestelederService.deaktiverNarmesteLeder("01987654321", id.toString(), UUID.randomUUID())
 
-            verify(exactly = 1) {
+            coVerify(exactly = 1) {
                 nlResponseProducer.send(
                     match {
                         it.nlAvbrutt.orgnummer == "88888888" && it.nlAvbrutt.sykmeldtFnr == "12345678910" && it.kafkaMetadata.source == "leder"
@@ -51,7 +51,7 @@ class NarmestelederServiceTest : FunSpec({
             )
             narmestelederService.deaktiverNarmesteLeder("01987654321", UUID.randomUUID().toString(), UUID.randomUUID())
 
-            verify(exactly = 0) { nlResponseProducer.send(any()) }
+            coVerify(exactly = 0) { nlResponseProducer.send(any()) }
             TestDb.getNarmesteleder(pasientFnr = "12345678910").size shouldBeEqualTo 1
         }
     }
