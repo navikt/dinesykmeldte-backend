@@ -31,7 +31,9 @@ import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
+import no.nav.syfo.narmesteleder.kafka.NLReadCountProducer
 import no.nav.syfo.narmesteleder.kafka.NLResponseProducer
+import no.nav.syfo.narmesteleder.kafka.model.NLReadCountKafkaMessage
 import no.nav.syfo.narmesteleder.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.util.JacksonKafkaSerializer
 import no.nav.syfo.virksomhet.api.VirksomhetService
@@ -87,21 +89,18 @@ fun main() {
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
 
-    val kafkaProducer = KafkaProducer<String, NlResponseKafkaMessage>(
-        KafkaUtils
-            .getAivenKafkaConfig()
-            .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class)
-    )
-
-    val nlResponseProducer = NLResponseProducer(kafkaProducer, env.nlResponseTopic)
+    val nlResponseProducer = NLResponseProducer(createKafkaProducer<NlResponseKafkaMessage>(env), env.nlResponseTopic)
     val narmestelederService = NarmestelederService(NarmestelederDb(database), nlResponseProducer)
+
+    val nlReadCountProducer = NLReadCountProducer(createKafkaProducer<NLReadCountKafkaMessage>(env), env.nlReadCountTopic)
+    val mineSykmeldteService = MineSykmeldteService(MineSykmeldteDb(database), nlReadCountProducer)
 
     val applicationEngine = createApplicationEngine(
         env,
         jwkProviderTokenX,
         wellKnownTokenX.issuer,
         applicationState,
-        MineSykmeldteService(MineSykmeldteDb(database)),
+        mineSykmeldteService,
         VirksomhetService(VirksomhetDb(database)),
         narmestelederService
     )
@@ -111,9 +110,20 @@ fun main() {
 fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) =
     runBlocking { httpClient.get(wellKnownUrl).body<WellKnownTokenX>() }
 
+fun <T> createKafkaProducer(env: Environment): KafkaProducer<String, T> =
+    KafkaProducer(
+        KafkaUtils
+            .getAivenKafkaConfig()
+            .toProducerConfig(
+                "${env.applicationName}-producer",
+                JacksonKafkaSerializer::class,
+                StringSerializer::class
+            )
+    )
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WellKnownTokenX(
     val token_endpoint: String,
     val jwks_uri: String,
-    val issuer: String
+    val issuer: String,
 )

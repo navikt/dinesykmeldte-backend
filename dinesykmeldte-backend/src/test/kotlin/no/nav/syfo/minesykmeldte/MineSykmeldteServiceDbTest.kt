@@ -1,8 +1,10 @@
 package no.nav.syfo.minesykmeldte
 
 import io.kotest.core.spec.style.FunSpec
+import io.mockk.mockk
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.getSoknad
+import no.nav.syfo.narmesteleder.kafka.NLReadCountProducer
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
@@ -13,8 +15,9 @@ import java.time.ZoneOffset
 import java.util.UUID
 
 class MineSykmeldteServiceDbTest : FunSpec({
+    val nlReadCountProducer = mockk<NLReadCountProducer>(relaxed = true)
     val mineSykmeldteDb = MineSykmeldteDb(TestDb.database)
-    val mineSykmeldteService = MineSykmeldteService(mineSykmeldteDb)
+    val mineSykmeldteService = MineSykmeldteService(mineSykmeldteDb, nlReadCountProducer)
 
     afterEach {
         TestDb.clearAllData()

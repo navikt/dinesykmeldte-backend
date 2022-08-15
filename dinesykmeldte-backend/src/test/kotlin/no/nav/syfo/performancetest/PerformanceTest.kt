@@ -2,9 +2,11 @@ package no.nav.syfo.performancetest
 
 import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.FunSpec
+import io.mockk.mockk
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.getSoknad
+import no.nav.syfo.narmesteleder.kafka.NLReadCountProducer
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
@@ -16,6 +18,7 @@ import kotlin.system.measureTimeMillis
 @Ignored
 class PerformanceTest : FunSpec({
 
+    val nlReadCountProducer = mockk<NLReadCountProducer>(relaxed = true)
     val database = TestDb.database
     val nlFnr = "70859400564"
     val orgnummer = "972674818"
@@ -39,7 +42,10 @@ class PerformanceTest : FunSpec({
         database.insertOrUpdate(soknadDbModel)
     }
 
-    val mineSykmeldteService = MineSykmeldteService(mineSykmeldteDb = MineSykmeldteDb(database))
+    val mineSykmeldteService = MineSykmeldteService(
+        mineSykmeldteDb = MineSykmeldteDb(database),
+        nlReadCountProducer = nlReadCountProducer,
+    )
 
     context("Get mine sykmeldginer") {
         test("get mine sykmeldte") {
