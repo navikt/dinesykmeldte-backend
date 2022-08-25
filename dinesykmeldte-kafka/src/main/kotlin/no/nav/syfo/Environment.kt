@@ -19,6 +19,7 @@ data class Environment(
     val sendtSykmeldingTopic: String = "teamsykmelding.syfo-sendt-sykmelding",
     val sykepengesoknadTopic: String = "flex.sykepengesoknad",
     val hendelserTopic: String = "teamsykmelding.dinesykmeldte-hendelser-v2",
+    val nlReadCountTopic: String = "teamsykmelding.dinesykmeldte-lest-status"
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
