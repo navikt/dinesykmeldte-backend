@@ -27,6 +27,9 @@ import no.nav.syfo.minesykmeldte.model.MinSykmeldtKey
 import no.nav.syfo.minesykmeldte.model.Oppfolgingsplan
 import no.nav.syfo.minesykmeldte.model.OppfolgingsplanerHendelser
 import no.nav.syfo.minesykmeldte.model.Periode
+import no.nav.syfo.minesykmeldte.model.PreviewFremtidigSoknad
+import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
+import no.nav.syfo.minesykmeldte.model.PreviewSendtSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
 import no.nav.syfo.minesykmeldte.model.Reisetilskudd
@@ -35,15 +38,22 @@ import no.nav.syfo.minesykmeldte.model.Sykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.BehandlerAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.narmesteleder.kafka.NLReadCountProducer
+import no.nav.syfo.narmesteleder.kafka.model.KafkaMetadata
+import no.nav.syfo.narmesteleder.kafka.model.NLReadCount
+import no.nav.syfo.narmesteleder.kafka.model.NLReadCountKafkaMessage
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
 class MineSykmeldteService(
     private val mineSykmeldteDb: MineSykmeldteDb,
+    private val nlReadCountProducer: NLReadCountProducer,
 ) {
     suspend fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> = withContext(Dispatchers.IO) {
         val hendelserJob = async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr) }
@@ -151,16 +161,52 @@ class MineSykmeldteService(
     }
 
     suspend fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): Boolean {
-        return mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr)
+        return mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr).also {
+            updateReadCountKafkaTopic(lederFnr)
+        }
     }
 
     suspend fun markSoknadRead(soknadId: String, lederFnr: String): Boolean {
-        return mineSykmeldteDb.markSoknadRead(soknadId, lederFnr)
+        return mineSykmeldteDb.markSoknadRead(soknadId, lederFnr).also {
+            updateReadCountKafkaTopic(lederFnr)
+        }
     }
 
     suspend fun markHendelseRead(hendelseId: UUID, lederFnr: String): Boolean {
-        return mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr)
+        return mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr).also {
+            updateReadCountKafkaTopic(lederFnr)
+        }
     }
+
+    suspend fun updateReadCountKafkaTopic(lederFnr: String) {
+        val mineSykmeldte = getMineSykmeldte(lederFnr)
+
+        return mineSykmeldte.forEach { sykmeldt ->
+            nlReadCountProducer.send(
+                NLReadCountKafkaMessage(
+                    KafkaMetadata(
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                        source = "leder"
+                    ),
+                    NLReadCount(
+                        narmestelederId = sykmeldt.narmestelederId,
+                        unreadSykmeldinger = sykmeldt.sykmeldinger.filter { !it.lest }.size,
+                        unreadSoknader = sykmeldt.previewSoknader.filter { isSoknadUnread(it) }.size,
+                        unreadMeldinger = sykmeldt.aktivitetsvarsler.filter { it.lest == null }.size,
+                        unreadDialogmoter = sykmeldt.dialogmoter.size,
+                        unreadOppfolgingsplaner = sykmeldt.oppfolgingsplaner.size,
+                    )
+                )
+            )
+        }
+    }
+
+    private fun isSoknadUnread(soknad: PreviewSoknad): Boolean =
+        when (soknad) {
+            is PreviewSendtSoknad -> !soknad.lest
+            is PreviewNySoknad -> if (soknad.ikkeSendtSoknadVarsel) !soknad.lest else false
+            is PreviewFremtidigSoknad -> false
+        }
 }
 
 private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>): Boolean {
@@ -288,16 +334,19 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
                 )
             }
         )
+
         PeriodetypeDTO.AVVENTENDE -> Avventende(
             this.fom,
             this.tom,
             tilrettelegging = this.innspillTilArbeidsgiver,
         )
+
         PeriodetypeDTO.BEHANDLINGSDAGER -> Behandlingsdager(
             this.fom,
             this.tom,
             this.behandlingsdager ?: throw IllegalStateException("Behandlingsdager without behandlingsdager"),
         )
+
         PeriodetypeDTO.GRADERT -> {
             val gradering = this.gradert
             requireNotNull(gradering) {
@@ -311,6 +360,7 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
                 gradering.reisetilskudd,
             )
         }
+
         PeriodetypeDTO.REISETILSKUDD -> Reisetilskudd(
             this.fom,
             this.tom,

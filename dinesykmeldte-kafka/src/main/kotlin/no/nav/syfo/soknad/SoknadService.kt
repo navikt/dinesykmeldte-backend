@@ -6,14 +6,16 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.application.metrics.SOKNAD_TOPIC_COUNTER
 import no.nav.syfo.log
 import no.nav.syfo.objectMapper
+import no.nav.syfo.readcount.ReadCountService
 import no.nav.syfo.soknad.db.SoknadDb
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import java.time.LocalDate
 
 class SoknadService(
-    private val soknadDb: SoknadDb
+    private val soknadDb: SoknadDb,
+    private val readCountService: ReadCountService
 ) {
-    fun handleSykepengesoknad(record: ConsumerRecord<String, String>) {
+    suspend fun handleSykepengesoknad(record: ConsumerRecord<String, String>) {
         try {
             handleSykepengesoknad(objectMapper.readValue<SykepengesoknadDTO>(record.value()))
         } catch (e: Exception) {
@@ -22,7 +24,7 @@ class SoknadService(
         }
     }
 
-    fun handleSykepengesoknad(sykepengesoknad: SykepengesoknadDTO) {
+    suspend fun handleSykepengesoknad(sykepengesoknad: SykepengesoknadDTO) {
         if (shouldHandleSoknad(sykepengesoknad)) {
             when (sykepengesoknad.status) {
                 SoknadsstatusDTO.NY -> soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
@@ -37,9 +39,12 @@ class SoknadService(
         SOKNAD_TOPIC_COUNTER.inc()
     }
 
-    private fun handleSendt(sykepengesoknad: SykepengesoknadDTO) {
+    private suspend fun handleSendt(sykepengesoknad: SykepengesoknadDTO) {
         when (sykepengesoknad.sendtArbeidsgiver != null) {
-            true -> soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
+            true -> {
+                soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
+                readCountService.updateReadCountKafkaTopic(pasientFnr = sykepengesoknad.fnr, orgnummer = sykepengesoknad.arbeidsgiver!!.orgnummer!!)
+            }
             else -> soknadDb.deleteSoknad(sykepengesoknad.id)
         }
     }

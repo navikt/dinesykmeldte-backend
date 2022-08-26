@@ -5,6 +5,7 @@ import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_COUNTER
 import no.nav.syfo.log
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.objectMapper
+import no.nav.syfo.readcount.ReadCountService
 import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
 import no.nav.syfo.syketilfelle.client.SyketilfelleNotFoundException
 import no.nav.syfo.sykmelding.db.SykmeldingDb
@@ -22,7 +23,8 @@ class SykmeldingService(
     private val sykmeldingDb: SykmeldingDb,
     private val pdlPersonService: PdlPersonService,
     private val syfoSyketilfelleClient: SyfoSyketilfelleClient,
-    private val cluster: String
+    private val cluster: String,
+    private val readCountService: ReadCountService
 ) {
     suspend fun handleSendtSykmeldingKafkaMessage(record: ConsumerRecord<String, String?>) {
         try {
@@ -69,6 +71,7 @@ class SykmeldingService(
             }
             sykmeldingDb.insertOrUpdateSykmelding(toSykmeldingDbModel(sykmelding, sisteTom))
             updateSykmeldt(sykmelding.kafkaMetadata.fnr)
+            readCountService.updateReadCountKafkaTopic(pasientFnr = sykmelding.kafkaMetadata.fnr, orgnummer = sykmelding.event.arbeidsgiver!!.orgnummer)
         } else if (existingSykmelding != null) {
             deleteSykmelding(existingSykmelding.sykmeldingId, existingSykmelding)
         }

@@ -2,10 +2,14 @@ package no.nav.syfo.soknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
+import io.mockk.clearMocks
+import io.mockk.coVerify
+import io.mockk.mockk
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.objectMapper
+import no.nav.syfo.readcount.ReadCountService
 import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.util.TestDb
@@ -22,10 +26,13 @@ import java.util.UUID
 
 class SoknadServiceTest : FunSpec({
     val database = SoknadDb(TestDb.database)
-    val soknadService = SoknadService(database)
+    val readCountService = mockk<ReadCountService>(relaxed = true)
+    val soknadService = SoknadService(database, readCountService)
     val sykmeldingDb = SykmeldingDb(TestDb.database)
+
     beforeEach {
         TestDb.clearAllData()
+        clearMocks(readCountService)
     }
 
     context("SoknadService") {
@@ -58,6 +65,8 @@ class SoknadServiceTest : FunSpec({
             )
             arbeidsgiverSoknadFraDb.andreInntektskilder shouldBeEqualTo null
             arbeidsgiverSoknadFraDb.sporsmal shouldBeEqualTo sporsmalArbeidsgivervisning
+
+            coVerify { readCountService.updateReadCountKafkaTopic("123456789", "123454543") }
         }
         test("Ignorerer søknad med tom tidligere enn 4 mnd siden") {
             val soknadId = UUID.randomUUID().toString()
@@ -105,6 +114,7 @@ class SoknadServiceTest : FunSpec({
             soknadService.handleSykepengesoknad(sykepengesoknadDTO)
 
             TestDb.getSoknad(soknadId) shouldBeEqualTo null
+            coVerify(exactly = 0) { readCountService.updateReadCountKafkaTopic(any(), any()) }
         }
         test("Ignorerer ikke søknad som ikke har status sendt") {
             val soknadId = UUID.randomUUID().toString()
