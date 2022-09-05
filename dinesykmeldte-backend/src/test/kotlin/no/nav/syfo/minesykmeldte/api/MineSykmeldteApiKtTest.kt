@@ -173,10 +173,11 @@ class MineSykmeldteApiKtTest : FunSpec({
                                     tom = LocalDate.parse("2020-02-01"),
                                     lest = false,
                                     perioder = listOf(),
-                                    ikkeSendtSoknadVarsel = false
+                                    ikkeSendtSoknadVarsel = true,
+                                    ikkeSendtSoknadVarsletDato = OffsetDateTime.parse("2020-03-01T10:10:30+02:00")
                                 ),
                             ),
-                            dialogmoter = listOf(Dialogmote(hendelseId, "Ny revidert oppfølgingplan")),
+                            dialogmoter = listOf(Dialogmote(hendelseId, "Ny revidert oppfølgingplan", OffsetDateTime.parse("2022-03-11T10:15:30+02:00"))),
                             aktivitetsvarsler = listOf(
                                 Aktivitetsvarsel(
                                     hendelseId,
@@ -184,7 +185,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                                     null
                                 )
                             ),
-                            oppfolgingsplaner = listOf(Oppfolgingsplan(hendelseId, "ny oppfolgingsplan"))
+                            oppfolgingsplaner = listOf(Oppfolgingsplan(hendelseId, "ny oppfolgingsplan", OffsetDateTime.parse("2022-06-17T10:15:30+02:00")))
                         )
                     )
                     with(
@@ -205,7 +206,8 @@ class MineSykmeldteApiKtTest : FunSpec({
                             "previewSoknader": [
                               {
                                 "lest": false,
-                                "ikkeSendtSoknadVarsel": false,
+                                "ikkeSendtSoknadVarsel": true,
+                                "ikkeSendtSoknadVarsletDato": "2020-03-01T10:10:30+02:00",
                                 "id": "soknad-1-id",
                                 "sykmeldingId": "sykmelding-id-1",
                                 "fom": "2020-01-01",
@@ -214,9 +216,9 @@ class MineSykmeldteApiKtTest : FunSpec({
                                 "status": "NY"
                               }
                             ],
-                            "dialogmoter":[{"hendelseId": "$hendelseId","tekst":"Ny revidert oppfølgingplan"}],
+                            "dialogmoter":[{"hendelseId": "$hendelseId","tekst":"Ny revidert oppfølgingplan","mottatt":"2022-03-11T10:15:30+02:00"}],
                             "aktivitetsvarsler": [{"hendelseId":"$hendelseId","mottatt":"2022-04-09T10:15:30+02:00","lest":null}],
-                            "oppfolgingsplaner": [{"hendelseId": "$hendelseId","tekst":"ny oppfolgingsplan"}]
+                            "oppfolgingsplaner": [{"hendelseId": "$hendelseId","tekst":"ny oppfolgingsplan","mottatt":"2022-06-17T10:15:30+02:00"}]
                           }
                         ]""".minifyApiResponse()
                     }

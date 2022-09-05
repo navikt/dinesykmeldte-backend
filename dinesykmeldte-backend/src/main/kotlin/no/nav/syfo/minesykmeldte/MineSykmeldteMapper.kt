@@ -64,6 +64,9 @@ class MineSykmeldteMapper private constructor() {
                 perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
                     ?: throw IllegalStateException("søknadsperioder must not be null in ny soknad: ${soknad.id}"),
                 ikkeSendtSoknadVarsel = hendelser.any { it.id == soknad.id && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD },
+                ikkeSendtSoknadVarsletDato = hendelser.find {
+                    it.id == soknad.id && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD
+                }?.mottatt
             )
 
         fun SoknadsperiodeDTO.toSoknadsperiode(): Soknadsperiode = Soknadsperiode(
