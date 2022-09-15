@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
@@ -23,6 +24,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.azuread.AccessTokenClient
+import no.nav.syfo.log
 import org.amshove.kluent.shouldBeEqualTo
 import java.net.ServerSocket
 import java.time.LocalDate
@@ -62,6 +64,21 @@ class SyfoSyketilfelleClientTest : FunSpec({
         }
         install(HttpTimeout) {
             socketTimeoutMillis = 1L
+        }
+        install(HttpRequestRetry) {
+            constantDelay(100, 0, false)
+            retryOnExceptionIf(3) { request, throwable ->
+                log.warn("Caught exception ${throwable.message}, for url ${request.url}")
+                true
+            }
+            retryIf(maxRetries) { request, response ->
+                if (response.status.value.let { it in 500..599 }) {
+                    log.warn("Retrying for statuscode ${response.status.value}, for url ${request.url}")
+                    true
+                } else {
+                    false
+                }
+            }
         }
     }
 
