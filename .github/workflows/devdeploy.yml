@@ -10,7 +10,7 @@ on:
       - 'build.gradle.kts'
 
 env:
-  IMAGE: docker.pkg.github.com/${{ github.repository }}/dinesykmeldte-backend:${{ github.sha }}
+  IMAGE: ghcr.io/${{ github.repository }}/dinesykmeldte-backend:${{ github.sha }}
 
 jobs:
   snyk-test:
@@ -67,7 +67,7 @@ jobs:
         run: |
           cd dinesykmeldte-backend
           docker build --tag ${IMAGE} .
-          docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
+          docker login ghcr.io -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
           docker push ${IMAGE}
   deploy:
     name: Deploy to Preprod

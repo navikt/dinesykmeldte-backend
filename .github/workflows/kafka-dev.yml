@@ -9,7 +9,7 @@ on:
       - '.github/workflows/kafka-dev.yml'
       - 'build.gradle.kts'
 env:
-  IMAGE: docker.pkg.github.com/${{ github.repository }}/dinesykmeldte-kafka:${{ github.sha }}
+  IMAGE: ghcr.io/${{ github.repository }}/dinesykmeldte-kafka:${{ github.sha }}
 
 jobs:
   snyk-test:
@@ -66,7 +66,7 @@ jobs:
         run: |
           cd dinesykmeldte-kafka
           docker build --tag ${IMAGE} .
-          docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
+          docker login ghcr.io -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
           docker push ${IMAGE}
   deploy-dev:
     name: Deploy to dev
