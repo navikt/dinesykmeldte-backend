@@ -1,9 +1,18 @@
 # dinesykmeldte-backend
 This project contains the application code and infrastructure for dinesykmeldte-backend
+
+[![Deploy dinesykmeldte-kafka app to dev and prod](https://github.com/navikt/dinesykmeldte-backend/actions/workflows/kafka-prod.yml/badge.svg)](https://github.com/navikt/dinesykmeldte-backend/actions/workflows/kafka-prod.yml)
+[![Deploy to dev and prod](https://github.com/navikt/dinesykmeldte-backend/actions/workflows/deploy.yml/badge.svg)](https://github.com/navikt/dinesykmeldte-backend/actions/workflows/deploy.yml)
+
+
 ## Technologies used
 * Kotlin
 * Ktor
 * Gradle
+
+#### Requirements
+
+* JDK 17
 
 ## Getting started
 ### Getting github-package-registry packages NAV-IT
@@ -60,8 +69,11 @@ Find the newest version of gradle here: https://gradle.org/releases/ Then run th
 
 ```./gradlew wrapper --gradle-version $gradleVersjon```
 
-### Inquiries
-Questions related to the code or the project can be asked as issues here on GitHub
+### Contact
 
-### For NAV employees
-We are available at the Slack channel #team-sykmelding
+This project is maintained by navikt/teamsykmelding
+
+Questions and/or feature requests? Please create an [issue](https://github.com/navikt/dinesykmeldte-backend/issues).
+
+If you work in [@navikt](https://github.com/navikt) you can reach us at the Slack
+channel [#team-sykmelding](https://nav-it.slack.com/archives/CMA3XV997).
