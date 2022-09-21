@@ -8,11 +8,11 @@ version = "1.0.0"
 val coroutinesVersion = "1.6.4"
 val jacksonVersion = "2.13.3"
 val kluentVersion = "1.68"
-val ktorVersion = "2.0.3"
+val ktorVersion = "2.1.1"
 val logbackVersion = "1.2.11"
 val logstashEncoderVersion = "7.2"
 val prometheusVersion = "0.15.0"
-val smCommonVersion = "1.c55f4d2"
+val smCommonVersion = "1.069b5f9"
 val mockkVersion = "1.12.3"
 val nimbusdsVersion = "9.22"
 val hikariVersion = "5.0.1"
@@ -147,7 +147,11 @@ subprojects {
         withType<Test> {
             useJUnitPlatform {
             }
-            testLogging.showStandardStreams = true
+            testLogging {
+                events("skipped", "failed")
+                showStackTraces = true
+                exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            }
         }
 
         "check" {
