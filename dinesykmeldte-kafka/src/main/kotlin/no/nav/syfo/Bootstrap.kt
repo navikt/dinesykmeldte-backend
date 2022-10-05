@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -26,7 +25,6 @@ import no.nav.syfo.common.delete.DeleteDataService
 import no.nav.syfo.common.exception.ServiceUnavailableException
 import no.nav.syfo.common.kafka.CommonKafkaService
 import no.nav.syfo.database.GcpDatabase
-import no.nav.syfo.database.GcpDatabaseCredentials
 import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.kafka.aiven.KafkaUtils
@@ -130,8 +128,7 @@ fun main() {
         StringDeserializer(),
         StringDeserializer()
     )
-    val credentials: GcpDatabaseCredentials = objectMapper.readValue(getFileAsString("/run/secrets/secret"))
-    val database = GcpDatabase(credentials, "dinesykmeldte-backend")
+    val database = GcpDatabase(env)
 
     val nlReadCountProducer = NLReadCountProducer(
         KafkaProducer<String, NLReadCountKafkaMessage>(

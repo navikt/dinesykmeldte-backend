@@ -19,7 +19,13 @@ data class Environment(
     val sendtSykmeldingTopic: String = "teamsykmelding.syfo-sendt-sykmelding",
     val sykepengesoknadTopic: String = "flex.sykepengesoknad",
     val hendelserTopic: String = "teamsykmelding.dinesykmeldte-hendelser-v2",
-    val nlReadCountTopic: String = "teamsykmelding.dinesykmeldte-lest-status"
+    val nlReadCountTopic: String = "teamsykmelding.dinesykmeldte-lest-status",
+    val databaseUsername: String = getEnvVar("NAIS_DATABASE_DINESYKMELDTE_KAFKA_USER_USERNAME"),
+    val databasePassword: String = getEnvVar("NAIS_DATABASE_DINESYKMELDTE_KAFKA_USER_PASSWORD"),
+    val dbHost: String = getEnvVar("NAIS_DATABASE_DINESYKMELDTE_KAFKA_USER_HOST"),
+    val dbPort: String = getEnvVar("NAIS_DATABASE_DINESYKMELDTE_KAFKA_USER_PORT"),
+    val dbName: String = getEnvVar("NAIS_DATABASE_DINESYKMELDTE_KAFKA_USER_DATABASE"),
+    val cloudSqlInstance: String = getEnvVar("CLOUD_SQL_INSTANCE")
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
