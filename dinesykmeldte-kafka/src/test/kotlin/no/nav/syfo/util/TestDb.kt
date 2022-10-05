@@ -4,7 +4,6 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.database.DatabaseInterface
-import no.nav.syfo.database.GcpDatabaseCredentials
 import no.nav.syfo.database.toList
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.log
@@ -27,7 +26,7 @@ import java.time.ZoneOffset
 
 class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
 
-class GcpTestDB(credentials: GcpDatabaseCredentials) : DatabaseInterface {
+class GcpTestDB(val connectionName: String, val dbUsername: String, val dbPassword: String) : DatabaseInterface {
     private val dataSource: HikariDataSource
     override val connection: Connection
         get() = dataSource.connection
@@ -35,9 +34,9 @@ class GcpTestDB(credentials: GcpDatabaseCredentials) : DatabaseInterface {
     init {
         dataSource = HikariDataSource(
             HikariConfig().apply {
-                jdbcUrl = credentials.connectionName
-                username = credentials.username
-                password = credentials.password
+                jdbcUrl = connectionName
+                username = dbUsername
+                password = dbPassword
                 maximumPoolSize = 1
                 minimumIdle = 1
                 isAutoCommit = false
@@ -46,11 +45,11 @@ class GcpTestDB(credentials: GcpDatabaseCredentials) : DatabaseInterface {
                 validate()
             }
         )
-        runFlywayMigrations(credentials)
+        runFlywayMigrations()
     }
-    private fun runFlywayMigrations(credentials: GcpDatabaseCredentials) = Flyway.configure().run {
+    private fun runFlywayMigrations() = Flyway.configure().run {
         locations("filesystem:./../dinesykmeldte-backend/src/main/resources/db")
-        dataSource(credentials.connectionName, credentials.username, credentials.password)
+        dataSource(connectionName, dbUsername, dbPassword)
         load().migrate()
     }
 }
@@ -72,12 +71,11 @@ class TestDb private constructor() {
                     .withInitScript("db/testdb-init.sql")
 
                 psqlContainer.start()
-                val gcpDatabaseCredentials = GcpDatabaseCredentials(
-                    username = "username",
-                    password = "password",
-                    connectionName = psqlContainer.jdbcUrl
-                )
-                database = GcpTestDB(gcpDatabaseCredentials)
+                val username = "username"
+                val password = "password"
+                val connectionName = psqlContainer.jdbcUrl
+
+                database = GcpTestDB(connectionName, username, password)
             } catch (ex: Exception) {
                 log.error("Error", ex)
                 throw ex

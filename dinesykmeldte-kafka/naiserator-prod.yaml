@@ -12,6 +12,12 @@ spec:
     max: 3
     cpuThresholdPercentage: 90
   port: 8080
+  gcp:
+    permissions:
+      - resource:
+          apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+          kind: Project
+        role: roles/cloudsql.client
   liveness:
     path: /internal/is_alive
     initialDelay: 10
@@ -35,9 +41,8 @@ spec:
       memory: 768Mi
   vault:
     enabled: false
-  webproxy: true
-  filesFrom:
-    - secret: dinesykmeldte-kafka-user-secret
+  envFrom:
+    - secret: google-sql-dinesykmeldte-backend-dinesykmeldte-backend-2b15651f
   kafka:
     pool: nav-prod
   azure:
@@ -57,3 +62,5 @@ spec:
       value: api://prod-fss.pdl.pdl-api/.default
     - name: SYKETILLFELLE_SCOPE
       value: api://prod-gcp.flex.flex-syketilfelle/.default
+    - name: CLOUD_SQL_INSTANCE
+      value: teamsykmelding-prod-2acd:europe-north1:sykmeldinger-db-instance
