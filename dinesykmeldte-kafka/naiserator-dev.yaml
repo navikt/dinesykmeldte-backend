@@ -63,4 +63,4 @@ spec:
     - name: SYKETILLFELLE_SCOPE
       value: api://dev-gcp.flex.flex-syketilfelle/.default
     - name: CLOUD_SQL_INSTANCE
-      value: teamsykmelding-dev-1d34:europe-north1:sykmeldinger-db-instance
+      value: teamsykmelding-dev-1d34:europe-north1:dinesykmeldte-backend-db-instance
