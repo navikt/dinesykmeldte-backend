@@ -48,6 +48,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.dinesykmeldte-backend")
+val sikkerlogg = LoggerFactory.getLogger("securelog")
 
 val objectMapper: ObjectMapper = ObjectMapper().apply {
     registerKotlinModule()

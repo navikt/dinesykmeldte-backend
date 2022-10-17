@@ -11,6 +11,7 @@ import no.nav.syfo.log
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.HttpErrorMessage
 import no.nav.syfo.minesykmeldte.model.HttpMessage
+import no.nav.syfo.sikkerlogg
 import no.nav.syfo.util.getBrukerPrincipal
 import no.nav.syfo.util.getParam
 import java.util.UUID
@@ -22,6 +23,7 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
     get("api/minesykmeldte") {
         val principal: BrukerPrincipal = call.getBrukerPrincipal()
         val lederFnr = principal.fnr
+        sikkerlogg.info("Calling api path: api/minesykmeldt for lederFnr $lederFnr")
         val timedValue = measureTimedValue {
             mineSykmeldteService.getMineSykmeldte(lederFnr)
         }
@@ -80,6 +82,8 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         val principal: BrukerPrincipal = call.getBrukerPrincipal()
         val lederFnr = principal.fnr
         val hendelseId = UUID.fromString(call.getParam("hendelseId"))
+
+        sikkerlogg.info("Calling api path: api/hendelse/$hendelseId/les for lederFnr $lederFnr")
 
         when (mineSykmeldteService.markHendelseRead(hendelseId, lederFnr)) {
             true -> call.respond(HttpStatusCode.OK, HttpMessage("Markert som lest"))
