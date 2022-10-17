@@ -64,6 +64,8 @@ spec:
     inbound:
       rules:
         - application: dinesykmeldte
+  secureLogs:
+    enabled: true
   env:
     - name: ALLOWED_ORIGIN
       value: tjenester-q1.nav.no,www-gcp.dev.nav.no,dinesykmeldte-backend.dev.nav.no

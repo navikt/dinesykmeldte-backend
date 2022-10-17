@@ -9,6 +9,7 @@ This project contains the application code and infrastructure for dinesykmeldte-
 * Kotlin
 * Ktor
 * Gradle
+* Kafka
 
 #### Requirements
 

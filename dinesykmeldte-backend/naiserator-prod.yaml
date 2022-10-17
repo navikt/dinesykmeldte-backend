@@ -65,6 +65,8 @@ spec:
     inbound:
       rules:
         - application: dinesykmeldte
+  secureLogs:
+    enabled: true
   env:
     - name: ALLOWED_ORIGIN
       value: tjenester.nav.no,www.nav.no

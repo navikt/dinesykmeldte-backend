@@ -19,7 +19,7 @@ val hikariVersion = "5.0.1"
 val flywayVersion = "9.3.0"
 val postgresVersion = "42.5.0"
 val testContainerVersion = "1.17.3"
-val kotlinVersion = "1.7.10"
+val kotlinVersion = "1.7.20"
 val sykepengesoknadKafkaVersion = "2022.02.10-16.07-0892e94a"
 val swaggerUiVersion = "4.14.0"
 val kotestVersion = "5.4.2"
@@ -30,7 +30,7 @@ tasks.withType<Jar> {
 
 plugins {
     id("org.jmailen.kotlinter") version "3.10.0"
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm") version "1.7.20"
     id("com.diffplug.spotless") version "6.5.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.hidetake.swagger.generator") version "2.18.2" apply true
