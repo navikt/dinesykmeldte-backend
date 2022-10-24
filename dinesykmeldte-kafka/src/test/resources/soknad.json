@@ -486,6 +486,35 @@
       ]
     },
     {
+      "id": "10",
+      "tag": "ANDRE_INNTEKTSKILDER_V2",
+      "sporsmalstekst": "Har du andre inntektskilder enn Kebabbiten? Du trenger ikke oppgi penger fra NAV.",
+      "undertekst": null,
+      "min": null,
+      "max": null,
+      "svartype": "JA_NEI",
+      "kriterieForVisningAvUndersporsmal": "JA",
+      "svar": [
+        {
+          "verdi": "NEI"
+        }
+      ],
+      "undersporsmal": [
+        {
+          "id": "11",
+          "tag": "HVILKE_ANDRE_INNTEKTSKILDER",
+          "sporsmalstekst": "Hvilke andre inntektskilder har du?",
+          "undertekst": null,
+          "min": null,
+          "max": null,
+          "svartype": "CHECKBOX_GRUPPE",
+          "kriterieForVisningAvUndersporsmal": null,
+          "svar": [],
+          "undersporsmal": []
+        }
+      ]
+    },
+    {
       "id": "23",
       "tag": "UTDANNING",
       "sporsmalstekst": "Har du vært under utdanning i løpet av perioden 9. - 26. oktober 2021?",

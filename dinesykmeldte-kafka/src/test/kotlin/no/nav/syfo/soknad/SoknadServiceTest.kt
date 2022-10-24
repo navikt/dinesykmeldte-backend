@@ -48,6 +48,7 @@ class SoknadServiceTest : FunSpec({
             )
             sykepengesoknadDTO.sporsmal?.find { it.tag == ARBEID_UTENFOR_NORGE } shouldNotBeEqualTo null
             sykepengesoknadDTO.sporsmal?.find { it.tag == ANDRE_INNTEKTSKILDER } shouldNotBeEqualTo null
+            sykepengesoknadDTO.sporsmal?.find { it.tag == ANDRE_INNTEKTSKILDER_V2 } shouldNotBeEqualTo null
 
             soknadService.handleSykepengesoknad(sykepengesoknadDTO)
 
