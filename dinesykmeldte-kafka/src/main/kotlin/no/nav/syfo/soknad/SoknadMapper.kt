@@ -8,6 +8,7 @@ import java.time.ZoneOffset
 
 const val ARBEID_UTENFOR_NORGE = "ARBEID_UTENFOR_NORGE"
 const val ANDRE_INNTEKTSKILDER = "ANDRE_INNTEKTSKILDER"
+const val ANDRE_INNTEKTSKILDER_V2 = "ANDRE_INNTEKTSKILDER_V2"
 
 fun SykepengesoknadDTO.toSoknadDbModel(): SoknadDbModel {
     return SoknadDbModel(
@@ -31,7 +32,7 @@ fun SykepengesoknadDTO.tilArbeidsgiverSoknad(): SykepengesoknadDTO =
     )
 
 fun List<SporsmalDTO>.fjernSporsmalOmAndreInnntektsKilder() =
-    this.fjernSporsmal(ANDRE_INNTEKTSKILDER)
+    this.fjernSporsmal(ANDRE_INNTEKTSKILDER).fjernSporsmal(ANDRE_INNTEKTSKILDER_V2)
 
 fun List<SporsmalDTO>.fjernSporsmalOmArbeidUtenforNorge() =
     this.fjernSporsmal(ARBEID_UTENFOR_NORGE)
