@@ -6,6 +6,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.application.leaderelection.LeaderElection
 import no.nav.syfo.application.metrics.SLETTET_COUNTER
 import no.nav.syfo.util.Unbounded
 import org.slf4j.Logger
@@ -16,6 +17,7 @@ import kotlin.time.ExperimentalTime
 
 class DeleteDataService(
     private val database: DeleteDataDb,
+    private val leaderElection: LeaderElection,
     private val applicationState: ApplicationState
 ) {
 
@@ -30,15 +32,17 @@ class DeleteDataService(
     fun start() {
         GlobalScope.launch(Dispatchers.Unbounded) {
             while (applicationState.ready) {
-                try {
-                    val result = database.deleteOldData(getDateForDeletion())
-                    log.info("Deleted ${result.deletedSykmelding} sykmeldinger, ${result.deletedSykmeldt} sykmeldte, ${result.deletedSoknader} soknader and ${result.deletedHendelser} hendelser")
-                    SLETTET_COUNTER.labels("sykmelding").inc(result.deletedSykmelding.toDouble())
-                    SLETTET_COUNTER.labels("sykmeldt").inc(result.deletedSykmeldt.toDouble())
-                    SLETTET_COUNTER.labels("soknad").inc(result.deletedSoknader.toDouble())
-                    SLETTET_COUNTER.labels("hendelse").inc(result.deletedHendelser.toDouble())
-                } catch (ex: Exception) {
-                    log.error("Could not delete data", ex)
+                if (leaderElection.isLeader()) {
+                    try {
+                        val result = database.deleteOldData(getDateForDeletion())
+                        log.info("Deleted ${result.deletedSykmelding} sykmeldinger, ${result.deletedSykmeldt} sykmeldte, ${result.deletedSoknader} soknader and ${result.deletedHendelser} hendelser")
+                        SLETTET_COUNTER.labels("sykmelding").inc(result.deletedSykmelding.toDouble())
+                        SLETTET_COUNTER.labels("sykmeldt").inc(result.deletedSykmeldt.toDouble())
+                        SLETTET_COUNTER.labels("soknad").inc(result.deletedSoknader.toDouble())
+                        SLETTET_COUNTER.labels("hendelse").inc(result.deletedHendelser.toDouble())
+                    } catch (ex: Exception) {
+                        log.error("Could not delete data", ex)
+                    }
                 }
                 delay(DELAY_HOURS.hours)
             }

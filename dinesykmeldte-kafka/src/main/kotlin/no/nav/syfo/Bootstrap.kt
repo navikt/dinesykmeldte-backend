@@ -19,6 +19,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
+import no.nav.syfo.application.leaderelection.LeaderElection
 import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.common.delete.DeleteDataDb
 import no.nav.syfo.common.delete.DeleteDataService
@@ -160,6 +161,7 @@ fun main() {
         hendelserService
     )
     commonKafkaService.startConsumer()
-    DeleteDataService(DeleteDataDb(database), applicationState).start()
+    val leaderElection = LeaderElection(httpClient, env.electorPath)
+    DeleteDataService(DeleteDataDb(database), leaderElection, applicationState).start()
     ApplicationServer(applicationEngine, applicationState).start()
 }
