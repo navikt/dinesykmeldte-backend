@@ -20,7 +20,7 @@ val flywayVersion = "9.3.0"
 val postgresVersion = "42.5.0"
 val testContainerVersion = "1.17.3"
 val kotlinVersion = "1.7.20"
-val sykepengesoknadKafkaVersion = "2022.02.10-16.07-0892e94a"
+val sykepengesoknadKafkaVersion = "2022.10.28-10.24-aa0eced7"
 val swaggerUiVersion = "4.14.0"
 val kotestVersion = "5.4.2"
 
