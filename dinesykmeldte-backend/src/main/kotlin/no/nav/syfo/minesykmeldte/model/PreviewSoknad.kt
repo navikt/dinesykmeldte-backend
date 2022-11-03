@@ -2,6 +2,7 @@ package no.nav.syfo.minesykmeldte.model
 
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 sealed interface PreviewSoknad {
     val id: String
@@ -34,6 +35,7 @@ data class PreviewSendtSoknad(
 data class PreviewNySoknad(
     val lest: Boolean,
     val ikkeSendtSoknadVarsel: Boolean,
+    val ikkeSendtSoknadVarsletDato: OffsetDateTime?,
     override val id: String,
     override val sykmeldingId: String?,
     override val fom: LocalDate?,

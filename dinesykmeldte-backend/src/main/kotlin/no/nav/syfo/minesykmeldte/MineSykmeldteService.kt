@@ -92,7 +92,8 @@ class MineSykmeldteService(
         ?.map {
             Oppfolgingsplan(
                 it.hendelseId,
-                it.tekst ?: throw IllegalStateException("Oppfølgningsplan uten tekst: ${it.id}")
+                it.tekst ?: throw IllegalStateException("Oppfølgningsplan uten tekst: ${it.id}"),
+                it.mottatt
             )
         }
         ?: emptyList()
@@ -110,7 +111,8 @@ class MineSykmeldteService(
         ?.map {
             Dialogmote(
                 hendelseId = it.hendelseId,
-                tekst = it.tekst ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}")
+                tekst = it.tekst ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}"),
+                mottatt = it.mottatt
             )
         }
         ?: emptyList()
