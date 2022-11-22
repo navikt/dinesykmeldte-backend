@@ -14,15 +14,12 @@ import no.nav.syfo.model.sykmelding.model.AdresseDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.objectMapper
-import no.nav.syfo.readcount.db.HendelseDbModel
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.toSoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
-import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.util.UUID
 
 fun createSykmeldingDbModel(
     sykmeldingId: String,
@@ -39,15 +36,6 @@ fun createSykmeldingDbModel(
         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
         latestTom = LocalDate.now().minusWeeks(2),
         sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC)
-    )
-}
-
-fun createSykmeldtDbModel(pasientFnr: String = "12345678910"): SykmeldtDbModel {
-    return SykmeldtDbModel(
-        pasientFnr = pasientFnr,
-        pasientNavn = "Navn Navnesen",
-        startdatoSykefravaer = LocalDate.now().minusMonths(2),
-        latestTom = LocalDate.now().minusWeeks(2)
     )
 }
 
@@ -111,23 +99,4 @@ fun createSykmeldingsperiode(
     type = type,
     aktivitetIkkeMulig = aktivitetIkkeMulig,
     reisetilskudd = reisetilskudd,
-)
-
-fun createHendelseDbModel(
-    id: String,
-    pasientFnr: String,
-    orgnummer: String,
-    oppgavetype: String
-) = HendelseDbModel(
-    id = id,
-    hendelseId = UUID.randomUUID(),
-    pasientFnr = pasientFnr,
-    orgnummer = orgnummer,
-    oppgavetype = oppgavetype,
-    lenke = null,
-    tekst = null,
-    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
-    utlopstidspunkt = null,
-    ferdigstilt = false,
-    ferdigstiltTimestamp = null
 )

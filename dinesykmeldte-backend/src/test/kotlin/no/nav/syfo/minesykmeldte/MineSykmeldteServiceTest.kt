@@ -38,7 +38,6 @@ import no.nav.syfo.model.sykmelding.model.ArbeidsrelatertArsakDTO
 import no.nav.syfo.model.sykmelding.model.ArbeidsrelatertArsakTypeDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
-import no.nav.syfo.narmesteleder.kafka.NLReadCountProducer
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.toSoknadDbModel
@@ -66,9 +65,8 @@ import kotlin.contracts.ExperimentalContracts
 
 @ExperimentalContracts
 class MineSykmeldteServiceTest : FunSpec({
-    val nlReadCountProducer = mockk<NLReadCountProducer>(relaxed = true)
     val mineSykmeldteDb = mockk<MineSykmeldteDb>(relaxed = true)
-    val mineSykmeldtService = MineSykmeldteService(mineSykmeldteDb, nlReadCountProducer)
+    val mineSykmeldtService = MineSykmeldteService(mineSykmeldteDb)
 
     afterEach {
         clearMocks(mineSykmeldteDb)

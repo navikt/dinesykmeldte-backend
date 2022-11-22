@@ -32,9 +32,7 @@ import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
-import no.nav.syfo.narmesteleder.kafka.NLReadCountProducer
 import no.nav.syfo.narmesteleder.kafka.NLResponseProducer
-import no.nav.syfo.narmesteleder.kafka.model.NLReadCountKafkaMessage
 import no.nav.syfo.narmesteleder.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.util.JacksonKafkaSerializer
 import no.nav.syfo.virksomhet.api.VirksomhetService
@@ -109,8 +107,7 @@ fun main() {
     val nlResponseProducer = NLResponseProducer(createKafkaProducer<NlResponseKafkaMessage>(env), env.nlResponseTopic)
     val narmestelederService = NarmestelederService(NarmestelederDb(database), nlResponseProducer)
 
-    val nlReadCountProducer = NLReadCountProducer(createKafkaProducer<NLReadCountKafkaMessage>(env), env.nlReadCountTopic)
-    val mineSykmeldteService = MineSykmeldteService(MineSykmeldteDb(database), nlReadCountProducer)
+    val mineSykmeldteService = MineSykmeldteService(MineSykmeldteDb(database))
 
     val applicationEngine = createApplicationEngine(
         env,

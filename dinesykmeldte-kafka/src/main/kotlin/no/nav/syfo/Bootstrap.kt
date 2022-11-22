@@ -30,13 +30,8 @@ import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
-import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
-import no.nav.syfo.readcount.ReadCountService
-import no.nav.syfo.readcount.db.ReadCountDb
-import no.nav.syfo.readcount.kafka.NLReadCountProducer
-import no.nav.syfo.readcount.kafka.model.NLReadCountKafkaMessage
 import no.nav.syfo.soknad.SoknadService
 import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
@@ -44,12 +39,9 @@ import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.pdl.client.PdlClient
 import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
-import no.nav.syfo.util.JacksonKafkaSerializer
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.collections.set
@@ -131,25 +123,11 @@ fun main() {
     )
     val database = GcpDatabase(env)
 
-    val nlReadCountProducer = NLReadCountProducer(
-        KafkaProducer<String, NLReadCountKafkaMessage>(
-            KafkaUtils
-                .getAivenKafkaConfig()
-                .toProducerConfig(
-                    "${env.applicationName}-producer",
-                    JacksonKafkaSerializer::class,
-                    StringSerializer::class
-                )
-        ),
-        env.nlReadCountTopic
-    )
-    val readCountService = ReadCountService(ReadCountDb(database), nlReadCountProducer)
-
     val narmestelederService = NarmestelederService(NarmestelederDb(database))
     val sykmeldingService =
-        SykmeldingService(SykmeldingDb(database), pdlPersonService, syfoSyketilfelleClient, env.cluster, readCountService)
-    val soknadService = SoknadService(SoknadDb(database), readCountService)
-    val hendelserService = HendelserService(HendelserDb(database), readCountService)
+        SykmeldingService(SykmeldingDb(database), pdlPersonService, syfoSyketilfelleClient, env.cluster)
+    val soknadService = SoknadService(SoknadDb(database))
+    val hendelserService = HendelserService(HendelserDb(database))
 
     val commonKafkaService = CommonKafkaService(
         kafkaConsumer,

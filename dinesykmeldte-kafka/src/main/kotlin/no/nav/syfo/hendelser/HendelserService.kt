@@ -8,12 +8,10 @@ import no.nav.syfo.hendelser.kafka.model.DineSykmeldteHendelse
 import no.nav.syfo.hendelser.kafka.model.OpprettHendelse
 import no.nav.syfo.log
 import no.nav.syfo.objectMapper
-import no.nav.syfo.readcount.ReadCountService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
 class HendelserService(
-    private val hendelserDb: HendelserDb,
-    private val readCountService: ReadCountService
+    private val hendelserDb: HendelserDb
 ) {
     suspend fun handleHendelse(record: ConsumerRecord<String, String>) {
         try {
@@ -27,7 +25,6 @@ class HendelserService(
     suspend fun handleHendelse(dineSykmeldteHendelse: DineSykmeldteHendelse) {
         if (dineSykmeldteHendelse.opprettHendelse != null) {
             hendelserDb.insertHendelse(opprettHendelseTilHendelseDbModel(dineSykmeldteHendelse.id, dineSykmeldteHendelse.opprettHendelse))
-            readCountService.updateReadCountKafkaTopic(pasientFnr = dineSykmeldteHendelse.opprettHendelse.ansattFnr, orgnummer = dineSykmeldteHendelse.opprettHendelse.orgnummer)
             HENDELSE_TOPIC_COUNTER.labels("opprett").inc()
         } else if (dineSykmeldteHendelse.ferdigstillHendelse != null) {
             hendelserDb.ferdigstillHendelse(dineSykmeldteHendelse.id, dineSykmeldteHendelse.ferdigstillHendelse.timestamp)
