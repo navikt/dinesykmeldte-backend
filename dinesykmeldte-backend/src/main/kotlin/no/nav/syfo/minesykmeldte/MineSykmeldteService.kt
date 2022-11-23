@@ -38,22 +38,15 @@ import no.nav.syfo.minesykmeldte.model.Sykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.BehandlerAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
-import no.nav.syfo.narmesteleder.kafka.NLReadCountProducer
-import no.nav.syfo.narmesteleder.kafka.model.KafkaMetadata
-import no.nav.syfo.narmesteleder.kafka.model.NLReadCount
-import no.nav.syfo.narmesteleder.kafka.model.NLReadCountKafkaMessage
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
 import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.util.UUID
 
 class MineSykmeldteService(
-    private val mineSykmeldteDb: MineSykmeldteDb,
-    private val nlReadCountProducer: NLReadCountProducer,
+    private val mineSykmeldteDb: MineSykmeldteDb
 ) {
     suspend fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> = withContext(Dispatchers.IO) {
         val hendelserJob = async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr) }
@@ -163,44 +156,15 @@ class MineSykmeldteService(
     }
 
     suspend fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): Boolean {
-        return mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr).also {
-            updateReadCountKafkaTopic(lederFnr)
-        }
+        return mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr)
     }
 
     suspend fun markSoknadRead(soknadId: String, lederFnr: String): Boolean {
-        return mineSykmeldteDb.markSoknadRead(soknadId, lederFnr).also {
-            updateReadCountKafkaTopic(lederFnr)
-        }
+        return mineSykmeldteDb.markSoknadRead(soknadId, lederFnr)
     }
 
     suspend fun markHendelseRead(hendelseId: UUID, lederFnr: String): Boolean {
-        return mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr).also {
-            updateReadCountKafkaTopic(lederFnr)
-        }
-    }
-
-    suspend fun updateReadCountKafkaTopic(lederFnr: String) {
-        val mineSykmeldte = getMineSykmeldte(lederFnr)
-
-        return mineSykmeldte.forEach { sykmeldt ->
-            nlReadCountProducer.send(
-                NLReadCountKafkaMessage(
-                    KafkaMetadata(
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                        source = "leder"
-                    ),
-                    NLReadCount(
-                        narmestelederId = sykmeldt.narmestelederId,
-                        unreadSykmeldinger = sykmeldt.sykmeldinger.filter { !it.lest }.size,
-                        unreadSoknader = sykmeldt.previewSoknader.filter { isSoknadUnread(it) }.size,
-                        unreadMeldinger = sykmeldt.aktivitetsvarsler.filter { it.lest == null }.size,
-                        unreadDialogmoter = sykmeldt.dialogmoter.size,
-                        unreadOppfolgingsplaner = sykmeldt.oppfolgingsplaner.size,
-                    )
-                )
-            )
-        }
+        return mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr)
     }
 
     private fun isSoknadUnread(soknad: PreviewSoknad): Boolean =

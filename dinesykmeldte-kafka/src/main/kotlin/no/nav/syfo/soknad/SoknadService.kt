@@ -6,14 +6,12 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.application.metrics.SOKNAD_TOPIC_COUNTER
 import no.nav.syfo.log
 import no.nav.syfo.objectMapper
-import no.nav.syfo.readcount.ReadCountService
 import no.nav.syfo.soknad.db.SoknadDb
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import java.time.LocalDate
 
 class SoknadService(
-    private val soknadDb: SoknadDb,
-    private val readCountService: ReadCountService
+    private val soknadDb: SoknadDb
 ) {
     suspend fun handleSykepengesoknad(record: ConsumerRecord<String, String>) {
         try {
@@ -43,7 +41,6 @@ class SoknadService(
         when (sykepengesoknad.sendtArbeidsgiver != null) {
             true -> {
                 soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
-                readCountService.updateReadCountKafkaTopic(pasientFnr = sykepengesoknad.fnr, orgnummer = sykepengesoknad.arbeidsgiver!!.orgnummer!!)
             }
             else -> soknadDb.deleteSoknad(sykepengesoknad.id)
         }

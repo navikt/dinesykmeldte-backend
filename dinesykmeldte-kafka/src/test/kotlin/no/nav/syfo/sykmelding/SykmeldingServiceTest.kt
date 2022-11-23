@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.mockk
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.getFileAsString
@@ -15,7 +14,6 @@ import no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO
 import no.nav.syfo.model.sykmeldingstatus.KafkaMetadataDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.objectMapper
-import no.nav.syfo.readcount.ReadCountService
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.toSoknadDbModel
 import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
@@ -42,18 +40,16 @@ class SykmeldingServiceTest : FunSpec({
     val database = SykmeldingDb(TestDb.database)
     val pdlPersonService = mockk<PdlPersonService>()
     val syfoSyketilfelleClient = mockk<SyfoSyketilfelleClient>()
-    val readCountService = mockk<ReadCountService>(relaxed = true)
     val sykmeldingService = SykmeldingService(
         database,
         pdlPersonService,
         syfoSyketilfelleClient,
-        "prod-gcp",
-        readCountService
+        "prod-gcp"
     )
 
     beforeEach {
         TestDb.clearAllData()
-        clearMocks(pdlPersonService, syfoSyketilfelleClient, readCountService)
+        clearMocks(pdlPersonService, syfoSyketilfelleClient)
         coEvery { pdlPersonService.getPerson(any(), any()) } returns PdlPerson(
             Navn("Syk", null, "Sykesen"),
             "321654987"
@@ -177,8 +173,6 @@ class SykmeldingServiceTest : FunSpec({
             sykmelding?.timestamp?.toLocalDate() shouldBeEqualTo LocalDate.now()
             sykmelding?.latestTom shouldBeEqualTo LocalDate.now().plusDays(10)
             sykmelding?.sendtTilArbeidsgiverDato shouldBeEqualTo sendtTilArbeidsgiverDato
-
-            coVerify { readCountService.updateReadCountKafkaTopic("12345678910", "88888888") }
         }
         test("Oppdaterer allerede mottatt sendt sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()
@@ -256,7 +250,6 @@ class SykmeldingServiceTest : FunSpec({
             sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
 
             TestDb.getSykmelding(sykmeldingId) shouldBeEqualTo null
-            coVerify(exactly = 0) { readCountService.updateReadCountKafkaTopic(any(), any()) }
         }
         test("Sletter tombstonet sykmelding") {
             val sykmeldingId = UUID.randomUUID().toString()

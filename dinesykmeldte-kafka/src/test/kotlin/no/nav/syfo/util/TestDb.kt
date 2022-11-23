@@ -368,30 +368,3 @@ private fun Connection.insertOrUpdateSykmeldt(sykmeldt: SykmeldtDbModel) {
         preparedStatement.executeUpdate()
     }
 }
-
-fun DatabaseInterface.insertHendelse(hendelseDbModel: no.nav.syfo.readcount.db.HendelseDbModel) {
-    this.connection.use { connection ->
-        connection.prepareStatement(
-            """
-                    INSERT INTO hendelser(id, pasient_fnr, orgnummer, oppgavetype, lenke, tekst, timestamp, 
-                                          utlopstidspunkt, ferdigstilt, ferdigstilt_timestamp, hendelse_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ON CONFLICT (id, oppgavetype) DO NOTHING;
-            """
-        ).use { preparedStatement ->
-            preparedStatement.setString(1, hendelseDbModel.id)
-            preparedStatement.setString(2, hendelseDbModel.pasientFnr)
-            preparedStatement.setString(3, hendelseDbModel.orgnummer)
-            preparedStatement.setString(4, hendelseDbModel.oppgavetype)
-            preparedStatement.setString(5, hendelseDbModel.lenke)
-            preparedStatement.setString(6, hendelseDbModel.tekst)
-            preparedStatement.setTimestamp(7, Timestamp.from(hendelseDbModel.timestamp.toInstant()))
-            preparedStatement.setTimestamp(8, hendelseDbModel.utlopstidspunkt?.let { Timestamp.from(it.toInstant()) })
-            preparedStatement.setBoolean(9, hendelseDbModel.ferdigstilt)
-            preparedStatement.setTimestamp(10, hendelseDbModel.ferdigstiltTimestamp?.let { Timestamp.from(it.toInstant()) })
-            preparedStatement.setObject(11, hendelseDbModel.hendelseId)
-            preparedStatement.executeUpdate()
-        }
-        connection.commit()
-    }
-}

@@ -1,15 +1,11 @@
 package no.nav.syfo.hendelser
 
 import io.kotest.core.spec.style.FunSpec
-import io.mockk.clearMocks
-import io.mockk.coVerify
-import io.mockk.mockk
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.hendelser.kafka.model.DineSykmeldteHendelse
 import no.nav.syfo.hendelser.kafka.model.FerdigstillHendelse
 import no.nav.syfo.hendelser.kafka.model.OpprettHendelse
-import no.nav.syfo.readcount.ReadCountService
 import no.nav.syfo.util.TestDb
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
@@ -20,12 +16,7 @@ import java.util.UUID
 
 class HendelserServiceTest : FunSpec({
     val hendelserDb = HendelserDb(TestDb.database)
-    val readCountService = mockk<ReadCountService>(relaxed = true)
-    val hendelserService = HendelserService(hendelserDb, readCountService)
-
-    beforeEach {
-        clearMocks(readCountService)
-    }
+    val hendelserService = HendelserService(hendelserDb)
 
     afterEach {
         TestDb.clearAllData()
@@ -54,8 +45,6 @@ class HendelserServiceTest : FunSpec({
             hendelse shouldNotBeEqualTo null
             hendelse?.oppgavetype shouldBeEqualTo "HENDELSE_X"
             hendelse?.ferdigstilt shouldBeEqualTo false
-
-            coVerify { readCountService.updateReadCountKafkaTopic("12345678910", "orgnummer") }
         }
         test("Ferdigstiller hendelse X") {
             val hendelseId = UUID.randomUUID().toString()
@@ -88,8 +77,6 @@ class HendelserServiceTest : FunSpec({
             hendelse shouldNotBeEqualTo null
             hendelse?.ferdigstilt shouldBeEqualTo true
             hendelse?.ferdigstiltTimestamp shouldBeEqualTo ferdigstiltTimestamp
-
-            coVerify(exactly = 0) { readCountService.updateReadCountKafkaTopic(any(), any()) }
         }
         test("Ferdigstiller ikke hendelse som allerede er ferdigstilt") {
             val hendelseId = UUID.randomUUID().toString()
@@ -122,8 +109,6 @@ class HendelserServiceTest : FunSpec({
             hendelse shouldNotBeEqualTo null
             hendelse?.ferdigstilt shouldBeEqualTo true
             hendelse?.ferdigstiltTimestamp shouldBeEqualTo ferdigstiltTimestamp
-
-            coVerify(exactly = 0) { readCountService.updateReadCountKafkaTopic(any(), any()) }
         }
     }
 })
