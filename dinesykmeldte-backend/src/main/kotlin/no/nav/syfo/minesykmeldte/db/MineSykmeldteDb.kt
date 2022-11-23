@@ -183,6 +183,24 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
             updated
         }
     }
+
+    suspend fun markAllSykmeldingAndSoknadAsRead(lederFnr: String) = withContext(Dispatchers.IO) {
+        database.connection.use { connection ->
+            connection.prepareStatement(
+                """
+                update sykmelding s set lest = TRUE 
+                from narmesteleder nl where s.pasient_fnr = nl.pasient_fnr and nl.leder_fnr = ?;
+                update soknad s set lest = TRUE
+                from narmesteleder nl where s.pasient_fnr = nl.pasient_fnr and nl.leder_fnr = ?;
+                """.trimIndent()
+            ).use { ps ->
+                ps.setString(1, lederFnr)
+                ps.setString(2, lederFnr)
+                ps.executeUpdate()
+            }
+            connection.commit()
+        }
+    }
 }
 
 private fun ResultSet.toHendelseDbModels() =

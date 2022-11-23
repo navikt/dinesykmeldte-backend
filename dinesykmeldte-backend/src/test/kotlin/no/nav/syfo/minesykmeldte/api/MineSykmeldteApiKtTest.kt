@@ -294,6 +294,33 @@ class MineSykmeldteApiKtTest : FunSpec({
             }
         }
 
+        context("/api/varsler/read") {
+            test("Should get 200 OK") {
+                coEvery {
+                    mineSykmeldteService.markAllSykmeldingerAndSoknaderRead(any())
+                } returns Unit
+                with(
+                    handleRequest(HttpMethod.Put, "/api/varsler/read") {
+                        addAuthorizationHeader()
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    response.content shouldBeEqualTo """{ "message": "Markert som lest" }""".minifyApiResponse()
+                }
+                coVerify(exactly = 1) { mineSykmeldteService.markAllSykmeldingerAndSoknaderRead(any()) }
+            }
+            test("Unauthorized") {
+                coEvery {
+                    mineSykmeldteService.markAllSykmeldingerAndSoknaderRead(any())
+                } returns Unit
+                with(
+                    handleRequest(HttpMethod.Put, "/api/varsler/read")
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                }
+                coVerify(exactly = 0) { mineSykmeldteService.markAllSykmeldingerAndSoknaderRead(any()) }
+            }
+        }
         context("/api/soknad/{id}") {
             test("should respond with 404 Not Found if not found in the database ") {
                 coEvery {

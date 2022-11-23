@@ -90,4 +90,10 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
             false -> call.respond(HttpStatusCode.NotFound, HttpMessage("Not found"))
         }
     }
+
+    put("api/varsler/read") {
+        val fnr = call.getBrukerPrincipal().fnr
+        mineSykmeldteService.markAllSykmeldingerAndSoknaderRead(fnr)
+        call.respond(HttpStatusCode.OK, HttpMessage("Markert som lest"))
+    }
 }

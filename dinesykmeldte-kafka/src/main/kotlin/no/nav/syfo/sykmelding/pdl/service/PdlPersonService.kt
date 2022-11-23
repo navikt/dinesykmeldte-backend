@@ -31,7 +31,7 @@ class PdlPersonService(
 
     private fun GetPersonResponse.toPerson(callId: String): PdlPerson {
         val navn = data.person?.navn?.firstOrNull()
-        val aktorId = data.identer?.identer?.firstOrNull() { it.gruppe == AKTORID_GRUPPE }?.ident
+        val aktorId = data.identer?.identer?.firstOrNull { it.gruppe == AKTORID_GRUPPE }?.ident
 
         errors?.forEach {
             log.error("PDL returnerte feilmelding: ${it.message}, ${it.extensions?.code}, $callId")

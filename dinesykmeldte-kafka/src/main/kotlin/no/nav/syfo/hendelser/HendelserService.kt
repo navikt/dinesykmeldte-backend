@@ -22,7 +22,7 @@ class HendelserService(
         }
     }
 
-    suspend fun handleHendelse(dineSykmeldteHendelse: DineSykmeldteHendelse) {
+    fun handleHendelse(dineSykmeldteHendelse: DineSykmeldteHendelse) {
         if (dineSykmeldteHendelse.opprettHendelse != null) {
             hendelserDb.insertHendelse(opprettHendelseTilHendelseDbModel(dineSykmeldteHendelse.id, dineSykmeldteHendelse.opprettHendelse))
             HENDELSE_TOPIC_COUNTER.labels("opprett").inc()

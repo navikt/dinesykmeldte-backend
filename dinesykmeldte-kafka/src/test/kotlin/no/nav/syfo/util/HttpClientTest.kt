@@ -81,7 +81,7 @@ class HttpClientTest {
         responseData = ResponseData(status, content, headersOf())
     }
 
-    suspend fun respond(function: suspend () -> ResponseData?) {
+    fun respond(function: suspend () -> ResponseData?) {
         responseFunction = function
     }
 
