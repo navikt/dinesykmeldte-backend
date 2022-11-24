@@ -91,7 +91,7 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         }
     }
 
-    put("api/varsler/read") {
+    put("api/hendelser/read") {
         val fnr = call.getBrukerPrincipal().fnr
         mineSykmeldteService.markAllSykmeldingerAndSoknaderRead(fnr)
         call.respond(HttpStatusCode.OK, HttpMessage("Markert som lest"))

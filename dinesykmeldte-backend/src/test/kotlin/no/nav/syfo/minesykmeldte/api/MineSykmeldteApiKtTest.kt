@@ -294,13 +294,13 @@ class MineSykmeldteApiKtTest : FunSpec({
             }
         }
 
-        context("/api/varsler/read") {
+        context("/api/hendelser/read") {
             test("Should get 200 OK") {
                 coEvery {
                     mineSykmeldteService.markAllSykmeldingerAndSoknaderRead(any())
                 } returns Unit
                 with(
-                    handleRequest(HttpMethod.Put, "/api/varsler/read") {
+                    handleRequest(HttpMethod.Put, "/api/hendelser/read") {
                         addAuthorizationHeader()
                     }
                 ) {
@@ -314,7 +314,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                     mineSykmeldteService.markAllSykmeldingerAndSoknaderRead(any())
                 } returns Unit
                 with(
-                    handleRequest(HttpMethod.Put, "/api/varsler/read")
+                    handleRequest(HttpMethod.Put, "/api/hendelser/read")
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
