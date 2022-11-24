@@ -37,7 +37,7 @@ class SoknadService(
         SOKNAD_TOPIC_COUNTER.inc()
     }
 
-    private suspend fun handleSendt(sykepengesoknad: SykepengesoknadDTO) {
+    private fun handleSendt(sykepengesoknad: SykepengesoknadDTO) {
         when (sykepengesoknad.sendtArbeidsgiver != null) {
             true -> {
                 soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())

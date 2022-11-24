@@ -27,9 +27,6 @@ import no.nav.syfo.minesykmeldte.model.MinSykmeldtKey
 import no.nav.syfo.minesykmeldte.model.Oppfolgingsplan
 import no.nav.syfo.minesykmeldte.model.OppfolgingsplanerHendelser
 import no.nav.syfo.minesykmeldte.model.Periode
-import no.nav.syfo.minesykmeldte.model.PreviewFremtidigSoknad
-import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
-import no.nav.syfo.minesykmeldte.model.PreviewSendtSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSoknad
 import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
 import no.nav.syfo.minesykmeldte.model.Reisetilskudd
@@ -167,12 +164,9 @@ class MineSykmeldteService(
         return mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr)
     }
 
-    private fun isSoknadUnread(soknad: PreviewSoknad): Boolean =
-        when (soknad) {
-            is PreviewSendtSoknad -> !soknad.lest
-            is PreviewNySoknad -> if (soknad.ikkeSendtSoknadVarsel) !soknad.lest else false
-            is PreviewFremtidigSoknad -> false
-        }
+    suspend fun markAllSykmeldingerAndSoknaderRead(lederFnr: String) {
+        mineSykmeldteDb.markAllSykmeldingAndSoknadAsRead(lederFnr)
+    }
 }
 
 private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>): Boolean {

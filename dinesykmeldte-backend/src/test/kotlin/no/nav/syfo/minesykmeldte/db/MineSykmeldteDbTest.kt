@@ -307,6 +307,61 @@ class MineSykmeldteDbTest : FunSpec({
             minesykmeldteDb.getHendelser("leder-fnr-1").size shouldBeEqualTo 1
         }
     }
+
+    context("Markerer alle sykmeldinger og søknader som lest") {
+        test("marker alle sykmeldinger og soknader som lest") {
+            val sykmeldt = createSykmeldtDbModel(pasientFnr = "1")
+            val sykmeldt2 = createSykmeldtDbModel(pasientFnr = "2")
+            val sykmelding = createSykmeldingDbModel(UUID.randomUUID().toString(), pasientFnr = "1", orgnummer = "1")
+            val sykmelding2 = createSykmeldingDbModel(UUID.randomUUID().toString(), pasientFnr = "2", orgnummer = "2")
+            val soknad = createSoknadDbModel(UUID.randomUUID().toString(), pasientFnr = "1", sykmeldingId = sykmelding.sykmeldingId, orgnummer = "1")
+            val soknad2 = createSoknadDbModel(UUID.randomUUID().toString(), pasientFnr = "2", sykmeldingId = sykmelding2.sykmeldingId, orgnummer = "2")
+
+            TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
+            TestDb.database.insertOrUpdate(sykmelding2, sykmeldt2)
+            TestDb.database.insertOrUpdate(soknad)
+            TestDb.database.insertOrUpdate(soknad2)
+            TestDb.database.insertOrUpdate(
+                id = UUID.randomUUID().toString(),
+                orgnummer = "1",
+                fnr = "1",
+                narmesteLederFnr = "3"
+            )
+            TestDb.database.insertOrUpdate(
+                id = UUID.randomUUID().toString(),
+                orgnummer = "2",
+                fnr = "2",
+                narmesteLederFnr = "3"
+            )
+            minesykmeldteDb.markAllSykmeldingAndSoknadAsRead(lederFnr = "3")
+            val mineSykmeldte = minesykmeldteDb.getMineSykmeldte("3")
+            val lest = mineSykmeldte.flatMap { listOf(it.lestSoknad, it.lestSykmelding) }
+            lest.all { it } shouldBeEqualTo true
+        }
+
+        test("Skal ikke markere andre sine sykmeldinger") {
+            val sykmelding = createSykmeldingDbModel(UUID.randomUUID().toString(), pasientFnr = "1", orgnummer = "orgnummer")
+            TestDb.database.insertOrUpdate(createSoknadDbModel(UUID.randomUUID().toString(), sykmelding.sykmeldingId, "1", orgnummer = "orgnummer"))
+            TestDb.database.insertOrUpdate(sykmelding, createSykmeldtDbModel("1"))
+            TestDb.database.insertOrUpdate(
+                UUID.randomUUID().toString(),
+                "orgnummer",
+                "2",
+                "leder"
+            )
+            TestDb.database.insertOrUpdate(
+                UUID.randomUUID().toString(),
+                "orgnummer",
+                "1",
+                "leder-2"
+            )
+
+            minesykmeldteDb.markAllSykmeldingAndSoknadAsRead("leder")
+            minesykmeldteDb.getMineSykmeldte("leder-2").flatMap { listOf(it.lestSoknad, it.lestSykmelding) }.all { it } shouldBeEqualTo false
+            minesykmeldteDb.markAllSykmeldingAndSoknadAsRead("leder-2")
+            minesykmeldteDb.getMineSykmeldte("leder-2").flatMap { listOf(it.lestSoknad, it.lestSykmelding) }.all { it } shouldBeEqualTo true
+        }
+    }
 })
 
 fun getSoknad(
