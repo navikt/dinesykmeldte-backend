@@ -239,9 +239,9 @@ private fun MinSykmeldtDbModel.toSykmelding(): Sykmelding {
         innspillArbeidsplassen = sykmelding.meldingTilArbeidsgiver,
         behandler = sykmelding.behandler.let {
             Behandler(
-                navn = it.formatName(),
-                hprNummer = it.hpr,
-                telefon = it.tlf,
+                navn = it?.formatName() ?: "",
+                hprNummer = it?.hpr,
+                telefon = it?.tlf,
             )
         },
         startdatoSykefravar = this.startDatoSykefravar,
@@ -269,9 +269,9 @@ private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding 
         innspillArbeidsplassen = sykmelding.sykmelding.meldingTilArbeidsgiver,
         behandler = sykmelding.sykmelding.behandler.let {
             Behandler(
-                navn = it.formatName(),
-                hprNummer = it.hpr,
-                telefon = it.tlf,
+                navn = it?.formatName() ?: "",
+                hprNummer = it?.hpr,
+                telefon = it?.tlf,
             )
         },
         startdatoSykefravar = sykmeldt.startdatoSykefravaer,

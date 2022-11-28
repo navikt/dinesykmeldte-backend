@@ -78,7 +78,8 @@ fun createArbeidsgiverSykmelding(
     egenmeldt = false,
     papirsykmelding = false,
     harRedusertArbeidsgiverperiode = false,
-    merknader = null
+    merknader = null,
+    utenlandskSykmelding = null
 )
 
 fun createSykmeldingsperiode(
