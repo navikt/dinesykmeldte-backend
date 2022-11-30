@@ -28,10 +28,8 @@ class Database(private val env: Environment, retries: Long = 30, sleepTime: Long
                         jdbcUrl = env.jdbcUrl()
                         username = env.databaseUsername
                         password = env.databasePassword
-                        maximumPoolSize = 10
+                        maximumPoolSize = 5
                         minimumIdle = 3
-                        idleTimeout = 10000
-                        maxLifetime = 300000
                         isAutoCommit = false
                         transactionIsolation = "TRANSACTION_REPEATABLE_READ"
                         validate()
