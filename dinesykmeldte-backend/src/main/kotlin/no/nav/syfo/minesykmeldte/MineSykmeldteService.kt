@@ -32,6 +32,7 @@ import no.nav.syfo.minesykmeldte.model.PreviewSykmeldt
 import no.nav.syfo.minesykmeldte.model.Reisetilskudd
 import no.nav.syfo.minesykmeldte.model.Soknad
 import no.nav.syfo.minesykmeldte.model.Sykmelding
+import no.nav.syfo.minesykmeldte.model.UtenlandskSykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.BehandlerAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
@@ -237,16 +238,17 @@ private fun MinSykmeldtDbModel.toSykmelding(): Sykmelding {
         hensynArbeidsplassen = sykmelding.prognose?.hensynArbeidsplassen,
         tiltakArbeidsplassen = sykmelding.tiltakArbeidsplassen,
         innspillArbeidsplassen = sykmelding.meldingTilArbeidsgiver,
-        behandler = sykmelding.behandler.let {
+        behandler = sykmelding.behandler?.let {
             Behandler(
-                navn = it?.formatName() ?: "",
-                hprNummer = it?.hpr,
-                telefon = it?.tlf,
+                navn = it.formatName(),
+                hprNummer = it.hpr,
+                telefon = it.tlf,
             )
         },
         startdatoSykefravar = this.startDatoSykefravar,
         navn = this.sykmeldtNavn,
         sendtTilArbeidsgiverDato = this.sendtTilArbeidsgiverDato,
+        utenlandskSykmelding = sykmelding.utenlandskSykmelding?.let { UtenlandskSykmelding(land = it.land) }
     )
 }
 
@@ -277,6 +279,7 @@ private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding 
         startdatoSykefravar = sykmeldt.startdatoSykefravaer,
         navn = sykmeldt.pasientNavn,
         sendtTilArbeidsgiverDato = sykmelding.sendtTilArbeidsgiverDato,
+        utenlandskSykmelding = sykmelding.sykmelding.utenlandskSykmelding?.let { UtenlandskSykmelding(land = it.land) }
     )
 }
 

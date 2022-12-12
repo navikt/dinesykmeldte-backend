@@ -264,9 +264,9 @@ components:
         - startdatoSykefravar
         - navn
         - fnr
+        - behandletTidspunkt
         - arbeidsgiver
         - perioder
-        - behandler
       properties:
         id:
           type: string
@@ -283,6 +283,9 @@ components:
           $ref: '#/components/schemas/Fnr'
         lest:
           type: boolean
+        behandletTidspunkt:
+          type: string
+          format: date
         arbeidsgiver:
           type: object
           required:
@@ -317,6 +320,16 @@ components:
             hprNummer:
               type: string
             telefon:
+              type: string
+        sendtTilArbeidsgiverDato:
+          type: string
+          format: date
+        utenlandskSykmelding:
+          type: object
+          required:
+            - land
+          properties:
+            land:
               type: string
     PreviewSykmeldt:
       type: object
