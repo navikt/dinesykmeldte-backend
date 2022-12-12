@@ -100,5 +100,33 @@ class MineSykmeldteServiceDbTest : FunSpec({
             sykmeldte[0].sykmeldinger.size shouldBeEqualTo 4
             sykmeldte[0].orgnavn shouldBeEqualTo "Orgnavn 2"
         }
+
+        test("Tar med informasjon fra utenlandsk sykmelding") {
+            TestDb.database.insertOrUpdate(
+                id = UUID.randomUUID().toString(),
+                orgnummer = "orgnummer",
+                fnr = "12345678910",
+                narmesteLederFnr = "01987654321"
+            )
+
+            val sykmeldingId = UUID.randomUUID().toString()
+            TestDb.database.insertOrUpdate(
+                createSykmeldingDbModel(
+                    sykmeldingId,
+                    orgnavn = "Orgnavn 1",
+                    sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(1),
+                    land = "POL"
+                ),
+                createSykmeldtDbModel()
+            )
+            TestDb.database.insertOrUpdate(getSoknad(sykmeldingId = sykmeldingId))
+
+            val sykmeldte = mineSykmeldteService.getMineSykmeldte("01987654321")
+
+            sykmeldte.size shouldBeEqualTo 1
+            sykmeldte[0].sykmeldinger.size shouldBeEqualTo 1
+            sykmeldte[0].sykmeldinger[0].behandler shouldBeEqualTo null
+            sykmeldte[0].sykmeldinger[0].utenlandskSykmelding?.land shouldBeEqualTo "POL"
+        }
     }
 })

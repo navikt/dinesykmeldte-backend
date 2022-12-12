@@ -25,6 +25,7 @@ import no.nav.syfo.minesykmeldte.model.Soknad
 import no.nav.syfo.minesykmeldte.model.Sporsmal
 import no.nav.syfo.minesykmeldte.model.Svar
 import no.nav.syfo.minesykmeldte.model.Sykmelding
+import no.nav.syfo.minesykmeldte.model.UtenlandskSykmelding
 import no.nav.syfo.util.addAuthorizationHeader
 import no.nav.syfo.util.minifyApiResponse
 import no.nav.syfo.util.withKtor
@@ -286,7 +287,8 @@ class MineSykmeldteApiKtTest : FunSpec({
                             "hprNummer": "80802721231",
                             "telefon": "81549300"
                           },
-                          "sendtTilArbeidsgiverDato":"2022-05-09T13:20:04Z"
+                          "sendtTilArbeidsgiverDato":"2022-05-09T13:20:04Z",
+                          "utenlandskSykmelding":null
                         }
                     """.minifyApiResponse()
                 }
@@ -466,6 +468,7 @@ fun createSykmeldingTestData(
     ),
     behandletTidspunkt: LocalDate = LocalDate.now(),
     sendtTilArbeidsgiverDato: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
+    land: String? = null
 ): Sykmelding = Sykmelding(
     id = id,
     startdatoSykefravar = startdatoSykefravar,
@@ -482,4 +485,5 @@ fun createSykmeldingTestData(
     behandler = behandler,
     behandletTidspunkt = behandletTidspunkt,
     sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato,
+    utenlandskSykmelding = land?.let { UtenlandskSykmelding(it) }
 )

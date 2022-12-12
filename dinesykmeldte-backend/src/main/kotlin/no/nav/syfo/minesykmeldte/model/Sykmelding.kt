@@ -17,8 +17,9 @@ data class Sykmelding(
     val hensynArbeidsplassen: String?,
     val tiltakArbeidsplassen: String?,
     val innspillArbeidsplassen: String?,
-    val behandler: Behandler,
+    val behandler: Behandler?,
     val sendtTilArbeidsgiverDato: OffsetDateTime?,
+    val utenlandskSykmelding: UtenlandskSykmelding?
 )
 
 data class Arbeidsgiver(
@@ -93,4 +94,8 @@ enum class ArbeidsrelatertArsakEnum {
 data class ArbeidsrelatertArsak(
     val arsak: List<ArbeidsrelatertArsakEnum>,
     val beskrivelse: String?,
+)
+
+data class UtenlandskSykmelding(
+    val land: String
 )
