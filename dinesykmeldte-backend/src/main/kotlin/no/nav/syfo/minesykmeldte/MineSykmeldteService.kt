@@ -70,14 +70,14 @@ class MineSykmeldteService(
                 dialogmoter = getDialogmoter(hendelserMap, sykmeldtEntry),
                 sykmeldinger = getSykmeldinger(sykmeldtEntry),
                 aktivitetsvarsler = getAktivitetsvarsler(hendelserMap, sykmeldtEntry),
-                oppfolgingsplaner = getOppfolgingsplaner(hendelserMap, sykmeldtEntry),
+                oppfolgingsplaner = getOppfolgingsplaner(hendelserMap, sykmeldtEntry)
             )
         }
     }
 
     private fun getOppfolgingsplaner(
         hendelserMap: Map<String, List<Hendelse>>,
-        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
+        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
     ) = hendelserMap[sykmeldtEntry.key.fnr]
         ?.filter { OppfolgingsplanerHendelser.contains(it.oppgavetype) }
         ?.map {
@@ -96,7 +96,7 @@ class MineSykmeldteService(
 
     private fun getDialogmoter(
         hendelserMap: Map<String, List<Hendelse>>,
-        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
+        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
     ) = hendelserMap[sykmeldtEntry.key.fnr]
         ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
         ?.map {
@@ -110,7 +110,7 @@ class MineSykmeldteService(
 
     private fun getAktivitetsvarsler(
         hendelserMap: Map<String, List<Hendelse>>,
-        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
+        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
     ): List<Aktivitetsvarsel> = (
         hendelserMap[sykmeldtEntry.key.fnr]
             ?.filter { ma -> ma.oppgavetype == HendelseType.AKTIVITETSKRAV }
@@ -126,7 +126,7 @@ class MineSykmeldteService(
 
     private fun getPreviewSoknader(
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-        hendelserMap: Map<String, List<Hendelse>>,
+        hendelserMap: Map<String, List<Hendelse>>
     ): List<PreviewSoknad> {
         val korrigerteSoknader = sykmeldtEntry.value
             .mapNotNull { it.soknad }
@@ -142,7 +142,7 @@ class MineSykmeldteService(
     private fun getHendlersforSoknad(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-        sykmeldt: MinSykmeldtDbModel,
+        sykmeldt: MinSykmeldtDbModel
     ) = hendelserMap[sykmeldtEntry.key.fnr]?.filter { it.id == sykmeldt.soknad?.id }.orEmpty()
 
     suspend fun getSykmelding(sykmeldingId: String, lederFnr: String): Sykmelding? {
@@ -180,7 +180,7 @@ private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
 
 private fun mapNullableSoknad(
     sykmeldtDbModel: MinSykmeldtDbModel,
-    hendelser: List<Hendelse>,
+    hendelser: List<Hendelse>
 ): PreviewSoknad? =
     sykmeldtDbModel.soknad?.let {
         toPreviewSoknad(it, sykmeldtDbModel.lestSoknad, hendelser)
@@ -231,7 +231,7 @@ private fun MinSykmeldtDbModel.toSykmelding(): Sykmelding {
         lest = this.lestSykmelding,
         behandletTidspunkt = this.sykmelding.behandletTidspunkt.toLocalDate(),
         arbeidsgiver = Arbeidsgiver(
-            navn = this.sykmelding.arbeidsgiver.navn,
+            navn = this.sykmelding.arbeidsgiver.navn
         ),
         perioder = sykmelding.sykmeldingsperioder.map { it.toSykmeldingPeriode() },
         arbeidsforEtterPeriode = sykmelding.prognose?.arbeidsforEtterPeriode,
@@ -242,7 +242,7 @@ private fun MinSykmeldtDbModel.toSykmelding(): Sykmelding {
             Behandler(
                 navn = it.formatName(),
                 hprNummer = it.hpr,
-                telefon = it.tlf,
+                telefon = it.tlf
             )
         },
         startdatoSykefravar = this.startDatoSykefravar,
@@ -262,7 +262,7 @@ private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding 
         lest = sykmelding.lest,
         behandletTidspunkt = sykmelding.sykmelding.behandletTidspunkt.toLocalDate(),
         arbeidsgiver = Arbeidsgiver(
-            navn = sykmelding.sykmelding.arbeidsgiver.navn,
+            navn = sykmelding.sykmelding.arbeidsgiver.navn
         ),
         perioder = sykmelding.sykmelding.sykmeldingsperioder.map { it.toSykmeldingPeriode() },
         arbeidsforEtterPeriode = sykmelding.sykmelding.prognose?.arbeidsforEtterPeriode,
@@ -273,7 +273,7 @@ private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding 
             Behandler(
                 navn = it?.formatName() ?: "",
                 hprNummer = it?.hpr,
-                telefon = it?.tlf,
+                telefon = it?.tlf
             )
         },
         startdatoSykefravar = sykmeldt.startdatoSykefravaer,
@@ -301,13 +301,13 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
         PeriodetypeDTO.AVVENTENDE -> Avventende(
             this.fom,
             this.tom,
-            tilrettelegging = this.innspillTilArbeidsgiver,
+            tilrettelegging = this.innspillTilArbeidsgiver
         )
 
         PeriodetypeDTO.BEHANDLINGSDAGER -> Behandlingsdager(
             this.fom,
             this.tom,
-            this.behandlingsdager ?: throw IllegalStateException("Behandlingsdager without behandlingsdager"),
+            this.behandlingsdager ?: throw IllegalStateException("Behandlingsdager without behandlingsdager")
         )
 
         PeriodetypeDTO.GRADERT -> {
@@ -320,13 +320,13 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
                 this.fom,
                 this.tom,
                 gradering.grad,
-                gradering.reisetilskudd,
+                gradering.reisetilskudd
             )
         }
 
         PeriodetypeDTO.REISETILSKUDD -> Reisetilskudd(
             this.fom,
-            this.tom,
+            this.tom
         )
     }
 

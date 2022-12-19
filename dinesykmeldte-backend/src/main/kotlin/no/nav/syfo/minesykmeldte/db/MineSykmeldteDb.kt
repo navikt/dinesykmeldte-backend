@@ -224,7 +224,7 @@ private fun ResultSet.toSykmeldtSoknad(): Pair<SykmeldtDbModel, SoknadDbModel>? 
             pasientFnr = getString("pasient_fnr"),
             pasientNavn = getString("pasient_navn"),
             startdatoSykefravaer = getDate("startdato_sykefravaer").toLocalDate(),
-            latestTom = getDate("latest_tom").toLocalDate(),
+            latestTom = getDate("latest_tom").toLocalDate()
         ) to SoknadDbModel(
             soknadId = getString("soknad_id"),
             sykmeldingId = getString("sykmelding_id"),
@@ -234,7 +234,7 @@ private fun ResultSet.toSykmeldtSoknad(): Pair<SykmeldtDbModel, SoknadDbModel>? 
             sendtDato = getDate("sendt_dato").toLocalDate(),
             lest = getBoolean("lest"),
             timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
-            tom = getDate("tom").toLocalDate(),
+            tom = getDate("tom").toLocalDate()
         )
         else -> null
     }
@@ -251,7 +251,7 @@ private fun ResultSet.toMinSykmeldtDbModel(): MinSykmeldtDbModel = MinSykmeldtDb
     lestSykmelding = getBoolean("sykmelding_lest"),
     soknad = getString("soknad")?.let { objectMapper.readValue(it) },
     lestSoknad = getBoolean("soknad_lest"),
-    sendtTilArbeidsgiverDato = getTimestamp("sendt_til_arbeidsgiver_dato")?.toInstant()?.atOffset(ZoneOffset.UTC),
+    sendtTilArbeidsgiverDato = getTimestamp("sendt_til_arbeidsgiver_dato")?.toInstant()?.atOffset(ZoneOffset.UTC)
 )
 
 private fun ResultSet.toSykmeldtSykmelding(): Pair<SykmeldtDbModel, SykmeldingDbModel>? =
@@ -260,7 +260,7 @@ private fun ResultSet.toSykmeldtSykmelding(): Pair<SykmeldtDbModel, SykmeldingDb
             pasientFnr = getString("pasient_fnr"),
             pasientNavn = getString("pasient_navn"),
             startdatoSykefravaer = getDate("startdato_sykefravaer").toLocalDate(),
-            latestTom = getDate("latest_tom").toLocalDate(),
+            latestTom = getDate("latest_tom").toLocalDate()
         ) to SykmeldingDbModel(
             sykmeldingId = getString("sykmelding_id"),
             pasientFnr = getString("pasient_fnr"),
@@ -271,7 +271,7 @@ private fun ResultSet.toSykmeldtSykmelding(): Pair<SykmeldtDbModel, SykmeldingDb
             timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
             latestTom = getDate("latest_tom").toLocalDate(),
             sendtTilArbeidsgiverDato = getTimestamp("sendt_til_arbeidsgiver_dato")?.toInstant()
-                ?.atOffset(ZoneOffset.UTC),
+                ?.atOffset(ZoneOffset.UTC)
         )
         false -> null
     }

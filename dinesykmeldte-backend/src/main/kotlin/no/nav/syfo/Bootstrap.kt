@@ -58,7 +58,6 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
 @ExperimentalTime
 @DelicateCoroutinesApi
 fun main() {
-
     val env = Environment()
     DefaultExports.initialize()
     val applicationState = ApplicationState()
@@ -144,5 +143,5 @@ fun <T> createKafkaProducer(env: Environment): KafkaProducer<String, T> =
 data class WellKnownTokenX(
     val token_endpoint: String,
     val jwks_uri: String,
-    val issuer: String,
+    val issuer: String
 )

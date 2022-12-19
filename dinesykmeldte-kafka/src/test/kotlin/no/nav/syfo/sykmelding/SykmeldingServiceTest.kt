@@ -121,7 +121,7 @@ class SykmeldingServiceTest : FunSpec({
             val sendtTilArbeidsgiverDato = OffsetDateTime.now(Clock.tickMillis(ZoneOffset.UTC))
             val sendtSykmelding = getSendtSykmeldingKafkaMessage(
                 sykmeldingId = sykmeldingId,
-                sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato,
+                sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato
             )
             sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
             val fom = LocalDate.now().minusMonths(4)

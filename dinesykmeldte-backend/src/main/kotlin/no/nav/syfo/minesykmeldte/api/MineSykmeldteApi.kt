@@ -38,10 +38,14 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         val sykmeldingId = call.getParam("sykmeldingId")
 
         val sykmelding = mineSykmeldteService.getSykmelding(sykmeldingId, lederFnr)
-        if (sykmelding != null) call.respond(sykmelding) else call.respond(
-            HttpStatusCode.NotFound,
-            HttpErrorMessage("Sykmeldingen finnes ikke")
-        )
+        if (sykmelding != null) {
+            call.respond(sykmelding)
+        } else {
+            call.respond(
+                HttpStatusCode.NotFound,
+                HttpErrorMessage("Sykmeldingen finnes ikke")
+            )
+        }
     }
 
     put("api/sykmelding/{sykmeldingId}/lest") {
@@ -61,10 +65,14 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         val soknadId = call.getParam("soknadId")
 
         val soknad = mineSykmeldteService.getSoknad(soknadId, lederFnr)
-        if (soknad != null) call.respond(soknad) else call.respond(
-            HttpStatusCode.NotFound,
-            HttpErrorMessage("Søknaden finnes ikke")
-        )
+        if (soknad != null) {
+            call.respond(soknad)
+        } else {
+            call.respond(
+                HttpStatusCode.NotFound,
+                HttpErrorMessage("Søknaden finnes ikke")
+            )
+        }
     }
 
     put("api/soknad/{soknadId}/lest") {

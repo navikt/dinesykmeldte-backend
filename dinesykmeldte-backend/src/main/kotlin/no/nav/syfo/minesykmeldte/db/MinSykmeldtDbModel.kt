@@ -17,5 +17,5 @@ data class MinSykmeldtDbModel(
     val lestSykmelding: Boolean,
     val soknad: SykepengesoknadDTO?,
     val lestSoknad: Boolean,
-    val sendtTilArbeidsgiverDato: OffsetDateTime?,
+    val sendtTilArbeidsgiverDato: OffsetDateTime?
 )

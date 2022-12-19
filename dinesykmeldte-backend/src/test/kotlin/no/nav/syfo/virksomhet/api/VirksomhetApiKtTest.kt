@@ -40,7 +40,7 @@ object VirksomhetApiKtTest : FunSpec({
             test("should return list of virksomheter when found") {
                 coEvery { virksomhetService.getVirksomheter("08086912345") } returns listOf(
                     Virksomhet(navn = "Test virksomhet 1", orgnummer = "test-virksomhet-1"),
-                    Virksomhet(navn = "Test virksomhet 2", orgnummer = "test-virksomhet-2"),
+                    Virksomhet(navn = "Test virksomhet 2", orgnummer = "test-virksomhet-2")
                 )
 
                 with(

@@ -25,7 +25,7 @@ class NarmestelederDb(private val database: DatabaseInterface) {
 
     suspend fun finnNarmestelederkoblinger(
         narmesteLederFnr: String,
-        narmestelederId: String,
+        narmestelederId: String
     ): List<NarmestelederDbModel> = withContext(Dispatchers.IO) {
         database.connection.use { connection ->
             connection.prepareStatement(

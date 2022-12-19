@@ -27,7 +27,7 @@ data class PreviewSendtSoknad(
     override val sykmeldingId: String?,
     override val fom: LocalDate?,
     override val tom: LocalDate?,
-    override val perioder: List<Soknadsperiode>,
+    override val perioder: List<Soknadsperiode>
 ) : PreviewSoknad {
     override val status = SoknadStatus.SENDT
 }
@@ -40,7 +40,7 @@ data class PreviewNySoknad(
     override val sykmeldingId: String?,
     override val fom: LocalDate?,
     override val tom: LocalDate?,
-    override val perioder: List<Soknadsperiode>,
+    override val perioder: List<Soknadsperiode>
 ) : PreviewSoknad {
     override val status = SoknadStatus.NY
 }
@@ -50,7 +50,7 @@ data class PreviewFremtidigSoknad(
     override val sykmeldingId: String?,
     override val fom: LocalDate?,
     override val tom: LocalDate?,
-    override val perioder: List<Soknadsperiode>,
+    override val perioder: List<Soknadsperiode>
 ) : PreviewSoknad {
     override val status = SoknadStatus.FREMTIDIG
 }

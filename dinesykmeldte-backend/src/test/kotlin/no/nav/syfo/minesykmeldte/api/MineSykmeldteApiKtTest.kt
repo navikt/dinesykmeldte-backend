@@ -79,7 +79,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                         previewSoknader = emptyList(),
                         dialogmoter = emptyList(),
                         aktivitetsvarsler = emptyList(),
-                        oppfolgingsplaner = emptyList(),
+                        oppfolgingsplaner = emptyList()
                     )
                 )
                 with(
@@ -145,7 +145,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") {
                         addAuthorizationHeader(
-                            level = "Level3",
+                            level = "Level3"
                         )
                     }
                 ) {
@@ -176,7 +176,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                                     perioder = listOf(),
                                     ikkeSendtSoknadVarsel = true,
                                     ikkeSendtSoknadVarsletDato = OffsetDateTime.parse("2020-03-01T10:10:30+02:00")
-                                ),
+                                )
                             ),
                             dialogmoter = listOf(Dialogmote(hendelseId, "Ny revidert oppfølgingplan", OffsetDateTime.parse("2022-03-11T10:15:30+02:00"))),
                             aktivitetsvarsler = listOf(
@@ -372,7 +372,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                     sykmeldingId = "772e674d-0422-4a5e-b779-a8819abf5959",
                     tom = LocalDate.parse("2021-01-01"),
                     fom = LocalDate.parse("2020-12-01"),
-                    sporsmal = sporsmal,
+                    sporsmal = sporsmal
                 )
                 with(
                     handleRequest(HttpMethod.Get, "/api/soknad/d9ca08ca-bdbf-4571-ba4f-109c3642047b") {
@@ -429,7 +429,7 @@ fun createSoknadTestData(
     fom: LocalDate = LocalDate.parse("2021-05-01"),
     korrigererSoknadId: String? = null,
     korrigertBySoknadId: String = "0422-4a5e-b779-a8819abf",
-    sporsmal: List<Sporsmal>,
+    sporsmal: List<Sporsmal>
 ) = Soknad(
     id = id,
     sykmeldingId = sykmeldingId,
@@ -443,7 +443,7 @@ fun createSoknadTestData(
     korrigererSoknadId = korrigererSoknadId,
     korrigertBySoknadId = korrigertBySoknadId,
     perioder = listOf(),
-    sporsmal = sporsmal,
+    sporsmal = sporsmal
 )
 
 fun createSykmeldingTestData(
@@ -454,7 +454,7 @@ fun createSykmeldingTestData(
     fnr: String = "fnr",
     lest: Boolean = false,
     arbeidsgiver: Arbeidsgiver = Arbeidsgiver(
-        navn = "Arbeid G. Iversen",
+        navn = "Arbeid G. Iversen"
     ),
     perioder: List<Periode> = emptyList(),
     arbeidsforEtterPeriode: Boolean = false,
@@ -464,7 +464,7 @@ fun createSykmeldingTestData(
     behandler: Behandler = Behandler(
         navn = "Beh. Handler",
         hprNummer = "80802721231",
-        telefon = "81549300",
+        telefon = "81549300"
     ),
     behandletTidspunkt: LocalDate = LocalDate.now(),
     sendtTilArbeidsgiverDato: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
