@@ -40,7 +40,7 @@ class PerformanceTest : FunSpec({
     }
 
     val mineSykmeldteService = MineSykmeldteService(
-        mineSykmeldteDb = MineSykmeldteDb(database),
+        mineSykmeldteDb = MineSykmeldteDb(database)
     )
 
     context("Get mine sykmeldginer") {

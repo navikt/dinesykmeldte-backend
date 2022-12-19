@@ -45,7 +45,7 @@ fun createNarmestelederLeesahKafkaMessage(
     orgnummer: String = "88888888",
     fnr: String = "12345678910",
     narmesteLederFnr: String = "01987654321",
-    aktivTom: LocalDate? = null,
+    aktivTom: LocalDate? = null
 ): NarmestelederLeesahKafkaMessage =
     NarmestelederLeesahKafkaMessage(
         narmesteLederId = id,

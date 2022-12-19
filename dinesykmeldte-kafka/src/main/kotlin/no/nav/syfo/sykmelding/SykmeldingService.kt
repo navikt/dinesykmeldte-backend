@@ -92,7 +92,7 @@ class SykmeldingService(
 
                 val startdato = syfoSyketilfelleClient.finnStartdato(
                     fnr = fnr,
-                    sykmeldingId = latestSykmelding.sykmeldingId,
+                    sykmeldingId = latestSykmelding.sykmeldingId
                 )
 
                 sykmeldingDb.insertOrUpdateSykmeldt(
@@ -100,7 +100,7 @@ class SykmeldingService(
                         pasientFnr = fnr,
                         pasientNavn = person.navn.formatName(),
                         startdatoSykefravaer = startdato,
-                        latestTom = latestSykmelding.latestTom,
+                        latestTom = latestSykmelding.latestTom
                     )
                 )
             }

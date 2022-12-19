@@ -46,7 +46,7 @@ class MineSykmeldteDbTest : FunSpec({
             )
             TestDb.database.insertOrUpdate(
                 createSykmeldingDbModel(
-                    sykmeldingId = "0615720a-b1a0-47e6-885c-8d927c35ef4c",
+                    sykmeldingId = "0615720a-b1a0-47e6-885c-8d927c35ef4c"
                 ),
                 createSykmeldtDbModel()
             )

@@ -59,7 +59,7 @@ fun createSoknadDbModel(
     sykmeldingId: String = "76483e9f-eb16-464c-9bed-a9b258794bc4",
     pasientFnr: String = "123456789",
     arbeidsgivernavn: String = "Kebabbiten",
-    orgnummer: String = "123454543",
+    orgnummer: String = "123454543"
 ): SoknadDbModel {
     val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
         getFileAsString("src/test/resources/soknad.json")
@@ -69,7 +69,7 @@ fun createSoknadDbModel(
         fnr = pasientFnr,
         arbeidsgiver = ArbeidsgiverDTO(
             navn = arbeidsgivernavn,
-            orgnummer = orgnummer,
+            orgnummer = orgnummer
         )
     )
     return sykepengesoknadDTO.toSoknadDbModel()
@@ -77,7 +77,7 @@ fun createSoknadDbModel(
 
 fun createSykepengesoknadDto(
     soknadId: String,
-    sykmeldingId: String,
+    sykmeldingId: String
 ) = objectMapper.readValue<SykepengesoknadDTO>(
     getFileAsString("src/test/resources/soknad.json")
 ).copy(
@@ -132,5 +132,5 @@ fun createSykmeldingsperiode(
     innspillTilArbeidsgiver = innspillTilArbeidsgiver,
     type = type,
     aktivitetIkkeMulig = aktivitetIkkeMulig,
-    reisetilskudd = reisetilskudd,
+    reisetilskudd = reisetilskudd
 )

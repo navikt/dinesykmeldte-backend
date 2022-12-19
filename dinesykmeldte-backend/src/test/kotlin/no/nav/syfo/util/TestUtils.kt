@@ -64,7 +64,7 @@ fun TestApplicationRequest.addAuthorizationHeader(
     audience: String = "dummy-client-id",
     subject: String = "08086912345",
     issuer: String = "https://sts.issuer.net/myid",
-    level: String = "Level4",
+    level: String = "Level4"
 ) {
     addHeader(
         "Authorization",

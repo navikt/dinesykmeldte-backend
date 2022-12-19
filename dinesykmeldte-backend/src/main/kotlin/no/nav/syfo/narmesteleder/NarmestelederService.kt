@@ -12,7 +12,7 @@ import java.util.UUID
 
 class NarmestelederService(
     private val narmestelederDb: NarmestelederDb,
-    private val nlResponseProducer: NLResponseProducer,
+    private val nlResponseProducer: NLResponseProducer
 ) {
 
     suspend fun deaktiverNarmesteLeder(fnrLeder: String, narmestelederId: String, callId: UUID) {

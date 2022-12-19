@@ -29,7 +29,7 @@ object VirksomhetDbTest : FunSpec({
                 createSykmeldingDbModel(
                     sykmeldingId = UUID.randomUUID().toString(),
                     pasientFnr = "employee-fnr",
-                    orgnummer = "right-caller-org",
+                    orgnummer = "right-caller-org"
                 ),
                 sykmeldt
             )
@@ -52,7 +52,7 @@ object VirksomhetDbTest : FunSpec({
                 createSykmeldingDbModel(
                     sykmeldingId = UUID.randomUUID().toString(),
                     pasientFnr = "employee-fnr",
-                    orgnummer = "right-caller-org",
+                    orgnummer = "right-caller-org"
                 ),
                 sykmeldt
             )
