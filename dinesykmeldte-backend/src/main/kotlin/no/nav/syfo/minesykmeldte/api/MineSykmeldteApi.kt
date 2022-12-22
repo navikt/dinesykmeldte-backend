@@ -36,6 +36,8 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         val principal: BrukerPrincipal = call.getBrukerPrincipal()
         val lederFnr = principal.fnr
         val sykmeldingId = call.getParam("sykmeldingId")
+        sikkerlogg.info("Calling api path: api/sykmelding/$sykmeldingId for lederFnr $lederFnr")
+
 
         val sykmelding = mineSykmeldteService.getSykmelding(sykmeldingId, lederFnr)
         if (sykmelding != null) {
