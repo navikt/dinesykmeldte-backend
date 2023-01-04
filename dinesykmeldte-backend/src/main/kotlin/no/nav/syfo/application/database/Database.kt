@@ -31,7 +31,7 @@ class Database(private val env: Environment, retries: Long = 30, sleepTime: Long
                         maximumPoolSize = 5
                         minimumIdle = 3
                         isAutoCommit = false
-                        transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+                        transactionIsolation = "TRANSACTION_READ_COMMITTED"
                         validate()
                     }
                 )
