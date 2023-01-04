@@ -26,7 +26,7 @@ class GcpDatabase(env: Environment) : DatabaseInterface {
                 minimumIdle = 1
                 isAutoCommit = false
                 connectionTimeout = 30_000
-                transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+                transactionIsolation = "TRANSACTION_READ_COMMITTED"
                 validate()
             }
         )
