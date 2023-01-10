@@ -1,0 +1,1 @@
+alter table sykmeldt add column sist_oppdatert DATE;
