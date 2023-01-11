@@ -3,6 +3,7 @@ package no.nav.syfo.soknad.db
 import no.nav.syfo.database.DatabaseInterface
 import java.sql.Connection
 import java.sql.Timestamp
+import java.time.LocalDate
 
 class SoknadDb(private val database: DatabaseInterface) {
 
@@ -44,7 +45,20 @@ class SoknadDb(private val database: DatabaseInterface) {
                 preparedStatement.setObject(9, soknadDbModel.tom)
                 preparedStatement.executeUpdate()
             }
+            connection.updateSistOppdatertForSykmeldt(fnr)
             connection.commit()
+        }
+    }
+
+    private fun Connection.updateSistOppdatertForSykmeldt(fnr: String) {
+        this.prepareStatement(
+            """
+                UPDATE sykmeldt SET sist_oppdatert = ? WHERE pasient_fnr = ?;
+                """
+        ).use {
+            it.setObject(1, LocalDate.now())
+            it.setString(2, fnr)
+            it.executeUpdate()
         }
     }
 

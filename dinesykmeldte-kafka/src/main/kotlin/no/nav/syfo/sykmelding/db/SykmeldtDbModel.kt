@@ -6,5 +6,6 @@ data class SykmeldtDbModel(
     val pasientFnr: String,
     val pasientNavn: String,
     val startdatoSykefravaer: LocalDate,
-    val latestTom: LocalDate
+    val latestTom: LocalDate,
+    val sistOppdatert: LocalDate?
 )

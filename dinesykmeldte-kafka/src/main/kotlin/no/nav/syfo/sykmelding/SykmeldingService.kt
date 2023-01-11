@@ -100,7 +100,8 @@ class SykmeldingService(
                         pasientFnr = fnr,
                         pasientNavn = person.navn.formatName(),
                         startdatoSykefravaer = startdato,
-                        latestTom = latestSykmelding.latestTom
+                        latestTom = latestSykmelding.latestTom,
+                        sistOppdatert = LocalDate.now()
                     )
                 )
             }

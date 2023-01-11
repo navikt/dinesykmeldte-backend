@@ -4,6 +4,7 @@ import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.log
 import java.sql.Connection
 import java.sql.Timestamp
+import java.time.LocalDate
 import java.time.OffsetDateTime
 
 class HendelserDb(private val database: DatabaseInterface) {
@@ -30,7 +31,20 @@ class HendelserDb(private val database: DatabaseInterface) {
                 preparedStatement.setTimestamp(10, hendelseDbModel.ferdigstiltTimestamp?.let { Timestamp.from(it.toInstant()) })
                 preparedStatement.executeUpdate()
             }
+            connection.updateSistOppdatertForSykmeldt(hendelseDbModel.pasientFnr)
             connection.commit()
+        }
+    }
+
+    private fun Connection.updateSistOppdatertForSykmeldt(fnr: String) {
+        this.prepareStatement(
+            """
+                UPDATE sykmeldt SET sist_oppdatert = ? WHERE pasient_fnr = ?;
+                """
+        ).use {
+            it.setObject(1, LocalDate.now())
+            it.setString(2, fnr)
+            it.executeUpdate()
         }
     }
 

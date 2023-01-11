@@ -83,12 +83,13 @@ class SykmeldingDb(private val database: DatabaseInterface) {
     private fun Connection.insertOrUpdateSykmeldt(sykmeldt: SykmeldtDbModel) {
         this.prepareStatement(
             """
-               insert into sykmeldt(pasient_fnr, pasient_navn, startdato_sykefravaer, latest_tom) 
-                    values (?, ?, ?, ?) 
+               insert into sykmeldt(pasient_fnr, pasient_navn, startdato_sykefravaer, latest_tom, sist_oppdatert) 
+                    values (?, ?, ?, ?, ?) 
                on conflict (pasient_fnr) do update
                 set pasient_navn = ?,
                     startdato_sykefravaer = ?,
-                    latest_tom = ?;
+                    latest_tom = ?,
+                    sist_oppdatert = ?;
             """
         ).use { preparedStatement ->
             preparedStatement.setString(1, sykmeldt.pasientFnr)
@@ -96,10 +97,12 @@ class SykmeldingDb(private val database: DatabaseInterface) {
             preparedStatement.setString(2, sykmeldt.pasientNavn)
             preparedStatement.setObject(3, sykmeldt.startdatoSykefravaer)
             preparedStatement.setObject(4, sykmeldt.latestTom)
+            preparedStatement.setObject(5, sykmeldt.sistOppdatert)
             // update
-            preparedStatement.setString(5, sykmeldt.pasientNavn)
-            preparedStatement.setObject(6, sykmeldt.startdatoSykefravaer)
-            preparedStatement.setObject(7, sykmeldt.latestTom)
+            preparedStatement.setString(6, sykmeldt.pasientNavn)
+            preparedStatement.setObject(7, sykmeldt.startdatoSykefravaer)
+            preparedStatement.setObject(8, sykmeldt.latestTom)
+            preparedStatement.setObject(9, sykmeldt.sistOppdatert)
             preparedStatement.executeUpdate()
         }
     }
