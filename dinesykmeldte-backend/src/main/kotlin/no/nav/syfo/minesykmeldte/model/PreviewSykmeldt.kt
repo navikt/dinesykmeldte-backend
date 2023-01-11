@@ -22,13 +22,13 @@ data class PreviewSykmeldt(
 data class Oppfolgingsplan(
     val hendelseId: UUID,
     var tekst: String,
-    var mottatt: OffsetDateTime?
+    var mottatt: OffsetDateTime
 )
 
 data class Dialogmote(
     val hendelseId: UUID,
     var tekst: String,
-    var mottatt: OffsetDateTime?
+    var mottatt: OffsetDateTime
 )
 
 data class Aktivitetsvarsel(
