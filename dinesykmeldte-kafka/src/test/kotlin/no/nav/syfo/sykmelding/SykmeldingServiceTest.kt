@@ -229,6 +229,7 @@ class SykmeldingServiceTest : FunSpec({
             sykmeldtOppdatert?.pasientNavn shouldBeEqualTo "Per Persen"
             sykmeldtOppdatert?.startdatoSykefravaer shouldBeEqualTo LocalDate.now().minusMonths(2)
             sykmeldtOppdatert?.latestTom shouldBeEqualTo LocalDate.now().plusDays(20)
+            sykmeldtOppdatert?.sistOppdatert shouldBeEqualTo LocalDate.now()
         }
         test("Ignorerer sendt sykmelding der tom er eldre enn fire måneder tilbake i tid") {
             val sykmeldingId = UUID.randomUUID().toString()

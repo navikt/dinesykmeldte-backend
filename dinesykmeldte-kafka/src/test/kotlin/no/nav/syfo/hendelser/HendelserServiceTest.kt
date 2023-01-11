@@ -6,10 +6,13 @@ import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.hendelser.kafka.model.DineSykmeldteHendelse
 import no.nav.syfo.hendelser.kafka.model.FerdigstillHendelse
 import no.nav.syfo.hendelser.kafka.model.OpprettHendelse
+import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.TestDb
+import no.nav.syfo.util.insertOrUpdateSykmeldt
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
 import java.time.Clock
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
@@ -24,6 +27,18 @@ class HendelserServiceTest : FunSpec({
 
     context("HendelseService") {
         test("Oppretter hendelse for hendelse X") {
+            TestDb.database.connection.use { connection ->
+                connection.insertOrUpdateSykmeldt(
+                    SykmeldtDbModel(
+                        "12345678910",
+                        "Navn",
+                        LocalDate.now().minusWeeks(5),
+                        LocalDate.now().minusWeeks(2),
+                        null
+                    )
+                )
+                connection.commit()
+            }
             val hendelseId = UUID.randomUUID().toString()
             val dineSykmeldteHendelse = DineSykmeldteHendelse(
                 id = hendelseId,
@@ -45,6 +60,7 @@ class HendelserServiceTest : FunSpec({
             hendelse shouldNotBeEqualTo null
             hendelse?.oppgavetype shouldBeEqualTo "HENDELSE_X"
             hendelse?.ferdigstilt shouldBeEqualTo false
+            TestDb.getSykmeldt("12345678910")?.sistOppdatert shouldBeEqualTo LocalDate.now()
         }
         test("Ferdigstiller hendelse X") {
             val hendelseId = UUID.randomUUID().toString()

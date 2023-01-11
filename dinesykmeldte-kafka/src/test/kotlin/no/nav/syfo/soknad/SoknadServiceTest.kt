@@ -8,9 +8,11 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.sykmelding.db.SykmeldingDb
+import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSoknadDbModel
 import no.nav.syfo.util.createSykmeldingDbModel
+import no.nav.syfo.util.insertOrUpdateSykmeldt
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
 import java.nio.charset.StandardCharsets
@@ -31,6 +33,18 @@ class SoknadServiceTest : FunSpec({
 
     context("SoknadService") {
         test("Lagrer ny sendt søknad og fjerner sensitiv informasjon") {
+            TestDb.database.connection.use { connection ->
+                connection.insertOrUpdateSykmeldt(
+                    SykmeldtDbModel(
+                        "123456789",
+                        "Navn",
+                        LocalDate.now().minusWeeks(5),
+                        LocalDate.now().minusWeeks(2),
+                        null
+                    )
+                )
+                connection.commit()
+            }
             val soknadId = UUID.randomUUID().toString()
             val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
                 getFileAsString("src/test/resources/soknad.json")
@@ -60,6 +74,7 @@ class SoknadServiceTest : FunSpec({
             )
             arbeidsgiverSoknadFraDb.andreInntektskilder shouldBeEqualTo null
             arbeidsgiverSoknadFraDb.sporsmal shouldBeEqualTo sporsmalArbeidsgivervisning
+            TestDb.getSykmeldt("123456789")?.sistOppdatert shouldBeEqualTo LocalDate.now()
         }
         test("Ignorerer søknad med tom tidligere enn 4 mnd siden") {
             val soknadId = UUID.randomUUID().toString()
