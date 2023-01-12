@@ -269,6 +269,32 @@ fun DatabaseInterface.insertOrUpdate(soknadDbModel: SoknadDbModel) {
     }
 }
 
+fun DatabaseInterface.insert(hendelseDbModel: HendelseDbModel) {
+    this.connection.use { connection ->
+        connection.prepareStatement(
+            """
+                    INSERT INTO hendelser(id, pasient_fnr, orgnummer, oppgavetype, lenke, tekst, timestamp, 
+                                          utlopstidspunkt, ferdigstilt, ferdigstilt_timestamp)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT (id, oppgavetype) DO NOTHING;
+            """
+        ).use { preparedStatement ->
+            preparedStatement.setString(1, hendelseDbModel.id)
+            preparedStatement.setString(2, hendelseDbModel.pasientFnr)
+            preparedStatement.setString(3, hendelseDbModel.orgnummer)
+            preparedStatement.setString(4, hendelseDbModel.oppgavetype)
+            preparedStatement.setString(5, hendelseDbModel.lenke)
+            preparedStatement.setString(6, hendelseDbModel.tekst)
+            preparedStatement.setTimestamp(7, Timestamp.from(hendelseDbModel.timestamp.toInstant()))
+            preparedStatement.setTimestamp(8, hendelseDbModel.utlopstidspunkt?.let { Timestamp.from(it.toInstant()) })
+            preparedStatement.setBoolean(9, hendelseDbModel.ferdigstilt)
+            preparedStatement.setTimestamp(10, hendelseDbModel.ferdigstiltTimestamp?.let { Timestamp.from(it.toInstant()) })
+            preparedStatement.executeUpdate()
+        }
+        connection.commit()
+    }
+}
+
 fun DatabaseInterface.insertOrUpdateNl(id: String, orgnummer: String, fnr: String, narmesteLederFnr: String) {
     this.connection.use { connection ->
         connection.prepareStatement(

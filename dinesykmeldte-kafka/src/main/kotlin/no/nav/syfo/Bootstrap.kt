@@ -32,6 +32,9 @@ import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
+import no.nav.syfo.sistoppdatert.SistOppdatertDb
+import no.nav.syfo.sistoppdatert.SistOppdatertKafkaService
+import no.nav.syfo.sistoppdatert.SistOppdatertService
 import no.nav.syfo.soknad.SoknadService
 import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
@@ -139,6 +142,24 @@ fun main() {
         hendelserService
     )
     commonKafkaService.startConsumer()
+
+    val kafkaConsumerSistOppdatert = KafkaConsumer(
+        KafkaUtils.getAivenKafkaConfig().also {
+            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
+        }.toConsumerConfig("dinesykmeldte-backend-sistoppdatert", StringDeserializer::class),
+        StringDeserializer(),
+        StringDeserializer()
+    )
+    val sistOppdatertService = SistOppdatertService(SistOppdatertDb(database))
+    val sistOppdatertKafkaService = SistOppdatertKafkaService(
+        kafkaConsumer = kafkaConsumerSistOppdatert,
+        applicationState = applicationState,
+        sendtSykmeldingTopic = env.sendtSykmeldingTopic,
+        sistOppdatertService = sistOppdatertService
+    )
+    sistOppdatertKafkaService.startConsumer()
+
     val leaderElection = LeaderElection(httpClient, env.electorPath)
     DeleteDataService(DeleteDataDb(database), leaderElection, applicationState).start()
     ApplicationServer(applicationEngine, applicationState).start()
