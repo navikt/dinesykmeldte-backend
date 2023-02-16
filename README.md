@@ -63,7 +63,6 @@ Creating a docker image should be as simple as `docker build -t dinesykmeldte-ba
 #### Running a docker image
 `docker run --rm -it -p 8080:8080 dinesykmeldte-backend`
 
-#### Tldr
 
 ### Upgrading the gradle wrapper
 Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
@@ -72,7 +71,7 @@ Find the newest version of gradle here: https://gradle.org/releases/ Then run th
 
 ### Contact
 
-This project is maintained by navikt/teamsykmelding
+This project is maintained by [navikt/teamsykmelding](CODEOWNERS)
 
 Questions and/or feature requests? Please create an [issue](https://github.com/navikt/dinesykmeldte-backend/issues).
 
