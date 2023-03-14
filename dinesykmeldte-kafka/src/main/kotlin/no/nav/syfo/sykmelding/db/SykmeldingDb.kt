@@ -34,8 +34,9 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                             lest, 
                             timestamp, 
                             latest_tom,
-                            sendt_til_arbeidsgiver_dato) 
-                        values (?, ?, ?, ?, ?, ?, ?, ?, ?) 
+                            sendt_til_arbeidsgiver_dato,
+                            egenmeldingsdager) 
+                        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
                    on conflict (sykmelding_id) do update 
                         set pasient_fnr = excluded.pasient_fnr,
                             orgnummer = excluded.orgnummer,
@@ -58,6 +59,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
             preparedStatement.setTimestamp(7, Timestamp.from(sykmeldingDbModel.timestamp.toInstant()))
             preparedStatement.setObject(8, sykmeldingDbModel.latestTom)
             preparedStatement.setTimestamp(9, sendtTilArbeidsgiverDato)
+            preparedStatement.setObject(10, sykmeldingDbModel.egenmeldingsdager?.toPGObject())
             preparedStatement.executeUpdate()
         }
         this.updateSoknadFnr(

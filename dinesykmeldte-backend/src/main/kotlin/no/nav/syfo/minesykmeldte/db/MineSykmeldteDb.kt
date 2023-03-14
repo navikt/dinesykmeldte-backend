@@ -32,7 +32,8 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                        sk.soknad,
                        sk.sendt_dato,
                        sk.lest as soknad_lest,
-                       sm.sendt_til_arbeidsgiver_dato as sendt_til_arbeidsgiver_dato
+                       sm.sendt_til_arbeidsgiver_dato as sendt_til_arbeidsgiver_dato,
+                       sm.egenmeldingsdager
                 FROM narmesteleder AS nl
                     inner JOIN sykmeldt AS s ON s.pasient_fnr = nl.pasient_fnr
                     inner join sykmelding AS sm ON sm.pasient_fnr = nl.pasient_fnr AND sm.orgnummer = nl.orgnummer
@@ -51,7 +52,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
             database.connection.use { connection ->
                 connection.prepareStatement(
                     """
-                SELECT s.sykmelding_id, s.pasient_fnr, s.orgnummer, s.orgnavn, s.sykmelding, s.lest, s.timestamp, s.latest_tom, sm.pasient_navn, sm.startdato_sykefravaer, sm.latest_tom, s.sendt_til_arbeidsgiver_dato
+                SELECT s.sykmelding_id, s.pasient_fnr, s.orgnummer, s.orgnavn, s.sykmelding, s.lest, s.timestamp, s.latest_tom, sm.pasient_navn, sm.startdato_sykefravaer, sm.latest_tom, s.sendt_til_arbeidsgiver_dato, s.egenmeldingsdager
                   FROM sykmelding AS s
                     INNER JOIN narmesteleder ON narmesteleder.pasient_fnr = s.pasient_fnr and narmesteleder.orgnummer = s.orgnummer
                     INNER JOIN sykmeldt sm ON narmesteleder.pasient_fnr = sm.pasient_fnr
@@ -236,6 +237,7 @@ private fun ResultSet.toSykmeldtSoknad(): Pair<SykmeldtDbModel, SoknadDbModel>? 
             timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
             tom = getDate("tom").toLocalDate()
         )
+
         else -> null
     }
 
@@ -251,7 +253,8 @@ private fun ResultSet.toMinSykmeldtDbModel(): MinSykmeldtDbModel = MinSykmeldtDb
     lestSykmelding = getBoolean("sykmelding_lest"),
     soknad = getString("soknad")?.let { objectMapper.readValue(it) },
     lestSoknad = getBoolean("soknad_lest"),
-    sendtTilArbeidsgiverDato = getTimestamp("sendt_til_arbeidsgiver_dato")?.toInstant()?.atOffset(ZoneOffset.UTC)
+    sendtTilArbeidsgiverDato = getTimestamp("sendt_til_arbeidsgiver_dato")?.toInstant()?.atOffset(ZoneOffset.UTC),
+    egenmeldingsdager = getString("egenmeldingsdager")?.let { objectMapper.readValue(it) },
 )
 
 private fun ResultSet.toSykmeldtSykmelding(): Pair<SykmeldtDbModel, SykmeldingDbModel>? =
@@ -271,8 +274,10 @@ private fun ResultSet.toSykmeldtSykmelding(): Pair<SykmeldtDbModel, SykmeldingDb
             timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
             latestTom = getDate("latest_tom").toLocalDate(),
             sendtTilArbeidsgiverDato = getTimestamp("sendt_til_arbeidsgiver_dato")?.toInstant()
-                ?.atOffset(ZoneOffset.UTC)
+                ?.atOffset(ZoneOffset.UTC),
+            egenmeldingsdager = getString("egenmeldingsdager")?.let { objectMapper.readValue(it) },
         )
+
         false -> null
     }
 

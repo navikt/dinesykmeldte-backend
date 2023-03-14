@@ -648,7 +648,8 @@ class MineSykmeldteServiceTest : FunSpec({
                         soknad = soknad,
                         lestSykmelding = false,
                         lestSoknad = false,
-                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC)
+                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
+                        egenmeldingsdager = listOf(LocalDate.parse("2020-04-01"), LocalDate.parse("2020-04-02")),
                     )
                 )
                 runBlocking {
@@ -681,7 +682,8 @@ class MineSykmeldteServiceTest : FunSpec({
                         soknad = soknad,
                         lestSykmelding = false,
                         lestSoknad = true,
-                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC)
+                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
+                        egenmeldingsdager = listOf(LocalDate.parse("2020-04-01"), LocalDate.parse("2020-04-02")),
                     )
                 )
                 runBlocking {
@@ -714,7 +716,8 @@ class MineSykmeldteServiceTest : FunSpec({
                         soknad = soknad,
                         lestSykmelding = false,
                         lestSoknad = true,
-                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC)
+                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
+                        egenmeldingsdager = null,
                     )
                 )
                 runBlocking {
@@ -752,7 +755,8 @@ class MineSykmeldteServiceTest : FunSpec({
                     soknad = korrigertSoknad,
                     lestSykmelding = false,
                     lestSoknad = true,
-                    sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC)
+                    sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
+                    egenmeldingsdager = null,
                 )
 
                 coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
@@ -797,7 +801,8 @@ class MineSykmeldteServiceTest : FunSpec({
                         soknad = soknad,
                         lestSykmelding = false,
                         lestSoknad = true,
-                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC)
+                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
+                        egenmeldingsdager = null,
                     )
                 )
                 runBlocking {
@@ -1096,7 +1101,8 @@ private fun createSykmeldingDbModel(
     lest = lest,
     timestamp = timestamp,
     latestTom = latestTom,
-    sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato
+    sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato,
+    egenmeldingsdager = null,
 )
 
 private fun createSykmeldtDbModel(
@@ -1148,7 +1154,8 @@ fun getSykmeldtData(
                 },
                 lestSoknad = false,
                 lestSykmelding = false,
-                sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC)
+                sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
+                egenmeldingsdager = null,
             )
         }
     }

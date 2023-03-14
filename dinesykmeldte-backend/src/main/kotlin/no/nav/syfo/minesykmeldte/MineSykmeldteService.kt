@@ -248,7 +248,8 @@ private fun MinSykmeldtDbModel.toSykmelding(): Sykmelding {
         startdatoSykefravar = this.startDatoSykefravar,
         navn = this.sykmeldtNavn,
         sendtTilArbeidsgiverDato = this.sendtTilArbeidsgiverDato,
-        utenlandskSykmelding = sykmelding.utenlandskSykmelding?.let { UtenlandskSykmelding(land = it.land) }
+        utenlandskSykmelding = sykmelding.utenlandskSykmelding?.let { UtenlandskSykmelding(land = it.land) },
+        egenmeldingsdager = this.egenmeldingsdager,
     )
 }
 
@@ -279,7 +280,8 @@ private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding 
         startdatoSykefravar = sykmeldt.startdatoSykefravaer,
         navn = sykmeldt.pasientNavn,
         sendtTilArbeidsgiverDato = sykmelding.sendtTilArbeidsgiverDato,
-        utenlandskSykmelding = sykmelding.sykmelding.utenlandskSykmelding?.let { UtenlandskSykmelding(land = it.land) }
+        utenlandskSykmelding = sykmelding.sykmelding.utenlandskSykmelding?.let { UtenlandskSykmelding(land = it.land) },
+        egenmeldingsdager = sykmelding.egenmeldingsdager,
     )
 }
 
