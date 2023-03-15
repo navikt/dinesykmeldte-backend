@@ -8,8 +8,6 @@ on:
       - 'dinesykmeldte-kafka/**'
       - '.github/workflows/kafka-dev.yml'
       - 'build.gradle.kts'
-env:
-  IMAGE: ghcr.io/${{ github.repository }}/dinesykmeldte-kafka:${{ github.sha }}
 
 jobs:
   snyk-test:
@@ -19,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/gradle-jdk16@master
+        uses: snyk/actions/gradle-jdk17@master
         env:
           ORG_GRADLE_PROJECT_githubUser: x-access-token
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
@@ -28,6 +26,9 @@ jobs:
           command: test
           args: --org=teamsykmelding --severity-threshold=high
   build:
+    permissions:
+      contents: "read"
+      id-token: "write"
     name: Checkout code and create docker tag
     runs-on: ubuntu-latest
     steps:
@@ -39,7 +40,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Gradle wrapper validation
-        uses: gradle/wrapper-validation-action@v1
+        uses: gradle/wrapper-validation-action@v1.0.5
       - name: Setup gradle dependency cache
         uses: actions/cache@v3
         with:
@@ -61,14 +62,17 @@ jobs:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew :dinesykmeldte-kafka:shadowJar -x test
-      - name: Build and publish Docker image
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd dinesykmeldte-kafka
-          docker build --tag ${IMAGE} .
-          docker login ghcr.io -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
-          docker push ${IMAGE}
+      - name: docker-build-push
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
+        with:
+          team: teamsykmelding
+          dockerfile: dinesykmeldte-kafka/Dockerfile
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
   deploy-dev:
     name: Deploy to dev
     runs-on: ubuntu-latest
@@ -82,3 +86,4 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: dinesykmeldte-kafka/naiserator-dev.yaml
+          VAR: image=${{ needs.build.outputs.image }}
