@@ -87,7 +87,7 @@ fun main() {
             }
             retryIf(maxRetries) { request, response ->
                 if (response.status.value.let { it in 500..599 }) {
-                    log.warn("Retrying for statuscode ${response.status.value}, for url ${request.url}")
+                    log.warn("Retrying for status code ${response.status.value}, for url ${request.url}")
                     true
                 } else {
                     false
