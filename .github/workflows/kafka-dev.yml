@@ -62,9 +62,9 @@ jobs:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew :dinesykmeldte-kafka:shadowJar -x test
-      - name: docker-build-push
+      - name: kafka-docker-build-push
         uses: nais/docker-build-push@v0
-        id: docker-build-push
+        id: kafka-docker-build-push
         with:
           team: teamsykmelding
           dockerfile: dinesykmeldte-kafka/Dockerfile
@@ -72,7 +72,7 @@ jobs:
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
 
     outputs:
-      image: ${{ steps.docker-build-push.outputs.image }}
+      image: ${{ steps.kafka-docker-build-push.outputs.image }}
   deploy-dev:
     name: Deploy to dev
     runs-on: ubuntu-latest
