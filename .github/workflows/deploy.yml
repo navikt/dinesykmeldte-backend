@@ -79,7 +79,8 @@ jobs:
         id: backend-docker-build-push
         with:
           team: teamsykmelding
-          dockerfile: dinesykmeldte-backend/Dockerfile
+          dockerfile: ./dinesykmeldte-backend/Dockerfile
+          docker_context: dinesykmeldte-backend
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
 
