@@ -6,7 +6,7 @@ metadata:
   labels:
     team: teamsykmelding
 spec:
-  image: {{ image }}
+  image: {{ stream-image }}
   replicas:
     min: 3
     max: 3
