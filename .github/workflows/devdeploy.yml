@@ -63,7 +63,7 @@ jobs:
         run: |
           ./gradlew :dinesykmeldte-backend:shadowJar -x test
       - name: backend-docker-build-push
-        working-directory: dinesykmeldte-backend
+        working-directory: ./dinesykmeldte-backend
         uses: nais/docker-build-push@v0
         id: backend-docker-build-push
         with:
