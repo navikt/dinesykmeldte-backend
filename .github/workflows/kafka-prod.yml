@@ -100,7 +100,7 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: dinesykmeldte-kafka/naiserator-dev.yaml
-          VAR: stream-image=${{ needs.build.outputs.stream-image }}
+          VAR: stream-image=${{ needs.build-kafka.outputs.stream-image }}
   deploy-prod:
     name: Deploy to prod
     runs-on: ubuntu-latest
