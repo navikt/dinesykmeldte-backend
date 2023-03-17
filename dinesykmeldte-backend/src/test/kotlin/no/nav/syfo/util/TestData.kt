@@ -41,7 +41,8 @@ fun createSykmeldingDbModel(
         lest = false,
         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
         latestTom = LocalDate.now().minusWeeks(2),
-        sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato
+        sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato,
+        egenmeldingsdager = null,
     )
 }
 

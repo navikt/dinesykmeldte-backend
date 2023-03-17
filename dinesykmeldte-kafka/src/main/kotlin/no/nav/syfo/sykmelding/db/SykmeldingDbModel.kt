@@ -15,10 +15,16 @@ data class SykmeldingDbModel(
     val lest: Boolean,
     val timestamp: OffsetDateTime,
     val latestTom: LocalDate,
-    val sendtTilArbeidsgiverDato: OffsetDateTime?
+    val sendtTilArbeidsgiverDato: OffsetDateTime?,
+    val egenmeldingsdager: List<LocalDate>?,
 )
 
 fun ArbeidsgiverSykmelding.toPGObject() = PGobject().also {
+    it.type = "json"
+    it.value = objectMapper.writeValueAsString(this)
+}
+
+fun List<LocalDate>.toPGObject() = PGobject().also {
     it.type = "json"
     it.value = objectMapper.writeValueAsString(this)
 }

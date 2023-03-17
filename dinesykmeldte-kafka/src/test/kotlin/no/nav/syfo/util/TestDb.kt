@@ -157,7 +157,8 @@ class TestDb private constructor() {
                 lest = getBoolean("lest"),
                 timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
                 latestTom = getObject("latest_tom", LocalDate::class.java),
-                sendtTilArbeidsgiverDato = getTimestamp("sendt_til_arbeidsgiver_dato")?.toInstant()?.atOffset(ZoneOffset.UTC)
+                sendtTilArbeidsgiverDato = getTimestamp("sendt_til_arbeidsgiver_dato")?.toInstant()?.atOffset(ZoneOffset.UTC),
+                egenmeldingsdager = emptyList(),
             )
 
         fun getSoknad(soknadId: String): SoknadDbModel? {

@@ -1,5 +1,6 @@
 package no.nav.syfo.util
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
@@ -9,7 +10,6 @@ import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.log
-import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
 import no.nav.syfo.narmesteleder.db.toNarmestelederDbModel
 import no.nav.syfo.objectMapper
@@ -126,11 +126,12 @@ class TestDb private constructor() {
                 pasientFnr = getString("pasient_fnr"),
                 orgnummer = getString("orgnummer"),
                 orgnavn = getString("orgnavn"),
-                sykmelding = objectMapper.readValue(getString("sykmelding"), ArbeidsgiverSykmelding::class.java),
+                sykmelding = objectMapper.readValue(getString("sykmelding")),
                 lest = getBoolean("lest"),
                 timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
                 latestTom = getObject("latest_tom", LocalDate::class.java),
-                sendtTilArbeidsgiverDato = getTimestamp("sendt_til_arbeidsgiver_dato")?.toInstant()?.atOffset(ZoneOffset.UTC)
+                sendtTilArbeidsgiverDato = getTimestamp("sendt_til_arbeidsgiver_dato")?.toInstant()?.atOffset(ZoneOffset.UTC),
+                egenmeldingsdager = objectMapper.readValue(getString("egenmeldingsdager")),
             )
 
         fun getSoknad(soknadId: String): SoknadDbModel? {

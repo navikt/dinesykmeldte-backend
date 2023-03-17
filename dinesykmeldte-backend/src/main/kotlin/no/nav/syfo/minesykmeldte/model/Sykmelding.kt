@@ -19,7 +19,8 @@ data class Sykmelding(
     val innspillArbeidsplassen: String?,
     val behandler: Behandler?,
     val sendtTilArbeidsgiverDato: OffsetDateTime?,
-    val utenlandskSykmelding: UtenlandskSykmelding?
+    val utenlandskSykmelding: UtenlandskSykmelding?,
+    val egenmeldingsdager: List<LocalDate>?,
 )
 
 data class Arbeidsgiver(

@@ -288,7 +288,8 @@ class MineSykmeldteApiKtTest : FunSpec({
                             "telefon": "81549300"
                           },
                           "sendtTilArbeidsgiverDato":"2022-05-09T13:20:04Z",
-                          "utenlandskSykmelding":null
+                          "utenlandskSykmelding":null,
+                          "egenmeldingsdager":null
                         }
                     """.minifyApiResponse()
                 }
@@ -485,5 +486,6 @@ fun createSykmeldingTestData(
     behandler = behandler,
     behandletTidspunkt = behandletTidspunkt,
     sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato,
-    utenlandskSykmelding = land?.let { UtenlandskSykmelding(it) }
+    utenlandskSykmelding = land?.let { UtenlandskSykmelding(it) },
+    egenmeldingsdager = null,
 )
