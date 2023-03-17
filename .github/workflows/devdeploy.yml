@@ -66,7 +66,9 @@ jobs:
         uses: nais/docker-build-push@v0
         id: backend-docker-build-push
         with:
-          working-directory: ./dinesykmeldte-backend
+          dockerfile: ./dinesykmeldte-backend/Dockerfile
+          docker_context: dinesykmeldte-backend
+          image_suffix: dinesykmeldte-backend
           team: teamsykmelding
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}

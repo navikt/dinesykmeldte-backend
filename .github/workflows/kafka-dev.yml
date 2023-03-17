@@ -66,7 +66,9 @@ jobs:
         uses: nais/docker-build-push@v0
         id: kafka-docker-build-push
         with:
-          working-directory: ./dinesykmeldte-kafka
+          dockerfile: ./dinesykmeldte-kafka/Dockerfile
+          docker_context: dinesykmeldte-kafka
+          image_suffix: dinesykmeldte-kafka
           team: teamsykmelding
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
