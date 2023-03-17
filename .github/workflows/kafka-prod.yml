@@ -37,7 +37,7 @@ jobs:
         with:
           command: test
           args: --org=teamsykmelding --severity-threshold=high
-  build:
+  build-kafka:
     permissions:
       contents: "read"
       id-token: "write"
@@ -78,8 +78,10 @@ jobs:
         uses: nais/docker-build-push@v0
         id: kafka-docker-build-push
         with:
+          dockerfile: ./dinesykmeldte-kafka/Dockerfile
+          docker_context: dinesykmeldte-kafka
+          image_suffix: dinesykmeldte-kafka
           team: teamsykmelding
-          dockerfile: dinesykmeldte-kafka/Dockerfile
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
 
@@ -102,7 +104,7 @@ jobs:
   deploy-prod:
     name: Deploy to prod
     runs-on: ubuntu-latest
-    needs: [ snyk-test, build, deploy-dev ]
+    needs: [ snyk-test, build-kafka, deploy-dev ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -112,4 +114,4 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-gcp
           RESOURCE: dinesykmeldte-kafka/naiserator-prod.yaml
-          VAR: stream-image=${{ needs.build.outputs.stream-image }}
+          VAR: stream-image=${{ needs.build-kafka.outputs.stream-image }}

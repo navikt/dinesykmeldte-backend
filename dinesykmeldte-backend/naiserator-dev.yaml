@@ -6,7 +6,7 @@ metadata:
   labels:
     team: teamsykmelding
 spec:
-  image: {{ image }}
+  image: {{ image-backend }}
   gcp:
     sqlInstances:
       - name: dinesykmeldte-backend-db-instance
