@@ -12,6 +12,8 @@ const val ANDRE_INNTEKTSKILDER_V2 = "ANDRE_INNTEKTSKILDER_V2"
 const val UTENLANDSK_SYKMELDING_BOSTED = "UTENLANDSK_SYKMELDING_BOSTED"
 const val UTENLANDSK_SYKMELDING_LONNET_ARBEID_UTENFOR_NORGE = "UTENLANDSK_SYKMELDING_LONNET_ARBEID_UTENFOR_NORGE"
 const val UTENLANDSK_SYKMELDING_TRYGD_UTENFOR_NORGE = "UTENLANDSK_SYKMELDING_TRYGD_UTENFOR_NORGE"
+const val YRKESSKADE = "YRKESSKADE"
+
 fun SykepengesoknadDTO.toSoknadDbModel(): SoknadDbModel {
     return SoknadDbModel(
         soknadId = id,
@@ -30,7 +32,7 @@ fun SykepengesoknadDTO.toSoknadDbModel(): SoknadDbModel {
 fun SykepengesoknadDTO.tilArbeidsgiverSoknad(): SykepengesoknadDTO =
     copy(
         andreInntektskilder = null,
-        sporsmal = sporsmal?.fjernSporsmalOmAndreInnntektsKilder()?.fjernSporsmalOmArbeidUtenforNorge()?.fjernSporsmalFraUtenlandskSykmelding()
+        sporsmal = sporsmal?.fjernSporsmalOmAndreInnntektsKilder()?.fjernSporsmalOmArbeidUtenforNorge()?.fjernSporsmalFraUtenlandskSykmelding()?.fjernSporsmalOmArbeidYrkesskade()
     )
 
 fun List<SporsmalDTO>.fjernSporsmalOmAndreInnntektsKilder() =
@@ -39,6 +41,8 @@ fun List<SporsmalDTO>.fjernSporsmalOmAndreInnntektsKilder() =
 fun List<SporsmalDTO>.fjernSporsmalOmArbeidUtenforNorge() =
     this.fjernSporsmal(ARBEID_UTENFOR_NORGE)
 
+fun List<SporsmalDTO>.fjernSporsmalOmArbeidYrkesskade() =
+    this.fjernSporsmal(YRKESSKADE)
 fun List<SporsmalDTO>.fjernSporsmalFraUtenlandskSykmelding() =
     this.fjernSporsmal(UTENLANDSK_SYKMELDING_BOSTED).fjernSporsmal(UTENLANDSK_SYKMELDING_LONNET_ARBEID_UTENFOR_NORGE).fjernSporsmal(UTENLANDSK_SYKMELDING_TRYGD_UTENFOR_NORGE)
 

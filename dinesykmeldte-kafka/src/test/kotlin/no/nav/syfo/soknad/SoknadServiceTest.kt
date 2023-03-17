@@ -58,6 +58,7 @@ class SoknadServiceTest : FunSpec({
             sykepengesoknadDTO.sporsmal!!.find { it.tag == ANDRE_INNTEKTSKILDER } shouldNotBeEqualTo null
             sykepengesoknadDTO.sporsmal!!.find { it.tag == ANDRE_INNTEKTSKILDER_V2 } shouldNotBeEqualTo null
             sykepengesoknadDTO.sporsmal!!.find { it.tag == UTENLANDSK_SYKMELDING_BOSTED } shouldNotBeEqualTo null
+            sykepengesoknadDTO.sporsmal!!.find { it.tag == YRKESSKADE } shouldNotBeEqualTo null
             sykepengesoknadDTO.sporsmal!!.find { it.tag == UTENLANDSK_SYKMELDING_LONNET_ARBEID_UTENFOR_NORGE } shouldNotBeEqualTo null
             sykepengesoknadDTO.sporsmal!!.find { it.tag == UTENLANDSK_SYKMELDING_TRYGD_UTENFOR_NORGE } shouldNotBeEqualTo null
 
