@@ -90,7 +90,7 @@ jobs:
   deploy-dev:
     name: Deploy to dev
     runs-on: ubuntu-latest
-    needs: [ snyk-test, build ]
+    needs: [ snyk-test, build-kafka ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
