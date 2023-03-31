@@ -32,7 +32,7 @@ class SoknadDb(private val database: DatabaseInterface) {
                         lest = excluded.lest,
                         tom = excluded.tom
                     ;
-            """
+            """,
             ).use { preparedStatement ->
                 preparedStatement.setString(1, soknadDbModel.soknadId)
                 preparedStatement.setString(2, soknadDbModel.sykmeldingId)
@@ -54,7 +54,7 @@ class SoknadDb(private val database: DatabaseInterface) {
         this.prepareStatement(
             """
                 UPDATE sykmeldt SET sist_oppdatert = ? WHERE pasient_fnr = ?;
-                """
+                """,
         ).use {
             it.setObject(1, LocalDate.now())
             it.setString(2, fnr)
@@ -67,7 +67,7 @@ class SoknadDb(private val database: DatabaseInterface) {
             connection.prepareStatement(
                 """
                 delete from soknad where soknad_id = ?;
-            """
+            """,
             ).use { ps ->
                 ps.setString(1, id)
                 ps.executeUpdate()
@@ -80,7 +80,7 @@ class SoknadDb(private val database: DatabaseInterface) {
         return this.prepareStatement(
             """
             select pasient_fnr from sykmelding where sykmelding_id = ?;
-            """
+            """,
         ).use { preparedStatement ->
             preparedStatement.setString(1, sykmeldingId)
             preparedStatement.executeQuery().use {

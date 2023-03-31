@@ -11,7 +11,7 @@ class NarmestelederDb(private val database: DatabaseInterface) {
                 """
                insert into narmesteleder(narmeste_leder_id, orgnummer, pasient_fnr, leder_fnr) 
                values (?, ?, ?, ?) on conflict (narmeste_leder_id) do nothing ;
-            """
+            """,
             ).use { preparedStatement ->
                 preparedStatement.setString(1, narmesteleder.narmesteLederId.toString())
                 preparedStatement.setString(2, narmesteleder.orgnummer)
@@ -28,7 +28,7 @@ class NarmestelederDb(private val database: DatabaseInterface) {
             connection.prepareStatement(
                 """
                delete from narmesteleder where narmeste_leder_id = ?;
-            """
+            """,
             ).use { ps ->
                 ps.setString(1, narmestelederId)
                 ps.executeUpdate()
@@ -43,5 +43,5 @@ fun ResultSet.toNarmestelederDbModel(): NarmestelederDbModel =
         narmestelederId = getString("narmeste_leder_id"),
         pasientFnr = getString("pasient_fnr"),
         lederFnr = getString("leder_fnr"),
-        orgnummer = getString("orgnummer")
+        orgnummer = getString("orgnummer"),
     )

@@ -39,7 +39,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                     inner join sykmelding AS sm ON sm.pasient_fnr = nl.pasient_fnr AND sm.orgnummer = nl.orgnummer
                     left join soknad as sk on sk.sykmelding_id = sm.sykmelding_id AND sk.pasient_fnr = sm.pasient_fnr
                 WHERE nl.leder_fnr = ?;
-                """
+                """,
             ).use { ps ->
                 ps.setString(1, lederFnr)
                 ps.executeQuery().toList { toMinSykmeldtDbModel() }
@@ -57,7 +57,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                     INNER JOIN narmesteleder ON narmesteleder.pasient_fnr = s.pasient_fnr and narmesteleder.orgnummer = s.orgnummer
                     INNER JOIN sykmeldt sm ON narmesteleder.pasient_fnr = sm.pasient_fnr
                 WHERE s.sykmelding_id = ? AND narmesteleder.leder_fnr = ?
-            """
+            """,
                 ).use { ps ->
                     ps.setString(1, sykmeldingId)
                     ps.setString(2, lederFnr)
@@ -88,7 +88,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                      INNER JOIN sykmeldt sm ON n.pasient_fnr = sm.pasient_fnr
             WHERE s.soknad_id = ?
               AND n.leder_fnr = ?
-        """
+        """,
                 ).use { ps ->
                     ps.setString(1, soknadId)
                     ps.setString(2, lederFnr)
@@ -115,7 +115,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 INNER JOIN sykmeldt sm ON n.pasient_fnr = sm.pasient_fnr
            WHERE ferdigstilt = false and (utlopstidspunkt > ? or utlopstidspunkt is null)
            and n.leder_fnr = ?
-        """
+        """,
             ).use { ps ->
                 ps.setTimestamp(1, Timestamp.from(Instant.now()))
                 ps.setString(2, lederFnr)
@@ -133,7 +133,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 WHERE (narmesteleder.pasient_fnr = sykmelding.pasient_fnr AND narmesteleder.orgnummer = sykmelding.orgnummer) 
                 AND sykmelding.sykmelding_id = ?
                 AND narmesteleder.leder_fnr = ?
-            """
+            """,
             ).use { ps ->
                 ps.setString(1, sykmeldingId)
                 ps.setString(2, lederFnr)
@@ -153,7 +153,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 WHERE (narmesteleder.pasient_fnr = soknad.pasient_fnr AND narmesteleder.orgnummer = soknad.orgnummer) 
                 AND soknad.soknad_id = ?
                 AND narmesteleder.leder_fnr = ?
-            """
+            """,
             ).use { ps ->
                 ps.setString(1, soknadId)
                 ps.setString(2, lederFnr)
@@ -173,7 +173,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 WHERE (narmesteleder.pasient_fnr = hendelser.pasient_fnr AND narmesteleder.orgnummer = hendelser.orgnummer) 
                 AND hendelser.hendelse_id = ?
                 AND narmesteleder.leder_fnr = ?
-            """
+            """,
             ).use { ps ->
                 ps.setTimestamp(1, Timestamp.from(Instant.now()))
                 ps.setObject(2, hendelseId)
@@ -193,7 +193,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 from narmesteleder nl where s.pasient_fnr = nl.pasient_fnr and nl.leder_fnr = ?;
                 update soknad s set lest = TRUE
                 from narmesteleder nl where s.pasient_fnr = nl.pasient_fnr and nl.leder_fnr = ?;
-                """.trimIndent()
+                """.trimIndent(),
             ).use { ps ->
                 ps.setString(1, lederFnr)
                 ps.setString(2, lederFnr)
@@ -216,7 +216,7 @@ private fun ResultSet.toHendelseDbModels() =
         timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
         utlopstidspunkt = null,
         ferdigstilt = false,
-        ferdigstiltTimestamp = null
+        ferdigstiltTimestamp = null,
     )
 
 private fun ResultSet.toSykmeldtSoknad(): Pair<SykmeldtDbModel, SoknadDbModel>? =
@@ -225,7 +225,7 @@ private fun ResultSet.toSykmeldtSoknad(): Pair<SykmeldtDbModel, SoknadDbModel>? 
             pasientFnr = getString("pasient_fnr"),
             pasientNavn = getString("pasient_navn"),
             startdatoSykefravaer = getDate("startdato_sykefravaer").toLocalDate(),
-            latestTom = getDate("latest_tom").toLocalDate()
+            latestTom = getDate("latest_tom").toLocalDate(),
         ) to SoknadDbModel(
             soknadId = getString("soknad_id"),
             sykmeldingId = getString("sykmelding_id"),
@@ -235,7 +235,7 @@ private fun ResultSet.toSykmeldtSoknad(): Pair<SykmeldtDbModel, SoknadDbModel>? 
             sendtDato = getDate("sendt_dato").toLocalDate(),
             lest = getBoolean("lest"),
             timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
-            tom = getDate("tom").toLocalDate()
+            tom = getDate("tom").toLocalDate(),
         )
 
         else -> null
@@ -263,7 +263,7 @@ private fun ResultSet.toSykmeldtSykmelding(): Pair<SykmeldtDbModel, SykmeldingDb
             pasientFnr = getString("pasient_fnr"),
             pasientNavn = getString("pasient_navn"),
             startdatoSykefravaer = getDate("startdato_sykefravaer").toLocalDate(),
-            latestTom = getDate("latest_tom").toLocalDate()
+            latestTom = getDate("latest_tom").toLocalDate(),
         ) to SykmeldingDbModel(
             sykmeldingId = getString("sykmelding_id"),
             pasientFnr = getString("pasient_fnr"),

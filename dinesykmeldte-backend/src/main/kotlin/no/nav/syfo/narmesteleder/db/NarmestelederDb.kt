@@ -13,7 +13,7 @@ class NarmestelederDb(private val database: DatabaseInterface) {
                 connection.prepareStatement(
                     """
                    delete from narmesteleder where narmeste_leder_id = ?;
-                """
+                """,
                 ).use { ps ->
                     ps.setString(1, narmestelederId)
                     ps.executeUpdate()
@@ -25,13 +25,13 @@ class NarmestelederDb(private val database: DatabaseInterface) {
 
     suspend fun finnNarmestelederkoblinger(
         narmesteLederFnr: String,
-        narmestelederId: String
+        narmestelederId: String,
     ): List<NarmestelederDbModel> = withContext(Dispatchers.IO) {
         database.connection.use { connection ->
             connection.prepareStatement(
                 """
            SELECT * FROM narmesteleder WHERE leder_fnr = ? AND narmeste_leder_id = ?;
-        """
+        """,
             ).use {
                 it.setString(1, narmesteLederFnr)
                 it.setString(2, narmestelederId)
@@ -46,5 +46,5 @@ fun ResultSet.toNarmestelederDbModel(): NarmestelederDbModel =
         narmestelederId = getString("narmeste_leder_id"),
         pasientFnr = getString("pasient_fnr"),
         lederFnr = getString("leder_fnr"),
-        orgnummer = getString("orgnummer")
+        orgnummer = getString("orgnummer"),
     )

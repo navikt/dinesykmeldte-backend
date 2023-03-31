@@ -28,7 +28,7 @@ class NarmestelederServiceTest : FunSpec({
                 id = id.toString(),
                 orgnummer = "88888888",
                 fnr = "12345678910",
-                narmesteLederFnr = "01987654321"
+                narmesteLederFnr = "01987654321",
             )
             narmestelederService.deaktiverNarmesteLeder("01987654321", id.toString(), UUID.randomUUID())
 
@@ -36,7 +36,7 @@ class NarmestelederServiceTest : FunSpec({
                 nlResponseProducer.send(
                     match {
                         it.nlAvbrutt.orgnummer == "88888888" && it.nlAvbrutt.sykmeldtFnr == "12345678910" && it.kafkaMetadata.source == "leder"
-                    }
+                    },
                 )
             }
             TestDb.getNarmesteleder(pasientFnr = "12345678910").size shouldBeEqualTo 0
@@ -47,7 +47,7 @@ class NarmestelederServiceTest : FunSpec({
                 id = id.toString(),
                 orgnummer = "88888888",
                 fnr = "12345678910",
-                narmesteLederFnr = "01987654321"
+                narmesteLederFnr = "01987654321",
             )
             narmestelederService.deaktiverNarmesteLeder("01987654321", UUID.randomUUID().toString(), UUID.randomUUID())
 

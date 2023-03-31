@@ -24,7 +24,7 @@ import java.time.ZoneOffset
 fun createSykmeldingDbModel(
     sykmeldingId: String,
     pasientFnr: String = "12345678910",
-    orgnummer: String = "orgnummer"
+    orgnummer: String = "orgnummer",
 ): SykmeldingDbModel {
     return SykmeldingDbModel(
         sykmeldingId = sykmeldingId,
@@ -45,25 +45,25 @@ fun createSoknadDbModel(
     sykmeldingId: String = "76483e9f-eb16-464c-9bed-a9b258794bc4",
     pasientFnr: String = "123456789",
     arbeidsgivernavn: String = "Kebabbiten",
-    orgnummer: String = "123454543"
+    orgnummer: String = "123454543",
 ): SoknadDbModel {
     val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
-        getFileAsString("src/test/resources/soknad.json")
+        getFileAsString("src/test/resources/soknad.json"),
     ).copy(
         id = soknadId,
         sykmeldingId = sykmeldingId,
         fnr = pasientFnr,
         arbeidsgiver = ArbeidsgiverDTO(
             navn = arbeidsgivernavn,
-            orgnummer = orgnummer
-        )
+            orgnummer = orgnummer,
+        ),
     )
     return sykepengesoknadDTO.toSoknadDbModel()
 }
 
 fun createArbeidsgiverSykmelding(
     sykmeldingId: String,
-    perioder: List<SykmeldingsperiodeAGDTO> = listOf(createSykmeldingsperiode())
+    perioder: List<SykmeldingsperiodeAGDTO> = listOf(createSykmeldingsperiode()),
 ) = ArbeidsgiverSykmelding(
     id = sykmeldingId,
     mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
@@ -80,7 +80,7 @@ fun createArbeidsgiverSykmelding(
     papirsykmelding = false,
     harRedusertArbeidsgiverperiode = false,
     merknader = null,
-    utenlandskSykmelding = null
+    utenlandskSykmelding = null,
 )
 
 fun createSykmeldingsperiode(
@@ -91,7 +91,7 @@ fun createSykmeldingsperiode(
     innspillTilArbeidsgiver: String? = null,
     type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
     aktivitetIkkeMulig: AktivitetIkkeMuligAGDTO? = AktivitetIkkeMuligAGDTO(null),
-    reisetilskudd: Boolean = false
+    reisetilskudd: Boolean = false,
 ) = SykmeldingsperiodeAGDTO(
     fom = fom,
     tom = tom,
@@ -100,5 +100,5 @@ fun createSykmeldingsperiode(
     innspillTilArbeidsgiver = innspillTilArbeidsgiver,
     type = type,
     aktivitetIkkeMulig = aktivitetIkkeMulig,
-    reisetilskudd = reisetilskudd
+    reisetilskudd = reisetilskudd,
 )

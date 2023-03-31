@@ -15,7 +15,7 @@ class DeleteDataDb(private val database: DatabaseInterface) {
                     deletedSykmeldt = deleteSykmeldt(connection, date),
                     deletedSykmelding = deleteSykmelding(connection, date),
                     deletedSoknader = deleteSoknader(connection, date),
-                    deletedHendelser = deleteHendelser(connection)
+                    deletedHendelser = deleteHendelser(connection),
                 )
             connection.commit()
             result
@@ -26,7 +26,7 @@ class DeleteDataDb(private val database: DatabaseInterface) {
         return connection.prepareStatement(
             """
             delete from soknad where tom < ?;
-        """
+        """,
         ).use { ps ->
             ps.setDate(1, Date.valueOf(date))
             ps.executeUpdate()
@@ -37,7 +37,7 @@ class DeleteDataDb(private val database: DatabaseInterface) {
         return connection.prepareStatement(
             """
             delete from sykmelding where latest_tom < ?;
-        """
+        """,
         ).use { ps ->
             ps.setDate(1, Date.valueOf(date))
             ps.executeUpdate()
@@ -48,7 +48,7 @@ class DeleteDataDb(private val database: DatabaseInterface) {
         return connection.prepareStatement(
             """
             delete from sykmeldt where latest_tom < ?;
-        """
+        """,
         ).use { ps ->
             ps.setDate(1, Date.valueOf(date))
             ps.executeUpdate()
@@ -58,7 +58,7 @@ class DeleteDataDb(private val database: DatabaseInterface) {
         return connection.prepareStatement(
             """
             delete from hendelser h where utlopstidspunkt < ? OR NOT EXISTS(select 1 from sykmeldt s where s.pasient_fnr = h.pasient_fnr);
-        """
+        """,
         ).use { ps ->
             ps.setTimestamp(1, Timestamp.from(Instant.now()))
             ps.executeUpdate()

@@ -56,6 +56,8 @@ spec:
         - application: flex-syketilfelle
           namespace: flex
           cluster: prod-gcp
+      external:
+        - host: pdl-api.prod-fss-pub.nais.io
   env:
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.prod-fss-pub.nais.io/graphql

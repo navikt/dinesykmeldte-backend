@@ -24,7 +24,7 @@ class CommonKafkaService(
     private val narmestelederService: NarmestelederService,
     private val sykmeldingService: SykmeldingService,
     private val soknadService: SoknadService,
-    private val hendelserService: HendelserService
+    private val hendelserService: HendelserService,
 ) {
     private var lastLogTime = Instant.now().toEpochMilli()
     private val logTimer = 60_000L
@@ -40,8 +40,8 @@ class CommonKafkaService(
                             environment.narmestelederLeesahTopic,
                             environment.sendtSykmeldingTopic,
                             environment.sykepengesoknadTopic,
-                            environment.hendelserTopic
-                        )
+                            environment.hendelserTopic,
+                        ),
                     )
                     start()
                 } catch (ex: Exception) {

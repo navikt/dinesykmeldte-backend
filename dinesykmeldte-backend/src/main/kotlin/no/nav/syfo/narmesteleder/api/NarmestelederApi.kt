@@ -24,7 +24,7 @@ fun Route.registerNarmestelederApi(narmestelederService: NarmestelederService) {
         narmestelederService.deaktiverNarmesteLeder(
             fnrLeder = lederFnr,
             narmestelederId = narmestelederId,
-            callId = callId
+            callId = callId,
         )
         log.info("Nærmeste leder har deaktivert NL-kobling for narmestelederId $narmestelederId, $callId")
         DEAKTIVERT_LEDER_COUNTER.inc()

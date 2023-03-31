@@ -11,7 +11,7 @@ import no.nav.syfo.objectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
 class HendelserService(
-    private val hendelserDb: HendelserDb
+    private val hendelserDb: HendelserDb,
 ) {
     suspend fun handleHendelse(record: ConsumerRecord<String, String>) {
         try {
@@ -46,7 +46,7 @@ class HendelserService(
             timestamp = opprettHendelse.timestamp,
             utlopstidspunkt = opprettHendelse.utlopstidspunkt,
             ferdigstilt = false,
-            ferdigstiltTimestamp = null
+            ferdigstiltTimestamp = null,
         )
     }
 }

@@ -47,11 +47,6 @@ spec:
     requests:
       cpu: 50m
       memory: 768Mi
-  vault:
-    enabled: false
-  ingresses:
-    - "https://dinesykmeldte-backend.dev.intern.nav.no"
-  webproxy: true
   kafka:
     pool: nav-dev
   tokenx:

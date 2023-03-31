@@ -14,7 +14,7 @@ class SyfoSyketilfelleClient(
     private val syketilfelleEndpointURL: String,
     private val accessTokenClient: AccessTokenClient,
     private val syketilfelleScope: String,
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
 ) {
 
     suspend fun finnStartdato(fnr: String, sykmeldingId: String): LocalDate {
@@ -44,13 +44,13 @@ class SyfoSyketilfelleClient(
 
 data class Sykeforloep(
     var oppfolgingsdato: LocalDate,
-    val sykmeldinger: List<SimpleSykmelding>
+    val sykmeldinger: List<SimpleSykmelding>,
 )
 
 data class SimpleSykmelding(
     val id: String,
     val fom: LocalDate,
-    val tom: LocalDate
+    val tom: LocalDate,
 )
 
 class SyketilfelleNotFoundException(override val message: String?) : Exception(message)

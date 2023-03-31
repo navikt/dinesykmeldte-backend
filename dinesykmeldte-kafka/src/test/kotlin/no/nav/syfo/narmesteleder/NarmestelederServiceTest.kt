@@ -45,7 +45,7 @@ fun createNarmestelederLeesahKafkaMessage(
     orgnummer: String = "88888888",
     fnr: String = "12345678910",
     narmesteLederFnr: String = "01987654321",
-    aktivTom: LocalDate? = null
+    aktivTom: LocalDate? = null,
 ): NarmestelederLeesahKafkaMessage =
     NarmestelederLeesahKafkaMessage(
         narmesteLederId = id,
@@ -57,5 +57,5 @@ fun createNarmestelederLeesahKafkaMessage(
         aktivFom = LocalDate.of(2020, 1, 1),
         arbeidsgiverForskutterer = null,
         aktivTom = aktivTom,
-        timestamp = OffsetDateTime.now(ZoneOffset.UTC)
+        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
     )

@@ -17,7 +17,7 @@ class HendelserDb(private val database: DatabaseInterface) {
                                           utlopstidspunkt, ferdigstilt, ferdigstilt_timestamp)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT (id, oppgavetype) DO NOTHING;
-            """
+            """,
             ).use { preparedStatement ->
                 preparedStatement.setString(1, hendelseDbModel.id)
                 preparedStatement.setString(2, hendelseDbModel.pasientFnr)
@@ -40,7 +40,7 @@ class HendelserDb(private val database: DatabaseInterface) {
         this.prepareStatement(
             """
                 UPDATE sykmeldt SET sist_oppdatert = ? WHERE pasient_fnr = ?;
-                """
+                """,
         ).use {
             it.setObject(1, LocalDate.now())
             it.setString(2, fnr)
@@ -60,7 +60,7 @@ class HendelserDb(private val database: DatabaseInterface) {
         this.prepareStatement(
             """
                 UPDATE hendelser SET ferdigstilt=?, ferdigstilt_timestamp=? WHERE id=? AND ferdigstilt != true;
-                """
+                """,
         ).use {
             it.setBoolean(1, true)
             it.setTimestamp(2, Timestamp.from(ferdigstiltTimestamp.toInstant()))

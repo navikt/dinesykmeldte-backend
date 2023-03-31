@@ -9,7 +9,7 @@ import no.nav.syfo.objectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
 class NarmestelederService(
-    private val narmestelederDb: NarmestelederDb
+    private val narmestelederDb: NarmestelederDb,
 ) {
     fun updateNl(record: ConsumerRecord<String, String>) {
         try {

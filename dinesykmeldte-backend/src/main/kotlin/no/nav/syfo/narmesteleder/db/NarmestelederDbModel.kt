@@ -4,5 +4,5 @@ data class NarmestelederDbModel(
     val narmestelederId: String,
     val pasientFnr: String,
     val lederFnr: String,
-    val orgnummer: String
+    val orgnummer: String,
 )

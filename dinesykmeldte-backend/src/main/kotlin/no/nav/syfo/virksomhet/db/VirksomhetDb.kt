@@ -7,7 +7,7 @@ import no.nav.syfo.application.database.toList
 import java.sql.ResultSet
 
 class VirksomhetDb(
-    private val database: DatabaseInterface
+    private val database: DatabaseInterface,
 ) {
     suspend fun getVirksomheter(lederFnr: String): List<VirksomhetDbModel> = withContext(Dispatchers.IO) {
         database.connection.use { connection ->
@@ -18,7 +18,7 @@ class VirksomhetDb(
                 JOIN narmesteleder n ON s.orgnummer = n.orgnummer and s.pasient_fnr = n.pasient_fnr
                 WHERE n.leder_fnr = ?
                 GROUP BY s.orgnavn, s.orgnummer
-                """.trimIndent()
+                """.trimIndent(),
             ).use { ps ->
                 ps.setString(1, lederFnr)
                 ps.executeQuery().toList { toVirksomhetDbModel() }
@@ -29,5 +29,5 @@ class VirksomhetDb(
 
 private fun ResultSet.toVirksomhetDbModel(): VirksomhetDbModel = VirksomhetDbModel(
     navn = getString("orgnavn"),
-    orgnummer = getString("orgnummer")
+    orgnummer = getString("orgnummer"),
 )

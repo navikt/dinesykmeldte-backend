@@ -34,8 +34,8 @@ class HendelserServiceTest : FunSpec({
                         "Navn",
                         LocalDate.now().minusWeeks(5),
                         LocalDate.now().minusWeeks(2),
-                        null
-                    )
+                        null,
+                    ),
                 )
                 connection.commit()
             }
@@ -49,9 +49,9 @@ class HendelserServiceTest : FunSpec({
                     lenke = null,
                     tekst = "tekst",
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    utlopstidspunkt = null
+                    utlopstidspunkt = null,
                 ),
-                ferdigstillHendelse = null
+                ferdigstillHendelse = null,
             )
 
             hendelserService.handleHendelse(dineSykmeldteHendelse)
@@ -76,15 +76,15 @@ class HendelserServiceTest : FunSpec({
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusDays(3),
                     utlopstidspunkt = null,
                     ferdigstilt = false,
-                    ferdigstiltTimestamp = null
-                )
+                    ferdigstiltTimestamp = null,
+                ),
             )
             val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
                 id = hendelseId,
                 opprettHendelse = null,
                 ferdigstillHendelse = FerdigstillHendelse(
-                    timestamp = ferdigstiltTimestamp
-                )
+                    timestamp = ferdigstiltTimestamp,
+                ),
             )
 
             hendelserService.handleHendelse(dineSykmeldteHendelseFerdigstill)
@@ -108,15 +108,15 @@ class HendelserServiceTest : FunSpec({
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusDays(3),
                     utlopstidspunkt = null,
                     ferdigstilt = true,
-                    ferdigstiltTimestamp = ferdigstiltTimestamp
-                )
+                    ferdigstiltTimestamp = ferdigstiltTimestamp,
+                ),
             )
             val dineSykmeldteHendelseFerdigstill = DineSykmeldteHendelse(
                 id = hendelseId,
                 opprettHendelse = null,
                 ferdigstillHendelse = FerdigstillHendelse(
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1)
-                )
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
+                ),
             )
 
             hendelserService.handleHendelse(dineSykmeldteHendelseFerdigstill)

@@ -21,7 +21,7 @@ class MineSykmeldteMapper private constructor() {
         fun toPreviewSoknad(
             soknad: SykepengesoknadDTO,
             lest: Boolean,
-            hendelser: List<Hendelse>
+            hendelser: List<Hendelse>,
         ): PreviewSoknad =
             when (soknad.status) {
                 SoknadsstatusDTO.NY -> getNySoknad(soknad, lest, hendelser)
@@ -41,7 +41,7 @@ class MineSykmeldteMapper private constructor() {
                 sendtDato = soknad.sendtArbeidsgiver
                     ?: throw IllegalStateException("sendtArbeidsgiver is null for soknad: ${soknad.id}"),
                 perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
-                    ?: throw IllegalStateException("søknadsperioder must not be null in sendt soknad: ${soknad.id}")
+                    ?: throw IllegalStateException("søknadsperioder must not be null in sendt soknad: ${soknad.id}"),
             )
 
         private fun getFremtidigSoknad(soknad: SykepengesoknadDTO): PreviewFremtidigSoknad =
@@ -51,7 +51,7 @@ class MineSykmeldteMapper private constructor() {
                 fom = soknad.fom,
                 tom = soknad.tom,
                 perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
-                    ?: throw IllegalStateException("søknadsperioder must not be null in fremtidig soknad: ${soknad.id}")
+                    ?: throw IllegalStateException("søknadsperioder must not be null in fremtidig soknad: ${soknad.id}"),
             )
 
         private fun getNySoknad(soknad: SykepengesoknadDTO, lest: Boolean, hendelser: List<Hendelse>): PreviewNySoknad =
@@ -66,14 +66,14 @@ class MineSykmeldteMapper private constructor() {
                 ikkeSendtSoknadVarsel = hendelser.any { it.id == soknad.id && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD },
                 ikkeSendtSoknadVarsletDato = hendelser.find {
                     it.id == soknad.id && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD
-                }?.mottatt
+                }?.mottatt,
             )
 
         fun SoknadsperiodeDTO.toSoknadsperiode(): Soknadsperiode = Soknadsperiode(
             fom = requireNotNull(fom),
             tom = requireNotNull(tom),
             sykmeldingsgrad = sykmeldingsgrad,
-            sykmeldingstype = PeriodeEnum.valueOf(sykmeldingstype.toString())
+            sykmeldingstype = PeriodeEnum.valueOf(sykmeldingstype.toString()),
         )
 
         private fun SporsmalDTO.toUndersporsmal(): Undersporsmal = Undersporsmal(
@@ -87,10 +87,10 @@ class MineSykmeldteMapper private constructor() {
             kriterieForVisningAvUndersporsmal = kriterieForVisningAvUndersporsmal,
             svar = svar?.map {
                 Svar(
-                    verdi = requireNotNull(it.verdi)
+                    verdi = requireNotNull(it.verdi),
                 )
             },
-            undersporsmal = undersporsmal?.map { it.toUndersporsmal() }
+            undersporsmal = undersporsmal?.map { it.toUndersporsmal() },
         )
 
         fun SporsmalDTO.toSporsmal(): Sporsmal = Sporsmal(
@@ -104,10 +104,10 @@ class MineSykmeldteMapper private constructor() {
             kriterieForVisningAvUndersporsmal = kriterieForVisningAvUndersporsmal,
             svar = svar?.map {
                 Svar(
-                    verdi = requireNotNull(it.verdi)
+                    verdi = requireNotNull(it.verdi),
                 )
             },
-            undersporsmal = undersporsmal?.map { it.toUndersporsmal() }
+            undersporsmal = undersporsmal?.map { it.toUndersporsmal() },
         )
     }
 }

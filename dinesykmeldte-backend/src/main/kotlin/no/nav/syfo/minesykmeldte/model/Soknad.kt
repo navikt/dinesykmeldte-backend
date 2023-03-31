@@ -18,14 +18,14 @@ data class Soknad(
     val korrigererSoknadId: String?,
     val korrigertBySoknadId: String?,
     val perioder: List<Soknadsperiode>,
-    val sporsmal: List<Sporsmal>
+    val sporsmal: List<Sporsmal>,
 )
 
 data class Soknadsperiode(
     val fom: LocalDate,
     val tom: LocalDate,
     val sykmeldingsgrad: Int?,
-    val sykmeldingstype: PeriodeEnum
+    val sykmeldingstype: PeriodeEnum,
 )
 
 data class Undersporsmal(
@@ -38,7 +38,7 @@ data class Undersporsmal(
     val svartype: SvartypeDTO,
     var kriterieForVisningAvUndersporsmal: VisningskriteriumDTO?,
     var svar: List<Svar>?,
-    var undersporsmal: List<Undersporsmal>?
+    var undersporsmal: List<Undersporsmal>?,
 )
 
 data class Sporsmal(
@@ -51,9 +51,9 @@ data class Sporsmal(
     val svartype: SvartypeDTO,
     var kriterieForVisningAvUndersporsmal: VisningskriteriumDTO?,
     var svar: List<Svar>?,
-    var undersporsmal: List<Undersporsmal>?
+    var undersporsmal: List<Undersporsmal>?,
 )
 
 data class Svar(
-    var verdi: String
+    var verdi: String,
 )

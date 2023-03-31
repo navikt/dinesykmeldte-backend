@@ -108,9 +108,9 @@ class SyfoSyketilfelleClientTest : FunSpec({
                                     SimpleSykmelding(
                                         UUID.randomUUID().toString(),
                                         oppfolgingsdato1,
-                                        oppfolgingsdato1.plusWeeks(3)
-                                    )
-                                )
+                                        oppfolgingsdato1.plusWeeks(3),
+                                    ),
+                                ),
                             ),
                             Sykeforloep(
                                 oppfolgingsdato2,
@@ -118,9 +118,9 @@ class SyfoSyketilfelleClientTest : FunSpec({
                                     SimpleSykmelding(
                                         sykmeldingUUID.toString(),
                                         oppfolgingsdato2,
-                                        oppfolgingsdato2.plusWeeks(4)
-                                    )
-                                )
+                                        oppfolgingsdato2.plusWeeks(4),
+                                    ),
+                                ),
                             ),
                             Sykeforloep(
                                 oppfolgingsdato3,
@@ -128,11 +128,11 @@ class SyfoSyketilfelleClientTest : FunSpec({
                                     SimpleSykmelding(
                                         UUID.randomUUID().toString(),
                                         oppfolgingsdato3,
-                                        oppfolgingsdato3.plusWeeks(8)
-                                    )
-                                )
-                            )
-                        )
+                                        oppfolgingsdato3.plusWeeks(8),
+                                    ),
+                                ),
+                            ),
+                        ),
                     )
                     fnr2 -> call.respond(
                         listOf(
@@ -142,9 +142,9 @@ class SyfoSyketilfelleClientTest : FunSpec({
                                     SimpleSykmelding(
                                         UUID.randomUUID().toString(),
                                         oppfolgingsdato1,
-                                        oppfolgingsdato1.plusWeeks(3)
-                                    )
-                                )
+                                        oppfolgingsdato1.plusWeeks(3),
+                                    ),
+                                ),
                             ),
                             Sykeforloep(
                                 oppfolgingsdato3,
@@ -152,11 +152,11 @@ class SyfoSyketilfelleClientTest : FunSpec({
                                     SimpleSykmelding(
                                         UUID.randomUUID().toString(),
                                         oppfolgingsdato3,
-                                        oppfolgingsdato3.plusWeeks(8)
-                                    )
-                                )
-                            )
-                        )
+                                        oppfolgingsdato3.plusWeeks(8),
+                                    ),
+                                ),
+                            ),
+                        ),
                     )
                 }
             }
@@ -167,14 +167,14 @@ class SyfoSyketilfelleClientTest : FunSpec({
         mockHttpServerUrl,
         accessTokenClient,
         "scope",
-        httpClient
+        httpClient,
     )
 
     val syfoSyketilfelletSocketTimeoutClient = SyfoSyketilfelleClient(
         mockHttpServerUrl,
         accessTokenClient,
         "scope",
-        socketTimeoutClient
+        socketTimeoutClient,
     )
 
     afterSpec {

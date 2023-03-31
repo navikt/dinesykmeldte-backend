@@ -120,7 +120,7 @@ fun main() {
         applicationState,
         mineSykmeldteService,
         VirksomhetService(VirksomhetDb(database)),
-        narmestelederService
+        narmestelederService,
     )
     ApplicationServer(applicationEngine, applicationState).start()
 }
@@ -135,13 +135,13 @@ fun <T> createKafkaProducer(env: Environment): KafkaProducer<String, T> =
             .toProducerConfig(
                 "${env.applicationName}-producer",
                 JacksonKafkaSerializer::class,
-                StringSerializer::class
-            )
+                StringSerializer::class,
+            ),
     )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WellKnownTokenX(
     val token_endpoint: String,
     val jwks_uri: String,
-    val issuer: String
+    val issuer: String,
 )

@@ -24,13 +24,13 @@ data class Sykmelding(
 )
 
 data class Arbeidsgiver(
-    val navn: String?
+    val navn: String?,
 )
 
 data class Behandler(
     val navn: String,
     val hprNummer: String?,
-    val telefon: String?
+    val telefon: String?,
 )
 
 enum class PeriodeEnum {
@@ -38,7 +38,7 @@ enum class PeriodeEnum {
     AVVENTENDE,
     BEHANDLINGSDAGER,
     GRADERT,
-    REISETILSKUDD
+    REISETILSKUDD,
 }
 
 interface Periode {
@@ -50,7 +50,7 @@ interface Periode {
 data class AktivitetIkkeMulig(
     override val fom: LocalDate,
     override val tom: LocalDate,
-    val arbeidsrelatertArsak: ArbeidsrelatertArsak?
+    val arbeidsrelatertArsak: ArbeidsrelatertArsak?,
 ) : Periode {
     override val type = PeriodeEnum.AKTIVITET_IKKE_MULIG
 }
@@ -59,7 +59,7 @@ data class Gradert(
     override val fom: LocalDate,
     override val tom: LocalDate,
     val grad: Int,
-    val reisetilskudd: Boolean
+    val reisetilskudd: Boolean,
 ) : Periode {
     override val type = PeriodeEnum.GRADERT
 }
@@ -67,14 +67,14 @@ data class Gradert(
 data class Behandlingsdager(
     override val fom: LocalDate,
     override val tom: LocalDate,
-    val behandlingsdager: Int
+    val behandlingsdager: Int,
 ) : Periode {
     override val type = PeriodeEnum.BEHANDLINGSDAGER
 }
 
 data class Reisetilskudd(
     override val fom: LocalDate,
-    override val tom: LocalDate
+    override val tom: LocalDate,
 ) : Periode {
     override val type = PeriodeEnum.REISETILSKUDD
 }
@@ -82,21 +82,21 @@ data class Reisetilskudd(
 data class Avventende(
     override val fom: LocalDate,
     override val tom: LocalDate,
-    val tilrettelegging: String?
+    val tilrettelegging: String?,
 ) : Periode {
     override val type = PeriodeEnum.AVVENTENDE
 }
 
 enum class ArbeidsrelatertArsakEnum {
     MANGLENDE_TILRETTELEGGING,
-    ANNET
+    ANNET,
 }
 
 data class ArbeidsrelatertArsak(
     val arsak: List<ArbeidsrelatertArsakEnum>,
-    val beskrivelse: String?
+    val beskrivelse: String?,
 )
 
 data class UtenlandskSykmelding(
-    val land: String
+    val land: String,
 )

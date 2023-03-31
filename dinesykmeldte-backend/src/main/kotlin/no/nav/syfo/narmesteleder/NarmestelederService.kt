@@ -12,19 +12,19 @@ import java.util.UUID
 
 class NarmestelederService(
     private val narmestelederDb: NarmestelederDb,
-    private val nlResponseProducer: NLResponseProducer
+    private val nlResponseProducer: NLResponseProducer,
 ) {
 
     suspend fun deaktiverNarmesteLeder(fnrLeder: String, narmestelederId: String, callId: UUID) {
         val nlKoblinger = narmestelederDb.finnNarmestelederkoblinger(
             narmesteLederFnr = fnrLeder,
-            narmestelederId = narmestelederId
+            narmestelederId = narmestelederId,
         )
         if (nlKoblinger.isNotEmpty()) {
             log.info("Deaktiverer ${nlKoblinger.size} NL-koblinger for $callId")
             deaktiverNarmesteLeder(
                 orgnummer = nlKoblinger.first().orgnummer,
-                fnrSykmeldt = nlKoblinger.first().pasientFnr
+                fnrSykmeldt = nlKoblinger.first().pasientFnr,
             )
             nlKoblinger.forEach { narmestelederDb.remove(it.narmestelederId) }
         } else {
@@ -37,14 +37,14 @@ class NarmestelederService(
             NlResponseKafkaMessage(
                 kafkaMetadata = KafkaMetadata(
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    source = "leder"
+                    source = "leder",
                 ),
                 nlAvbrutt = NlAvbrutt(
                     orgnummer = orgnummer,
                     sykmeldtFnr = fnrSykmeldt,
-                    aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
-                )
-            )
+                    aktivTom = OffsetDateTime.now(ZoneOffset.UTC),
+                ),
+            ),
         )
     }
 }

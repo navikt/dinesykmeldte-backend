@@ -26,7 +26,7 @@ class MineSykmeldteServiceDbTest : FunSpec({
                 id = UUID.randomUUID().toString(),
                 orgnummer = "orgnummer",
                 fnr = "12345678910",
-                narmesteLederFnr = "01987654321"
+                narmesteLederFnr = "01987654321",
             )
 
             repeat(2) {
@@ -35,9 +35,9 @@ class MineSykmeldteServiceDbTest : FunSpec({
                     createSykmeldingDbModel(
                         sykmeldingId,
                         orgnavn = "Orgnavn 1",
-                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(1)
+                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(1),
                     ),
-                    createSykmeldtDbModel()
+                    createSykmeldtDbModel(),
                 )
                 TestDb.database.insertOrUpdate(getSoknad(sykmeldingId = sykmeldingId))
             }
@@ -47,9 +47,9 @@ class MineSykmeldteServiceDbTest : FunSpec({
                     createSykmeldingDbModel(
                         sykmeldingId,
                         orgnavn = "Orgnavn 2",
-                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC)
+                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
                     ),
-                    createSykmeldtDbModel()
+                    createSykmeldtDbModel(),
                 )
                 TestDb.database.insertOrUpdate(getSoknad(sykmeldingId = sykmeldingId))
             }
@@ -66,7 +66,7 @@ class MineSykmeldteServiceDbTest : FunSpec({
                 id = UUID.randomUUID().toString(),
                 orgnummer = "orgnummer",
                 fnr = "12345678910",
-                narmesteLederFnr = "01987654321"
+                narmesteLederFnr = "01987654321",
             )
 
             repeat(2) {
@@ -75,9 +75,9 @@ class MineSykmeldteServiceDbTest : FunSpec({
                     createSykmeldingDbModel(
                         sykmeldingId,
                         orgnavn = "Orgnavn 1",
-                        sendtTilArbeidsgiverDato = null
+                        sendtTilArbeidsgiverDato = null,
                     ),
-                    createSykmeldtDbModel()
+                    createSykmeldtDbModel(),
                 )
                 TestDb.database.insertOrUpdate(getSoknad(sykmeldingId = sykmeldingId))
             }
@@ -87,9 +87,9 @@ class MineSykmeldteServiceDbTest : FunSpec({
                     createSykmeldingDbModel(
                         sykmeldingId,
                         orgnavn = "Orgnavn 2",
-                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC)
+                        sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
                     ),
-                    createSykmeldtDbModel()
+                    createSykmeldtDbModel(),
                 )
                 TestDb.database.insertOrUpdate(getSoknad(sykmeldingId = sykmeldingId))
             }
@@ -106,7 +106,7 @@ class MineSykmeldteServiceDbTest : FunSpec({
                 id = UUID.randomUUID().toString(),
                 orgnummer = "orgnummer",
                 fnr = "12345678910",
-                narmesteLederFnr = "01987654321"
+                narmesteLederFnr = "01987654321",
             )
 
             val sykmeldingId = UUID.randomUUID().toString()
@@ -115,9 +115,9 @@ class MineSykmeldteServiceDbTest : FunSpec({
                     sykmeldingId,
                     orgnavn = "Orgnavn 1",
                     sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(1),
-                    land = "POL"
+                    land = "POL",
                 ),
-                createSykmeldtDbModel()
+                createSykmeldtDbModel(),
             )
             TestDb.database.insertOrUpdate(getSoknad(sykmeldingId = sykmeldingId))
 

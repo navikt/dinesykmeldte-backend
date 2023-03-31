@@ -10,7 +10,7 @@ import java.net.InetAddress
 
 class LeaderElection(
     private val httpClient: HttpClient,
-    private val electorPath: String
+    private val electorPath: String,
 ) {
     suspend fun isLeader(): Boolean {
         val hostname: String = withContext(Dispatchers.IO) {

@@ -13,7 +13,7 @@ class SykmeldingMapper private constructor() {
     companion object {
         fun toSykmeldingDbModel(
             sykmelding: SendtSykmeldingKafkaMessage,
-            sisteTom: LocalDate
+            sisteTom: LocalDate,
         ) = SykmeldingDbModel(
             sykmeldingId = sykmelding.kafkaMetadata.sykmeldingId,
             pasientFnr = sykmelding.kafkaMetadata.fnr,

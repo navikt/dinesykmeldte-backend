@@ -28,7 +28,7 @@ class GcpDatabase(env: Environment) : DatabaseInterface {
                 connectionTimeout = 30_000
                 transactionIsolation = "TRANSACTION_READ_COMMITTED"
                 validate()
-            }
+            },
         )
     }
 }

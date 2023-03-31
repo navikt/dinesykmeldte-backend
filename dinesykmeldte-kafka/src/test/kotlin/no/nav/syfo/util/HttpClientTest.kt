@@ -35,7 +35,7 @@ import java.net.ServerSocket
 data class ResponseData(
     val httpStatusCode: HttpStatusCode,
     val content: String,
-    val headers: Headers = headersOf("Content-Type", listOf("application/json"))
+    val headers: Headers = headersOf("Content-Type", listOf("application/json")),
 )
 
 class HttpClientTest {

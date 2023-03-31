@@ -24,14 +24,14 @@ fun SykepengesoknadDTO.toSoknadDbModel(): SoknadDbModel {
         sendtDato = sendtArbeidsgiver?.toLocalDate(),
         lest = false, // oppdateres fra strangler
         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-        tom = tom!!
+        tom = tom!!,
     )
 }
 
 fun SykepengesoknadDTO.tilArbeidsgiverSoknad(): SykepengesoknadDTO =
     copy(
         andreInntektskilder = null,
-        sporsmal = sporsmal?.fjernSporsmalOmAndreInnntektsKilder()?.fjernSporsmalOmArbeidUtenforNorge()?.fjernSporsmalFraUtenlandskSykmelding()?.fjernSporsmalOmArbeidYrkesskade()
+        sporsmal = sporsmal?.fjernSporsmalOmAndreInnntektsKilder()?.fjernSporsmalOmArbeidUtenforNorge()?.fjernSporsmalFraUtenlandskSykmelding()?.fjernSporsmalOmArbeidYrkesskade(),
     )
 
 fun List<SporsmalDTO>.fjernSporsmalOmAndreInnntektsKilder() =
@@ -45,7 +45,6 @@ fun List<SporsmalDTO>.fjernSporsmalOmArbeidYrkesskade() =
 fun List<SporsmalDTO>.fjernSporsmalFraUtenlandskSykmelding() =
     this.fjernSporsmal(UTENLANDSK_SYKMELDING_BOSTED).fjernSporsmal(UTENLANDSK_SYKMELDING_LONNET_ARBEID_UTENFOR_NORGE).fjernSporsmal(UTENLANDSK_SYKMELDING_TRYGD_UTENFOR_NORGE)
 
-
 fun List<SporsmalDTO>.fjernSporsmal(tag: String): List<SporsmalDTO> =
     fjernSporsmalHjelper(tag)
 
@@ -57,6 +56,6 @@ private fun fjernSporsmalHjelper(tag: String, sporsmal: List<SporsmalDTO>): List
         .filterNot { it.tag == tag }
         .map {
             it.copy(
-                undersporsmal = it.undersporsmal?.let { us -> fjernSporsmalHjelper(tag, us) }
+                undersporsmal = it.undersporsmal?.let { us -> fjernSporsmalHjelper(tag, us) },
             )
         }

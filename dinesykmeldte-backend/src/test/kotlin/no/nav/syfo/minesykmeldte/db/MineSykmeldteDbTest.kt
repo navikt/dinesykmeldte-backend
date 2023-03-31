@@ -42,13 +42,13 @@ class MineSykmeldteDbTest : FunSpec({
                 id = UUID.randomUUID().toString(),
                 orgnummer = "orgnummer",
                 fnr = "12345678910",
-                narmesteLederFnr = "01987654321"
+                narmesteLederFnr = "01987654321",
             )
             TestDb.database.insertOrUpdate(
                 createSykmeldingDbModel(
-                    sykmeldingId = "0615720a-b1a0-47e6-885c-8d927c35ef4c"
+                    sykmeldingId = "0615720a-b1a0-47e6-885c-8d927c35ef4c",
                 ),
-                createSykmeldtDbModel()
+                createSykmeldtDbModel(),
             )
 
             val sykmeldtDbModel = minesykmeldteDb.getMineSykmeldte("01987654321")
@@ -61,7 +61,7 @@ class MineSykmeldteDbTest : FunSpec({
                 id = UUID.randomUUID().toString(),
                 orgnummer = "orgnummer",
                 fnr = "12345678910",
-                narmesteLederFnr = "01987654321"
+                narmesteLederFnr = "01987654321",
             )
             val sykmeldingId = UUID.randomUUID().toString()
             TestDb.database.insertOrUpdate(createSykmeldingDbModel(sykmeldingId), createSykmeldtDbModel())
@@ -79,7 +79,7 @@ class MineSykmeldteDbTest : FunSpec({
                 id = UUID.randomUUID().toString(),
                 orgnummer = "orgnummer",
                 fnr = "12345678910",
-                narmesteLederFnr = "01987654321"
+                narmesteLederFnr = "01987654321",
             )
 
             repeat(5) {
@@ -101,7 +101,7 @@ class MineSykmeldteDbTest : FunSpec({
                 id = UUID.randomUUID().toString(),
                 orgnummer = "orgnummer",
                 fnr = "12345678910",
-                narmesteLederFnr = "01987654321"
+                narmesteLederFnr = "01987654321",
             )
             val sykmeldingId = UUID.randomUUID().toString()
             TestDb.database.insertOrUpdate(createSykmeldingDbModel(sykmeldingId), createSykmeldtDbModel())
@@ -116,7 +116,7 @@ class MineSykmeldteDbTest : FunSpec({
                 id = UUID.randomUUID().toString(),
                 orgnummer = "orgnummer",
                 fnr = "12345678910",
-                narmesteLederFnr = "01987654321"
+                narmesteLederFnr = "01987654321",
             )
             val sykmeldingId = UUID.randomUUID().toString()
             TestDb.database.insertOrUpdate(createSykmeldingDbModel(sykmeldingId), createSykmeldtDbModel())
@@ -138,7 +138,7 @@ class MineSykmeldteDbTest : FunSpec({
                 id = UUID.randomUUID().toString(),
                 fnr = "pasient-1",
                 orgnummer = "kul-org",
-                narmesteLederFnr = "leder-fnr-1"
+                narmesteLederFnr = "leder-fnr-1",
             )
             TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
 
@@ -156,7 +156,7 @@ class MineSykmeldteDbTest : FunSpec({
                 UUID.randomUUID().toString(),
                 fnr = "pasient-2",
                 orgnummer = "kul-org",
-                narmesteLederFnr = "leder-fnr-1"
+                narmesteLederFnr = "leder-fnr-1",
             )
             TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
             val didMarkAsRead = minesykmeldteDb.markSykmeldingRead("sykmelding-id-1", "leder-fnr-1")
@@ -173,13 +173,13 @@ class MineSykmeldteDbTest : FunSpec({
                 "soknad-id-1",
                 sykmeldingId = "sykmelding-id-1",
                 pasientFnr = "pasient-1",
-                orgnummer = "kul-org"
+                orgnummer = "kul-org",
             )
             TestDb.database.insertOrUpdate(
                 UUID.randomUUID().toString(),
                 fnr = "pasient-1",
                 orgnummer = "kul-org",
-                narmesteLederFnr = "leder-fnr-1"
+                narmesteLederFnr = "leder-fnr-1",
             )
             TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
             TestDb.database.insertOrUpdate(soknad)
@@ -197,13 +197,13 @@ class MineSykmeldteDbTest : FunSpec({
                 "soknad-id-1",
                 sykmeldingId = "sykmelding-id-1",
                 pasientFnr = "pasient-1",
-                orgnummer = "kul-org"
+                orgnummer = "kul-org",
             )
             TestDb.database.insertOrUpdate(
                 UUID.randomUUID().toString(),
                 fnr = "pasient-2",
                 orgnummer = "kul-org",
-                narmesteLederFnr = "leder-fnr-1"
+                narmesteLederFnr = "leder-fnr-1",
             )
             TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
             TestDb.database.insertOrUpdate(soknad)
@@ -221,7 +221,7 @@ class MineSykmeldteDbTest : FunSpec({
                 UUID.randomUUID().toString(),
                 fnr = "pasient-1",
                 orgnummer = "kul-org",
-                narmesteLederFnr = "leder-fnr-1"
+                narmesteLederFnr = "leder-fnr-1",
             )
             val hendelse = HendelseDbModel(
                 id = "hendelse-id-1",
@@ -234,7 +234,7 @@ class MineSykmeldteDbTest : FunSpec({
                 utlopstidspunkt = null,
                 ferdigstilt = false,
                 ferdigstiltTimestamp = null,
-                hendelseId = UUID.randomUUID()
+                hendelseId = UUID.randomUUID(),
             )
             TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
             TestDb.database.insertHendelse(hendelse)
@@ -252,7 +252,7 @@ class MineSykmeldteDbTest : FunSpec({
                 UUID.randomUUID().toString(),
                 fnr = "pasient-2",
                 orgnummer = "kul-org",
-                narmesteLederFnr = "leder-fnr-1"
+                narmesteLederFnr = "leder-fnr-1",
             )
             val hendelseDbModel = HendelseDbModel(
                 id = "hendelse-id-0",
@@ -265,10 +265,10 @@ class MineSykmeldteDbTest : FunSpec({
                 utlopstidspunkt = null,
                 ferdigstilt = false,
                 ferdigstiltTimestamp = null,
-                hendelseId = UUID.randomUUID()
+                hendelseId = UUID.randomUUID(),
             )
             TestDb.database.insertHendelse(
-                hendelseDbModel
+                hendelseDbModel,
             )
             TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
 
@@ -286,7 +286,7 @@ class MineSykmeldteDbTest : FunSpec({
                 UUID.randomUUID().toString(),
                 fnr = "pasient-1",
                 orgnummer = "kul-org",
-                narmesteLederFnr = "leder-fnr-1"
+                narmesteLederFnr = "leder-fnr-1",
             )
             val hendelse = HendelseDbModel(
                 id = "hendelse-id-1",
@@ -299,7 +299,7 @@ class MineSykmeldteDbTest : FunSpec({
                 utlopstidspunkt = null,
                 ferdigstilt = false,
                 ferdigstiltTimestamp = null,
-                hendelseId = UUID.randomUUID()
+                hendelseId = UUID.randomUUID(),
             )
             TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
             TestDb.database.insertHendelse(hendelse)
@@ -325,13 +325,13 @@ class MineSykmeldteDbTest : FunSpec({
                 id = UUID.randomUUID().toString(),
                 orgnummer = "1",
                 fnr = "1",
-                narmesteLederFnr = "3"
+                narmesteLederFnr = "3",
             )
             TestDb.database.insertOrUpdate(
                 id = UUID.randomUUID().toString(),
                 orgnummer = "2",
                 fnr = "2",
-                narmesteLederFnr = "3"
+                narmesteLederFnr = "3",
             )
             minesykmeldteDb.markAllSykmeldingAndSoknadAsRead(lederFnr = "3")
             val mineSykmeldte = minesykmeldteDb.getMineSykmeldte("3")
@@ -347,13 +347,13 @@ class MineSykmeldteDbTest : FunSpec({
                 UUID.randomUUID().toString(),
                 "orgnummer",
                 "2",
-                "leder"
+                "leder",
             )
             TestDb.database.insertOrUpdate(
                 UUID.randomUUID().toString(),
                 "orgnummer",
                 "1",
-                "leder-2"
+                "leder-2",
             )
 
             minesykmeldteDb.markAllSykmeldingAndSoknadAsRead("leder")
@@ -367,7 +367,7 @@ class MineSykmeldteDbTest : FunSpec({
 fun getSoknad(
     sykmeldingId: String = UUID.randomUUID().toString(),
     soknadId: String = UUID.randomUUID().toString(),
-    fnr: String = "12345678910"
+    fnr: String = "12345678910",
 ): SoknadDbModel {
     return createSykepengesoknadDto(soknadId, sykmeldingId, fnr).toSoknadDbModel()
 }
@@ -375,16 +375,16 @@ fun getSoknad(
 fun createSykepengesoknadDto(
     soknadId: String,
     sykmeldingId: String,
-    fnr: String = "12345678910"
+    fnr: String = "12345678910",
 ) = objectMapper.readValue<SykepengesoknadDTO>(
-    getFileAsString("src/test/resources/soknad.json")
+    getFileAsString("src/test/resources/soknad.json"),
 ).copy(
     id = soknadId,
     fnr = fnr,
     fom = LocalDate.now().minusMonths(1),
     tom = LocalDate.now().minusWeeks(2),
     sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
-    sykmeldingId = sykmeldingId
+    sykmeldingId = sykmeldingId,
 )
 
 fun getSykmeldt(latestTom: LocalDate = LocalDate.now()): SykmeldtDbModel {
@@ -392,6 +392,6 @@ fun getSykmeldt(latestTom: LocalDate = LocalDate.now()): SykmeldtDbModel {
         "12345678910",
         "Navn",
         LocalDate.now(),
-        latestTom
+        latestTom,
     )
 }

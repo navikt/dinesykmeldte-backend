@@ -14,5 +14,5 @@ data class HendelseDbModel(
     val timestamp: OffsetDateTime,
     val utlopstidspunkt: OffsetDateTime?,
     val ferdigstilt: Boolean,
-    val ferdigstiltTimestamp: OffsetDateTime?
+    val ferdigstiltTimestamp: OffsetDateTime?,
 )

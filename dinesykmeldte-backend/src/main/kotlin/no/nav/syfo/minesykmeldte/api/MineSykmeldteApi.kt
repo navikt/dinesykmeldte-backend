@@ -44,7 +44,7 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         } else {
             call.respond(
                 HttpStatusCode.NotFound,
-                HttpErrorMessage("Sykmeldingen finnes ikke")
+                HttpErrorMessage("Sykmeldingen finnes ikke"),
             )
         }
     }
@@ -71,7 +71,7 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         } else {
             call.respond(
                 HttpStatusCode.NotFound,
-                HttpErrorMessage("Søknaden finnes ikke")
+                HttpErrorMessage("Søknaden finnes ikke"),
             )
         }
     }

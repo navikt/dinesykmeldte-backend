@@ -26,21 +26,21 @@ class PerformanceTest : FunSpec({
             id = narmestelederId,
             orgnummer = orgnummer,
             fnr = sykmeldtFnr,
-            narmesteLederFnr = nlFnr
+            narmesteLederFnr = nlFnr,
         )
         val sykmeldtDbModel = createSykmeldtDbModel(pasientFnr = sykmeldtFnr).copy(pasientNavn = "Navn $sykmeldtFnr")
         val sykmeldingId = UUID.randomUUID().toString()
         val sykmeldingDbModel = createSykmeldingDbModel(pasientFnr = sykmeldtFnr, orgnummer = orgnummer, sykmeldingId = sykmeldingId)
         val soknadDbModel = getSoknad(sykmeldingId = sykmeldingId).copy(
             pasientFnr = sykmeldtFnr,
-            orgnummer = orgnummer
+            orgnummer = orgnummer,
         )
         database.insertOrUpdate(sykmeldingDbModel, sykmeldtDbModel)
         database.insertOrUpdate(soknadDbModel)
     }
 
     val mineSykmeldteService = MineSykmeldteService(
-        mineSykmeldteDb = MineSykmeldteDb(database)
+        mineSykmeldteDb = MineSykmeldteDb(database),
     )
 
     context("Get mine sykmeldginer") {

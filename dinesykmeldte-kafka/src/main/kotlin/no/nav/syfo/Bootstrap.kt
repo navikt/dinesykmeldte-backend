@@ -63,7 +63,7 @@ fun main() {
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
         env,
-        applicationState
+        applicationState,
     )
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(ContentNegotiation) {
@@ -102,7 +102,7 @@ fun main() {
     val pdlClient = PdlClient(
         httpClient,
         env.pdlGraphqlPath,
-        PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
+        PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), ""),
     )
     val pdlPersonService = PdlPersonService(pdlClient, accessTokenClient, env.pdlScope)
 
@@ -110,7 +110,7 @@ fun main() {
         syketilfelleEndpointURL = env.syketilfelleEndpointURL,
         accessTokenClient = accessTokenClient,
         syketilfelleScope = env.syketilfelleScope,
-        httpClient = httpClient
+        httpClient = httpClient,
     )
 
     val kafkaConsumer = KafkaConsumer(
@@ -119,7 +119,7 @@ fun main() {
             it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
         }.toConsumerConfig("dinesykmeldte-backend", StringDeserializer::class),
         StringDeserializer(),
-        StringDeserializer()
+        StringDeserializer(),
     )
     val database = GcpDatabase(env)
 
@@ -136,7 +136,7 @@ fun main() {
         narmestelederService,
         sykmeldingService,
         soknadService,
-        hendelserService
+        hendelserService,
     )
     commonKafkaService.startConsumer()
     val leaderElection = LeaderElection(httpClient, env.electorPath)

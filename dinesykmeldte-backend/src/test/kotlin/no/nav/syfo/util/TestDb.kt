@@ -65,7 +65,7 @@ class TestDb private constructor() {
                     DELETE FROM sykmeldt;
                     DELETE FROM soknad;
                     DELETE FROM hendelser;
-                """
+                """,
                 ).use { ps ->
                     ps.executeUpdate()
                 }
@@ -78,7 +78,7 @@ class TestDb private constructor() {
                 it.prepareStatement(
                     """
                     SELECT * FROM narmesteleder WHERE pasient_fnr = ?;
-                """
+                """,
                 ).use { ps ->
                     ps.setString(1, pasientFnr)
                     ps.executeQuery().toList { toNarmestelederDbModel() }
@@ -91,7 +91,7 @@ class TestDb private constructor() {
                 it.prepareStatement(
                     """
                     SELECT * FROM sykmeldt WHERE pasient_fnr = ?;
-                """
+                """,
                 ).use { ps ->
                     ps.setString(1, fnr)
                     ps.executeQuery().toList { toSykmeldtDbModel() }.firstOrNull()
@@ -104,7 +104,7 @@ class TestDb private constructor() {
                 pasientFnr = getString("pasient_fnr"),
                 pasientNavn = getString("pasient_navn"),
                 startdatoSykefravaer = getObject("startdato_sykefravaer", LocalDate::class.java),
-                latestTom = getObject("latest_tom", LocalDate::class.java)
+                latestTom = getObject("latest_tom", LocalDate::class.java),
             )
 
         fun getSykmelding(sykmeldingId: String): SykmeldingDbModel? {
@@ -112,7 +112,7 @@ class TestDb private constructor() {
                 it.prepareStatement(
                     """
                     SELECT * FROM sykmelding WHERE sykmelding_id = ?;
-                """
+                """,
                 ).use { ps ->
                     ps.setString(1, sykmeldingId)
                     ps.executeQuery().toList { toSykmeldingDbModel() }.firstOrNull()
@@ -139,7 +139,7 @@ class TestDb private constructor() {
                 it.prepareStatement(
                     """
                     SELECT * FROM soknad WHERE soknad_id = ?;
-                """
+                """,
                 ).use { ps ->
                     ps.setString(1, soknadId)
                     ps.executeQuery().toList { toSoknadDbModel() }.firstOrNull()
@@ -157,7 +157,7 @@ class TestDb private constructor() {
                 sendtDato = getObject("sendt_dato", LocalDate::class.java),
                 lest = getBoolean("lest"),
                 timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
-                tom = getObject("tom", LocalDate::class.java)
+                tom = getObject("tom", LocalDate::class.java),
             )
 
         fun getHendelse(id: String): HendelseDbModel? {
@@ -165,7 +165,7 @@ class TestDb private constructor() {
                 it.prepareStatement(
                     """
                     SELECT * FROM hendelser WHERE id=?;
-                """
+                """,
                 ).use { ps ->
                     ps.setString(1, id)
                     ps.executeQuery().toList { toHendelseDbModel() }.firstOrNull()
@@ -185,7 +185,7 @@ class TestDb private constructor() {
                 utlopstidspunkt = getTimestamp("utlopstidspunkt")?.toInstant()?.atOffset(ZoneOffset.UTC),
                 ferdigstilt = getBoolean("ferdigstilt"),
                 ferdigstiltTimestamp = getTimestamp("ferdigstilt_timestamp")?.toInstant()?.atOffset(ZoneOffset.UTC),
-                hendelseId = UUID.fromString(getString("hendelse_id"))
+                hendelseId = UUID.fromString(getString("hendelse_id")),
             )
     }
 }
@@ -196,7 +196,7 @@ fun DatabaseInterface.insertOrUpdate(id: String, orgnummer: String, fnr: String,
             """
                insert into narmesteleder(narmeste_leder_id, orgnummer, pasient_fnr, leder_fnr) 
                values (?, ?, ?, ?) on conflict (narmeste_leder_id) do nothing ;
-            """
+            """,
         ).use { preparedStatement ->
             preparedStatement.setString(1, id)
             preparedStatement.setString(2, orgnummer)
@@ -220,7 +220,7 @@ fun DatabaseInterface.insertHendelse(hendelseDbModel: HendelseDbModel) {
                                           utlopstidspunkt, ferdigstilt, ferdigstilt_timestamp, hendelse_id)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT (id, oppgavetype) DO NOTHING;
-            """
+            """,
         ).use { preparedStatement ->
             preparedStatement.setString(1, hendelseDbModel.id)
             preparedStatement.setString(2, hendelseDbModel.pasientFnr)
@@ -263,7 +263,7 @@ fun DatabaseInterface.insertOrUpdate(soknadDbModel: SoknadDbModel) {
                         lest = excluded.lest,
                         tom = excluded.tom
                     ;
-            """
+            """,
         ).use { preparedStatement ->
             preparedStatement.setString(1, soknadDbModel.soknadId)
             preparedStatement.setString(2, soknadDbModel.sykmeldingId)
@@ -304,7 +304,7 @@ fun DatabaseInterface.insertOrUpdate(sykmeldingDbModel: SykmeldingDbModel, sykme
                         timestamp = ?,
                         latest_tom = ?,
                         sendt_til_arbeidsgiver_dato = ?;
-            """
+            """,
         ).use { preparedStatement ->
             val sendtTilArbeidsgiverDato =
                 if (sykmeldingDbModel.sendtTilArbeidsgiverDato != null) Timestamp.from(sykmeldingDbModel.sendtTilArbeidsgiverDato!!.toInstant()) else null
@@ -338,7 +338,7 @@ fun remove(sykmeldingId: String) {
         connection.prepareStatement(
             """
                delete from sykmelding where sykmelding_id = ?;
-            """
+            """,
         ).use { ps ->
             ps.setString(1, sykmeldingId)
             ps.executeUpdate()
@@ -356,7 +356,7 @@ private fun Connection.insertOrUpdateSykmeldt(sykmeldt: SykmeldtDbModel) {
                 set pasient_navn = ?,
                     startdato_sykefravaer = ?,
                     latest_tom = ?;
-            """
+            """,
     ).use { preparedStatement ->
         preparedStatement.setString(1, sykmeldt.pasientFnr)
         // insert

@@ -50,7 +50,7 @@ fun withKtor(env: Environment, build: Route.() -> Unit, block: TestApplicationEn
         application.setupAuth(
             jwkProviderTokenX = JwkProviderBuilder(Paths.get("src/test/resources/jwkset.json").toUri().toURL()).build(),
             tokenXIssuer = "https://sts.issuer.net/myid",
-            env = env
+            env = env,
         )
         application.routing {
             authenticate("tokenx", build = build)
@@ -64,22 +64,22 @@ fun TestApplicationRequest.addAuthorizationHeader(
     audience: String = "dummy-client-id",
     subject: String = "08086912345",
     issuer: String = "https://sts.issuer.net/myid",
-    level: String = "Level4"
+    level: String = "Level4",
 ) {
     addHeader(
         "Authorization",
         "Bearer ${
-        generateJWTLoginservice(
-            audience = audience,
-            subject = subject,
-            issuer = issuer,
-            level = level
-        )
-        }"
+            generateJWTLoginservice(
+                audience = audience,
+                subject = subject,
+                issuer = issuer,
+                level = level,
+            )
+        }",
     )
 }
 
 fun String.minifyApiResponse(): String =
     objectMapper.writeValueAsString(
-        objectMapper.readValue(this)
+        objectMapper.readValue(this),
     )

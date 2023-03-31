@@ -88,8 +88,8 @@ class MineSykmeldteServiceTest : FunSpec({
                     utlopstidspunkt = null,
                     ferdigstilt = false,
                     ferdigstiltTimestamp = null,
-                    hendelseId = hendelseid
-                )
+                    hendelseId = hendelseid,
+                ),
             )
             coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns getSykmeldtData(1, sykmeldtFnrPrefix = "prefix")
             val sykmeldte = runBlocking { mineSykmeldtService.getMineSykmeldte("1") }
@@ -112,18 +112,18 @@ class MineSykmeldteServiceTest : FunSpec({
                     utlopstidspunkt = null,
                     ferdigstilt = false,
                     ferdigstiltTimestamp = null,
-                    hendelseId = UUID.randomUUID()
-                )
+                    hendelseId = UUID.randomUUID(),
+                ),
             )
             coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
                 getSykmeldtData(
                     sykmeldte = 2,
                     sykmeldinger = listOf(
                         createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
-                        createArbeidsgiverSykmelding(UUID.randomUUID().toString())
+                        createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
                     ),
                     sykmeldtFnrPrefix = "avdeling-1",
-                    soknader = 1
+                    soknader = 1,
                 )
             runBlocking {
                 val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -168,8 +168,8 @@ class MineSykmeldteServiceTest : FunSpec({
                     utlopstidspunkt = null,
                     ferdigstilt = false,
                     ferdigstiltTimestamp = null,
-                    hendelseId = UUID.randomUUID()
-                )
+                    hendelseId = UUID.randomUUID(),
+                ),
             )
 
             coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns sykmeldtData
@@ -188,21 +188,21 @@ class MineSykmeldteServiceTest : FunSpec({
                     sykmeldte = 3,
                     sykmeldinger = listOf(
                         createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
-                        createArbeidsgiverSykmelding(UUID.randomUUID().toString())
+                        createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
                     ),
                     sykmeldtFnrPrefix = "avdeling-1",
-                    soknader = 1
+                    soknader = 1,
                 ) +
-                    getSykmeldtData(
-                        sykmeldte = 2,
-                        sykmeldinger = listOf(
-                            createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
-                            createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
-                            createArbeidsgiverSykmelding(UUID.randomUUID().toString())
-                        ),
-                        sykmeldtFnrPrefix = "avdeling-2",
-                        soknader = 0
-                    )
+                getSykmeldtData(
+                    sykmeldte = 2,
+                    sykmeldinger = listOf(
+                        createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
+                        createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
+                        createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
+                    ),
+                    sykmeldtFnrPrefix = "avdeling-2",
+                    soknader = 0,
+                )
 
             runBlocking {
                 val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -225,12 +225,12 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().minusDays(24),
                                     tom = LocalDate.now().plusDays(1),
                                     type = PeriodetypeDTO.GRADERT,
-                                    gradert = GradertDTO(50, false)
-                                )
-                            )
-                        )
+                                    gradert = GradertDTO(50, false),
+                                ),
+                            ),
+                        ),
                     ),
-                    sykmeldtFnrPrefix = "prefix"
+                    sykmeldtFnrPrefix = "prefix",
                 )
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -253,12 +253,12 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().minusDays(24),
                                     tom = LocalDate.now().minusDays(1),
                                     type = PeriodetypeDTO.GRADERT,
-                                    gradert = GradertDTO(50, false)
-                                )
-                            )
-                        )
+                                    gradert = GradertDTO(50, false),
+                                ),
+                            ),
+                        ),
                     ),
-                    sykmeldtFnrPrefix = "prefix"
+                    sykmeldtFnrPrefix = "prefix",
                 )
 
                 runBlocking {
@@ -284,12 +284,12 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now(),
                                     tom = LocalDate.now().plusDays(4),
                                     type = PeriodetypeDTO.GRADERT,
-                                    gradert = GradertDTO(50, false)
-                                )
-                            )
-                        )
+                                    gradert = GradertDTO(50, false),
+                                ),
+                            ),
+                        ),
                     ),
-                    sykmeldtFnrPrefix = "prefix"
+                    sykmeldtFnrPrefix = "prefix",
                 )
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -312,12 +312,12 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now(),
                                     tom = LocalDate.now().plusDays(4),
                                     type = PeriodetypeDTO.GRADERT,
-                                    gradert = GradertDTO(20, false)
-                                )
-                            )
-                        )
+                                    gradert = GradertDTO(20, false),
+                                ),
+                            ),
+                        ),
                     ),
-                    sykmeldtFnrPrefix = "prefix"
+                    sykmeldtFnrPrefix = "prefix",
                 )
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -340,12 +340,12 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now(),
                                     tom = LocalDate.now().plusDays(4),
                                     type = PeriodetypeDTO.AVVENTENDE,
-                                    gradert = null
-                                )
-                            )
-                        )
+                                    gradert = null,
+                                ),
+                            ),
+                        ),
                     ),
-                    sykmeldtFnrPrefix = "prefix"
+                    sykmeldtFnrPrefix = "prefix",
                 )
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -368,12 +368,12 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now(),
                                     tom = LocalDate.now().plusDays(4),
                                     type = PeriodetypeDTO.BEHANDLINGSDAGER,
-                                    gradert = null
-                                )
-                            )
-                        )
+                                    gradert = null,
+                                ),
+                            ),
+                        ),
                     ),
-                    sykmeldtFnrPrefix = "prefix"
+                    sykmeldtFnrPrefix = "prefix",
                 )
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -396,12 +396,12 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now(),
                                     tom = LocalDate.now().plusDays(4),
                                     type = PeriodetypeDTO.REISETILSKUDD,
-                                    gradert = null
-                                )
-                            )
-                        )
+                                    gradert = null,
+                                ),
+                            ),
+                        ),
                     ),
-                    sykmeldtFnrPrefix = "prefix"
+                    sykmeldtFnrPrefix = "prefix",
                 )
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -424,7 +424,7 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().minusDays(15),
                                     tom = LocalDate.now().minusDays(11),
                                     type = PeriodetypeDTO.AVVENTENDE,
-                                    gradert = null
+                                    gradert = null,
                                 ),
                                 createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
@@ -432,7 +432,7 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().minusDays(1),
                                     tom = LocalDate.now().plusDays(2),
                                     type = PeriodetypeDTO.REISETILSKUDD,
-                                    gradert = null
+                                    gradert = null,
                                 ),
                                 createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
@@ -440,11 +440,11 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().plusDays(5),
                                     tom = LocalDate.now().plusDays(10),
                                     type = PeriodetypeDTO.AVVENTENDE,
-                                    gradert = null
-                                )
-                            )
-                        )
-                    )
+                                    gradert = null,
+                                ),
+                            ),
+                        ),
+                    ),
                 )
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -467,7 +467,7 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().minusDays(15),
                                     tom = LocalDate.now().minusDays(11),
                                     type = PeriodetypeDTO.AVVENTENDE,
-                                    gradert = null
+                                    gradert = null,
                                 ),
                                 createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
@@ -475,7 +475,7 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().minusDays(3),
                                     tom = LocalDate.now(),
                                     type = PeriodetypeDTO.REISETILSKUDD,
-                                    gradert = null
+                                    gradert = null,
                                 ),
                                 createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
@@ -483,11 +483,11 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().plusDays(5),
                                     tom = LocalDate.now().plusDays(10),
                                     type = PeriodetypeDTO.AVVENTENDE,
-                                    gradert = null
-                                )
-                            )
-                        )
-                    )
+                                    gradert = null,
+                                ),
+                            ),
+                        ),
+                    ),
                 )
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -510,7 +510,7 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().minusDays(15),
                                     tom = LocalDate.now().minusDays(11),
                                     type = PeriodetypeDTO.AVVENTENDE,
-                                    gradert = null
+                                    gradert = null,
                                 ),
                                 createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
@@ -518,7 +518,7 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now(),
                                     tom = LocalDate.now().plusDays(3),
                                     type = PeriodetypeDTO.REISETILSKUDD,
-                                    gradert = null
+                                    gradert = null,
                                 ),
                                 createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
@@ -526,11 +526,11 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().plusDays(5),
                                     tom = LocalDate.now().plusDays(10),
                                     type = PeriodetypeDTO.AVVENTENDE,
-                                    gradert = null
-                                )
-                            )
-                        )
-                    )
+                                    gradert = null,
+                                ),
+                            ),
+                        ),
+                    ),
                 )
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -553,7 +553,7 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().minusDays(20),
                                     tom = LocalDate.now().minusDays(15),
                                     type = PeriodetypeDTO.AVVENTENDE,
-                                    gradert = null
+                                    gradert = null,
                                 ),
                                 createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
@@ -561,7 +561,7 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().minusDays(14),
                                     tom = LocalDate.now().minusDays(5),
                                     type = PeriodetypeDTO.AVVENTENDE,
-                                    gradert = null
+                                    gradert = null,
                                 ),
                                 createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
@@ -569,11 +569,11 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().plusDays(1),
                                     tom = LocalDate.now().plusDays(4),
                                     type = PeriodetypeDTO.REISETILSKUDD,
-                                    gradert = null
-                                )
-                            )
-                        )
-                    )
+                                    gradert = null,
+                                ),
+                            ),
+                        ),
+                    ),
                 )
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -596,7 +596,7 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().plusDays(1),
                                     tom = LocalDate.now().plusDays(4),
                                     type = PeriodetypeDTO.REISETILSKUDD,
-                                    gradert = null
+                                    gradert = null,
                                 ),
                                 createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
@@ -604,7 +604,7 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().plusDays(5),
                                     tom = LocalDate.now().plusDays(14),
                                     type = PeriodetypeDTO.AVVENTENDE,
-                                    gradert = null
+                                    gradert = null,
                                 ),
                                 createSykmeldingsperiode(
                                     aktivitetIkkeMulig = null,
@@ -612,11 +612,11 @@ class MineSykmeldteServiceTest : FunSpec({
                                     fom = LocalDate.now().plusDays(15),
                                     tom = LocalDate.now().plusDays(20),
                                     type = PeriodetypeDTO.AVVENTENDE,
-                                    gradert = null
-                                )
-                            )
-                        )
-                    )
+                                    gradert = null,
+                                ),
+                            ),
+                        ),
+                    ),
                 )
                 runBlocking {
                     val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -632,7 +632,7 @@ class MineSykmeldteServiceTest : FunSpec({
                 val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.NY,
                     tom = LocalDate.parse("2020-05-02"),
-                    opprettet = LocalDateTime.parse("2020-04-05T18:00:50.63")
+                    opprettet = LocalDateTime.parse("2020-04-05T18:00:50.63"),
                 )
 
                 coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
@@ -650,7 +650,7 @@ class MineSykmeldteServiceTest : FunSpec({
                         lestSoknad = false,
                         sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
                         egenmeldingsdager = listOf(LocalDate.parse("2020-04-01"), LocalDate.parse("2020-04-02")),
-                    )
+                    ),
                 )
                 runBlocking {
                     val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -666,7 +666,7 @@ class MineSykmeldteServiceTest : FunSpec({
                 val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.NY,
                     tom = LocalDate.parse("2020-05-02"),
-                    opprettet = LocalDateTime.parse("2020-06-05T18:00:50.63")
+                    opprettet = LocalDateTime.parse("2020-06-05T18:00:50.63"),
                 )
 
                 coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
@@ -684,7 +684,7 @@ class MineSykmeldteServiceTest : FunSpec({
                         lestSoknad = true,
                         sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
                         egenmeldingsdager = listOf(LocalDate.parse("2020-04-01"), LocalDate.parse("2020-04-02")),
-                    )
+                    ),
                 )
                 runBlocking {
                     val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -700,7 +700,7 @@ class MineSykmeldteServiceTest : FunSpec({
                 val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.SENDT,
                     korrigerer = "korrigerer-id",
-                    sendtArbeidsgiver = LocalDateTime.parse("2020-06-07T19:34:50.63")
+                    sendtArbeidsgiver = LocalDateTime.parse("2020-06-07T19:34:50.63"),
                 )
 
                 coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
@@ -718,7 +718,7 @@ class MineSykmeldteServiceTest : FunSpec({
                         lestSoknad = true,
                         sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
                         egenmeldingsdager = null,
-                    )
+                    ),
                 )
                 runBlocking {
                     val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -734,14 +734,14 @@ class MineSykmeldteServiceTest : FunSpec({
             test("Should not get Korrigert soknad") {
                 coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val korrigertSoknad = createSykepengesoknadDto("soknad-id-korrigert", "sykmeldingId").copy(
-                    status = SoknadsstatusDTO.SENDT
+                    status = SoknadsstatusDTO.SENDT,
                 )
                 val korrigererSoknad = createSykepengesoknadDto("soknad-id-korrigerer", "sykmeldingId").copy(
                     status = SoknadsstatusDTO.SENDT,
-                    korrigerer = "soknad-id-korrigert"
+                    korrigerer = "soknad-id-korrigert",
                 )
                 val sendtSoknad = createSykepengesoknadDto("soknad-id-sendt", "sykmeldingId").copy(
-                    status = SoknadsstatusDTO.SENDT
+                    status = SoknadsstatusDTO.SENDT,
                 )
                 val mineSykmeldteModel = MinSykmeldtDbModel(
                     narmestelederId = UUID.randomUUID().toString(),
@@ -762,7 +762,7 @@ class MineSykmeldteServiceTest : FunSpec({
                 coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
                     mineSykmeldteModel,
                     mineSykmeldteModel.copy(soknad = korrigererSoknad),
-                    mineSykmeldteModel.copy(soknad = sendtSoknad)
+                    mineSykmeldteModel.copy(soknad = sendtSoknad),
                 )
 
                 val mineSykmeldte = runBlocking { mineSykmeldtService.getMineSykmeldte("1") }
@@ -785,7 +785,7 @@ class MineSykmeldteServiceTest : FunSpec({
             test("should map to a fremtidig søknad") {
                 coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                 val soknad = createSykepengesoknadDto("soknad-id", "sykmeldingId").copy(
-                    status = SoknadsstatusDTO.FREMTIDIG
+                    status = SoknadsstatusDTO.FREMTIDIG,
                 )
 
                 coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns listOf(
@@ -803,7 +803,7 @@ class MineSykmeldteServiceTest : FunSpec({
                         lestSoknad = true,
                         sendtTilArbeidsgiverDato = OffsetDateTime.now(ZoneOffset.UTC),
                         egenmeldingsdager = null,
-                    )
+                    ),
                 )
                 runBlocking {
                     val mineSykeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -831,12 +831,12 @@ class MineSykmeldteServiceTest : FunSpec({
                                 aktivitetIkkeMulig = AktivitetIkkeMuligAGDTO(
                                     ArbeidsrelatertArsakDTO(
                                         "Trenger ståpult",
-                                        listOf(ArbeidsrelatertArsakTypeDTO.MANGLENDE_TILRETTELEGGING)
-                                    )
-                                )
-                            )
-                        )
-                    )
+                                        listOf(ArbeidsrelatertArsakTypeDTO.MANGLENDE_TILRETTELEGGING),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
                 )
                 )
 
@@ -863,10 +863,10 @@ class MineSykmeldteServiceTest : FunSpec({
                             createSykmeldingsperiode(
                                 type = PeriodetypeDTO.AVVENTENDE,
                                 aktivitetIkkeMulig = null,
-                                innspillTilArbeidsgiver = "Vi venter litt"
-                            )
-                        )
-                    )
+                                innspillTilArbeidsgiver = "Vi venter litt",
+                            ),
+                        ),
+                    ),
                 )
                 )
 
@@ -891,10 +891,10 @@ class MineSykmeldteServiceTest : FunSpec({
                             createSykmeldingsperiode(
                                 type = PeriodetypeDTO.BEHANDLINGSDAGER,
                                 aktivitetIkkeMulig = null,
-                                behandlingsdager = 1
-                            )
-                        )
-                    )
+                                behandlingsdager = 1,
+                            ),
+                        ),
+                    ),
                 )
                 )
 
@@ -920,11 +920,11 @@ class MineSykmeldteServiceTest : FunSpec({
                                 aktivitetIkkeMulig = null,
                                 gradert = GradertDTO(
                                     45,
-                                    true
-                                )
-                            )
-                        )
-                    )
+                                    true,
+                                ),
+                            ),
+                        ),
+                    ),
                 )
                 )
 
@@ -950,10 +950,10 @@ class MineSykmeldteServiceTest : FunSpec({
                             createSykmeldingsperiode(
                                 type = PeriodetypeDTO.REISETILSKUDD,
                                 aktivitetIkkeMulig = null,
-                                reisetilskudd = true
-                            )
-                        )
-                    )
+                                reisetilskudd = true,
+                            ),
+                        ),
+                    ),
                 )
                 )
 
@@ -975,7 +975,7 @@ class MineSykmeldteServiceTest : FunSpec({
                 pasientFnr = "12345678912",
                 pasientNavn = "navn",
                 startdatoSykefravaer = LocalDate.now(),
-                latestTom = LocalDate.now()
+                latestTom = LocalDate.now(),
             )
             coEvery {
                 mineSykmeldteDb.getSoknad(soknadDbModel.soknadId, "red-2")
@@ -991,7 +991,7 @@ class MineSykmeldteServiceTest : FunSpec({
                 mineSykmeldteDb.getSoknad(soknadId, "red-2")
             } returns (
                 createSykmeldtDbModel(
-                    pasientNavn = "Navn Navnesen"
+                    pasientNavn = "Navn Navnesen",
                 ) to createSoknadDbModel(
                     soknadId = soknadId,
                     sykmeldingId = "31c5b5ca-1248-4280-bc2e-3c6b11c365b9",
@@ -1006,8 +1006,8 @@ class MineSykmeldteServiceTest : FunSpec({
                             SoknadsperiodeDTO(
                                 fom = LocalDate.parse("2021-10-04"),
                                 tom = LocalDate.parse("2021-10-12"),
-                                sykmeldingstype = SykmeldingstypeDTO.AKTIVITET_IKKE_MULIG
-                            )
+                                sykmeldingstype = SykmeldingstypeDTO.AKTIVITET_IKKE_MULIG,
+                            ),
                         )
                         every { it.sendtNav } returns LocalDateTime.parse("2022-05-09T08:56:24")
                         every { it.sendtArbeidsgiver } returns LocalDateTime.parse("2022-05-10T08:56:24")
@@ -1023,12 +1023,12 @@ class MineSykmeldteServiceTest : FunSpec({
                                 kriterieForVisningAvUndersporsmal = VisningskriteriumDTO.JA,
                                 svar = listOf(
                                     SvarDTO(
-                                        verdi = "Ja"
-                                    )
-                                )
-                            )
+                                        verdi = "Ja",
+                                    ),
+                                ),
+                            ),
                         )
-                    }
+                    },
                 )
                 )
 
@@ -1049,8 +1049,8 @@ class MineSykmeldteServiceTest : FunSpec({
             result.sporsmal[0].svartype shouldBeEqualTo SvartypeDTO.FRITEKST
             result.sporsmal[0].svar shouldBeEqualTo listOf(
                 Svar(
-                    verdi = "Ja"
-                )
+                    verdi = "Ja",
+                ),
             )
         }
     }
@@ -1069,7 +1069,7 @@ private fun createSoknadDbModel(
     sendtDato: LocalDate = LocalDate.now(),
     tom: LocalDate = LocalDate.now(),
     lest: Boolean = false,
-    timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
+    timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
 ): SoknadDbModel = SoknadDbModel(
     soknadId = soknadId,
     sykmeldingId = sykmeldingId,
@@ -1079,7 +1079,7 @@ private fun createSoknadDbModel(
     sendtDato = sendtDato,
     tom = tom,
     lest = lest,
-    timestamp = timestamp
+    timestamp = timestamp,
 )
 
 private fun createSykmeldingDbModel(
@@ -1091,7 +1091,7 @@ private fun createSykmeldingDbModel(
     lest: Boolean = false,
     timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
     latestTom: LocalDate = LocalDate.now(),
-    sendtTilArbeidsgiverDato: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
+    sendtTilArbeidsgiverDato: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
 ) = SykmeldingDbModel(
     sykmeldingId = sykmeldingId,
     pasientFnr = pasientFnr,
@@ -1109,23 +1109,23 @@ private fun createSykmeldtDbModel(
     pasientFnr: String = "08088012345",
     pasientNavn: String = "Ola Normann",
     startdatoSykefravaer: LocalDate = LocalDate.now(),
-    latestTom: LocalDate = LocalDate.now()
+    latestTom: LocalDate = LocalDate.now(),
 ) = SykmeldtDbModel(
     pasientFnr = pasientFnr,
     pasientNavn = pasientNavn,
     startdatoSykefravaer = startdatoSykefravaer,
-    latestTom = latestTom
+    latestTom = latestTom,
 )
 
 fun getSykmeldtData(
     sykmeldte: Int,
     sykmeldinger: List<ArbeidsgiverSykmelding> = listOf(
         createArbeidsgiverSykmelding(
-            UUID.randomUUID().toString()
-        )
+            UUID.randomUUID().toString(),
+        ),
     ),
     soknader: Int = 0,
-    sykmeldtFnrPrefix: String = "prefix"
+    sykmeldtFnrPrefix: String = "prefix",
 ): List<MinSykmeldtDbModel> =
     (0 until sykmeldte).flatMap {
         val sykmeldtFnr = "$sykmeldtFnrPrefix-$it"
@@ -1147,7 +1147,7 @@ fun getSykmeldtData(
                 soknad = if (soknader != 0 && index < soknader) {
                     createSykepengesoknadDto(
                         soknadId = UUID.randomUUID().toString(),
-                        sykmeldingId = arbeigsgiverSykmelding.id
+                        sykmeldingId = arbeigsgiverSykmelding.id,
                     )
                 } else {
                     null
@@ -1162,7 +1162,7 @@ fun getSykmeldtData(
 
 fun getFileAsString(filePath: String) = String(
     Files.readAllBytes(
-        Paths.get(filePath)
+        Paths.get(filePath),
     ),
-    StandardCharsets.UTF_8
+    StandardCharsets.UTF_8,
 )

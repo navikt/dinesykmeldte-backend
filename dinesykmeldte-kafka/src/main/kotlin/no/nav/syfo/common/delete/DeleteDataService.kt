@@ -18,7 +18,7 @@ import kotlin.time.ExperimentalTime
 class DeleteDataService(
     private val database: DeleteDataDb,
     private val leaderElection: LeaderElection,
-    private val applicationState: ApplicationState
+    private val applicationState: ApplicationState,
 ) {
 
     companion object {

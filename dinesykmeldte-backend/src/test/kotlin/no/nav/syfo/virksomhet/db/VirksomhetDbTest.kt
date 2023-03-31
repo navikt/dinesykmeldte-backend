@@ -23,15 +23,15 @@ object VirksomhetDbTest : FunSpec({
                 id = UUID.randomUUID().toString(),
                 orgnummer = "right-caller-org",
                 fnr = "employee-fnr",
-                narmesteLederFnr = "test-caller-fnr"
+                narmesteLederFnr = "test-caller-fnr",
             )
             TestDb.database.insertOrUpdate(
                 createSykmeldingDbModel(
                     sykmeldingId = UUID.randomUUID().toString(),
                     pasientFnr = "employee-fnr",
-                    orgnummer = "right-caller-org"
+                    orgnummer = "right-caller-org",
                 ),
-                sykmeldt
+                sykmeldt,
             )
 
             val virksomheter = virksomhetDb.getVirksomheter("test-caller-fnr")
@@ -46,15 +46,15 @@ object VirksomhetDbTest : FunSpec({
                 id = UUID.randomUUID().toString(),
                 orgnummer = "right-caller-org",
                 fnr = "employee-fnr",
-                narmesteLederFnr = "some-other-leader"
+                narmesteLederFnr = "some-other-leader",
             )
             TestDb.database.insertOrUpdate(
                 createSykmeldingDbModel(
                     sykmeldingId = UUID.randomUUID().toString(),
                     pasientFnr = "employee-fnr",
-                    orgnummer = "right-caller-org"
+                    orgnummer = "right-caller-org",
                 ),
-                sykmeldt
+                sykmeldt,
             )
 
             val virksomheter = virksomhetDb.getVirksomheter("test-caller-fnr")

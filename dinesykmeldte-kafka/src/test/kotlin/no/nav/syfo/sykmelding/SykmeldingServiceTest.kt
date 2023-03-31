@@ -44,7 +44,7 @@ class SykmeldingServiceTest : FunSpec({
         database,
         pdlPersonService,
         syfoSyketilfelleClient,
-        "prod-gcp"
+        "prod-gcp",
     )
 
     beforeEach {
@@ -52,7 +52,7 @@ class SykmeldingServiceTest : FunSpec({
         clearMocks(pdlPersonService, syfoSyketilfelleClient)
         coEvery { pdlPersonService.getPerson(any(), any()) } returns PdlPerson(
             Navn("Syk", null, "Sykesen"),
-            "321654987"
+            "321654987",
         )
         coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns LocalDate.now().minusMonths(1)
     }
@@ -65,8 +65,8 @@ class SykmeldingServiceTest : FunSpec({
             val oppdatertSykmelding = getSendtSykmeldingKafkaMessage(
                 sykmelding.kafkaMetadata.sykmeldingId,
                 perioder = listOf(
-                    getPeriode(LocalDate.now().minusMonths(5))
-                )
+                    getPeriode(LocalDate.now().minusMonths(5)),
+                ),
             )
             sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmelding.kafkaMetadata.sykmeldingId, oppdatertSykmelding)
 
@@ -92,16 +92,16 @@ class SykmeldingServiceTest : FunSpec({
             val firstSykmelding = getSendtSykmeldingKafkaMessage(
                 UUID.randomUUID().toString(),
                 perioder = listOf(
-                    getPeriode(firstFomTom)
-                )
+                    getPeriode(firstFomTom),
+                ),
             )
 
             val secondTom = LocalDate.now()
             val secondSykmelding = getSendtSykmeldingKafkaMessage(
                 UUID.randomUUID().toString(),
                 perioder = listOf(
-                    getPeriode(secondTom)
-                )
+                    getPeriode(secondTom),
+                ),
             )
 
             sykmeldingService.handleSendtSykmeldingKafkaMessage(firstSykmelding.sykmelding.id, firstSykmelding)
@@ -121,7 +121,7 @@ class SykmeldingServiceTest : FunSpec({
             val sendtTilArbeidsgiverDato = OffsetDateTime.now(Clock.tickMillis(ZoneOffset.UTC))
             val sendtSykmelding = getSendtSykmeldingKafkaMessage(
                 sykmeldingId = sykmeldingId,
-                sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato
+                sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato,
             )
             sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
             val fom = LocalDate.now().minusMonths(4)
@@ -138,9 +138,9 @@ class SykmeldingServiceTest : FunSpec({
                         null,
                         PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
                         AktivitetIkkeMuligAGDTO(null),
-                        false
-                    )
-                )
+                        false,
+                    ),
+                ),
             )
 
             coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns LocalDate.now().minusMonths(2)
@@ -154,7 +154,7 @@ class SykmeldingServiceTest : FunSpec({
             val sendtTilArbeidsgiverDato = OffsetDateTime.now(Clock.tickMillis(ZoneOffset.UTC))
             val sendtSykmelding = getSendtSykmeldingKafkaMessage(
                 sykmeldingId = sykmeldingId,
-                sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato
+                sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato,
             )
 
             sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
@@ -183,8 +183,8 @@ class SykmeldingServiceTest : FunSpec({
             sykmeldingService.handleSendtSykmeldingKafkaMessage(
                 sykmeldingId,
                 sendtSykmelding.copy(
-                    sykmelding = sendtSykmelding.sykmelding.copy(tiltakArbeidsplassen = "Masse fine tiltak som vi glemte sist")
-                )
+                    sykmelding = sendtSykmelding.sykmelding.copy(tiltakArbeidsplassen = "Masse fine tiltak som vi glemte sist"),
+                ),
             )
 
             val oppdatertSykmelding = TestDb.getSykmelding(sykmeldingId)
@@ -206,9 +206,9 @@ class SykmeldingServiceTest : FunSpec({
                         null,
                         PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
                         AktivitetIkkeMuligAGDTO(null),
-                        false
-                    )
-                )
+                        false,
+                    ),
+                ),
             )
             sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
 
@@ -219,7 +219,7 @@ class SykmeldingServiceTest : FunSpec({
 
             coEvery { pdlPersonService.getPerson(any(), any()) } returns PdlPerson(
                 Navn("Per", null, "Persen"),
-                "321654987"
+                "321654987",
             )
             coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns LocalDate.now().minusMonths(2)
 
@@ -244,9 +244,9 @@ class SykmeldingServiceTest : FunSpec({
                         null,
                         PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
                         AktivitetIkkeMuligAGDTO(null),
-                        false
-                    )
-                )
+                        false,
+                    ),
+                ),
             )
             sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
 
@@ -271,8 +271,8 @@ class SykmeldingServiceTest : FunSpec({
             sykmeldingService.handleSendtSykmeldingKafkaMessage(
                 sykmeldingId,
                 sendtSykmelding.copy(
-                    kafkaMetadata = sendtSykmelding.kafkaMetadata.copy(fnr = "11223344556")
-                )
+                    kafkaMetadata = sendtSykmelding.kafkaMetadata.copy(fnr = "11223344556"),
+                ),
             )
 
             val oppdatertSykmelding = TestDb.getSykmelding(sykmeldingId)
@@ -292,7 +292,7 @@ private fun getPeriode(fom: LocalDate, tom: LocalDate = fom) = Sykmeldingsperiod
     null,
     PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
     AktivitetIkkeMuligAGDTO(null),
-    false
+    false,
 )
 
 fun getSendtSykmeldingKafkaMessage(
@@ -306,10 +306,10 @@ fun getSendtSykmeldingKafkaMessage(
             null,
             PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
             AktivitetIkkeMuligAGDTO(null),
-            false
-        )
+            false,
+        ),
     ),
-    sendtTilArbeidsgiverDato: OffsetDateTime = OffsetDateTime.now(Clock.tickMillis(ZoneOffset.UTC))
+    sendtTilArbeidsgiverDato: OffsetDateTime = OffsetDateTime.now(Clock.tickMillis(ZoneOffset.UTC)),
 ) = SendtSykmeldingKafkaMessage(
     createArbeidsgiverSykmelding(sykmeldingId, perioder),
     KafkaMetadataDTO(sykmeldingId, OffsetDateTime.now(ZoneOffset.UTC), "12345678910", "user"),
@@ -318,14 +318,14 @@ fun getSendtSykmeldingKafkaMessage(
         sendtTilArbeidsgiverDato,
         "SENDT",
         ArbeidsgiverStatusDTO("88888888", null, "Bedriften AS"),
-        null
-    )
+        null,
+    ),
 )
 
 fun getSoknad(
     sykmeldingId: String = UUID.randomUUID().toString(),
     soknadId: String = UUID.randomUUID().toString(),
-    fnr: String = "12345678910"
+    fnr: String = "12345678910",
 ): SoknadDbModel {
     return createSykepengesoknadDto(soknadId, sykmeldingId, fnr).toSoknadDbModel()
 }
@@ -333,14 +333,14 @@ fun getSoknad(
 fun createSykepengesoknadDto(
     soknadId: String,
     sykmeldingId: String,
-    fnr: String = "12345678910"
+    fnr: String = "12345678910",
 ) = objectMapper.readValue<SykepengesoknadDTO>(
-    getFileAsString("src/test/resources/soknad.json")
+    getFileAsString("src/test/resources/soknad.json"),
 ).copy(
     id = soknadId,
     fnr = fnr,
     fom = LocalDate.now().minusMonths(1),
     tom = LocalDate.now().minusWeeks(2),
     sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
-    sykmeldingId = sykmeldingId
+    sykmeldingId = sykmeldingId,
 )

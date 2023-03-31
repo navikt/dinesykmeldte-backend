@@ -33,7 +33,7 @@ class Database(private val env: Environment, retries: Long = 30, sleepTime: Long
                         isAutoCommit = false
                         transactionIsolation = "TRANSACTION_READ_COMMITTED"
                         validate()
-                    }
+                    },
                 )
                 connected = true
             } catch (ex: HikariPool.PoolInitializationException) {

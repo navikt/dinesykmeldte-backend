@@ -16,23 +16,23 @@ data class PreviewSykmeldt(
     val previewSoknader: List<PreviewSoknad>,
     val dialogmoter: List<Dialogmote>,
     val aktivitetsvarsler: List<Aktivitetsvarsel>,
-    val oppfolgingsplaner: List<Oppfolgingsplan>
+    val oppfolgingsplaner: List<Oppfolgingsplan>,
 )
 
 data class Oppfolgingsplan(
     val hendelseId: UUID,
     var tekst: String,
-    var mottatt: OffsetDateTime
+    var mottatt: OffsetDateTime,
 )
 
 data class Dialogmote(
     val hendelseId: UUID,
     var tekst: String,
-    var mottatt: OffsetDateTime
+    var mottatt: OffsetDateTime,
 )
 
 data class Aktivitetsvarsel(
     val hendelseId: UUID,
     val mottatt: OffsetDateTime,
-    val lest: OffsetDateTime?
+    val lest: OffsetDateTime?,
 )

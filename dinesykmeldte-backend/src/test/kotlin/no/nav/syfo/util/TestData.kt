@@ -30,7 +30,7 @@ fun createSykmeldingDbModel(
     orgnummer: String = "orgnummer",
     orgnavn: String = "Navn AS",
     sendtTilArbeidsgiverDato: OffsetDateTime? = OffsetDateTime.now(ZoneOffset.UTC),
-    land: String? = null
+    land: String? = null,
 ): SykmeldingDbModel {
     return SykmeldingDbModel(
         sykmeldingId = sykmeldingId,
@@ -51,7 +51,7 @@ fun createSykmeldtDbModel(pasientFnr: String = "12345678910"): SykmeldtDbModel {
         pasientFnr = pasientFnr,
         pasientNavn = "Navn Navnesen",
         startdatoSykefravaer = LocalDate.now().minusMonths(2),
-        latestTom = LocalDate.now().minusWeeks(2)
+        latestTom = LocalDate.now().minusWeeks(2),
     )
 }
 
@@ -60,39 +60,39 @@ fun createSoknadDbModel(
     sykmeldingId: String = "76483e9f-eb16-464c-9bed-a9b258794bc4",
     pasientFnr: String = "123456789",
     arbeidsgivernavn: String = "Kebabbiten",
-    orgnummer: String = "123454543"
+    orgnummer: String = "123454543",
 ): SoknadDbModel {
     val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
-        getFileAsString("src/test/resources/soknad.json")
+        getFileAsString("src/test/resources/soknad.json"),
     ).copy(
         id = soknadId,
         sykmeldingId = sykmeldingId,
         fnr = pasientFnr,
         arbeidsgiver = ArbeidsgiverDTO(
             navn = arbeidsgivernavn,
-            orgnummer = orgnummer
-        )
+            orgnummer = orgnummer,
+        ),
     )
     return sykepengesoknadDTO.toSoknadDbModel()
 }
 
 fun createSykepengesoknadDto(
     soknadId: String,
-    sykmeldingId: String
+    sykmeldingId: String,
 ) = objectMapper.readValue<SykepengesoknadDTO>(
-    getFileAsString("src/test/resources/soknad.json")
+    getFileAsString("src/test/resources/soknad.json"),
 ).copy(
     id = soknadId,
     fom = LocalDate.now().minusMonths(1),
     tom = LocalDate.now().minusWeeks(2),
     sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
-    sykmeldingId = sykmeldingId
+    sykmeldingId = sykmeldingId,
 )
 
 fun createArbeidsgiverSykmelding(
     sykmeldingId: String,
     perioder: List<SykmeldingsperiodeAGDTO> = listOf(createSykmeldingsperiode()),
-    land: String? = null
+    land: String? = null,
 ) = ArbeidsgiverSykmelding(
     id = sykmeldingId,
     mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
@@ -113,7 +113,7 @@ fun createArbeidsgiverSykmelding(
     papirsykmelding = false,
     harRedusertArbeidsgiverperiode = false,
     merknader = null,
-    utenlandskSykmelding = land?.let { UtenlandskSykmeldingAGDTO(it) }
+    utenlandskSykmelding = land?.let { UtenlandskSykmeldingAGDTO(it) },
 )
 
 fun createSykmeldingsperiode(
@@ -124,7 +124,7 @@ fun createSykmeldingsperiode(
     innspillTilArbeidsgiver: String? = null,
     type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
     aktivitetIkkeMulig: AktivitetIkkeMuligAGDTO? = AktivitetIkkeMuligAGDTO(null),
-    reisetilskudd: Boolean = false
+    reisetilskudd: Boolean = false,
 ) = SykmeldingsperiodeAGDTO(
     fom = fom,
     tom = tom,
@@ -133,5 +133,5 @@ fun createSykmeldingsperiode(
     innspillTilArbeidsgiver = innspillTilArbeidsgiver,
     type = type,
     aktivitetIkkeMulig = aktivitetIkkeMulig,
-    reisetilskudd = reisetilskudd
+    reisetilskudd = reisetilskudd,
 )

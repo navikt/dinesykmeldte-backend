@@ -22,7 +22,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
     }
 
     private fun Connection.insertOrUpdateSykmelding(
-        sykmeldingDbModel: SykmeldingDbModel
+        sykmeldingDbModel: SykmeldingDbModel,
     ) {
         this.prepareStatement(
             """insert into sykmelding(
@@ -45,7 +45,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                             lest = excluded.lest,
                             timestamp = excluded.timestamp,
                             latest_tom = excluded.latest_tom,
-                            sendt_til_arbeidsgiver_dato = excluded.sendt_til_arbeidsgiver_dato;"""
+                            sendt_til_arbeidsgiver_dato = excluded.sendt_til_arbeidsgiver_dato;""",
         ).use { preparedStatement ->
             val sendtTilArbeidsgiverDato =
                 if (sykmeldingDbModel.sendtTilArbeidsgiverDato != null) Timestamp.from(sykmeldingDbModel.sendtTilArbeidsgiverDato.toInstant()) else null
@@ -64,7 +64,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
         }
         this.updateSoknadFnr(
             sykmeldingId = sykmeldingDbModel.sykmeldingId,
-            nyttFnr = sykmeldingDbModel.pasientFnr
+            nyttFnr = sykmeldingDbModel.pasientFnr,
         )
     }
 
@@ -73,7 +73,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
             connection.prepareStatement(
                 """
                delete from sykmelding where sykmelding_id = ?;
-            """
+            """,
             ).use { ps ->
                 ps.setString(1, sykmeldingId)
                 ps.executeUpdate()
@@ -92,7 +92,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                     startdato_sykefravaer = ?,
                     latest_tom = ?,
                     sist_oppdatert = ?;
-            """
+            """,
         ).use { preparedStatement ->
             preparedStatement.setString(1, sykmeldt.pasientFnr)
             // insert
@@ -113,7 +113,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
         this.prepareStatement(
             """
                 UPDATE soknad SET pasient_fnr =? WHERE sykmelding_id=?;
-                """
+                """,
         ).use {
             it.setString(1, nyttFnr)
             it.setString(2, sykmeldingId)
@@ -161,6 +161,6 @@ private fun ResultSet.toSykmeldingInfo(): SykmeldingInfo {
     return SykmeldingInfo(
         sykmeldingId = getString("sykmelding_id"),
         latestTom = getDate("latest_tom").toLocalDate(),
-        fnr = getString("pasient_fnr")
+        fnr = getString("pasient_fnr"),
     )
 }

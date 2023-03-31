@@ -12,7 +12,7 @@ import java.lang.RuntimeException
 class PdlPersonService(
     private val pdlClient: PdlClient,
     private val accessTokenClient: AccessTokenClient,
-    private val pdlScope: String
+    private val pdlScope: String,
 ) {
     companion object {
         const val AKTORID_GRUPPE = "AKTORID"
@@ -47,7 +47,7 @@ class PdlPersonService(
 
         return PdlPerson(
             navn = Navn(fornavn = navn.fornavn, mellomnavn = navn.mellomnavn, etternavn = navn.etternavn),
-            aktorId = aktorId
+            aktorId = aktorId,
         )
     }
 }

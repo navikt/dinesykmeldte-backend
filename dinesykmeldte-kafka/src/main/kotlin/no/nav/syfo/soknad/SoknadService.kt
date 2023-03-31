@@ -11,7 +11,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import java.time.LocalDate
 
 class SoknadService(
-    private val soknadDb: SoknadDb
+    private val soknadDb: SoknadDb,
 ) {
     suspend fun handleSykepengesoknad(record: ConsumerRecord<String, String>) {
         try {

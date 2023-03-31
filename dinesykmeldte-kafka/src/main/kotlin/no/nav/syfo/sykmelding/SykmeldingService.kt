@@ -22,13 +22,13 @@ class SykmeldingService(
     private val sykmeldingDb: SykmeldingDb,
     private val pdlPersonService: PdlPersonService,
     private val syfoSyketilfelleClient: SyfoSyketilfelleClient,
-    private val cluster: String
+    private val cluster: String,
 ) {
     suspend fun handleSendtSykmeldingKafkaMessage(record: ConsumerRecord<String, String?>) {
         try {
             handleSendtSykmeldingKafkaMessage(
                 record.key(),
-                record.value()?.let { objectMapper.readValue<SendtSykmeldingKafkaMessage>(it) }
+                record.value()?.let { objectMapper.readValue<SendtSykmeldingKafkaMessage>(it) },
             )
         } catch (ex: NameNotFoundInPdlException) {
             if (cluster != "dev-gcp") {
@@ -60,7 +60,7 @@ class SykmeldingService(
     private suspend fun handleSendtSykmelding(
         sykmelding: SendtSykmeldingKafkaMessage,
         sykmeldingId: String,
-        existingSykmelding: SykmeldingInfo?
+        existingSykmelding: SykmeldingInfo?,
     ) {
         val sisteTom = finnSisteTom(sykmelding.sykmelding.sykmeldingsperioder)
         if (sisteTom.isAfter(LocalDate.now().minusMonths(4))) {
@@ -92,7 +92,7 @@ class SykmeldingService(
 
                 val startdato = syfoSyketilfelleClient.finnStartdato(
                     fnr = fnr,
-                    sykmeldingId = latestSykmelding.sykmeldingId
+                    sykmeldingId = latestSykmelding.sykmeldingId,
                 )
 
                 sykmeldingDb.insertOrUpdateSykmeldt(
@@ -101,8 +101,8 @@ class SykmeldingService(
                         pasientNavn = person.navn.formatName(),
                         startdatoSykefravaer = startdato,
                         latestTom = latestSykmelding.latestTom,
-                        sistOppdatert = LocalDate.now()
-                    )
+                        sistOppdatert = LocalDate.now(),
+                    ),
                 )
             }
         }

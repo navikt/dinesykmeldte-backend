@@ -43,7 +43,7 @@ fun createApplicationEngine(
     applicationState: ApplicationState,
     mineSykmeldteService: MineSykmeldteService,
     virksomhetService: VirksomhetService,
-    narmestelederService: NarmestelederService
+    narmestelederService: NarmestelederService,
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -57,7 +57,7 @@ fun createApplicationEngine(
         setupAuth(
             jwkProviderTokenX = jwkProviderTokenX,
             tokenXIssuer = tokenXIssuer,
-            env = env
+            env = env,
         )
         install(CallId) {
             generate { UUID.randomUUID().toString() }

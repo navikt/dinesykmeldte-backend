@@ -25,7 +25,7 @@ data class Environment(
     val dbPort: String = getEnvVar("NAIS_DATABASE_DINESYKMELDTE_KAFKA_USER_PORT"),
     val dbName: String = getEnvVar("NAIS_DATABASE_DINESYKMELDTE_KAFKA_USER_DATABASE"),
     val cloudSqlInstance: String = getEnvVar("CLOUD_SQL_INSTANCE"),
-    val electorPath: String = getEnvVar("ELECTOR_PATH")
+    val electorPath: String = getEnvVar("ELECTOR_PATH"),
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

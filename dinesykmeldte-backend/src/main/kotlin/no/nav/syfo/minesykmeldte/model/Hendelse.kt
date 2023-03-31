@@ -13,7 +13,7 @@ enum class HendelseType {
     IKKE_SENDT_SOKNAD,
     OPPFOLGINGSPLAN_OPPRETTET,
     OPPFOLGINGSPLAN_TIL_GODKJENNING,
-    UNKNOWN
+    UNKNOWN,
 }
 
 val DialogmoteHendelser = listOf(
@@ -21,12 +21,12 @@ val DialogmoteHendelser = listOf(
     HendelseType.DIALOGMOTE_AVLYSNING,
     HendelseType.DIALOGMOTE_ENDRING,
     HendelseType.DIALOGMOTE_REFERAT,
-    HendelseType.DIALOGMOTE_SVAR_BEHOV
+    HendelseType.DIALOGMOTE_SVAR_BEHOV,
 )
 
 val OppfolgingsplanerHendelser = listOf(
     HendelseType.OPPFOLGINGSPLAN_OPPRETTET,
-    HendelseType.OPPFOLGINGSPLAN_TIL_GODKJENNING
+    HendelseType.OPPFOLGINGSPLAN_TIL_GODKJENNING,
 )
 
 data class Hendelse(
@@ -36,5 +36,5 @@ data class Hendelse(
     val tekst: String?,
     val hendelseId: UUID,
     val mottatt: OffsetDateTime,
-    val ferdigstilt: OffsetDateTime?
+    val ferdigstilt: OffsetDateTime?,
 )

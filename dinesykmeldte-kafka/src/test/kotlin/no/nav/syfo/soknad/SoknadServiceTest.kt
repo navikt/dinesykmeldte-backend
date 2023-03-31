@@ -40,19 +40,19 @@ class SoknadServiceTest : FunSpec({
                         "Navn",
                         LocalDate.now().minusWeeks(5),
                         LocalDate.now().minusWeeks(2),
-                        null
-                    )
+                        null,
+                    ),
                 )
                 connection.commit()
             }
             val soknadId = UUID.randomUUID().toString()
             val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
-                getFileAsString("src/test/resources/soknad.json")
+                getFileAsString("src/test/resources/soknad.json"),
             ).copy(
                 id = soknadId,
                 fom = LocalDate.now().minusMonths(1),
                 tom = LocalDate.now().minusWeeks(2),
-                sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1)
+                sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
             )
             sykepengesoknadDTO.sporsmal!!.find { it.tag == ARBEID_UTENFOR_NORGE } shouldNotBeEqualTo null
             sykepengesoknadDTO.sporsmal!!.find { it.tag == ANDRE_INNTEKTSKILDER } shouldNotBeEqualTo null
@@ -74,7 +74,7 @@ class SoknadServiceTest : FunSpec({
             soknadFraDb?.tom shouldBeEqualTo LocalDate.now().minusWeeks(2)
             val arbeidsgiverSoknadFraDb = soknadFraDb!!.soknad
             val sporsmalArbeidsgivervisning: List<SporsmalDTO> = objectMapper.readValue(
-                getFileAsString("src/test/resources/soknadSporsmalArbeidsgivervisning.json")
+                getFileAsString("src/test/resources/soknadSporsmalArbeidsgivervisning.json"),
             )
             arbeidsgiverSoknadFraDb.andreInntektskilder shouldBeEqualTo null
             arbeidsgiverSoknadFraDb.sporsmal shouldBeEqualTo sporsmalArbeidsgivervisning
@@ -83,12 +83,12 @@ class SoknadServiceTest : FunSpec({
         test("Ignorerer søknad med tom tidligere enn 4 mnd siden") {
             val soknadId = UUID.randomUUID().toString()
             val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
-                getFileAsString("src/test/resources/soknad.json")
+                getFileAsString("src/test/resources/soknad.json"),
             ).copy(
                 id = soknadId,
                 fom = LocalDate.now().minusMonths(6),
                 tom = LocalDate.now().minusMonths(5),
-                sendtArbeidsgiver = LocalDateTime.now().minusMonths(1)
+                sendtArbeidsgiver = LocalDateTime.now().minusMonths(1),
             )
 
             soknadService.handleSykepengesoknad(sykepengesoknadDTO)
@@ -98,13 +98,13 @@ class SoknadServiceTest : FunSpec({
         test("Skal lagre soknad med ny og slette med når den bare er sendt til NAV") {
             val soknadId = UUID.randomUUID().toString()
             val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
-                getFileAsString("src/test/resources/soknad.json")
+                getFileAsString("src/test/resources/soknad.json"),
             ).copy(
                 id = soknadId,
                 fom = LocalDate.now().minusMonths(1),
                 tom = LocalDate.now().minusWeeks(2),
                 sendtArbeidsgiver = null,
-                status = SoknadsstatusDTO.NY
+                status = SoknadsstatusDTO.NY,
             )
             soknadService.handleSykepengesoknad(sykepengesoknadDTO)
             TestDb.getSoknad(soknadId) shouldNotBeEqualTo null
@@ -115,12 +115,12 @@ class SoknadServiceTest : FunSpec({
         test("Ignorerer søknad som ikke er sendt til arbeidsgiver") {
             val soknadId = UUID.randomUUID().toString()
             val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
-                getFileAsString("src/test/resources/soknad.json")
+                getFileAsString("src/test/resources/soknad.json"),
             ).copy(
                 id = soknadId,
                 fom = LocalDate.now().minusMonths(1),
                 tom = LocalDate.now().minusWeeks(2),
-                sendtArbeidsgiver = null
+                sendtArbeidsgiver = null,
             )
 
             soknadService.handleSykepengesoknad(sykepengesoknadDTO)
@@ -130,13 +130,13 @@ class SoknadServiceTest : FunSpec({
         test("Ignorerer ikke søknad som ikke har status sendt") {
             val soknadId = UUID.randomUUID().toString()
             val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
-                getFileAsString("src/test/resources/soknad.json")
+                getFileAsString("src/test/resources/soknad.json"),
             ).copy(
                 id = soknadId,
                 fom = LocalDate.now().minusMonths(1),
                 tom = LocalDate.now().minusWeeks(2),
                 sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
-                status = SoknadsstatusDTO.NY
+                status = SoknadsstatusDTO.NY,
             )
 
             soknadService.handleSykepengesoknad(sykepengesoknadDTO)

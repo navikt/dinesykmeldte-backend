@@ -9,5 +9,5 @@ data class OpprettHendelse(
     val lenke: String?,
     val tekst: String?,
     val timestamp: OffsetDateTime,
-    val utlopstidspunkt: OffsetDateTime?
+    val utlopstidspunkt: OffsetDateTime?,
 )
