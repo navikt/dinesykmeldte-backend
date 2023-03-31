@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: dinesykmeldte-backend-db-instance
+  namespace: teamsykmelding
+spec:
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 35.228.117.51/32
+  podSelector:
+    matchLabels:
+      app: dinesykmeldte-kafka
+  policyTypes:
+    - Egress
