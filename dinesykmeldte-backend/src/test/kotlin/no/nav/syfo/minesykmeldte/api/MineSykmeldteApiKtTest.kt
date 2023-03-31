@@ -57,7 +57,7 @@ class MineSykmeldteApiKtTest : FunSpec({
             test("should get empty list") {
                 coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns emptyList()
                 with(
-                    handleRequest(HttpMethod.Get, "/api/minesykmeldte") { addAuthorizationHeader() }
+                    handleRequest(HttpMethod.Get, "/api/minesykmeldte") { addAuthorizationHeader() },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     response.content shouldBeEqualTo "[]"
@@ -79,11 +79,11 @@ class MineSykmeldteApiKtTest : FunSpec({
                         previewSoknader = emptyList(),
                         dialogmoter = emptyList(),
                         aktivitetsvarsler = emptyList(),
-                        oppfolgingsplaner = emptyList()
-                    )
+                        oppfolgingsplaner = emptyList(),
+                    ),
                 )
                 with(
-                    handleRequest(HttpMethod.Get, "/api/minesykmeldte") { addAuthorizationHeader() }
+                    handleRequest(HttpMethod.Get, "/api/minesykmeldte") { addAuthorizationHeader() },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     response.content shouldBeEqualTo """[ {
@@ -110,9 +110,9 @@ class MineSykmeldteApiKtTest : FunSpec({
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") {
                         addHeader(
                             "Authorization",
-                            "Bearer tull"
+                            "Bearer tull",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
@@ -123,7 +123,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") {
                         addAuthorizationHeader(audience = "wrong-dummy-client-id")
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
@@ -134,7 +134,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") {
                         addAuthorizationHeader(issuer = "https://wrong.issuer.net/myid")
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
@@ -145,9 +145,9 @@ class MineSykmeldteApiKtTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Get, "/api/minesykmeldte") {
                         addAuthorizationHeader(
-                            level = "Level3"
+                            level = "Level3",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
@@ -175,22 +175,22 @@ class MineSykmeldteApiKtTest : FunSpec({
                                     lest = false,
                                     perioder = listOf(),
                                     ikkeSendtSoknadVarsel = true,
-                                    ikkeSendtSoknadVarsletDato = OffsetDateTime.parse("2020-03-01T10:10:30+02:00")
-                                )
+                                    ikkeSendtSoknadVarsletDato = OffsetDateTime.parse("2020-03-01T10:10:30+02:00"),
+                                ),
                             ),
                             dialogmoter = listOf(Dialogmote(hendelseId, "Ny revidert oppfølgingplan", OffsetDateTime.parse("2022-03-11T10:15:30+02:00"))),
                             aktivitetsvarsler = listOf(
                                 Aktivitetsvarsel(
                                     hendelseId,
                                     OffsetDateTime.parse("2022-04-09T10:15:30+02:00"),
-                                    null
-                                )
+                                    null,
+                                ),
                             ),
-                            oppfolgingsplaner = listOf(Oppfolgingsplan(hendelseId, "ny oppfolgingsplan", OffsetDateTime.parse("2022-06-17T10:15:30+02:00")))
-                        )
+                            oppfolgingsplaner = listOf(Oppfolgingsplan(hendelseId, "ny oppfolgingsplan", OffsetDateTime.parse("2022-06-17T10:15:30+02:00"))),
+                        ),
                     )
                     with(
-                        handleRequest(HttpMethod.Get, "/api/minesykmeldte") { addAuthorizationHeader() }
+                        handleRequest(HttpMethod.Get, "/api/minesykmeldte") { addAuthorizationHeader() },
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         response.content shouldBeEqualTo """
@@ -232,13 +232,13 @@ class MineSykmeldteApiKtTest : FunSpec({
                 coEvery {
                     mineSykmeldteService.getSykmelding(
                         "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
-                        any()
+                        any(),
                     )
                 } returns null
                 with(
                     handleRequest(HttpMethod.Get, "/api/sykmelding/7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657") {
                         addAuthorizationHeader()
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.NotFound
                     response.content shouldBeEqualTo """{ "message": "Sykmeldingen finnes ikke" }""".minifyApiResponse()
@@ -250,19 +250,19 @@ class MineSykmeldteApiKtTest : FunSpec({
                 coEvery {
                     mineSykmeldteService.getSykmelding(
                         "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
-                        any()
+                        any(),
                     )
                 } returns createSykmeldingTestData(
                     id = "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
                     startdatoSykefravar = LocalDate.parse("2021-01-01"),
                     kontaktDato = LocalDate.parse("2021-01-01"),
                     behandletTidspunkt = LocalDate.parse("2021-01-02"),
-                    sendtTilArbeidsgiverDato = OffsetDateTime.parse("2022-05-09T13:20:04+00:00")
+                    sendtTilArbeidsgiverDato = OffsetDateTime.parse("2022-05-09T13:20:04+00:00"),
                 )
                 with(
                     handleRequest(HttpMethod.Get, "/api/sykmelding/7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657") {
                         addAuthorizationHeader()
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     response.content shouldBeEqualTo """
@@ -305,7 +305,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Put, "/api/hendelser/read") {
                         addAuthorizationHeader()
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     response.content shouldBeEqualTo """{ "message": "Markert som lest" }""".minifyApiResponse()
@@ -317,7 +317,7 @@ class MineSykmeldteApiKtTest : FunSpec({
                     mineSykmeldteService.markAllSykmeldingerAndSoknaderRead(any())
                 } returns Unit
                 with(
-                    handleRequest(HttpMethod.Put, "/api/hendelser/read")
+                    handleRequest(HttpMethod.Put, "/api/hendelser/read"),
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
@@ -329,13 +329,13 @@ class MineSykmeldteApiKtTest : FunSpec({
                 coEvery {
                     mineSykmeldteService.getSoknad(
                         "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
-                        any()
+                        any(),
                     )
                 } returns null
                 with(
                     handleRequest(HttpMethod.Get, "/api/soknad/7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657") {
                         addAuthorizationHeader()
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.NotFound
                     response.content shouldBeEqualTo """{ "message": "Søknaden finnes ikke" }""".minifyApiResponse()
@@ -356,29 +356,29 @@ class MineSykmeldteApiKtTest : FunSpec({
                         kriterieForVisningAvUndersporsmal = VisningskriteriumDTO.CHECKED,
                         svar = listOf(
                             Svar(
-                                verdi = "Nei"
-                            )
+                                verdi = "Nei",
+                            ),
                         ),
-                        undersporsmal = emptyList()
-                    )
+                        undersporsmal = emptyList(),
+                    ),
                 )
 
                 coEvery {
                     mineSykmeldteService.getSoknad(
                         "d9ca08ca-bdbf-4571-ba4f-109c3642047b",
-                        any()
+                        any(),
                     )
                 } returns createSoknadTestData(
                     id = "d9ca08ca-bdbf-4571-ba4f-109c3642047b",
                     sykmeldingId = "772e674d-0422-4a5e-b779-a8819abf5959",
                     tom = LocalDate.parse("2021-01-01"),
                     fom = LocalDate.parse("2020-12-01"),
-                    sporsmal = sporsmal
+                    sporsmal = sporsmal,
                 )
                 with(
                     handleRequest(HttpMethod.Get, "/api/soknad/d9ca08ca-bdbf-4571-ba4f-109c3642047b") {
                         addAuthorizationHeader()
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     response.content shouldBeEqualTo """                      
@@ -430,7 +430,7 @@ fun createSoknadTestData(
     fom: LocalDate = LocalDate.parse("2021-05-01"),
     korrigererSoknadId: String? = null,
     korrigertBySoknadId: String = "0422-4a5e-b779-a8819abf",
-    sporsmal: List<Sporsmal>
+    sporsmal: List<Sporsmal>,
 ) = Soknad(
     id = id,
     sykmeldingId = sykmeldingId,
@@ -444,7 +444,7 @@ fun createSoknadTestData(
     korrigererSoknadId = korrigererSoknadId,
     korrigertBySoknadId = korrigertBySoknadId,
     perioder = listOf(),
-    sporsmal = sporsmal
+    sporsmal = sporsmal,
 )
 
 fun createSykmeldingTestData(
@@ -455,7 +455,7 @@ fun createSykmeldingTestData(
     fnr: String = "fnr",
     lest: Boolean = false,
     arbeidsgiver: Arbeidsgiver = Arbeidsgiver(
-        navn = "Arbeid G. Iversen"
+        navn = "Arbeid G. Iversen",
     ),
     perioder: List<Periode> = emptyList(),
     arbeidsforEtterPeriode: Boolean = false,
@@ -465,11 +465,11 @@ fun createSykmeldingTestData(
     behandler: Behandler = Behandler(
         navn = "Beh. Handler",
         hprNummer = "80802721231",
-        telefon = "81549300"
+        telefon = "81549300",
     ),
     behandletTidspunkt: LocalDate = LocalDate.now(),
     sendtTilArbeidsgiverDato: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
-    land: String? = null
+    land: String? = null,
 ): Sykmelding = Sykmelding(
     id = id,
     startdatoSykefravar = startdatoSykefravar,
