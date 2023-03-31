@@ -94,6 +94,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Deploy network policy to dev-gcp
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CLUSTER: dev-gcp
+          TEAM: teamsykmelding
+          RESOURCE:  dinesykmeldte-kafka/network-policy-dev.yaml
+          PRINT_PAYLOAD: true
       - name: Deploy to dev
         uses: nais/deploy/actions/deploy@master
         env:
@@ -108,6 +117,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Deploy network policy to prod-gcp
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CLUSTER: prod-gcp
+          TEAM: teamsykmelding
+          RESOURCE:  dinesykmeldte-kafka/network-policy-prod.yaml
+          PRINT_PAYLOAD: true
       - name: Deploy to Prod
         uses: nais/deploy/actions/deploy@master
         env:
