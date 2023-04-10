@@ -23,7 +23,6 @@ val kotlinVersion = "1.8.20"
 val sykepengesoknadKafkaVersion = "2022.10.28-10.24-aa0eced7"
 val swaggerUiVersion = "4.18.2"
 val kotestVersion = "5.5.5"
-val nettyCodecVersion = "4.1.86.Final"
 val googlePostgresVersion = "1.8.0"
 val googleOauthVersion = "1.34.1"
 
@@ -71,9 +70,6 @@ subprojects {
 
         implementation("io.ktor:ktor-server-core:$ktorVersion")
         implementation("io.ktor:ktor-server-netty:$ktorVersion")
-        // This is to override version that is in io.ktor:ktor-server-netty
-        // https://www.cve.org/CVERecord?id=CVE-2022-41915
-        implementation("io.netty:netty-codec:$nettyCodecVersion")
         implementation("io.ktor:ktor-server-auth:$ktorVersion")
         implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
         implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
