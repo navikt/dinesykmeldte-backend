@@ -42,7 +42,7 @@ jobs:
           ORG_GRADLE_PROJECT_githubUser: x-access-token
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./gradlew :dinesykmeldte-backend:shadowJar -x test
+          ./gradlew :dinesykmeldte-kafka:shadowJar -x test
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
