@@ -1,10 +1,6 @@
 # dinesykmeldte-backend
 This project contains the application code and infrastructure for dinesykmeldte-backend
 
-[![Deploy dinesykmeldte-kafka app to dev and prod](https://github.com/navikt/dinesykmeldte-backend/actions/workflows/kafka-prod.yml/badge.svg)](https://github.com/navikt/dinesykmeldte-backend/actions/workflows/kafka-prod.yml)
-[![Deploy to dev and prod](https://github.com/navikt/dinesykmeldte-backend/actions/workflows/deploy.yml/badge.svg)](https://github.com/navikt/dinesykmeldte-backend/actions/workflows/deploy.yml)
-
-
 ## Technologies used
 * Kotlin
 * Ktor
@@ -17,7 +13,7 @@ This project contains the application code and infrastructure for dinesykmeldte-
 
 ## Getting started
 ### Getting github-package-registry packages NAV-IT
-Some packages used in this repo is uploaded to the Github Package Registry which requires authentication. It can, for example, be solved like this in Gradle:
+Some packages used in this repo is uploaded to the GitHub Package Registry which requires authentication. It can, for example, be solved like this in Gradle:
 ```
 val githubUser: String by project
 val githubPassword: String by project
@@ -56,12 +52,6 @@ or the command line:
 #### Compile and package application
 To build locally and run the integration tests you can simply run `./gradlew shadowJar` or  on windows 
 `gradlew.bat shadowJar`
-
-#### Creating a docker image
-Creating a docker image should be as simple as `docker build -t dinesykmeldte-backend .`
-
-#### Running a docker image
-`docker run --rm -it -p 8080:8080 dinesykmeldte-backend`
 
 
 ### Upgrading the gradle wrapper
