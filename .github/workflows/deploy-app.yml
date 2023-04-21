@@ -1,5 +1,12 @@
 name: Deploy app to dev and prod
-on: push
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'dinesykmeldte-backend/**'
+      - '.github/workflows/deploy-app.yml'
+      - 'build.gradle.kts'
 
 jobs:
   jar-app:

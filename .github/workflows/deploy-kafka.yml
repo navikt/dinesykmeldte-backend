@@ -1,5 +1,12 @@
 name: Deploy kafka to dev and prod
-on: push
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'dinesykmeldte-kafka/**'
+      - '.github/workflows/deploy-app.yml'
+      - 'build.gradle.kts'
 
 jobs:
   jar-app:
