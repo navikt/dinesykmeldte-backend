@@ -17,3 +17,5 @@ jobs:
       dockerfile_path: ./dinesykmeldte-backend/Dockerfile
       docker_context: dinesykmeldte-backend
       subprojects: true
+      naiserator_dev: dinesykmeldte-backend/naiserator-dev.yaml
+      naiserator_prod: dinesykmeldte-backend/naiserator-prod.yaml
