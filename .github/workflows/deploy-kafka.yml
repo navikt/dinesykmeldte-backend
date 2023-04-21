@@ -5,7 +5,7 @@ on:
       - main
     paths:
       - 'dinesykmeldte-kafka/**'
-      - '.github/workflows/deploy-app.yml'
+      - '.github/workflows/deploy-kafka.yml'
       - 'build.gradle.kts'
 
 jobs:
