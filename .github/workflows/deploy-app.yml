@@ -1,0 +1,12 @@
+name: Deploy app to dev and prod
+on: push
+
+jobs:
+  jar-app:
+    uses: navikt/teamsykmelding-github-actions-workflows/.github/workflows/jar-app.yaml@main
+    secrets: inherit
+    with:
+      app: dinesykmeldte-backend
+      dockerfile_path: ./dinesykmeldte-backend/Dockerfile
+      docker_context: dinesykmeldte-backend
+      subprojects: true
