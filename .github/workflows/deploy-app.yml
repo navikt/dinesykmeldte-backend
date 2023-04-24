@@ -14,8 +14,8 @@ jobs:
     secrets: inherit
     with:
       app: dinesykmeldte-backend
-      dockerfile_path: ./dinesykmeldte-backend/Dockerfile
-      docker_context: dinesykmeldte-backend
-      subprojects: true
-      naiserator_dev: dinesykmeldte-backend/naiserator-dev.yaml
-      naiserator_prod: dinesykmeldte-backend/naiserator-prod.yaml
+      dockerfile_path: Dockerfile
+      docker_context: .
+      subprojects: false
+      naiserator_dev: naiserator-dev.yaml
+      naiserator_prod: naiserator-prod.yaml

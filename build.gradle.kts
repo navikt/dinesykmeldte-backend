@@ -40,22 +40,15 @@ plugins {
 val githubUser: String by project
 val githubPassword: String by project
 
-subprojects {
-    group = "no.nav.syfo"
-    version = "1.0.0"
-    apply(plugin = "org.jmailen.kotlinter")
-    apply(plugin = "kotlin")
-    apply(plugin = "com.github.johnrengelman.shadow")
-    apply(plugin = "org.hidetake.swagger.generator")
 
-    repositories {
-        mavenCentral()
-        maven {
-            url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
-            credentials {
-                username = githubUser
-                password = githubPassword
-            }
+
+repositories {
+    mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
+        credentials {
+            username = githubUser
+            password = githubPassword
         }
     }
 
@@ -140,9 +133,7 @@ subprojects {
                 setPath("META-INF/cxf")
                 include("bus-extensions.txt")
             }
-            if (project.name == "dinesykmeldte-backend") {
-                dependsOn("generateSwaggerUI")
-            }
+            dependsOn("generateSwaggerUI")
         }
 
         withType<Test> {
