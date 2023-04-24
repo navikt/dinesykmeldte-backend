@@ -1,12 +1,5 @@
 name: Deploy app to dev and prod
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'dinesykmeldte-backend/**'
-      - '.github/workflows/deploy-app.yml'
-      - 'build.gradle.kts'
+on: push
 
 jobs:
   jar-app:
@@ -14,8 +7,3 @@ jobs:
     secrets: inherit
     with:
       app: dinesykmeldte-backend
-      dockerfile_path: ./dinesykmeldte-backend/Dockerfile
-      docker_context: dinesykmeldte-backend
-      subprojects: true
-      naiserator_dev: dinesykmeldte-backend/naiserator-dev.yaml
-      naiserator_prod: dinesykmeldte-backend/naiserator-prod.yaml
