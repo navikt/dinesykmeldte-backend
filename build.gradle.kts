@@ -23,7 +23,7 @@ val kotlinVersion = "1.8.22"
 val sykepengesoknadKafkaVersion = "2022.10.28-10.24-aa0eced7"
 val swaggerUiVersion = "5.0.0"
 val kotestVersion = "5.6.2"
-val googlePostgresVersion = "1.11.2"
+val googlePostgresVersion = "1.12.0"
 val googleOauthVersion = "1.34.1"
 
 tasks.withType<Jar> {
