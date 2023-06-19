@@ -18,12 +18,12 @@ spec:
             users:
               - name: dinesykmeldte-kafka-user
         diskAutoresize: true
-        highAvailability: true
+        highAvailability: false
         insights:
           enabled: true
   replicas:
     min: 1
-    max: 2
+    max: 1
     cpuThresholdPercentage: 90
   port: 8080
   liveness:
@@ -42,7 +42,7 @@ spec:
     path: /internal/prometheus
   resources:
     limits:
-      cpu: 200m
+      cpu: 500m
       memory: 1Gi
     requests:
       cpu: 50m
