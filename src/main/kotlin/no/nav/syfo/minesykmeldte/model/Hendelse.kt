@@ -16,18 +16,20 @@ enum class HendelseType {
     UNKNOWN,
 }
 
-val DialogmoteHendelser = listOf(
-    HendelseType.DIALOGMOTE_INNKALLING,
-    HendelseType.DIALOGMOTE_AVLYSNING,
-    HendelseType.DIALOGMOTE_ENDRING,
-    HendelseType.DIALOGMOTE_REFERAT,
-    HendelseType.DIALOGMOTE_SVAR_BEHOV,
-)
+val DialogmoteHendelser =
+    listOf(
+        HendelseType.DIALOGMOTE_INNKALLING,
+        HendelseType.DIALOGMOTE_AVLYSNING,
+        HendelseType.DIALOGMOTE_ENDRING,
+        HendelseType.DIALOGMOTE_REFERAT,
+        HendelseType.DIALOGMOTE_SVAR_BEHOV,
+    )
 
-val OppfolgingsplanerHendelser = listOf(
-    HendelseType.OPPFOLGINGSPLAN_OPPRETTET,
-    HendelseType.OPPFOLGINGSPLAN_TIL_GODKJENNING,
-)
+val OppfolgingsplanerHendelser =
+    listOf(
+        HendelseType.OPPFOLGINGSPLAN_OPPRETTET,
+        HendelseType.OPPFOLGINGSPLAN_TIL_GODKJENNING,
+    )
 
 data class Hendelse(
     val id: String,

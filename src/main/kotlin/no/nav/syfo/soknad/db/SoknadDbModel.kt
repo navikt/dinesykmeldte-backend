@@ -1,8 +1,8 @@
 package no.nav.syfo.soknad.db
 
-import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 
 data class SoknadDbModel(
     val soknadId: String,

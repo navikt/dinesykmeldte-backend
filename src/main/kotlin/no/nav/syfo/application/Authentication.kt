@@ -27,7 +27,10 @@ fun Application.setupAuth(jwkProviderTokenX: JwkProvider, tokenXIssuer: String, 
             verifier(jwkProviderTokenX, tokenXIssuer)
             validate { credentials ->
                 when {
-                    harDineSykmeldteBackendAudience(credentials, env.dineSykmeldteBackendTokenXClientId) && erNiva4(credentials) -> {
+                    harDineSykmeldteBackendAudience(
+                        credentials,
+                        env.dineSykmeldteBackendTokenXClientId
+                    ) && erNiva4(credentials) -> {
                         val principal = JWTPrincipal(credentials.payload)
                         BrukerPrincipal(
                             fnr = finnFnrFraToken(principal),
@@ -49,7 +52,10 @@ fun ApplicationCall.getToken(): String? {
 }
 
 fun finnFnrFraToken(principal: JWTPrincipal): String {
-    return if (principal.payload.getClaim("pid") != null && !principal.payload.getClaim("pid").asString().isNullOrEmpty()) {
+    return if (
+        principal.payload.getClaim("pid") != null &&
+            !principal.payload.getClaim("pid").asString().isNullOrEmpty()
+    ) {
         log.debug("Bruker fnr fra pid-claim")
         principal.payload.getClaim("pid").asString()
     } else {

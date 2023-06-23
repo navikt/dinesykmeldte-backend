@@ -20,6 +20,9 @@ import io.ktor.client.request.get
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
 import io.prometheus.client.hotspot.DefaultExports
+import java.net.URL
+import java.util.concurrent.TimeUnit
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.ApplicationServer
@@ -41,19 +44,17 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.net.URL
-import java.util.concurrent.TimeUnit
-import kotlin.time.ExperimentalTime
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.dinesykmeldte-backend")
 val sikkerlogg = LoggerFactory.getLogger("securelog")
 
-val objectMapper: ObjectMapper = ObjectMapper().apply {
-    registerKotlinModule()
-    registerModule(JavaTimeModule())
-    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-}
+val objectMapper: ObjectMapper =
+    ObjectMapper().apply {
+        registerKotlinModule()
+        registerModule(JavaTimeModule())
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    }
 
 @ExperimentalTime
 @DelicateCoroutinesApi
@@ -75,7 +76,8 @@ fun main() {
         HttpResponseValidator {
             handleResponseExceptionWithRequest { exception, _ ->
                 when (exception) {
-                    is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
+                    is SocketTimeoutException ->
+                        throw ServiceUnavailableException(exception.message)
                 }
             }
         }
@@ -87,7 +89,9 @@ fun main() {
             }
             retryIf(maxRetries) { request, response ->
                 if (response.status.value.let { it in 500..599 }) {
-                    log.warn("Retrying for status code ${response.status.value}, for url ${request.url}")
+                    log.warn(
+                        "Retrying for status code ${response.status.value}, for url ${request.url}"
+                    )
                     true
                 } else {
                     false
@@ -103,35 +107,37 @@ fun main() {
     val httpClient = HttpClient(Apache, config)
 
     val wellKnownTokenX = getWellKnownTokenX(httpClient, env.tokenXWellKnownUrl)
-    val jwkProviderTokenX = JwkProviderBuilder(URL(wellKnownTokenX.jwks_uri))
-        .cached(10, 24, TimeUnit.HOURS)
-        .rateLimited(10, 1, TimeUnit.MINUTES)
-        .build()
+    val jwkProviderTokenX =
+        JwkProviderBuilder(URL(wellKnownTokenX.jwks_uri))
+            .cached(10, 24, TimeUnit.HOURS)
+            .rateLimited(10, 1, TimeUnit.MINUTES)
+            .build()
 
     val nlResponseProducer = NLResponseProducer(createKafkaProducer(env), env.nlResponseTopic)
     val narmestelederService = NarmestelederService(NarmestelederDb(database), nlResponseProducer)
 
     val mineSykmeldteService = MineSykmeldteService(MineSykmeldteDb(database))
 
-    val applicationEngine = createApplicationEngine(
-        env,
-        jwkProviderTokenX,
-        wellKnownTokenX.issuer,
-        applicationState,
-        mineSykmeldteService,
-        VirksomhetService(VirksomhetDb(database)),
-        narmestelederService,
-    )
+    val applicationEngine =
+        createApplicationEngine(
+            env,
+            jwkProviderTokenX,
+            wellKnownTokenX.issuer,
+            applicationState,
+            mineSykmeldteService,
+            VirksomhetService(VirksomhetDb(database)),
+            narmestelederService,
+        )
     ApplicationServer(applicationEngine, applicationState).start()
 }
 
-fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) =
-    runBlocking { httpClient.get(wellKnownUrl).body<WellKnownTokenX>() }
+fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) = runBlocking {
+    httpClient.get(wellKnownUrl).body<WellKnownTokenX>()
+}
 
 fun <T> createKafkaProducer(env: Environment): KafkaProducer<String, T> =
     KafkaProducer(
-        KafkaUtils
-            .getAivenKafkaConfig()
+        KafkaUtils.getAivenKafkaConfig()
             .toProducerConfig(
                 "${env.applicationName}-producer",
                 JacksonKafkaSerializer::class,

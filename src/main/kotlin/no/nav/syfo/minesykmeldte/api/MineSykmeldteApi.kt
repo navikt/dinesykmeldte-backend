@@ -6,6 +6,9 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.put
+import java.util.UUID
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTimedValue
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.log
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
@@ -14,9 +17,6 @@ import no.nav.syfo.minesykmeldte.model.HttpMessage
 import no.nav.syfo.sikkerlogg
 import no.nav.syfo.util.getBrukerPrincipal
 import no.nav.syfo.util.getParam
-import java.util.UUID
-import kotlin.time.ExperimentalTime
-import kotlin.time.measureTimedValue
 
 @ExperimentalTime
 fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
@@ -24,10 +24,10 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         val principal: BrukerPrincipal = call.getBrukerPrincipal()
         val lederFnr = principal.fnr
         sikkerlogg.info("Calling api path: api/minesykmeldt for lederFnr $lederFnr")
-        val timedValue = measureTimedValue {
-            mineSykmeldteService.getMineSykmeldte(lederFnr)
-        }
-        log.info("Getting ${timedValue.value.size} sykmeldte, duration: ${timedValue.duration.inWholeMilliseconds}")
+        val timedValue = measureTimedValue { mineSykmeldteService.getMineSykmeldte(lederFnr) }
+        log.info(
+            "Getting ${timedValue.value.size} sykmeldte, duration: ${timedValue.duration.inWholeMilliseconds}"
+        )
 
         call.respond(timedValue.value)
     }

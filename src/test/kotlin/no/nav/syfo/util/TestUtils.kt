@@ -14,21 +14,19 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.TestApplicationRequest
+import java.nio.file.Paths
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import no.nav.syfo.Environment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.objectMapper
 import no.nav.syfo.testutils.generateJWTLoginservice
 import org.amshove.kluent.shouldBeInstanceOf
-import java.nio.file.Paths
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 
 @ExperimentalContracts
 inline fun <reified T> Any?.shouldBeInstance() {
-    contract {
-        returns() implies (this@shouldBeInstance is T)
-    }
+    contract { returns() implies (this@shouldBeInstance is T) }
 
     this.shouldBeInstanceOf(T::class)
 }
@@ -48,13 +46,13 @@ fun withKtor(env: Environment, build: Route.() -> Unit, block: TestApplicationEn
             }
         }
         application.setupAuth(
-            jwkProviderTokenX = JwkProviderBuilder(Paths.get("src/test/resources/jwkset.json").toUri().toURL()).build(),
+            jwkProviderTokenX =
+                JwkProviderBuilder(Paths.get("src/test/resources/jwkset.json").toUri().toURL())
+                    .build(),
             tokenXIssuer = "https://sts.issuer.net/myid",
             env = env,
         )
-        application.routing {
-            authenticate("tokenx", build = build)
-        }
+        application.routing { authenticate("tokenx", build = build) }
 
         block(this)
     }

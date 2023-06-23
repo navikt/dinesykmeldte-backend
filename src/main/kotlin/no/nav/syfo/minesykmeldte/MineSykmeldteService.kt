@@ -1,5 +1,7 @@
 package no.nav.syfo.minesykmeldte
 
+import java.time.LocalDate
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
@@ -40,79 +42,90 @@ import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.toFormattedNameString
-import java.time.LocalDate
-import java.util.UUID
 
 class MineSykmeldteService(
     private val mineSykmeldteDb: MineSykmeldteDb,
 ) {
-    suspend fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> = withContext(Dispatchers.IO) {
-        val hendelserJob = async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr) }
-        val sykmeldteMapJob =
-            async(Dispatchers.IO) { mineSykmeldteDb.getMineSykmeldte(lederFnr).groupBy { it.toMinSykmeldtKey() } }
+    suspend fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> =
+        withContext(Dispatchers.IO) {
+            val hendelserJob = async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr) }
+            val sykmeldteMapJob =
+                async(Dispatchers.IO) {
+                    mineSykmeldteDb.getMineSykmeldte(lederFnr).groupBy { it.toMinSykmeldtKey() }
+                }
 
-        val hendelserMap = hendelserJob.await().groupBy { it.pasientFnr }
-            .mapValues { it.value.map { hendelse -> hendelse.toHendelse() } }
+            val hendelserMap =
+                hendelserJob
+                    .await()
+                    .groupBy { it.pasientFnr }
+                    .mapValues { it.value.map { hendelse -> hendelse.toHendelse() } }
 
-        val sykmeldteMap = sykmeldteMapJob.await()
+            val sykmeldteMap = sykmeldteMapJob.await()
 
-        return@withContext sykmeldteMap.map { sykmeldtEntry ->
-            val nyesteSendteSykmelding = sykmeldtEntry.value.sortedBy { it.sendtTilArbeidsgiverDato }.last()
-            PreviewSykmeldt(
-                narmestelederId = sykmeldtEntry.key.narmestelederId,
-                orgnummer = sykmeldtEntry.key.orgnummer,
-                orgnavn = nyesteSendteSykmelding.orgNavn,
-                fnr = sykmeldtEntry.key.fnr,
-                navn = nyesteSendteSykmelding.sykmeldtNavn,
-                startdatoSykefravar = nyesteSendteSykmelding.startDatoSykefravar,
-                friskmeldt = isFriskmeldt(sykmeldtEntry),
-                previewSoknader = getPreviewSoknader(sykmeldtEntry, hendelserMap),
-                dialogmoter = getDialogmoter(hendelserMap, sykmeldtEntry),
-                sykmeldinger = getSykmeldinger(sykmeldtEntry),
-                aktivitetsvarsler = getAktivitetsvarsler(hendelserMap, sykmeldtEntry),
-                oppfolgingsplaner = getOppfolgingsplaner(hendelserMap, sykmeldtEntry),
-            )
+            return@withContext sykmeldteMap.map { sykmeldtEntry ->
+                val nyesteSendteSykmelding =
+                    sykmeldtEntry.value.sortedBy { it.sendtTilArbeidsgiverDato }.last()
+                PreviewSykmeldt(
+                    narmestelederId = sykmeldtEntry.key.narmestelederId,
+                    orgnummer = sykmeldtEntry.key.orgnummer,
+                    orgnavn = nyesteSendteSykmelding.orgNavn,
+                    fnr = sykmeldtEntry.key.fnr,
+                    navn = nyesteSendteSykmelding.sykmeldtNavn,
+                    startdatoSykefravar = nyesteSendteSykmelding.startDatoSykefravar,
+                    friskmeldt = isFriskmeldt(sykmeldtEntry),
+                    previewSoknader = getPreviewSoknader(sykmeldtEntry, hendelserMap),
+                    dialogmoter = getDialogmoter(hendelserMap, sykmeldtEntry),
+                    sykmeldinger = getSykmeldinger(sykmeldtEntry),
+                    aktivitetsvarsler = getAktivitetsvarsler(hendelserMap, sykmeldtEntry),
+                    oppfolgingsplaner = getOppfolgingsplaner(hendelserMap, sykmeldtEntry),
+                )
+            }
         }
-    }
 
     private fun getOppfolgingsplaner(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-    ) = hendelserMap[sykmeldtEntry.key.fnr]
-        ?.filter { OppfolgingsplanerHendelser.contains(it.oppgavetype) }
-        ?.map {
-            Oppfolgingsplan(
-                it.hendelseId,
-                it.tekst ?: throw IllegalStateException("Oppfølgningsplan uten tekst: ${it.id}"),
-                it.mottatt,
-            )
-        }
-        ?: emptyList()
+    ) =
+        hendelserMap[sykmeldtEntry.key.fnr]
+            ?.filter { OppfolgingsplanerHendelser.contains(it.oppgavetype) }
+            ?.map {
+                Oppfolgingsplan(
+                    it.hendelseId,
+                    it.tekst
+                        ?: throw IllegalStateException("Oppfølgningsplan uten tekst: ${it.id}"),
+                    it.mottatt,
+                )
+            }
+            ?: emptyList()
 
-    private fun getSykmeldinger(sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>) =
-        sykmeldtEntry.value.distinctBy { it.sykmeldingId }.map { sykmeldtDbModel ->
-            sykmeldtDbModel.toSykmelding()
-        }
+    private fun getSykmeldinger(
+        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
+    ) =
+        sykmeldtEntry.value
+            .distinctBy { it.sykmeldingId }
+            .map { sykmeldtDbModel -> sykmeldtDbModel.toSykmelding() }
 
     private fun getDialogmoter(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-    ) = hendelserMap[sykmeldtEntry.key.fnr]
-        ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
-        ?.map {
-            Dialogmote(
-                hendelseId = it.hendelseId,
-                tekst = it.tekst ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}"),
-                mottatt = it.mottatt,
-            )
-        }
-        ?: emptyList()
+    ) =
+        hendelserMap[sykmeldtEntry.key.fnr]
+            ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
+            ?.map {
+                Dialogmote(
+                    hendelseId = it.hendelseId,
+                    tekst = it.tekst
+                            ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}"),
+                    mottatt = it.mottatt,
+                )
+            }
+            ?: emptyList()
 
     private fun getAktivitetsvarsler(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-    ): List<Aktivitetsvarsel> = (
-        hendelserMap[sykmeldtEntry.key.fnr]
+    ): List<Aktivitetsvarsel> =
+        (hendelserMap[sykmeldtEntry.key.fnr]
             ?.filter { ma -> ma.oppgavetype == HendelseType.AKTIVITETSKRAV }
             ?.map {
                 Aktivitetsvarsel(
@@ -121,21 +134,22 @@ class MineSykmeldteService(
                     lest = it.ferdigstilt,
                 )
             }
-            ?: emptyList()
-        )
+            ?: emptyList())
 
     private fun getPreviewSoknader(
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
         hendelserMap: Map<String, List<Hendelse>>,
     ): List<PreviewSoknad> {
-        val korrigerteSoknader = sykmeldtEntry.value
-            .mapNotNull { it.soknad }
-            .mapNotNull { it.korrigerer }
+        val korrigerteSoknader =
+            sykmeldtEntry.value.mapNotNull { it.soknad }.mapNotNull { it.korrigerer }
 
         return sykmeldtEntry.value
             .filter { it.soknad != null && !korrigerteSoknader.contains(it.soknad.id) }
             .mapNotNull { sykmeldt ->
-                mapNullableSoknad(sykmeldt, getHendlersforSoknad(hendelserMap, sykmeldtEntry, sykmeldt))
+                mapNullableSoknad(
+                    sykmeldt,
+                    getHendlersforSoknad(hendelserMap, sykmeldtEntry, sykmeldt)
+                )
             }
     }
 
@@ -171,9 +185,8 @@ class MineSykmeldteService(
 }
 
 private fun isFriskmeldt(it: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>): Boolean {
-    val latestTom: LocalDate = it.value
-        .flatMap { it.sykmelding.sykmeldingsperioder }
-        .maxOf { it.tom }
+    val latestTom: LocalDate =
+        it.value.flatMap { it.sykmelding.sykmeldingsperioder }.maxOf { it.tom }
 
     return LocalDate.now().isAfter(latestTom)
 }
@@ -182,24 +195,21 @@ private fun mapNullableSoknad(
     sykmeldtDbModel: MinSykmeldtDbModel,
     hendelser: List<Hendelse>,
 ): PreviewSoknad? =
-    sykmeldtDbModel.soknad?.let {
-        toPreviewSoknad(it, sykmeldtDbModel.lestSoknad, hendelser)
-    }
+    sykmeldtDbModel.soknad?.let { toPreviewSoknad(it, sykmeldtDbModel.lestSoknad, hendelser) }
 
-private fun MinSykmeldtDbModel.toMinSykmeldtKey(): MinSykmeldtKey = MinSykmeldtKey(
-    narmestelederId = this.narmestelederId,
-    orgnummer = this.orgnummer,
-    fnr = this.sykmeldtFnr,
-)
+private fun MinSykmeldtDbModel.toMinSykmeldtKey(): MinSykmeldtKey =
+    MinSykmeldtKey(
+        narmestelederId = this.narmestelederId,
+        orgnummer = this.orgnummer,
+        fnr = this.sykmeldtFnr,
+    )
 
 private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
     val (sykmeldt, soknadDb) = this
 
     val sykmeldingId = soknadDb.sykmeldingId
 
-    requireNotNull(sykmeldingId) {
-        "Søknad kan ikke eksistere uten sykmelding"
-    }
+    requireNotNull(sykmeldingId) { "Søknad kan ikke eksistere uten sykmelding" }
 
     return Soknad(
         id = soknadDb.soknadId,
@@ -210,14 +220,18 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         tom = soknadDb.tom,
         lest = soknadDb.lest,
         sendtDato = soknadDb.soknad.sendtArbeidsgiver
-            ?: throw IllegalStateException("Søknad uten sendt dato: ${soknadDb.soknadId}"),
+                ?: throw IllegalStateException("Søknad uten sendt dato: ${soknadDb.soknadId}"),
         sendtTilNavDato = soknadDb.soknad.sendtNav,
         korrigererSoknadId = soknadDb.soknad.korrigerer,
         korrigertBySoknadId = soknadDb.soknad.korrigertAv,
         perioder = soknadDb.soknad.soknadsperioder?.map { it.toSoknadsperiode() }
-            ?: throw IllegalStateException("Søknad uten perioder definert: ${soknadDb.soknadId}"),
+                ?: throw IllegalStateException(
+                    "Søknad uten perioder definert: ${soknadDb.soknadId}"
+                ),
         sporsmal = soknadDb.soknad.sporsmal?.map { it.toSporsmal() }
-            ?: throw IllegalStateException("Søknad uten sporsmal definert: ${soknadDb.soknadId}"),
+                ?: throw IllegalStateException(
+                    "Søknad uten sporsmal definert: ${soknadDb.soknadId}"
+                ),
     )
 }
 
@@ -230,25 +244,28 @@ private fun MinSykmeldtDbModel.toSykmelding(): Sykmelding {
         fnr = this.sykmeldtFnr,
         lest = this.lestSykmelding,
         behandletTidspunkt = this.sykmelding.behandletTidspunkt.toLocalDate(),
-        arbeidsgiver = Arbeidsgiver(
-            navn = this.sykmelding.arbeidsgiver.navn,
-        ),
+        arbeidsgiver =
+            Arbeidsgiver(
+                navn = this.sykmelding.arbeidsgiver.navn,
+            ),
         perioder = sykmelding.sykmeldingsperioder.map { it.toSykmeldingPeriode() },
         arbeidsforEtterPeriode = sykmelding.prognose?.arbeidsforEtterPeriode,
         hensynArbeidsplassen = sykmelding.prognose?.hensynArbeidsplassen,
         tiltakArbeidsplassen = sykmelding.tiltakArbeidsplassen,
         innspillArbeidsplassen = sykmelding.meldingTilArbeidsgiver,
-        behandler = sykmelding.behandler?.let {
-            Behandler(
-                navn = it.formatName(),
-                hprNummer = it.hpr,
-                telefon = it.tlf,
-            )
-        },
+        behandler =
+            sykmelding.behandler?.let {
+                Behandler(
+                    navn = it.formatName(),
+                    hprNummer = it.hpr,
+                    telefon = it.tlf,
+                )
+            },
         startdatoSykefravar = this.startDatoSykefravar,
         navn = this.sykmeldtNavn,
         sendtTilArbeidsgiverDato = this.sendtTilArbeidsgiverDato,
-        utenlandskSykmelding = sykmelding.utenlandskSykmelding?.let { UtenlandskSykmelding(land = it.land) },
+        utenlandskSykmelding =
+            sykmelding.utenlandskSykmelding?.let { UtenlandskSykmelding(land = it.land) },
         egenmeldingsdager = this.egenmeldingsdager,
     )
 }
@@ -262,61 +279,66 @@ private fun Pair<SykmeldtDbModel, SykmeldingDbModel>.toSykmelding(): Sykmelding 
         fnr = sykmelding.pasientFnr,
         lest = sykmelding.lest,
         behandletTidspunkt = sykmelding.sykmelding.behandletTidspunkt.toLocalDate(),
-        arbeidsgiver = Arbeidsgiver(
-            navn = sykmelding.sykmelding.arbeidsgiver.navn,
-        ),
+        arbeidsgiver =
+            Arbeidsgiver(
+                navn = sykmelding.sykmelding.arbeidsgiver.navn,
+            ),
         perioder = sykmelding.sykmelding.sykmeldingsperioder.map { it.toSykmeldingPeriode() },
         arbeidsforEtterPeriode = sykmelding.sykmelding.prognose?.arbeidsforEtterPeriode,
         hensynArbeidsplassen = sykmelding.sykmelding.prognose?.hensynArbeidsplassen,
         tiltakArbeidsplassen = sykmelding.sykmelding.tiltakArbeidsplassen,
         innspillArbeidsplassen = sykmelding.sykmelding.meldingTilArbeidsgiver,
-        behandler = sykmelding.sykmelding.behandler.let {
-            Behandler(
-                navn = it?.formatName() ?: "",
-                hprNummer = it?.hpr,
-                telefon = it?.tlf,
-            )
-        },
+        behandler =
+            sykmelding.sykmelding.behandler.let {
+                Behandler(
+                    navn = it?.formatName() ?: "",
+                    hprNummer = it?.hpr,
+                    telefon = it?.tlf,
+                )
+            },
         startdatoSykefravar = sykmeldt.startdatoSykefravaer,
         navn = sykmeldt.pasientNavn,
         sendtTilArbeidsgiverDato = sykmelding.sendtTilArbeidsgiverDato,
-        utenlandskSykmelding = sykmelding.sykmelding.utenlandskSykmelding?.let { UtenlandskSykmelding(land = it.land) },
+        utenlandskSykmelding =
+            sykmelding.sykmelding.utenlandskSykmelding?.let {
+                UtenlandskSykmelding(land = it.land)
+            },
         egenmeldingsdager = sykmelding.egenmeldingsdager,
     )
 }
 
 private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
     when (this.type) {
-        PeriodetypeDTO.AKTIVITET_IKKE_MULIG -> AktivitetIkkeMulig(
-            this.fom,
-            this.tom,
-            this.aktivitetIkkeMulig?.arbeidsrelatertArsak?.let {
-                ArbeidsrelatertArsak(
-                    beskrivelse = it.beskrivelse,
-                    arsak = it.arsak.map { arsak ->
-                        ArbeidsrelatertArsakEnum.valueOf(arsak.toString())
-                    },
-                )
-            },
-        )
-
-        PeriodetypeDTO.AVVENTENDE -> Avventende(
-            this.fom,
-            this.tom,
-            tilrettelegging = this.innspillTilArbeidsgiver,
-        )
-
-        PeriodetypeDTO.BEHANDLINGSDAGER -> Behandlingsdager(
-            this.fom,
-            this.tom,
-            this.behandlingsdager ?: throw IllegalStateException("Behandlingsdager without behandlingsdager"),
-        )
-
+        PeriodetypeDTO.AKTIVITET_IKKE_MULIG ->
+            AktivitetIkkeMulig(
+                this.fom,
+                this.tom,
+                this.aktivitetIkkeMulig?.arbeidsrelatertArsak?.let {
+                    ArbeidsrelatertArsak(
+                        beskrivelse = it.beskrivelse,
+                        arsak =
+                            it.arsak.map { arsak ->
+                                ArbeidsrelatertArsakEnum.valueOf(arsak.toString())
+                            },
+                    )
+                },
+            )
+        PeriodetypeDTO.AVVENTENDE ->
+            Avventende(
+                this.fom,
+                this.tom,
+                tilrettelegging = this.innspillTilArbeidsgiver,
+            )
+        PeriodetypeDTO.BEHANDLINGSDAGER ->
+            Behandlingsdager(
+                this.fom,
+                this.tom,
+                this.behandlingsdager
+                    ?: throw IllegalStateException("Behandlingsdager without behandlingsdager"),
+            )
         PeriodetypeDTO.GRADERT -> {
             val gradering = this.gradert
-            requireNotNull(gradering) {
-                "Gradert periode uten gradert-data burde ikke eksistere"
-            }
+            requireNotNull(gradering) { "Gradert periode uten gradert-data burde ikke eksistere" }
 
             Gradert(
                 this.fom,
@@ -325,14 +347,15 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
                 gradering.reisetilskudd,
             )
         }
-
-        PeriodetypeDTO.REISETILSKUDD -> Reisetilskudd(
-            this.fom,
-            this.tom,
-        )
+        PeriodetypeDTO.REISETILSKUDD ->
+            Reisetilskudd(
+                this.fom,
+                this.tom,
+            )
     }
 
-private fun BehandlerAGDTO.formatName(): String = toFormattedNameString(fornavn, mellomnavn, etternavn)
+private fun BehandlerAGDTO.formatName(): String =
+    toFormattedNameString(fornavn, mellomnavn, etternavn)
 
 private fun HendelseDbModel.toHendelse() =
     Hendelse(
@@ -349,7 +372,9 @@ fun safeParseHendelseEnum(oppgavetype: String): HendelseType {
     return try {
         HendelseType.valueOf(oppgavetype)
     } catch (e: Exception) {
-        log.error("Ukjent oppgave av type $oppgavetype er ikke håndtert i applikasjonen. Mangler vi implementasjon?")
+        log.error(
+            "Ukjent oppgave av type $oppgavetype er ikke håndtert i applikasjonen. Mangler vi implementasjon?"
+        )
         HendelseType.UNKNOWN
     }
 }

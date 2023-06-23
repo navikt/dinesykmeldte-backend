@@ -25,13 +25,14 @@ val swaggerUiVersion = "5.1.0"
 val kotestVersion = "5.6.2"
 val googlePostgresVersion = "1.12.0"
 val googleOauthVersion = "1.34.1"
+val ktfmtVersion = "0.44"
 
 tasks.withType<Jar> {
     manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
 }
 
 plugins {
-    id("org.jmailen.kotlinter") version "3.15.0"
+    id("com.diffplug.spotless") version "6.19.0"
     kotlin("jvm") version "1.8.22"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
@@ -146,8 +147,11 @@ repositories {
             }
         }
 
-        "check" {
-            dependsOn("formatKotlin")
+        spotless {
+            kotlin { ktfmt(ktfmtVersion).kotlinlangStyle() }
+            check {
+                dependsOn("spotlessApply")
+            }
         }
     }
 

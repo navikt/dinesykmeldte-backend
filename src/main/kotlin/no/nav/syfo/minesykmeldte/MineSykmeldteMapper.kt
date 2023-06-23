@@ -39,9 +39,13 @@ class MineSykmeldteMapper private constructor() {
                 lest = lest,
                 korrigererSoknadId = soknad.korrigerer,
                 sendtDato = soknad.sendtArbeidsgiver
-                    ?: throw IllegalStateException("sendtArbeidsgiver is null for soknad: ${soknad.id}"),
+                        ?: throw IllegalStateException(
+                            "sendtArbeidsgiver is null for soknad: ${soknad.id}"
+                        ),
                 perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
-                    ?: throw IllegalStateException("søknadsperioder must not be null in sendt soknad: ${soknad.id}"),
+                        ?: throw IllegalStateException(
+                            "søknadsperioder must not be null in sendt soknad: ${soknad.id}"
+                        ),
             )
 
         private fun getFremtidigSoknad(soknad: SykepengesoknadDTO): PreviewFremtidigSoknad =
@@ -51,10 +55,16 @@ class MineSykmeldteMapper private constructor() {
                 fom = soknad.fom,
                 tom = soknad.tom,
                 perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
-                    ?: throw IllegalStateException("søknadsperioder must not be null in fremtidig soknad: ${soknad.id}"),
+                        ?: throw IllegalStateException(
+                            "søknadsperioder must not be null in fremtidig soknad: ${soknad.id}"
+                        ),
             )
 
-        private fun getNySoknad(soknad: SykepengesoknadDTO, lest: Boolean, hendelser: List<Hendelse>): PreviewNySoknad =
+        private fun getNySoknad(
+            soknad: SykepengesoknadDTO,
+            lest: Boolean,
+            hendelser: List<Hendelse>
+        ): PreviewNySoknad =
             PreviewNySoknad(
                 lest = lest,
                 id = soknad.id,
@@ -62,52 +72,65 @@ class MineSykmeldteMapper private constructor() {
                 fom = soknad.fom,
                 tom = soknad.tom,
                 perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
-                    ?: throw IllegalStateException("søknadsperioder must not be null in ny soknad: ${soknad.id}"),
-                ikkeSendtSoknadVarsel = hendelser.any { it.id == soknad.id && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD },
-                ikkeSendtSoknadVarsletDato = hendelser.find {
-                    it.id == soknad.id && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD
-                }?.mottatt,
+                        ?: throw IllegalStateException(
+                            "søknadsperioder must not be null in ny soknad: ${soknad.id}"
+                        ),
+                ikkeSendtSoknadVarsel =
+                    hendelser.any {
+                        it.id == soknad.id && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD
+                    },
+                ikkeSendtSoknadVarsletDato =
+                    hendelser
+                        .find {
+                            it.id == soknad.id && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD
+                        }
+                        ?.mottatt,
             )
 
-        fun SoknadsperiodeDTO.toSoknadsperiode(): Soknadsperiode = Soknadsperiode(
-            fom = requireNotNull(fom),
-            tom = requireNotNull(tom),
-            sykmeldingsgrad = sykmeldingsgrad,
-            sykmeldingstype = PeriodeEnum.valueOf(sykmeldingstype.toString()),
-        )
+        fun SoknadsperiodeDTO.toSoknadsperiode(): Soknadsperiode =
+            Soknadsperiode(
+                fom = requireNotNull(fom),
+                tom = requireNotNull(tom),
+                sykmeldingsgrad = sykmeldingsgrad,
+                sykmeldingstype = PeriodeEnum.valueOf(sykmeldingstype.toString()),
+            )
 
-        private fun SporsmalDTO.toUndersporsmal(): Undersporsmal = Undersporsmal(
-            id = requireNotNull(id),
-            tag = requireNotNull(tag),
-            min = min,
-            max = max,
-            sporsmalstekst = sporsmalstekst,
-            undertekst = undertekst,
-            svartype = requireNotNull(svartype),
-            kriterieForVisningAvUndersporsmal = kriterieForVisningAvUndersporsmal,
-            svar = svar?.map {
-                Svar(
-                    verdi = requireNotNull(it.verdi),
-                )
-            },
-            undersporsmal = undersporsmal?.map { it.toUndersporsmal() },
-        )
+        private fun SporsmalDTO.toUndersporsmal(): Undersporsmal =
+            Undersporsmal(
+                id = requireNotNull(id),
+                tag = requireNotNull(tag),
+                min = min,
+                max = max,
+                sporsmalstekst = sporsmalstekst,
+                undertekst = undertekst,
+                svartype = requireNotNull(svartype),
+                kriterieForVisningAvUndersporsmal = kriterieForVisningAvUndersporsmal,
+                svar =
+                    svar?.map {
+                        Svar(
+                            verdi = requireNotNull(it.verdi),
+                        )
+                    },
+                undersporsmal = undersporsmal?.map { it.toUndersporsmal() },
+            )
 
-        fun SporsmalDTO.toSporsmal(): Sporsmal = Sporsmal(
-            id = requireNotNull(id),
-            tag = requireNotNull(tag),
-            min = min,
-            max = max,
-            sporsmalstekst = requireNotNull(sporsmalstekst),
-            undertekst = undertekst,
-            svartype = requireNotNull(svartype),
-            kriterieForVisningAvUndersporsmal = kriterieForVisningAvUndersporsmal,
-            svar = svar?.map {
-                Svar(
-                    verdi = requireNotNull(it.verdi),
-                )
-            },
-            undersporsmal = undersporsmal?.map { it.toUndersporsmal() },
-        )
+        fun SporsmalDTO.toSporsmal(): Sporsmal =
+            Sporsmal(
+                id = requireNotNull(id),
+                tag = requireNotNull(tag),
+                min = min,
+                max = max,
+                sporsmalstekst = requireNotNull(sporsmalstekst),
+                undertekst = undertekst,
+                svartype = requireNotNull(svartype),
+                kriterieForVisningAvUndersporsmal = kriterieForVisningAvUndersporsmal,
+                svar =
+                    svar?.map {
+                        Svar(
+                            verdi = requireNotNull(it.verdi),
+                        )
+                    },
+                undersporsmal = undersporsmal?.map { it.toUndersporsmal() },
+            )
     }
 }

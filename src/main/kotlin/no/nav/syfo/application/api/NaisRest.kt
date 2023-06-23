@@ -31,7 +31,10 @@ fun Routing.registerNaisApi(
             if (readynessCheck()) {
                 call.respondText("I'm ready! :)")
             } else {
-                call.respondText("Please wait! I'm not ready :(", status = HttpStatusCode.InternalServerError)
+                call.respondText(
+                    "Please wait! I'm not ready :(",
+                    status = HttpStatusCode.InternalServerError
+                )
             }
         }
         get("/prometheus") {

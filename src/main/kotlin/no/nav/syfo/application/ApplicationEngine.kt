@@ -14,6 +14,7 @@ import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
+import io.ktor.server.http.content.*
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
@@ -21,9 +22,10 @@ import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
+import java.util.UUID
+import kotlin.time.ExperimentalTime
 import no.nav.syfo.Environment
 import no.nav.syfo.application.api.registerNaisApi
-import no.nav.syfo.application.api.setupSwaggerDocApi
 import no.nav.syfo.application.metrics.monitorHttpRequests
 import no.nav.syfo.log
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
@@ -32,8 +34,6 @@ import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.api.registerNarmestelederApi
 import no.nav.syfo.virksomhet.api.VirksomhetService
 import no.nav.syfo.virksomhet.api.registerVirksomhetApi
-import java.util.UUID
-import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 fun createApplicationEngine(
@@ -72,9 +72,7 @@ fun createApplicationEngine(
         }
         install(CORS) {
             allowMethod(HttpMethod.Get)
-            env.allowedOrigin.forEach {
-                hosts.add("https://$it")
-            }
+            env.allowedOrigin.forEach { hosts.add("https://$it") }
             allowHeader("nav_csrf_protection")
             allowHeader("Sykmeldt-Fnr")
             allowCredentials = true
@@ -84,7 +82,7 @@ fun createApplicationEngine(
         routing {
             registerNaisApi(applicationState)
             if (env.cluster == "dev-gcp") {
-                setupSwaggerDocApi()
+                staticResources("/api/v1/docs/", "api") { default("api/index.html") }
             }
             authenticate("tokenx") {
                 registerMineSykmeldteApi(mineSykmeldteService)
