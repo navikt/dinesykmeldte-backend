@@ -26,7 +26,7 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         sikkerlogg.info("Calling api path: api/minesykmeldt for lederFnr $lederFnr")
         val timedValue = measureTimedValue { mineSykmeldteService.getMineSykmeldte(lederFnr) }
         log.info(
-            "Getting ${timedValue.value.size} sykmeldte, duration: ${timedValue.duration.inWholeMilliseconds}"
+            "Calling api path: api/minesykmeldt getting ${timedValue.value.size} sykmeldte, duration: ${timedValue.duration.inWholeMilliseconds} ms"
         )
 
         call.respond(timedValue.value)
@@ -37,6 +37,7 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         val lederFnr = principal.fnr
         val sykmeldingId = call.getParam("sykmeldingId")
         sikkerlogg.info("Calling api path: api/sykmelding/$sykmeldingId for lederFnr $lederFnr")
+        log.info("Calling api path: api/sykmelding/$sykmeldingId")
 
         val sykmelding = mineSykmeldteService.getSykmelding(sykmeldingId, lederFnr)
         if (sykmelding != null) {
