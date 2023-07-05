@@ -945,6 +945,19 @@
       "undersporsmal": []
     },
     {
+      "id": "234234234234345345",
+      "tag": "YRKESSKADE_V2",
+      "sporsmalstekst": "Er du sykmeldt på grunn av en yrkesskade eller yrkessykdom?",
+      "undertekst": null,
+      "svartype": "JA_NEI",
+      "min": null,
+      "max": null,
+      "pavirkerAndreSporsmal": false,
+      "kriterieForVisningAvUndersporsmal": "JA",
+      "svar": [],
+      "undersporsmal": []
+    },
+    {
       "id": "26",
       "tag": "VAER_KLAR_OVER_AT",
       "sporsmalstekst": "Viktig å være klar over:",
