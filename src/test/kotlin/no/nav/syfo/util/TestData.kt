@@ -19,7 +19,6 @@ import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
-import no.nav.syfo.soknad.toSoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.testutils.getFileAsString
@@ -152,3 +151,19 @@ fun createSykmeldingsperiode(
         aktivitetIkkeMulig = aktivitetIkkeMulig,
         reisetilskudd = reisetilskudd,
     )
+
+
+fun SykepengesoknadDTO.toSoknadDbModel(): SoknadDbModel {
+    return SoknadDbModel(
+        soknadId = id,
+        sykmeldingId = sykmeldingId,
+        pasientFnr = fnr,
+        orgnummer = arbeidsgiver?.orgnummer
+            ?: throw IllegalStateException("Har mottatt sendt søknad uten orgnummer: $id"),
+        soknad = this,
+        sendtDato = sendtArbeidsgiver?.toLocalDate(),
+        lest = false, // oppdateres fra strangler
+        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+        tom = tom!!,
+    )
+}
