@@ -49,13 +49,13 @@ import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
-import no.nav.syfo.util.toSoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.createArbeidsgiverSykmelding
 import no.nav.syfo.util.createSykepengesoknadDto
 import no.nav.syfo.util.createSykmeldingsperiode
 import no.nav.syfo.util.shouldBeInstance
+import no.nav.syfo.util.toSoknadDbModel
 import org.amshove.kluent.`should not be null`
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo

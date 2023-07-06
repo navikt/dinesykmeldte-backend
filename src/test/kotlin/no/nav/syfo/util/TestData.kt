@@ -152,14 +152,13 @@ fun createSykmeldingsperiode(
         reisetilskudd = reisetilskudd,
     )
 
-
 fun SykepengesoknadDTO.toSoknadDbModel(): SoknadDbModel {
     return SoknadDbModel(
         soknadId = id,
         sykmeldingId = sykmeldingId,
         pasientFnr = fnr,
         orgnummer = arbeidsgiver?.orgnummer
-            ?: throw IllegalStateException("Har mottatt sendt søknad uten orgnummer: $id"),
+                ?: throw IllegalStateException("Har mottatt sendt søknad uten orgnummer: $id"),
         soknad = this,
         sendtDato = sendtArbeidsgiver?.toLocalDate(),
         lest = false, // oppdateres fra strangler

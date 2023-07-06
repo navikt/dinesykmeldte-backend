@@ -11,7 +11,6 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
-import no.nav.syfo.util.toSoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.testutils.getFileAsString
 import no.nav.syfo.util.TestDb
@@ -20,6 +19,7 @@ import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
 import no.nav.syfo.util.insertHendelse
 import no.nav.syfo.util.insertOrUpdate
+import no.nav.syfo.util.toSoknadDbModel
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
 import org.amshove.kluent.shouldBeEqualTo
