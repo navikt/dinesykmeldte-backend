@@ -121,10 +121,6 @@ repositories {
             println(project.version)
         }
 
-        withType<KotlinCompile> {
-            kotlinOptions.jvmTarget = "17"
-        }
-
         withType<org.hidetake.gradle.swagger.generator.GenerateSwaggerUI> {
             outputDir = File(buildDir.path + "/resources/main/api")
             dependsOn("jar")
