@@ -137,7 +137,7 @@ fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) = runBlocki
 
 fun <T> createKafkaProducer(env: Environment): KafkaProducer<String, T> =
     KafkaProducer(
-        KafkaUtils.getAivenKafkaConfig()
+        KafkaUtils.getAivenKafkaConfig("syfo-narmesteleder-producer")
             .toProducerConfig(
                 "${env.applicationName}-producer",
                 JacksonKafkaSerializer::class,

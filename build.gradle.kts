@@ -1,7 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 group = "no.nav.syfo"
 version = "1.0.0"
 
@@ -9,10 +5,10 @@ val coroutinesVersion = "1.7.3"
 val jacksonVersion = "2.15.2"
 val kluentVersion = "1.73"
 val logbackVersion = "1.4.11"
-val ktorVersion = "2.3.3"
+val ktorVersion = "2.3.4"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "1.0.1"
+val smCommonVersion = "1.0.19"
 val mockkVersion = "1.13.7"
 val nimbusdsVersion = "9.31"
 val hikariVersion = "5.0.1"
@@ -27,16 +23,17 @@ val googlePostgresVersion = "1.13.1"
 val googleOauthVersion = "1.34.1"
 val ktfmtVersion = "0.44"
 
-tasks.withType<Jar> {
-    manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
-}
 
 plugins {
-    id("com.diffplug.spotless") version "6.20.0"
-    kotlin("jvm") version "1.9.0"
+    id("application")
+    id("com.diffplug.spotless") version "6.21.0"
+    kotlin("jvm") version "1.9.10"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
-    id("org.cyclonedx.bom") version "1.7.4"
+}
+
+application {
+    mainClass.set("no.nav.syfo.BootstrapKt")
 }
 
 val githubUser: String by project
@@ -105,6 +102,7 @@ repositories {
         testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
         testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
         testImplementation("io.kotest:kotest-property:$kotestVersion")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     }
 
     swaggerSources {
@@ -114,27 +112,29 @@ repositories {
     }
 
     tasks {
-        withType<Jar> {
-            manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
-        }
-        create("printVersion") {
-            println(project.version)
-        }
 
-        withType<org.hidetake.gradle.swagger.generator.GenerateSwaggerUI> {
-            outputDir = File(buildDir.path + "/resources/main/api")
+        generateSwaggerUI {
+            val output: Provider<Directory> = layout.buildDirectory.dir("/resources/main/api")
+            outputDir = output.get().asFile
             dependsOn("jar")
         }
 
-        withType<ShadowJar> {
-            transform(ServiceFileTransformer::class.java) {
-                setPath("META-INF/cxf")
-                include("bus-extensions.txt")
+        shadowJar {
+            archiveBaseName.set("app")
+            archiveClassifier.set("")
+            isZip64 = true
+            manifest {
+                attributes(
+                   mapOf(
+                        "Main-Class" to "no.nav.syfo.BootstrapKt",
+                    ),
+                )
             }
-            dependsOn("generateSwaggerUI")
         }
 
-        withType<Test> {
+
+
+        test {
             useJUnitPlatform {
             }
             testLogging {
