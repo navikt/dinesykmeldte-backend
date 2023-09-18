@@ -129,6 +129,7 @@ fun createArbeidsgiverSykmelding(
         harRedusertArbeidsgiverperiode = false,
         merknader = null,
         utenlandskSykmelding = land?.let { UtenlandskSykmeldingAGDTO(it) },
+        signaturDato = null
     )
 
 fun createSykmeldingsperiode(
