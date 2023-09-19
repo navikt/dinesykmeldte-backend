@@ -4,7 +4,7 @@ registries:
     type: maven-repository
     url: https://maven.pkg.github.com/navikt/syfosm-common
     username: x-access-token
-    password: ${{ secrets.GITHUB_TOKEN }}
+    password: ${{ secrets.READER_TOKEN }}
 updates:
   - package-ecosystem: "gradle"
     directory: "/"
