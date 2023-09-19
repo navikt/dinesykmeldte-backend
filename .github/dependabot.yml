@@ -1,17 +1,16 @@
 version: 2
-registries:
 updates:
-  - package-ecosystem: "gradle"
+  - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: daily
+      time: "03:00"
     open-pull-requests-limit: 10
-    groups:
-      dependencies:
-        patterns:
-          - "*"
-  - package-ecosystem: "github-actions"
+
+  - package-ecosystem: gradle
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: daily
+      time: "03:00"
     open-pull-requests-limit: 10
+    
