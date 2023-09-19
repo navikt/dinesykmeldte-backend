@@ -19,7 +19,7 @@ val kotlinVersion = "1.9.10"
 val sykepengesoknadKafkaVersion = "2022.10.28-10.24-aa0eced7"
 val swaggerUiVersion = "5.3.1"
 val kotestVersion = "5.6.2"
-val googlePostgresVersion = "1.13.1"
+val googlePostgresVersion = "1.14.0"
 val googleOauthVersion = "1.34.1"
 val ktfmtVersion = "0.44"
 
