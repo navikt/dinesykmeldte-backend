@@ -22,7 +22,7 @@ val kotestVersion = "5.7.2"
 val googlePostgresVersion = "1.14.0"
 val googleOauthVersion = "1.34.1"
 val ktfmtVersion = "0.44"
-
+val snappyJavaVersion = "1.1.10.5"
 
 plugins {
     id("application")
@@ -63,6 +63,11 @@ repositories {
         implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
         implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
+        constraints {
+            implementation("org.xerial.snappy:snappy-java:$snappyJavaVersion") {
+                because("override transient from org.apache.kafka:kafka_2.12")
+            }
+        }
         implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
         implementation("no.nav.helse.flex:sykepengesoknad-kafka:$sykepengesoknadKafkaVersion")
 
