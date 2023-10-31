@@ -22,13 +22,15 @@ import no.nav.syfo.util.getParam
 fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
     get("api/minesykmeldte") {
         val principal: BrukerPrincipal = call.getBrukerPrincipal()
+        val xRequestId = call.request.headers["X-Request-Id"]
         val lederFnr = principal.fnr
-        sikkerlogg.info("Calling api path: api/minesykmeldt for lederFnr $lederFnr")
         val timedValue = measureTimedValue { mineSykmeldteService.getMineSykmeldte(lederFnr) }
         log.info(
             "Calling api path: api/minesykmeldt getting ${timedValue.value.size} sykmeldte, duration: ${timedValue.duration.inWholeMilliseconds} ms"
         )
-
+        sikkerlogg.info(
+            "Getting sykmeldte lederFnr: $lederFnr, requestId: $xRequestId, sykmeldte: ${timedValue.value.map { it.narmestelederId }}"
+        )
         call.respond(timedValue.value)
     }
 
