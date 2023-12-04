@@ -79,7 +79,8 @@ repositories {
         implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
         implementation("com.zaxxer:HikariCP:$hikariVersion")
-        implementation("org.flywaydb:flyway-core:$flywayVersion")
+        compileOnly("org.flywaydb:flyway-core:$flywayVersion")
+        implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
         implementation("org.postgresql:postgresql:$postgresVersion")
         implementation("com.google.cloud.sql:postgres-socket-factory:$googlePostgresVersion")
         implementation("com.google.oauth-client:google-oauth-client:$googleOauthVersion")
