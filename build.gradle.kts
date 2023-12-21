@@ -12,10 +12,10 @@ val smCommonVersion = "2.0.8"
 val mockkVersion = "1.13.8"
 val nimbusdsVersion = "9.37.3"
 val hikariVersion = "5.1.0"
-val flywayVersion = "10.3.0"
+val flywayVersion = "10.4.0"
 val postgresVersion = "42.7.1"
 val testContainerVersion = "1.19.3"
-val kotlinVersion = "1.9.21"
+val kotlinVersion = "1.9.22"
 val sykepengesoknadKafkaVersion = "2023.09.18-14.15-7ea2dc46"
 val swaggerUiVersion = "5.10.3"
 val kotestVersion = "5.8.0"
@@ -27,7 +27,7 @@ val snappyJavaVersion = "1.1.10.5"
 plugins {
     id("application")
     id("com.diffplug.spotless") version "6.23.3"
-    kotlin("jvm") version "1.9.21"
+    kotlin("jvm") version "1.9.22"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
 }
