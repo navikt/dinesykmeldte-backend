@@ -15,8 +15,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.time.ExperimentalTime
-import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
 import no.nav.syfo.Environment
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.Aktivitetsvarsel
@@ -32,6 +30,8 @@ import no.nav.syfo.minesykmeldte.model.Sporsmal
 import no.nav.syfo.minesykmeldte.model.Svar
 import no.nav.syfo.minesykmeldte.model.Sykmelding
 import no.nav.syfo.minesykmeldte.model.UtenlandskSykmelding
+import no.nav.syfo.soknad.model.Svartype
+import no.nav.syfo.soknad.model.Visningskriterium
 import no.nav.syfo.util.addAuthorizationHeader
 import no.nav.syfo.util.minifyApiResponse
 import no.nav.syfo.util.withKtor
@@ -404,8 +404,8 @@ class MineSykmeldteApiKtTest :
                                 max = "2021-10-06",
                                 sporsmalstekst = "Har du vært på ferie?",
                                 undertekst = null,
-                                svartype = SvartypeDTO.JA_NEI,
-                                kriterieForVisningAvUndersporsmal = VisningskriteriumDTO.CHECKED,
+                                svartype = Svartype.JA_NEI,
+                                kriterieForVisningAvUndersporsmal = Visningskriterium.CHECKED,
                                 svar =
                                     listOf(
                                         Svar(

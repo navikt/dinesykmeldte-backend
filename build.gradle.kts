@@ -16,7 +16,6 @@ val flywayVersion = "10.6.0"
 val postgresVersion = "42.7.1"
 val testContainerVersion = "1.19.4"
 val kotlinVersion = "1.9.22"
-val sykepengesoknadKafkaVersion = "2023.09.18-14.15-7ea2dc46"
 val swaggerUiVersion = "5.10.3"
 val kotestVersion = "5.8.0"
 val googlePostgresVersion = "1.15.2"
@@ -69,7 +68,6 @@ repositories {
             }
         }
         implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
-        implementation("no.nav.helse.flex:sykepengesoknad-kafka:$sykepengesoknadKafkaVersion")
 
         implementation("ch.qos.logback:logback-classic:$logbackVersion")
         implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")

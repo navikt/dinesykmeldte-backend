@@ -7,10 +7,10 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
-import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
+import no.nav.syfo.soknad.model.Soknad
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.testutils.getFileAsString
 import no.nav.syfo.util.TestDb
@@ -480,7 +480,7 @@ fun createSykepengesoknadDto(
     fnr: String = "12345678910",
 ) =
     objectMapper
-        .readValue<SykepengesoknadDTO>(
+        .readValue<Soknad>(
             getFileAsString("src/test/resources/soknad.json"),
         )
         .copy(

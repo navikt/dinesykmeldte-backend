@@ -2,8 +2,8 @@ package no.nav.syfo.minesykmeldte.model
 
 import java.time.LocalDate
 import java.time.LocalDateTime
-import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
+import no.nav.syfo.soknad.model.Svartype
+import no.nav.syfo.soknad.model.Visningskriterium
 
 data class Soknad(
     val id: String,
@@ -35,8 +35,8 @@ data class Undersporsmal(
     val max: String?,
     val sporsmalstekst: String?,
     val undertekst: String?,
-    val svartype: SvartypeDTO,
-    var kriterieForVisningAvUndersporsmal: VisningskriteriumDTO?,
+    val svartype: Svartype,
+    var kriterieForVisningAvUndersporsmal: Visningskriterium?,
     var svar: List<Svar>?,
     var undersporsmal: List<Undersporsmal>?,
 )
@@ -48,8 +48,8 @@ data class Sporsmal(
     val max: String?,
     val sporsmalstekst: String,
     val undertekst: String?,
-    val svartype: SvartypeDTO,
-    var kriterieForVisningAvUndersporsmal: VisningskriteriumDTO?,
+    val svartype: Svartype,
+    var kriterieForVisningAvUndersporsmal: Visningskriterium?,
     var svar: List<Svar>?,
     var undersporsmal: List<Undersporsmal>?,
 )

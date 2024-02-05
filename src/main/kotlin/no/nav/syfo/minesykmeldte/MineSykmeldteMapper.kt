@@ -1,9 +1,5 @@
 package no.nav.syfo.minesykmeldte
 
-import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsperiodeDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.minesykmeldte.model.Hendelse
 import no.nav.syfo.minesykmeldte.model.HendelseType
 import no.nav.syfo.minesykmeldte.model.PeriodeEnum
@@ -15,22 +11,24 @@ import no.nav.syfo.minesykmeldte.model.Soknadsperiode
 import no.nav.syfo.minesykmeldte.model.Sporsmal
 import no.nav.syfo.minesykmeldte.model.Svar
 import no.nav.syfo.minesykmeldte.model.Undersporsmal
+import no.nav.syfo.soknad.model.Soknad
+import no.nav.syfo.soknad.model.SoknadStatus
 
 class MineSykmeldteMapper private constructor() {
     companion object {
         fun toPreviewSoknad(
-            soknad: SykepengesoknadDTO,
+            soknad: Soknad,
             lest: Boolean,
             hendelser: List<Hendelse>,
         ): PreviewSoknad =
             when (soknad.status) {
-                SoknadsstatusDTO.NY -> getNySoknad(soknad, lest, hendelser)
-                SoknadsstatusDTO.SENDT -> getSendtSoknad(soknad, lest)
-                SoknadsstatusDTO.FREMTIDIG -> getFremtidigSoknad(soknad)
+                SoknadStatus.NY -> getNySoknad(soknad, lest, hendelser)
+                SoknadStatus.SENDT -> getSendtSoknad(soknad, lest)
+                SoknadStatus.FREMTIDIG -> getFremtidigSoknad(soknad)
                 else -> throw IllegalArgumentException("Incorrect soknad status ${soknad.status}")
             }
 
-        private fun getSendtSoknad(soknad: SykepengesoknadDTO, lest: Boolean): PreviewSendtSoknad =
+        private fun getSendtSoknad(soknad: Soknad, lest: Boolean): PreviewSendtSoknad =
             PreviewSendtSoknad(
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,
@@ -42,26 +40,20 @@ class MineSykmeldteMapper private constructor() {
                         ?: throw IllegalStateException(
                             "sendtArbeidsgiver is null for soknad: ${soknad.id}"
                         ),
-                perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
-                        ?: throw IllegalStateException(
-                            "søknadsperioder must not be null in sendt soknad: ${soknad.id}"
-                        ),
+                perioder = soknad.soknadsperioder.map { it.toSoknadsperiode() }
             )
 
-        private fun getFremtidigSoknad(soknad: SykepengesoknadDTO): PreviewFremtidigSoknad =
+        private fun getFremtidigSoknad(soknad: Soknad): PreviewFremtidigSoknad =
             PreviewFremtidigSoknad(
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
                 tom = soknad.tom,
-                perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
-                        ?: throw IllegalStateException(
-                            "søknadsperioder must not be null in fremtidig soknad: ${soknad.id}"
-                        ),
+                perioder = soknad.soknadsperioder.map { it.toSoknadsperiode() }
             )
 
         private fun getNySoknad(
-            soknad: SykepengesoknadDTO,
+            soknad: Soknad,
             lest: Boolean,
             hendelser: List<Hendelse>
         ): PreviewNySoknad =
@@ -71,10 +63,7 @@ class MineSykmeldteMapper private constructor() {
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
                 tom = soknad.tom,
-                perioder = soknad.soknadsperioder?.map { it.toSoknadsperiode() }
-                        ?: throw IllegalStateException(
-                            "søknadsperioder must not be null in ny soknad: ${soknad.id}"
-                        ),
+                perioder = soknad.soknadsperioder.map { it.toSoknadsperiode() },
                 ikkeSendtSoknadVarsel =
                     hendelser.any {
                         it.id == soknad.id && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD
@@ -87,50 +76,50 @@ class MineSykmeldteMapper private constructor() {
                         ?.mottatt,
             )
 
-        fun SoknadsperiodeDTO.toSoknadsperiode(): Soknadsperiode =
+        fun no.nav.syfo.soknad.model.Soknadsperiode.toSoknadsperiode(): Soknadsperiode =
             Soknadsperiode(
-                fom = requireNotNull(fom),
-                tom = requireNotNull(tom),
+                fom = fom,
+                tom = tom,
                 sykmeldingsgrad = sykmeldingsgrad,
                 sykmeldingstype = PeriodeEnum.valueOf(sykmeldingstype.toString()),
             )
 
-        private fun SporsmalDTO.toUndersporsmal(): Undersporsmal =
+        private fun no.nav.syfo.soknad.model.Sporsmal.toUndersporsmal(): Undersporsmal =
             Undersporsmal(
-                id = requireNotNull(id),
-                tag = requireNotNull(tag),
+                id = id,
+                tag = tag,
                 min = min,
                 max = max,
                 sporsmalstekst = sporsmalstekst,
                 undertekst = undertekst,
-                svartype = requireNotNull(svartype),
+                svartype = svartype,
                 kriterieForVisningAvUndersporsmal = kriterieForVisningAvUndersporsmal,
                 svar =
-                    svar?.map {
+                    svar.map {
                         Svar(
                             verdi = requireNotNull(it.verdi),
                         )
                     },
-                undersporsmal = undersporsmal?.map { it.toUndersporsmal() },
+                undersporsmal = undersporsmal.map { it.toUndersporsmal() },
             )
 
-        fun SporsmalDTO.toSporsmal(): Sporsmal =
+        fun no.nav.syfo.soknad.model.Sporsmal.toSporsmal(): Sporsmal =
             Sporsmal(
-                id = requireNotNull(id),
-                tag = requireNotNull(tag),
+                id = id,
+                tag = tag,
                 min = min,
                 max = max,
                 sporsmalstekst = requireNotNull(sporsmalstekst),
                 undertekst = undertekst,
-                svartype = requireNotNull(svartype),
+                svartype = svartype,
                 kriterieForVisningAvUndersporsmal = kriterieForVisningAvUndersporsmal,
                 svar =
-                    svar?.map {
+                    svar.map {
                         Svar(
                             verdi = requireNotNull(it.verdi),
                         )
                     },
-                undersporsmal = undersporsmal?.map { it.toUndersporsmal() },
+                undersporsmal = undersporsmal.map { it.toUndersporsmal() },
             )
     }
 }

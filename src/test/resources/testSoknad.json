@@ -3,11 +3,7 @@
   "fnr": "12345678912",
   "fom": "2022-01-03",
   "tom": "2022-01-10",
-  "type": "ARBEIDSTAKERE",
-  "fravar": [],
   "status": "SENDT",
-  "dodsdato": null,
-  "mottaker": "ARBEIDSGIVER",
   "sendtNav": null,
   "sporsmal": [
     {
@@ -391,15 +387,9 @@
       "kriterieForVisningAvUndersporsmal": null
     }
   ],
-  "opprettet": "2022-03-16T09:30:18.575035",
   "korrigerer": null,
   "korrigertAv": null,
-  "arbeidsgiver": {
-    "navn": "PENGELØS SPAREBANK",
-    "orgnummer": "972674818"
-  },
-  "avsendertype": "BRUKER",
-  "ettersending": false,
+  "orgnummer": "972674818",
   "sykmeldingId": "0f4b0bbe-dce8-4493-9d24-18197f8bc438",
   "egenmeldinger": [],
   "permitteringer": [],
@@ -407,26 +397,9 @@
     {
       "fom": "2022-01-03",
       "tom": "2022-01-10",
-      "grad": 100,
-      "avtaltTimer": null,
-      "faktiskGrad": null,
-      "faktiskTimer": null,
       "sykmeldingsgrad": 100,
       "sykmeldingstype": "AKTIVITET_IKKE_MULIG"
     }
   ],
-  "arbeidssituasjon": "ARBEIDSTAKER",
-  "behandlingsdager": null,
-  "arbeidGjenopptatt": null,
-  "papirsykmeldinger": [],
-  "sendtArbeidsgiver": "2022-03-16T09:39:39.633876919",
-  "startSyketilfelle": "2022-01-03",
-  "sykmeldingSkrevet": "2022-01-03T00:00:00",
-  "andreInntektskilder": null,
-  "egenmeldtSykmelding": false,
-  "soktUtenlandsopphold": null,
-  "fravarForSykmeldingen": [],
-  "merknaderFraSykmelding": null,
-  "harRedusertVenteperiode": null,
-  "arbeidsgiverForskutterer": null
+  "sendtArbeidsgiver": "2022-03-16T09:39:39.633876919"
 }

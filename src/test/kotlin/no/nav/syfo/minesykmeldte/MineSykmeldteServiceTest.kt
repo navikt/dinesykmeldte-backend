@@ -16,15 +16,6 @@ import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.contracts.ExperimentalContracts
 import kotlinx.coroutines.runBlocking
-import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsperiodeDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SvarDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SykmeldingstypeDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
@@ -49,10 +40,19 @@ import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
+import no.nav.syfo.soknad.model.Soknad
+import no.nav.syfo.soknad.model.SoknadStatus.FREMTIDIG
+import no.nav.syfo.soknad.model.SoknadStatus.NY
+import no.nav.syfo.soknad.model.SoknadStatus.SENDT
+import no.nav.syfo.soknad.model.Soknadsperiode
+import no.nav.syfo.soknad.model.Sporsmal
+import no.nav.syfo.soknad.model.Svartype
+import no.nav.syfo.soknad.model.Sykmeldingstype
+import no.nav.syfo.soknad.model.Visningskriterium
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.createArbeidsgiverSykmelding
-import no.nav.syfo.util.createSykepengesoknadDto
+import no.nav.syfo.util.createSoknad
 import no.nav.syfo.util.createSykmeldingsperiode
 import no.nav.syfo.util.shouldBeInstance
 import no.nav.syfo.util.toSoknadDbModel
@@ -156,7 +156,7 @@ class MineSykmeldteServiceTest :
             test("Should get one sykmeldt with one IKKE_SENDT_SOKNAD") {
                 val sykmeldtData =
                     getSykmeldtData(1, sykmeldtFnrPrefix = "prefix", soknader = 1).map {
-                        it.copy(soknad = it.soknad!!.copy(status = SoknadsstatusDTO.NY))
+                        it.copy(soknad = it.soknad!!.copy(status = NY))
                     }
 
                 coEvery { mineSykmeldteDb.getHendelser("1") } returns
@@ -712,11 +712,10 @@ class MineSykmeldteServiceTest :
                 test("should map to a new søknad and use tom if date is latest") {
                     coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                     val soknad =
-                        createSykepengesoknadDto("soknad-id", "sykmeldingId")
+                        createSoknad("soknad-id", "sykmeldingId")
                             .copy(
-                                status = SoknadsstatusDTO.NY,
+                                status = NY,
                                 tom = LocalDate.parse("2020-05-02"),
-                                opprettet = LocalDateTime.parse("2020-04-05T18:00:50.63"),
                             )
 
                     coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
@@ -753,11 +752,10 @@ class MineSykmeldteServiceTest :
                 test("should map to a new søknad and use opprettet if date is latest") {
                     coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                     val soknad =
-                        createSykepengesoknadDto("soknad-id", "sykmeldingId")
+                        createSoknad("soknad-id", "sykmeldingId")
                             .copy(
-                                status = SoknadsstatusDTO.NY,
+                                status = NY,
                                 tom = LocalDate.parse("2020-05-02"),
-                                opprettet = LocalDateTime.parse("2020-06-05T18:00:50.63"),
                             )
 
                     coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
@@ -794,9 +792,9 @@ class MineSykmeldteServiceTest :
                 test("should map to a sendt søknad") {
                     coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                     val soknad =
-                        createSykepengesoknadDto("soknad-id", "sykmeldingId")
+                        createSoknad("soknad-id", "sykmeldingId")
                             .copy(
-                                status = SoknadsstatusDTO.SENDT,
+                                status = SENDT,
                                 korrigerer = "korrigerer-id",
                                 sendtArbeidsgiver = LocalDateTime.parse("2020-06-07T19:34:50.63"),
                             )
@@ -834,20 +832,20 @@ class MineSykmeldteServiceTest :
                 test("Should not get Korrigert soknad") {
                     coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                     val korrigertSoknad =
-                        createSykepengesoknadDto("soknad-id-korrigert", "sykmeldingId")
+                        createSoknad("soknad-id-korrigert", "sykmeldingId")
                             .copy(
-                                status = SoknadsstatusDTO.SENDT,
+                                status = SENDT,
                             )
                     val korrigererSoknad =
-                        createSykepengesoknadDto("soknad-id-korrigerer", "sykmeldingId")
+                        createSoknad("soknad-id-korrigerer", "sykmeldingId")
                             .copy(
-                                status = SoknadsstatusDTO.SENDT,
+                                status = SENDT,
                                 korrigerer = "soknad-id-korrigert",
                             )
                     val sendtSoknad =
-                        createSykepengesoknadDto("soknad-id-sendt", "sykmeldingId")
+                        createSoknad("soknad-id-sendt", "sykmeldingId")
                             .copy(
-                                status = SoknadsstatusDTO.SENDT,
+                                status = SENDT,
                             )
                     val mineSykmeldteModel =
                         MinSykmeldtDbModel(
@@ -893,9 +891,9 @@ class MineSykmeldteServiceTest :
                 test("should map to a fremtidig søknad") {
                     coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
                     val soknad =
-                        createSykepengesoknadDto("soknad-id", "sykmeldingId")
+                        createSoknad("soknad-id", "sykmeldingId")
                             .copy(
-                                status = SoknadsstatusDTO.FREMTIDIG,
+                                status = FREMTIDIG,
                             )
 
                     coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
@@ -1085,7 +1083,7 @@ class MineSykmeldteServiceTest :
         context("getSoknad") {
             test("should map correct") {
                 val soknad = getFileAsString("src/test/resources/testSoknad.json")
-                val soknadDTO = objectMapper.readValue<SykepengesoknadDTO>(soknad)
+                val soknadDTO = objectMapper.readValue<Soknad>(soknad)
                 val soknadDbModel = soknadDTO.toSoknadDbModel()
                 val sykmeldtDbModel =
                     SykmeldtDbModel(
@@ -1114,18 +1112,19 @@ class MineSykmeldteServiceTest :
                             sendtDato = LocalDate.parse("2021-04-04"),
                             timestamp = OffsetDateTime.parse("2021-11-18T14:06:12Z"),
                             soknad =
-                                mockk<SykepengesoknadDTO>().also {
+                                mockk<Soknad>().also {
                                     every { it.fom } returns LocalDate.parse("2021-10-01")
                                     every { it.korrigerer } returns null
                                     every { it.korrigertAv } returns
                                         "jd14jfqd-0422-4a5e-b779-a8819abf"
                                     every { it.soknadsperioder } returns
                                         listOf(
-                                            SoknadsperiodeDTO(
+                                            Soknadsperiode(
                                                 fom = LocalDate.parse("2021-10-04"),
                                                 tom = LocalDate.parse("2021-10-12"),
                                                 sykmeldingstype =
-                                                    SykmeldingstypeDTO.AKTIVITET_IKKE_MULIG,
+                                                    Sykmeldingstype.AKTIVITET_IKKE_MULIG,
+                                                sykmeldingsgrad = null
                                             ),
                                         )
                                     every { it.sendtNav } returns
@@ -1134,22 +1133,23 @@ class MineSykmeldteServiceTest :
                                         LocalDateTime.parse("2022-05-10T08:56:24")
                                     every { it.sporsmal } returns
                                         listOf(
-                                            SporsmalDTO(
+                                            Sporsmal(
                                                 id = "54217564",
                                                 tag = "label",
                                                 min = "2021-10-03",
                                                 max = "2021-10-06",
                                                 sporsmalstekst = "Er dette et spørsmål?",
                                                 undertekst = "Undertekst til spørsmålet",
-                                                svartype = SvartypeDTO.FRITEKST,
+                                                svartype = Svartype.FRITEKST,
                                                 kriterieForVisningAvUndersporsmal =
-                                                    VisningskriteriumDTO.JA,
+                                                    Visningskriterium.JA,
                                                 svar =
                                                     listOf(
-                                                        SvarDTO(
+                                                        no.nav.syfo.soknad.model.Svar(
                                                             verdi = "Ja",
                                                         ),
                                                     ),
+                                                undersporsmal = emptyList()
                                             ),
                                         )
                                 },
@@ -1169,7 +1169,7 @@ class MineSykmeldteServiceTest :
                 result.sporsmal[0].tag shouldBeEqualTo "label"
                 result.sporsmal[0].min shouldBeEqualTo "2021-10-03"
                 result.sporsmal[0].max shouldBeEqualTo "2021-10-06"
-                result.sporsmal[0].svartype shouldBeEqualTo SvartypeDTO.FRITEKST
+                result.sporsmal[0].svartype shouldBeEqualTo Svartype.FRITEKST
                 result.sporsmal[0].svar shouldBeEqualTo
                     listOf(
                         Svar(
@@ -1185,10 +1185,9 @@ private fun createSoknadDbModel(
     sykmeldingId: String = "31c5b5ca-1248-4280-bc2e-3c6b11c365b9",
     pasientFnr: String = "09099012345",
     orgnummer: String = "0102983875",
-    soknad: SykepengesoknadDTO =
-        mockk<SykepengesoknadDTO>(relaxed = true).also {
-            every { it.type } returns SoknadstypeDTO.ARBEIDSLEDIG
-            every { it.status } returns SoknadsstatusDTO.NY
+    soknad: Soknad =
+        mockk<Soknad>(relaxed = true).also {
+            every { it.status } returns NY
             every { it.fom } returns LocalDate.now()
         },
     sendtDato: LocalDate = LocalDate.now(),
@@ -1275,7 +1274,7 @@ fun getSykmeldtData(
                 sykmelding = arbeigsgiverSykmelding,
                 soknad =
                     if (soknader != 0 && index < soknader) {
-                        createSykepengesoknadDto(
+                        createSoknad(
                             soknadId = UUID.randomUUID().toString(),
                             sykmeldingId = arbeigsgiverSykmelding.id,
                         )
