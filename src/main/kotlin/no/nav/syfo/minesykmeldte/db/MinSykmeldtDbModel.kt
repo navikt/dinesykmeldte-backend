@@ -2,8 +2,8 @@ package no.nav.syfo.minesykmeldte.db
 
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
+import no.nav.syfo.soknad.model.Soknad
 
 data class MinSykmeldtDbModel(
     val narmestelederId: String,
@@ -15,7 +15,7 @@ data class MinSykmeldtDbModel(
     val orgNavn: String,
     val sykmelding: ArbeidsgiverSykmelding,
     val lestSykmelding: Boolean,
-    val soknad: SykepengesoknadDTO?,
+    val soknad: Soknad?,
     val lestSoknad: Boolean,
     val sendtTilArbeidsgiverDato: OffsetDateTime?,
     val egenmeldingsdager: List<LocalDate>?,

@@ -5,8 +5,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import no.nav.helse.flex.sykepengesoknad.kafka.ArbeidsgiverDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.AktivitetIkkeMuligAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
@@ -19,6 +17,7 @@ import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
+import no.nav.syfo.soknad.model.Soknad
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.testutils.getFileAsString
@@ -58,33 +57,28 @@ fun createSoknadDbModel(
     soknadId: String,
     sykmeldingId: String = "76483e9f-eb16-464c-9bed-a9b258794bc4",
     pasientFnr: String = "123456789",
-    arbeidsgivernavn: String = "Kebabbiten",
     orgnummer: String = "123454543",
 ): SoknadDbModel {
-    val sykepengesoknadDTO: SykepengesoknadDTO =
+    val sykepengesoknadDTO: Soknad =
         objectMapper
-            .readValue<SykepengesoknadDTO>(
+            .readValue<Soknad>(
                 getFileAsString("src/test/resources/soknad.json"),
             )
             .copy(
                 id = soknadId,
                 sykmeldingId = sykmeldingId,
                 fnr = pasientFnr,
-                arbeidsgiver =
-                    ArbeidsgiverDTO(
-                        navn = arbeidsgivernavn,
-                        orgnummer = orgnummer,
-                    ),
+                orgnummer = orgnummer,
             )
     return sykepengesoknadDTO.toSoknadDbModel()
 }
 
-fun createSykepengesoknadDto(
+fun createSoknad(
     soknadId: String,
     sykmeldingId: String,
 ) =
     objectMapper
-        .readValue<SykepengesoknadDTO>(
+        .readValue<Soknad>(
             getFileAsString("src/test/resources/soknad.json"),
         )
         .copy(
@@ -153,12 +147,12 @@ fun createSykmeldingsperiode(
         reisetilskudd = reisetilskudd,
     )
 
-fun SykepengesoknadDTO.toSoknadDbModel(): SoknadDbModel {
+fun Soknad.toSoknadDbModel(): SoknadDbModel {
     return SoknadDbModel(
         soknadId = id,
         sykmeldingId = sykmeldingId,
         pasientFnr = fnr,
-        orgnummer = arbeidsgiver?.orgnummer
+        orgnummer = orgnummer
                 ?: throw IllegalStateException("Har mottatt sendt søknad uten orgnummer: $id"),
         soknad = this,
         sendtDato = sendtArbeidsgiver?.toLocalDate(),

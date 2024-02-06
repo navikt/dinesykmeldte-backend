@@ -1,47 +1,21 @@
 {
   "id": "c4c08150-6dc4-495a-9172-5147124d4624",
-  "type": "ARBEIDSTAKERE",
   "status": "SENDT",
   "fnr": "123456789",
   "sykmeldingId": "76483e9f-eb16-464c-9bed-a9b258794bc4",
-  "arbeidsgiver": {
-    "navn": "Kebabbiten",
-    "orgnummer": "123454543"
-  },
-  "arbeidssituasjon": "ARBEIDSTAKER",
+  "orgnummer": "123454543",
   "korrigerer": null,
   "korrigertAv": null,
-  "soktUtenlandsopphold": null,
-  "arbeidsgiverForskutterer": null,
   "fom": "2021-10-09",
   "tom": "2021-10-26",
-  "dodsdato": null,
-  "startSyketilfelle": "2021-10-29",
-  "arbeidGjenopptatt": null,
-  "sykmeldingSkrevet": "2021-10-29T05:55:52.293556",
-  "opprettet": "2021-10-29T07:55:53.877267",
   "sendtNav": null,
   "sendtArbeidsgiver": "2021-10-29T07:56:01.113051",
-  "egenmeldinger": [],
-  "fravarForSykmeldingen": [
-    {
-      "fom": "2021-09-25",
-      "tom": "2021-10-02"
-    }
-  ],
-  "papirsykmeldinger": [],
-  "fravar": [],
-  "andreInntektskilder": [],
   "soknadsperioder": [
     {
       "fom": "2021-10-09",
       "tom": "2021-10-26",
       "sykmeldingsgrad": 100,
-      "faktiskGrad": null,
-      "avtaltTimer": null,
-      "faktiskTimer": null,
-      "sykmeldingstype": "AKTIVITET_IKKE_MULIG",
-      "grad": 100
+      "sykmeldingstype": "AKTIVITET_IKKE_MULIG"
     }
   ],
   "sporsmal": [
@@ -428,19 +402,6 @@
         }
       ],
       "undersporsmal": []
-    }
-  ],
-  "avsendertype": "BRUKER",
-  "ettersending": false,
-  "mottaker": "ARBEIDSGIVER",
-  "egenmeldtSykmelding": false,
-  "harRedusertVenteperiode": null,
-  "behandlingsdager": null,
-  "permitteringer": [],
-  "merknaderFraSykmelding": [
-    {
-      "type": "UGYLDIG_TILBAKEDATERING",
-      "beskrivelse": "Hey"
     }
   ]
 }

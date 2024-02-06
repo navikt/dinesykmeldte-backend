@@ -62,7 +62,7 @@ class MineSykmeldteService(
 
             val sykmeldteMap = sykmeldteMapJob.await()
 
-            return@withContext sykmeldteMap.map { sykmeldtEntry ->
+            sykmeldteMap.map { sykmeldtEntry ->
                 val nyesteSendteSykmelding =
                     sykmeldtEntry.value.sortedBy { it.sendtTilArbeidsgiverDato }.last()
                 PreviewSykmeldt(
@@ -224,14 +224,8 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         sendtTilNavDato = soknadDb.soknad.sendtNav,
         korrigererSoknadId = soknadDb.soknad.korrigerer,
         korrigertBySoknadId = soknadDb.soknad.korrigertAv,
-        perioder = soknadDb.soknad.soknadsperioder?.map { it.toSoknadsperiode() }
-                ?: throw IllegalStateException(
-                    "Søknad uten perioder definert: ${soknadDb.soknadId}"
-                ),
-        sporsmal = soknadDb.soknad.sporsmal?.map { it.toSporsmal() }
-                ?: throw IllegalStateException(
-                    "Søknad uten sporsmal definert: ${soknadDb.soknadId}"
-                ),
+        perioder = soknadDb.soknad.soknadsperioder.map { it.toSoknadsperiode() },
+        sporsmal = soknadDb.soknad.sporsmal.map { it.toSporsmal() }
     )
 }
 
