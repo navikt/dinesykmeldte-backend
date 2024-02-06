@@ -279,15 +279,13 @@ fun DatabaseInterface.insertOrUpdate(soknadDbModel: SoknadDbModel) {
                         sykmelding_id, 
                         pasient_fnr, 
                         orgnummer, 
-                        soknad,
                         sykepengesoknad,
                         sendt_dato, 
                         lest, 
                         timestamp, 
                         tom) 
-                    values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on CONFLICT(soknad_id) do update 
+                    values (?, ?, ?, ?, ?, ?, ?, ?, ?) on CONFLICT(soknad_id) do update 
                         set sykepengesoknad = excluded.sykepengesoknad,
-                        soknad = excluded.soknad,
                         sykmelding_id = excluded.sykmelding_id,
                         pasient_fnr = excluded.pasient_fnr,
                         orgnummer = excluded.orgnummer,
@@ -304,14 +302,13 @@ fun DatabaseInterface.insertOrUpdate(soknadDbModel: SoknadDbModel) {
                 preparedStatement.setString(3, soknadDbModel.pasientFnr)
                 preparedStatement.setString(4, soknadDbModel.orgnummer)
                 preparedStatement.setObject(5, soknadDbModel.soknad.toPGObject())
-                preparedStatement.setObject(6, soknadDbModel.soknad.toPGObject())
-                preparedStatement.setObject(7, soknadDbModel.sendtDato)
-                preparedStatement.setBoolean(8, soknadDbModel.lest)
+                preparedStatement.setObject(6, soknadDbModel.sendtDato)
+                preparedStatement.setBoolean(7, soknadDbModel.lest)
                 preparedStatement.setTimestamp(
-                    9,
+                    8,
                     Timestamp.from(soknadDbModel.timestamp.toInstant())
                 )
-                preparedStatement.setObject(10, soknadDbModel.tom)
+                preparedStatement.setObject(9, soknadDbModel.tom)
                 preparedStatement.executeUpdate()
             }
         connection.commit()
