@@ -29,7 +29,7 @@ fun Application.setupAuth(jwkProviderTokenX: JwkProvider, tokenXIssuer: String, 
                 when {
                     harDineSykmeldteBackendAudience(
                         credentials,
-                        env.dineSykmeldteBackendTokenXClientId
+                        env.dineSykmeldteBackendTokenXClientId,
                     ) && erNiva4(credentials) -> {
                         val principal = JWTPrincipal(credentials.payload)
                         BrukerPrincipal(
@@ -44,12 +44,7 @@ fun Application.setupAuth(jwkProviderTokenX: JwkProvider, tokenXIssuer: String, 
     }
 }
 
-fun ApplicationCall.getToken(): String? {
-    return when (val authHeader = request.header("Authorization")) {
-        null -> request.cookies.get(name = "selvbetjening-idtoken")
-        else -> authHeader.removePrefix("Bearer ")
-    }
-}
+fun ApplicationCall.getToken(): String? = request.header("Authorization")?.removePrefix("Bearer ")
 
 fun finnFnrFraToken(principal: JWTPrincipal): String {
     return if (
