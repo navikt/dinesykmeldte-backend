@@ -23,12 +23,13 @@ val googleOauthVersion = "1.36.0"
 val ktfmtVersion = "0.44"
 val kafkaVersion = "3.8.0"
 val snappyJavaVersion = "1.1.10.6"
+val commonsCodecVersion="1.17.1"
 
 plugins {
     id("application")
     id("com.diffplug.spotless") version "6.25.0"
     kotlin("jvm") version "2.0.10"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.0"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
 }
 
@@ -59,6 +60,11 @@ repositories {
         implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
         implementation("io.ktor:ktor-client-core:$ktorVersion")
         implementation("io.ktor:ktor-client-apache:$ktorVersion")
+        constraints {
+            implementation("commons-codec:commons-codec:$commonsCodecVersion") {
+                because("override transient from io.ktor:ktor-client-apache")
+            }
+        }
         implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
         implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
