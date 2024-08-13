@@ -21,7 +21,6 @@ val kotestVersion = "5.9.1"
 val googlePostgresVersion = "1.19.1"
 val googleOauthVersion = "1.36.0"
 val ktfmtVersion = "0.44"
-val snappyJavaVersion = "1.1.10.5"
 val kafkaVersion = "3.8.0"
 val snappyJavaVersion = "1.1.10.6"
 
