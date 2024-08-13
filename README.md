@@ -9,7 +9,7 @@ This project contains the application code and infrastructure for dinesykmeldte-
 
 #### Requirements
 
-* JDK 17
+* JDK 21
 
 ## Getting started
 ### Building the application

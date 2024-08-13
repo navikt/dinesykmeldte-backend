@@ -21,6 +21,8 @@ val kotestVersion = "5.9.1"
 val googlePostgresVersion = "1.19.1"
 val googleOauthVersion = "1.36.0"
 val ktfmtVersion = "0.44"
+val snappyJavaVersion = "1.1.10.5"
+val kafkaVersion = "3.8.0"
 val snappyJavaVersion = "1.1.10.6"
 
 plugins {
@@ -61,13 +63,12 @@ repositories {
         implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
         implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
-        implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
+        implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
         constraints {
             implementation("org.xerial.snappy:snappy-java:$snappyJavaVersion") {
                 because("override transient from org.apache.kafka:kafka_2.12")
             }
         }
-        implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
 
         implementation("ch.qos.logback:logback-classic:$logbackVersion")
         implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
