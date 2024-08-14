@@ -24,6 +24,8 @@ val ktfmtVersion = "0.44"
 val kafkaVersion = "3.8.0"
 val snappyJavaVersion = "1.1.10.6"
 val commonsCodecVersion="1.17.1"
+val commonsCompressVersion = "1.26.2"
+val snakeYamlVersion = "2.2"
 
 plugins {
     id("application")
@@ -65,6 +67,11 @@ repositories {
                 because("override transient from io.ktor:ktor-client-apache")
             }
         }
+        constraints {
+            implementation("org.yaml:snakeyaml:$snakeYamlVersion") {
+                because("override transient from io.ktor:ktor-client-apach")
+            }
+        }
         implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
         implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
@@ -95,6 +102,11 @@ repositories {
         testImplementation("org.amshove.kluent:kluent:$kluentVersion")
         testImplementation("io.mockk:mockk:$mockkVersion")
         testImplementation("org.testcontainers:postgresql:$testContainerVersion")
+        constraints {
+            implementation("org.apache.commons:commons-compress:$commonsCompressVersion") {
+                because("Due to vulnerabilities from org.testcontainers:postgresql")
+            }
+        }
         testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
         testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
         testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
