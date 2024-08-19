@@ -1177,6 +1177,104 @@ class MineSykmeldteServiceTest :
                         ),
                     )
             }
+
+            test(
+                "should filter out sporsmal tag BEKREFT_OPPLYSNINGER and VAER_KLAR_OVER_AT from Soknad"
+            ) {
+                val soknadId = "b8aa4075-7347-48c9-b006-a770ee023bf8"
+                coEvery { mineSykmeldteDb.getSoknad(soknadId, "soknad-112") } returns
+                    (createSykmeldtDbModel(
+                        pasientNavn = "Navn Navnesen",
+                    ) to
+                        createSoknadDbModel(
+                            soknadId = soknadId,
+                            soknad =
+                                mockk<Soknad>().also {
+                                    every { it.fom } returns LocalDate.parse("2021-10-01")
+                                    every { it.korrigerer } returns null
+                                    every { it.korrigertAv } returns
+                                        "jd14jfqd-0422-4a5e-b779-a8819abf"
+                                    every { it.soknadsperioder } returns
+                                        listOf(
+                                            Soknadsperiode(
+                                                fom = LocalDate.parse("2021-10-04"),
+                                                tom = LocalDate.parse("2021-10-12"),
+                                                sykmeldingstype =
+                                                    Sykmeldingstype.AKTIVITET_IKKE_MULIG,
+                                                sykmeldingsgrad = null
+                                            ),
+                                        )
+                                    every { it.sendtNav } returns
+                                        LocalDateTime.parse("2022-05-09T08:56:24")
+                                    every { it.sendtArbeidsgiver } returns
+                                        LocalDateTime.parse("2022-05-10T08:56:24")
+                                    every { it.sporsmal } returns
+                                        listOf(
+                                            Sporsmal(
+                                                id = "54217564",
+                                                tag = "BEKREFT_OPPLYSNINGER",
+                                                min = "2024-03-03",
+                                                max = "2024-03-06",
+                                                sporsmalstekst =
+                                                    "Jeg har lest all informasjonen jeg har fått i søknaden og bekrefter at opplysningene jeg har gitt er korrekte.",
+                                                undertekst = "Undertekst til spørsmålet",
+                                                svartype = Svartype.CHECKBOX_PANEL,
+                                                kriterieForVisningAvUndersporsmal = null,
+                                                svar =
+                                                    listOf(
+                                                        no.nav.syfo.soknad.model.Svar(
+                                                            verdi = "CHECKED",
+                                                        ),
+                                                    ),
+                                                undersporsmal = emptyList()
+                                            ),
+                                            Sporsmal(
+                                                id = "54217564",
+                                                tag = "VAER_KLAR_OVER_AT",
+                                                min = "2024-03-03",
+                                                max = "2024-03-06",
+                                                sporsmalstekst = "Viktig å være klar over:",
+                                                undertekst = "Undertekst til spørsmålet",
+                                                svartype = Svartype.IKKE_RELEVANT,
+                                                kriterieForVisningAvUndersporsmal = null,
+                                                svar =
+                                                    listOf(
+                                                        no.nav.syfo.soknad.model.Svar(
+                                                            verdi = "CHECKED",
+                                                        ),
+                                                    ),
+                                                undersporsmal = emptyList()
+                                            ),
+                                            Sporsmal(
+                                                id = "54217564",
+                                                tag = "HVOR_MYE_HAR_DU_JOBBET",
+                                                min = "2024-03-03",
+                                                max = "2024-03-06",
+                                                sporsmalstekst =
+                                                    "Hvor mye jobbet du totalt 20. mai - 5. juni 2020 hos 0102983875 sitt orgnavn?",
+                                                undertekst = "Undertekst til spørsmålet",
+                                                svartype = Svartype.RADIO_GRUPPE_TIMER_PROSENT,
+                                                kriterieForVisningAvUndersporsmal = null,
+                                                svar =
+                                                    listOf(
+                                                        no.nav.syfo.soknad.model.Svar(
+                                                            verdi = "Ja",
+                                                        ),
+                                                    ),
+                                                undersporsmal = emptyList()
+                                            ),
+                                        )
+                                },
+                        ))
+
+                val result = mineSykmeldtService.getSoknad(soknadId, "soknad-112")
+
+                result.shouldNotBeNull()
+                result.id shouldBeEqualTo "b8aa4075-7347-48c9-b006-a770ee023bf8"
+                result.navn shouldBeEqualTo "Navn Navnesen"
+                result.sporsmal.size shouldBeEqualTo 1
+                result.sporsmal[0].tag shouldBeEqualTo "HVOR_MYE_HAR_DU_JOBBET"
+            }
         }
     })
 
