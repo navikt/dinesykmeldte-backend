@@ -225,7 +225,17 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         korrigererSoknadId = soknadDb.soknad.korrigerer,
         korrigertBySoknadId = soknadDb.soknad.korrigertAv,
         perioder = soknadDb.soknad.soknadsperioder.map { it.toSoknadsperiode() },
-        sporsmal = soknadDb.soknad.sporsmal.map { it.toSporsmal() }
+        sporsmal =
+            soknadDb.soknad.sporsmal
+                .filter { sp ->
+                    sp.tag != "ANSVARSERKLARING" &&
+                        sp.tag != "BEKREFT_OPPLYSNINGER" &&
+                        sp.tag != "BEKREFT_OPPLYSNINGER_UTLAND_INFO" &&
+                        sp.tag != "IKKE_SOKT_UTENLANDSOPPHOLD_INFORMASJON" &&
+                        sp.tag != "TIL_SLUTT" &&
+                        sp.tag != "VAER_KLAR_OVER_AT"
+                }
+                .map { it.toSporsmal() }
     )
 }
 
