@@ -24,7 +24,7 @@ val ktfmtVersion = "0.44"
 val kafkaVersion = "3.8.0"
 val snappyJavaVersion = "1.1.10.6"
 val commonsCodecVersion="1.17.1"
-val commonsCompressVersion = "1.27.0"
+val commonsCompressVersion = "1.27.1"
 val snakeYamlVersion = "2.2"
 
 plugins {
