@@ -12,7 +12,7 @@ val smCommonVersion = "2.0.8"
 val mockkVersion = "1.13.12"
 val nimbusdsVersion = "9.40"
 val hikariVersion = "5.1.0"
-val flywayVersion = "10.17.2"
+val flywayVersion = "10.17.3"
 val postgresVersion = "42.7.4"
 val testContainerVersion = "1.20.1"
 val kotlinVersion = "2.0.20"
@@ -25,7 +25,7 @@ val kafkaVersion = "3.8.0"
 val snappyJavaVersion = "1.1.10.6"
 val commonsCodecVersion="1.17.1"
 val commonsCompressVersion = "1.27.1"
-val snakeYamlVersion = "2.2"
+val snakeYamlVersion = "2.3"
 
 plugins {
     id("application")
