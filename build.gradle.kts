@@ -10,7 +10,7 @@ val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
 val smCommonVersion = "2.0.8"
 val mockkVersion = "1.13.12"
-val nimbusdsVersion = "9.40"
+val nimbusdsVersion = "9.41"
 val hikariVersion = "5.1.0"
 val flywayVersion = "10.17.3"
 val postgresVersion = "42.7.4"
@@ -31,7 +31,7 @@ plugins {
     id("application")
     id("com.diffplug.spotless") version "6.25.0"
     kotlin("jvm") version "2.0.20"
-    id("com.gradleup.shadow") version "8.3.0"
+    id("com.gradleup.shadow") version "8.3.1"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
 }
 
