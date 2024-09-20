@@ -31,7 +31,7 @@ plugins {
     id("application")
     id("com.diffplug.spotless") version "6.25.0"
     kotlin("jvm") version "2.0.20"
-    id("com.gradleup.shadow") version "8.3.1"
+    id("com.gradleup.shadow") version "8.3.2"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
 }
 
