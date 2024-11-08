@@ -12,10 +12,9 @@ import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
-import io.ktor.server.engine.ApplicationEngine
-import io.ktor.server.engine.embeddedServer
+import io.ktor.server.engine.*
 import io.ktor.server.http.content.*
-import io.ktor.server.netty.Netty
+import io.ktor.server.netty.*
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.cors.routing.CORS
@@ -44,7 +43,7 @@ fun createApplicationEngine(
     mineSykmeldteService: MineSykmeldteService,
     virksomhetService: VirksomhetService,
     narmestelederService: NarmestelederService,
-): ApplicationEngine =
+): EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration> =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
             jackson {
