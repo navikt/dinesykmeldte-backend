@@ -6,14 +6,14 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.ktor.client.request.*
 import io.ktor.serialization.jackson.jackson
-import io.ktor.server.application.install
+import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.routing
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.TestApplicationRequest
+import io.ktor.server.testing.*
 import java.nio.file.Paths
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -31,40 +31,40 @@ inline fun <reified T> Any?.shouldBeInstance() {
     this.shouldBeInstanceOf(T::class)
 }
 
-fun withKtor(env: Environment, build: Route.() -> Unit, block: TestApplicationEngine.() -> Unit) {
-    with(TestApplicationEngine()) {
-        start()
-        val applicationState = ApplicationState()
-        applicationState.ready = true
-        applicationState.alive = true
-        application.install(ContentNegotiation) {
-            jackson {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+fun withKtor(env: Environment, build: Route.() -> Unit, block: ApplicationTestBuilder.() -> Unit) {
+    testApplication {
+        application {
+            val applicationState = ApplicationState()
+            applicationState.ready = true
+            applicationState.alive = true
+            install(ContentNegotiation) {
+                jackson {
+                    registerKotlinModule()
+                    registerModule(JavaTimeModule())
+                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                }
             }
+            setupAuth(
+                jwkProviderTokenX =
+                    JwkProviderBuilder(Paths.get("src/test/resources/jwkset.json").toUri().toURL())
+                        .build(),
+                tokenXIssuer = "https://sts.issuer.net/myid",
+                env = env,
+            )
+            routing { authenticate("tokenx", build = build) }
         }
-        application.setupAuth(
-            jwkProviderTokenX =
-                JwkProviderBuilder(Paths.get("src/test/resources/jwkset.json").toUri().toURL())
-                    .build(),
-            tokenXIssuer = "https://sts.issuer.net/myid",
-            env = env,
-        )
-        application.routing { authenticate("tokenx", build = build) }
-
         block(this)
     }
 }
 
-fun TestApplicationRequest.addAuthorizationHeader(
+fun HttpRequestBuilder.addAuthorizationHeader(
     audience: String = "dummy-client-id",
     subject: String = "08086912345",
     issuer: String = "https://sts.issuer.net/myid",
     level: String = "Level4",
 ) {
-    addHeader(
+    header(
         "Authorization",
         "Bearer ${
             generateJWTLoginservice(
