@@ -23,7 +23,6 @@ val googleOauthVersion = "1.36.0"
 val ktfmtVersion = "0.44"
 val kafkaVersion = "3.8.0"
 val snappyJavaVersion = "1.1.10.7"
-val commonsCodecVersion="1.17.1"
 val commonsCompressVersion = "1.27.1"
 val snakeYamlVersion = "2.3"
 
@@ -62,16 +61,7 @@ repositories {
         implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
         implementation("io.ktor:ktor-client-core:$ktorVersion")
         implementation("io.ktor:ktor-client-apache:$ktorVersion")
-        constraints {
-            implementation("commons-codec:commons-codec:$commonsCodecVersion") {
-                because("override transient from io.ktor:ktor-client-apache")
-            }
-        }
-        constraints {
-            implementation("org.yaml:snakeyaml:$snakeYamlVersion") {
-                because("override transient from io.ktor:ktor-client-apach")
-            }
-        }
+    
         implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
         implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
