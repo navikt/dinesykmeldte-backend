@@ -8,28 +8,29 @@ val logbackVersion = "1.5.8"
 val ktorVersion = "3.0.1"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "2.0.8"
 val mockkVersion = "1.13.12"
 val nimbusdsVersion = "9.41.1"
 val hikariVersion = "6.0.0"
 val flywayVersion = "10.18.2"
 val postgresVersion = "42.7.4"
 val testContainerVersion = "1.20.1"
-val kotlinVersion = "2.0.20"
+val kotlinVersion = "2.0.21"
 val swaggerUiVersion = "5.17.14"
 val kotestVersion = "5.9.1"
 val googlePostgresVersion = "1.20.1"
 val googleOauthVersion = "1.36.0"
 val ktfmtVersion = "0.44"
 val kafkaVersion = "3.8.0"
+
+///Due to vulnerabilities
+val nettycommonVersion = "4.1.115.Final"
 val snappyJavaVersion = "1.1.10.7"
 val commonsCompressVersion = "1.27.1"
-val snakeYamlVersion = "2.3"
 
 plugins {
     id("application")
     id("com.diffplug.spotless") version "6.25.0"
-    kotlin("jvm") version "2.0.20"
+    kotlin("jvm") version "2.0.21"
     id("com.gradleup.shadow") version "8.3.2"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
 }
@@ -53,6 +54,11 @@ repositories {
 
         implementation("io.ktor:ktor-server-core:$ktorVersion")
         implementation("io.ktor:ktor-server-netty:$ktorVersion")
+        constraints {
+            implementation("io.netty:netty-common:$nettycommonVersion") {
+                because("Due to vulnerabilities in io.ktor:ktor-server-netty")
+            }
+        }
         implementation("io.ktor:ktor-server-auth:$ktorVersion")
         implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
         implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
@@ -115,7 +121,6 @@ repositories {
     }
 
     tasks {
-
         generateSwaggerUI {
             val output: Provider<Directory> = layout.buildDirectory.dir("/resources/main/api")
             outputDir = output.get().asFile
