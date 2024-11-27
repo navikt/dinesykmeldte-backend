@@ -14,7 +14,7 @@ val hikariVersion = "6.2.1"
 val flywayVersion = "11.0.0"
 val postgresVersion = "42.7.4"
 val testContainerVersion = "1.20.4"
-val kotlinVersion = "2.0.21"
+val kotlinVersion = "2.1.0"
 val swaggerUiVersion = "5.18.2"
 val kotestVersion = "5.9.1"
 val googlePostgresVersion = "1.21.0"
@@ -30,7 +30,7 @@ val commonsCompressVersion = "1.27.1"
 plugins {
     id("application")
     id("com.diffplug.spotless") version "6.25.0"
-    kotlin("jvm") version "2.0.21"
+    kotlin("jvm") version "2.1.0"
     id("com.gradleup.shadow") version "8.3.5"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
 }
