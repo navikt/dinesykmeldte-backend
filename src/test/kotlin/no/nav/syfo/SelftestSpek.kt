@@ -4,10 +4,9 @@ import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.routing.routing
 import io.ktor.server.testing.*
 import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.api.registerNaisApi
+import no.nav.syfo.plugins.configureNaisResources
 import org.amshove.kluent.shouldBeEqualTo
 
 class SelftestSpek :
@@ -20,7 +19,7 @@ class SelftestSpek :
                             val applicationState = ApplicationState()
                             applicationState.ready = true
                             applicationState.alive = true
-                            routing { registerNaisApi(applicationState) }
+                            configureNaisResources(applicationState)
                         }
                         val response = client.get("/internal/is_alive")
                         response.status shouldBeEqualTo HttpStatusCode.OK
@@ -33,7 +32,7 @@ class SelftestSpek :
                             val applicationState = ApplicationState()
                             applicationState.ready = true
                             applicationState.alive = true
-                            routing { registerNaisApi(applicationState) }
+                            configureNaisResources(applicationState)
                         }
                         val response = client.get("/internal/is_ready")
                         response.status shouldBeEqualTo HttpStatusCode.OK
@@ -48,7 +47,7 @@ class SelftestSpek :
                             val applicationState = ApplicationState()
                             applicationState.ready = false
                             applicationState.alive = false
-                            routing { registerNaisApi(applicationState) }
+                            configureNaisResources(applicationState)
                         }
                         val response = client.get("/internal/is_alive")
 
@@ -63,7 +62,7 @@ class SelftestSpek :
                             val applicationState = ApplicationState()
                             applicationState.ready = false
                             applicationState.alive = false
-                            routing { registerNaisApi(applicationState) }
+                            configureNaisResources(applicationState)
                         }
                         val response = client.get("/internal/is_ready")
 

@@ -3,17 +3,18 @@ package no.nav.syfo.narmesteleder
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
-import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.kafka.model.KafkaMetadata
 import no.nav.syfo.narmesteleder.kafka.model.NlAvbrutt
 import no.nav.syfo.narmesteleder.kafka.model.NlResponseKafkaMessage
+import no.nav.syfo.util.logger
 
 class NarmestelederService(
     private val narmestelederDb: NarmestelederDb,
     private val nlResponseProducer: NLResponseProducer,
 ) {
+    private val log = logger()
 
     suspend fun deaktiverNarmesteLeder(fnrLeder: String, narmestelederId: String, callId: UUID) {
         val nlKoblinger =

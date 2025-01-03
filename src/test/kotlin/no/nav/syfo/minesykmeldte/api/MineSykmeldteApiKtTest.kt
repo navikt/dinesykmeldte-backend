@@ -53,7 +53,7 @@ class MineSykmeldteApiKtTest :
 
             context("/api/mineSykmeldte") {
                 test("should get empty list") {
-                    withKtor(env, { registerMineSykmeldteApi(mineSykmeldteService) }) {
+                    withKtor({ registerMineSykmeldteApi(mineSykmeldteService) }) {
                         coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns
                             emptyList()
                         runBlocking {
@@ -66,7 +66,7 @@ class MineSykmeldteApiKtTest :
                 }
 
                 test("should get data in list") {
-                    withKtor(env, { registerMineSykmeldteApi(mineSykmeldteService) }) {
+                    withKtor({ registerMineSykmeldteApi(mineSykmeldteService) }) {
                         val startdato = LocalDate.now().minusDays(14)
                         coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns
                             listOf(
@@ -111,7 +111,7 @@ class MineSykmeldteApiKtTest :
                 }
 
                 test("should return 401 when missing a valid bearer token") {
-                    withKtor(env, { registerMineSykmeldteApi(mineSykmeldteService) }) {
+                    withKtor({ registerMineSykmeldteApi(mineSykmeldteService) }) {
                         coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns
                             emptyList()
                         runBlocking {
@@ -129,7 +129,7 @@ class MineSykmeldteApiKtTest :
                 }
 
                 test("should return 401 when providing the wrong audience") {
-                    withKtor(env, { registerMineSykmeldteApi(mineSykmeldteService) }) {
+                    withKtor({ registerMineSykmeldteApi(mineSykmeldteService) }) {
                         coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns
                             emptyList()
 
@@ -145,7 +145,7 @@ class MineSykmeldteApiKtTest :
                 }
 
                 test("should return 401 when providing the wrong issuer") {
-                    withKtor(env, { registerMineSykmeldteApi(mineSykmeldteService) }) {
+                    withKtor({ registerMineSykmeldteApi(mineSykmeldteService) }) {
                         coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns
                             emptyList()
                         runBlocking {
@@ -160,7 +160,7 @@ class MineSykmeldteApiKtTest :
                 }
 
                 test("should return 401 when jwt has the wrong access level") {
-                    withKtor(env, { registerMineSykmeldteApi(mineSykmeldteService) }) {
+                    withKtor({ registerMineSykmeldteApi(mineSykmeldteService) }) {
                         coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns
                             emptyList()
 
@@ -179,7 +179,7 @@ class MineSykmeldteApiKtTest :
 
                 context("given a søknad") {
                     test("should map a ny søknad to correct object") {
-                        withKtor(env, { registerMineSykmeldteApi(mineSykmeldteService) }) {
+                        withKtor({ registerMineSykmeldteApi(mineSykmeldteService) }) {
                             val hendelseId = UUID.randomUUID()
                             coEvery { mineSykmeldteService.getMineSykmeldte("08086912345") } returns
                                 listOf(
@@ -285,7 +285,7 @@ class MineSykmeldteApiKtTest :
 
             context("/api/sykmelding/{id}") {
                 test("should respond with 404 Not Found if not found in the database ") {
-                    withKtor(env, { registerMineSykmeldteApi(mineSykmeldteService) }) {
+                    withKtor({ registerMineSykmeldteApi(mineSykmeldteService) }) {
                         coEvery {
                             mineSykmeldteService.getSykmelding(
                                 "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
@@ -313,7 +313,7 @@ class MineSykmeldteApiKtTest :
                 }
 
                 test("should respond with the correct content if found") {
-                    withKtor(env, { registerMineSykmeldteApi(mineSykmeldteService) }) {
+                    withKtor({ registerMineSykmeldteApi(mineSykmeldteService) }) {
                         coEvery {
                             mineSykmeldteService.getSykmelding(
                                 "7eac0c9d-eb1e-4b5f-82e0-aa4961fd5657",
@@ -378,7 +378,7 @@ class MineSykmeldteApiKtTest :
 
             context("/api/hendelser/read") {
                 test("Should get 200 OK") {
-                    withKtor(env, { registerMineSykmeldteApi(mineSykmeldteService) }) {
+                    withKtor({ registerMineSykmeldteApi(mineSykmeldteService) }) {
                         coEvery {
                             mineSykmeldteService.markAllSykmeldingerAndSoknaderRead(any())
                         } returns Unit
@@ -397,7 +397,7 @@ class MineSykmeldteApiKtTest :
                     }
                 }
                 test("Unauthorized") {
-                    withKtor(env, { registerMineSykmeldteApi(mineSykmeldteService) }) {
+                    withKtor({ registerMineSykmeldteApi(mineSykmeldteService) }) {
                         coEvery {
                             mineSykmeldteService.markAllSykmeldingerAndSoknaderRead(any())
                         } returns Unit
@@ -416,7 +416,6 @@ class MineSykmeldteApiKtTest :
                 context("/api/soknad/{id}") {
                     test("should respond with 404 Not Found if not found in the database ") {
                         withKtor(
-                            env,
                             { registerMineSykmeldteApi(mineSykmeldteService) },
                         ) {
                             coEvery {
@@ -448,7 +447,6 @@ class MineSykmeldteApiKtTest :
 
                     test("should respond with the correct content if found") {
                         withKtor(
-                            env,
                             { registerMineSykmeldteApi(mineSykmeldteService) },
                         ) {
                             val sporsmal =

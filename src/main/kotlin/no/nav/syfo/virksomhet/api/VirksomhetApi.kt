@@ -1,10 +1,9 @@
 package no.nav.syfo.virksomhet.api
 
-import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
-import no.nav.syfo.application.BrukerPrincipal
+import no.nav.syfo.plugins.BrukerPrincipal
 import no.nav.syfo.util.getBrukerPrincipal
 
 fun Route.registerVirksomhetApi(virksomhetService: VirksomhetService) {

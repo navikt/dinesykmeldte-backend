@@ -17,10 +17,8 @@ import io.ktor.server.testing.*
 import java.nio.file.Paths
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
-import no.nav.syfo.Environment
 import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.setupAuth
-import no.nav.syfo.objectMapper
+import no.nav.syfo.plugins.setupAuth
 import no.nav.syfo.testutils.generateJWTLoginservice
 import org.amshove.kluent.shouldBeInstanceOf
 
@@ -31,9 +29,20 @@ inline fun <reified T> Any?.shouldBeInstance() {
     this.shouldBeInstanceOf(T::class)
 }
 
-fun withKtor(env: Environment, build: Route.() -> Unit, block: ApplicationTestBuilder.() -> Unit) {
+fun withKtor(build: Route.() -> Unit, block: ApplicationTestBuilder.() -> Unit) {
     testApplication {
         application {
+            setupAuth(
+                AuthConfiguration(
+                    jwkProviderTokenX =
+                        JwkProviderBuilder(
+                                Paths.get("src/test/resources/jwkset.json").toUri().toURL()
+                            )
+                            .build(),
+                    tokenXIssuer = "https://sts.issuer.net/myid",
+                    clientIdTokenX = "dummy-client-id"
+                )
+            )
             val applicationState = ApplicationState()
             applicationState.ready = true
             applicationState.alive = true
@@ -45,13 +54,6 @@ fun withKtor(env: Environment, build: Route.() -> Unit, block: ApplicationTestBu
                     configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 }
             }
-            setupAuth(
-                jwkProviderTokenX =
-                    JwkProviderBuilder(Paths.get("src/test/resources/jwkset.json").toUri().toURL())
-                        .build(),
-                tokenXIssuer = "https://sts.issuer.net/myid",
-                env = env,
-            )
             routing { authenticate("tokenx", build = build) }
         }
         block(this)

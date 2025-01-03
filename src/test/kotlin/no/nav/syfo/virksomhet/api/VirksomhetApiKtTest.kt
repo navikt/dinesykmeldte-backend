@@ -27,7 +27,7 @@ object VirksomhetApiKtTest :
 
             context("Virksomhet API") {
                 test("should return empty list") {
-                    withKtor(env, { registerVirksomhetApi(virksomhetService) }) {
+                    withKtor({ registerVirksomhetApi(virksomhetService) }) {
                         coEvery { virksomhetService.getVirksomheter("08086912345") } returns
                             emptyList()
 
@@ -42,7 +42,7 @@ object VirksomhetApiKtTest :
                 }
 
                 test("should return list of virksomheter when found") {
-                    withKtor(env, { registerVirksomhetApi(virksomhetService) }) {
+                    withKtor({ registerVirksomhetApi(virksomhetService) }) {
                         coEvery { virksomhetService.getVirksomheter("08086912345") } returns
                             listOf(
                                 Virksomhet(

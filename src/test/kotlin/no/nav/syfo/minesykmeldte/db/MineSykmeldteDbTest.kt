@@ -8,10 +8,8 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import no.nav.syfo.hendelser.db.HendelseDbModel
-import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.model.Soknad
-import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.testutils.getFileAsString
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSoknadDbModel
@@ -19,6 +17,7 @@ import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
 import no.nav.syfo.util.insertHendelse
 import no.nav.syfo.util.insertOrUpdate
+import no.nav.syfo.util.objectMapper
 import no.nav.syfo.util.toSoknadDbModel
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
@@ -491,12 +490,3 @@ fun createSykepengesoknadDto(
             sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
             sykmeldingId = sykmeldingId,
         )
-
-fun getSykmeldt(latestTom: LocalDate = LocalDate.now()): SykmeldtDbModel {
-    return SykmeldtDbModel(
-        "12345678910",
-        "Navn",
-        LocalDate.now(),
-        latestTom,
-    )
-}

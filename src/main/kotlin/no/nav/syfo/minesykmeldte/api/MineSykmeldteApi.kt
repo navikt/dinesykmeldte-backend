@@ -1,24 +1,23 @@
 package no.nav.syfo.minesykmeldte.api
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.put
 import java.util.UUID
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
-import no.nav.syfo.application.BrukerPrincipal
-import no.nav.syfo.log
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.HttpErrorMessage
 import no.nav.syfo.minesykmeldte.model.HttpMessage
-import no.nav.syfo.sikkerlogg
+import no.nav.syfo.plugins.BrukerPrincipal
 import no.nav.syfo.util.getBrukerPrincipal
 import no.nav.syfo.util.getParam
+import no.nav.syfo.util.logger
+import no.nav.syfo.util.securelog
 
-@ExperimentalTime
+private val log = logger("no.nav.syfo.minesykmeldte.api")
+
 fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
     get("api/minesykmeldte") {
         val principal: BrukerPrincipal = call.getBrukerPrincipal()
@@ -28,7 +27,7 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         log.info(
             "Calling api path: api/minesykmeldt getting ${timedValue.value.size} sykmeldte, duration: ${timedValue.duration.inWholeMilliseconds} ms"
         )
-        sikkerlogg.info(
+        securelog.info(
             "Getting sykmeldte lederFnr: $lederFnr, requestId: $xRequestId, sykmeldte: ${timedValue.value.map { it.narmestelederId }}"
         )
         call.respond(timedValue.value)
@@ -38,7 +37,7 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         val principal: BrukerPrincipal = call.getBrukerPrincipal()
         val lederFnr = principal.fnr
         val sykmeldingId = call.getParam("sykmeldingId")
-        sikkerlogg.info("Calling api path: api/sykmelding/$sykmeldingId for lederFnr $lederFnr")
+        securelog.info("Calling api path: api/sykmelding/$sykmeldingId for lederFnr $lederFnr")
         log.info("Calling api path: api/sykmelding/$sykmeldingId")
 
         val sykmelding = mineSykmeldteService.getSykmelding(sykmeldingId, lederFnr)
@@ -95,7 +94,7 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         val lederFnr = principal.fnr
         val hendelseId = UUID.fromString(call.getParam("hendelseId"))
 
-        sikkerlogg.info("Calling api path: api/hendelse/$hendelseId/les for lederFnr $lederFnr")
+        securelog.info("Calling api path: api/hendelse/$hendelseId/les for lederFnr $lederFnr")
 
         when (mineSykmeldteService.markHendelseRead(hendelseId, lederFnr)) {
             true -> call.respond(HttpStatusCode.OK, HttpMessage("Markert som lest"))

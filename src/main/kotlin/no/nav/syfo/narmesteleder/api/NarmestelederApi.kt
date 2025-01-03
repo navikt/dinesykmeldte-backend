@@ -1,18 +1,19 @@
 package no.nav.syfo.narmesteleder.api
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import java.util.UUID
-import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.application.metrics.DEAKTIVERT_LEDER_COUNTER
-import no.nav.syfo.log
 import no.nav.syfo.minesykmeldte.model.HttpMessage
 import no.nav.syfo.narmesteleder.NarmestelederService
+import no.nav.syfo.plugins.BrukerPrincipal
 import no.nav.syfo.util.getBrukerPrincipal
 import no.nav.syfo.util.getParam
+import no.nav.syfo.util.logger
+
+private val log = logger("no.nav.syfo.narmesteleder.api")
 
 fun Route.registerNarmestelederApi(narmestelederService: NarmestelederService) {
     post("api/narmesteleder/{narmesteLederId}/avkreft") {

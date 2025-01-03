@@ -32,13 +32,6 @@ import no.nav.syfo.minesykmeldte.model.PreviewSendtSoknad
 import no.nav.syfo.minesykmeldte.model.Reisetilskudd
 import no.nav.syfo.minesykmeldte.model.SoknadStatus
 import no.nav.syfo.minesykmeldte.model.Svar
-import no.nav.syfo.model.sykmelding.arbeidsgiver.AktivitetIkkeMuligAGDTO
-import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
-import no.nav.syfo.model.sykmelding.model.ArbeidsrelatertArsakDTO
-import no.nav.syfo.model.sykmelding.model.ArbeidsrelatertArsakTypeDTO
-import no.nav.syfo.model.sykmelding.model.GradertDTO
-import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
-import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.model.Soknad
 import no.nav.syfo.soknad.model.SoknadStatus.FREMTIDIG
@@ -51,9 +44,16 @@ import no.nav.syfo.soknad.model.Sykmeldingstype
 import no.nav.syfo.soknad.model.Visningskriterium
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
+import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.AktivitetIkkeMuligAGDTO
+import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
+import no.nav.syfo.sykmelding.model.sykmelding.model.ArbeidsrelatertArsakDTO
+import no.nav.syfo.sykmelding.model.sykmelding.model.ArbeidsrelatertArsakTypeDTO
+import no.nav.syfo.sykmelding.model.sykmelding.model.GradertDTO
+import no.nav.syfo.sykmelding.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.util.createArbeidsgiverSykmelding
 import no.nav.syfo.util.createSoknad
 import no.nav.syfo.util.createSykmeldingsperiode
+import no.nav.syfo.util.objectMapper
 import no.nav.syfo.util.shouldBeInstance
 import no.nav.syfo.util.toSoknadDbModel
 import org.amshove.kluent.`should not be null`

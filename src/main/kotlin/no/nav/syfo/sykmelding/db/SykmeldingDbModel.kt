@@ -2,7 +2,7 @@ package no.nav.syfo.sykmelding.db
 
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
+import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 
 data class SykmeldingDbModel(
     val sykmeldingId: String,
