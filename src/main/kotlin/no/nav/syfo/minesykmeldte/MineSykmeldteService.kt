@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import no.nav.syfo.hendelser.db.HendelseDbModel
-import no.nav.syfo.log
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toPreviewSoknad
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toSoknadsperiode
 import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toSporsmal
@@ -35,17 +34,21 @@ import no.nav.syfo.minesykmeldte.model.Reisetilskudd
 import no.nav.syfo.minesykmeldte.model.Soknad
 import no.nav.syfo.minesykmeldte.model.Sykmelding
 import no.nav.syfo.minesykmeldte.model.UtenlandskSykmelding
-import no.nav.syfo.model.sykmelding.arbeidsgiver.BehandlerAGDTO
-import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
-import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
+import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.BehandlerAGDTO
+import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
+import no.nav.syfo.sykmelding.model.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.util.logger
+import no.nav.syfo.util.securelog
 import no.nav.syfo.util.toFormattedNameString
 
 class MineSykmeldteService(
     private val mineSykmeldteDb: MineSykmeldteDb,
 ) {
+    private val log = logger()
+
     suspend fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> =
         withContext(Dispatchers.IO) {
             val hendelserJob = async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr) }
@@ -376,7 +379,7 @@ fun safeParseHendelseEnum(oppgavetype: String): HendelseType {
     return try {
         HendelseType.valueOf(oppgavetype)
     } catch (e: Exception) {
-        log.error(
+        securelog.error(
             "Ukjent oppgave av type $oppgavetype er ikke håndtert i applikasjonen. Mangler vi implementasjon?"
         )
         HendelseType.UNKNOWN

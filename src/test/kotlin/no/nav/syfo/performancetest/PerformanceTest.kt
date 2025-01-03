@@ -59,7 +59,7 @@ class PerformanceTest :
                     val sykmeldte = mineSykmeldteService.getMineSykmeldte("70859400564")
                     sykmeldte.size shouldBeEqualTo 1000
                 }
-                System.out.println("test took $duration")
+                println("test took $duration")
             }
         }
     })

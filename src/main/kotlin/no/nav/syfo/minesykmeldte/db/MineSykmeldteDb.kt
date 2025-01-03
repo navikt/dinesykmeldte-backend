@@ -10,10 +10,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.hendelser.db.HendelseDbModel
-import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
+import no.nav.syfo.util.objectMapper
 
 class MineSykmeldteDb(private val database: DatabaseInterface) {
     suspend fun getMineSykmeldte(lederFnr: String): List<MinSykmeldtDbModel> =

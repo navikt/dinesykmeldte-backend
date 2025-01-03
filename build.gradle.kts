@@ -4,7 +4,7 @@ version = "1.0.0"
 val coroutinesVersion = "1.9.0"
 val jacksonVersion = "2.18.2"
 val kluentVersion = "1.73"
-val logbackVersion = "1.5.12"
+val logbackVersion = "1.5.13"
 val ktorVersion = "3.0.1"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
@@ -21,7 +21,8 @@ val googlePostgresVersion = "1.21.0"
 val googleOauthVersion = "1.36.0"
 val ktfmtVersion = "0.44"
 val kafkaVersion = "3.9.0"
-
+val koinVersion = "4.0.1"
+val kotestKoinVersion = "1.3.0"
 ///Due to vulnerabilities
 val nettycommonVersion = "4.1.115.Final"
 val snappyJavaVersion = "1.1.10.7"
@@ -36,7 +37,7 @@ plugins {
 }
 
 application {
-    mainClass.set("no.nav.syfo.BootstrapKt")
+    mainClass.set("no.nav.syfo.ApplicationKt")
 }
 
 repositories {
@@ -67,7 +68,7 @@ repositories {
         implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
         implementation("io.ktor:ktor-client-core:$ktorVersion")
         implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    
+
         implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
         implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
@@ -91,9 +92,12 @@ repositories {
         implementation("org.postgresql:postgresql:$postgresVersion")
         implementation("com.google.cloud.sql:postgres-socket-factory:$googlePostgresVersion")
         implementation("com.google.oauth-client:google-oauth-client:$googleOauthVersion")
+        implementation("io.insert-koin:koin-ktor:$koinVersion")
+        implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
+        implementation("io.kotest.extensions:kotest-extensions-koin:$kotestKoinVersion")
 
         swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
-
+        testImplementation("io.insert-koin:koin-test:$koinVersion")
         testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
         testImplementation("org.amshove.kluent:kluent:$kluentVersion")
         testImplementation("io.mockk:mockk:$mockkVersion")
@@ -128,15 +132,15 @@ repositories {
         }
 
         shadowJar {
-mergeServiceFiles {
-     setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
- }
+            mergeServiceFiles {
+                setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
+            }
             archiveBaseName.set("app")
             archiveClassifier.set("")
             isZip64 = true
             manifest {
                 attributes(
-                   mapOf(
+                    mapOf(
                         "Main-Class" to "no.nav.syfo.BootstrapKt",
                     ),
                 )

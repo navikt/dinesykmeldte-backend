@@ -2,7 +2,7 @@ package no.nav.syfo.util
 
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.authentication
-import no.nav.syfo.application.BrukerPrincipal
+import no.nav.syfo.plugins.BrukerPrincipal
 
 fun ApplicationCall.getBrukerPrincipal(): BrukerPrincipal {
     val brukerPrincipal: BrukerPrincipal? = this.authentication.principal()

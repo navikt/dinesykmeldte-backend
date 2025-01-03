@@ -14,10 +14,8 @@ import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.hendelser.db.HendelseDbModel
-import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
 import no.nav.syfo.narmesteleder.db.toNarmestelederDbModel
-import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.model.Soknad
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
@@ -52,7 +50,6 @@ class TestDb private constructor() {
                 every { mockEnv.jdbcUrl() } returns psqlContainer.jdbcUrl
                 database = Database(mockEnv)
             } catch (ex: Exception) {
-                log.error("Error", ex)
                 throw ex
             }
         }
