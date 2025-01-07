@@ -9,6 +9,7 @@ import no.nav.syfo.plugins.configureLifecycleHooks
 import no.nav.syfo.plugins.configureNaisResources
 import no.nav.syfo.plugins.configurePrometheus
 import no.nav.syfo.plugins.configureRouting
+import no.nav.syfo.plugins.configureRunningTasks
 import no.nav.syfo.plugins.setupAuth
 import org.koin.ktor.ext.get
 
@@ -24,4 +25,5 @@ fun Application.module() {
     configureNaisResources(get())
     configureLifecycleHooks(get())
     configureRouting()
+    configureRunningTasks(get(), get())
 }

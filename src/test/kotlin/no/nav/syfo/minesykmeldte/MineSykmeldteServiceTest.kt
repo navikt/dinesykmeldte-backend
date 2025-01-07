@@ -1091,6 +1091,7 @@ class MineSykmeldteServiceTest :
                         pasientNavn = "navn",
                         startdatoSykefravaer = LocalDate.now(),
                         latestTom = LocalDate.now(),
+                        sistOppdatert = null
                     )
                 coEvery { mineSykmeldteDb.getSoknad(soknadDbModel.soknadId, "red-2") } returns
                     (sykmeldtDbModel to soknadDbModel)
@@ -1298,7 +1299,7 @@ private fun createSoknadDbModel(
         sykmeldingId = sykmeldingId,
         pasientFnr = pasientFnr,
         orgnummer = orgnummer,
-        soknad = soknad,
+        sykepengesoknad = soknad,
         sendtDato = sendtDato,
         tom = tom,
         lest = lest,
@@ -1340,6 +1341,7 @@ private fun createSykmeldtDbModel(
         pasientNavn = pasientNavn,
         startdatoSykefravaer = startdatoSykefravaer,
         latestTom = latestTom,
+        sistOppdatert = null
     )
 
 fun getSykmeldtData(

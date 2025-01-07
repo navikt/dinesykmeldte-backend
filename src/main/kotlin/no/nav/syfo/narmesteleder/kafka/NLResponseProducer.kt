@@ -22,7 +22,7 @@ class NLResponseProducer(
                             topicName,
                             nlResponseKafkaMessage.nlAvbrutt.orgnummer,
                             nlResponseKafkaMessage
-                        )
+                        ),
                     )
                     .get()
             } catch (ex: Exception) {

@@ -1,49 +1,47 @@
 package no.nav.syfo.kafka
 
-import java.io.File
 import java.util.Properties
 import kotlin.reflect.KClass
+import no.nav.syfo.util.JacksonKafkaSerializer
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.*
 
-interface KafkaConfig {
-    val kafkaBootstrapServers: String
-    val truststore: String?
-    val truststorePassword: String?
-    val cluster: String
-}
-
-interface KafkaCredentials {
-    val kafkaUsername: String
-    val kafkaPassword: String
-}
-
-fun loadBaseConfig(env: KafkaConfig, credentials: KafkaCredentials): Properties =
-    Properties().also {
-        it.load(KafkaConfig::class.java.getResourceAsStream("/kafka_base.properties"))
-        it["sasl.jaas.config"] =
-            "org.apache.kafka.common.security.plain.PlainLoginModule required " +
-                "username=\"${credentials.kafkaUsername}\" password=\"${credentials.kafkaPassword}\";"
-        it["bootstrap.servers"] = env.kafkaBootstrapServers
-        it["specific.avro.reader"] = true
-        if (env.cluster != "localhost") {
-            it[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_SSL"
-            it[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = File(env.truststore!!).absolutePath
-            it[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = env.truststorePassword!!
+class KafkaUtils {
+    companion object {
+        fun getKafkaConfig(clientId: String): Properties {
+            return Properties().also {
+                val kafkaEnv = KafkaEnvironment()
+                it[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = kafkaEnv.KAFKA_BROKERS
+                it[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SSL"
+                it[CommonClientConfigs.CLIENT_ID_CONFIG] = "${kafkaEnv.KAFKA_CLIENT_ID}-$clientId"
+                it[SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG] = "jks"
+                it[SslConfigs.SSL_KEYSTORE_TYPE_CONFIG] = "PKCS12"
+                it[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = kafkaEnv.KAFKA_TRUSTSTORE_PATH
+                it[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = kafkaEnv.KAFKA_CREDSTORE_PASSWORD
+                it[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = kafkaEnv.KAFKA_KEYSTORE_PATH
+                it[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = kafkaEnv.KAFKA_CREDSTORE_PASSWORD
+                it[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = kafkaEnv.KAFKA_CREDSTORE_PASSWORD
+                it[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = ""
+                it[ProducerConfig.ACKS_CONFIG] = "all"
+                it[ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG] = "true"
+            }
         }
     }
-
-fun Properties.envOverrides() = apply {
-    putAll(
-        System.getenv()
-            .filter { (key, _) -> key.startsWith("KAFKA_") }
-            .map { (key, value) -> key.substring(6).lowercase().replace("_", ".") to value }
-            .toMap()
-    )
 }
+
+fun <T> createKafkaProducer(applicationName: String, clientId: String): KafkaProducer<String, T> =
+    KafkaProducer(
+        KafkaUtils.getKafkaConfig(clientId)
+            .toProducerConfig(
+                "$applicationName-producer",
+                JacksonKafkaSerializer::class,
+                StringSerializer::class,
+            ),
+    )
 
 fun Properties.toConsumerConfig(
     groupId: String,

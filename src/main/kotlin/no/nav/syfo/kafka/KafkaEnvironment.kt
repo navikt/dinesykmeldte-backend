@@ -1,4 +1,4 @@
-package no.nav.syfo.kafka.aiven
+package no.nav.syfo.kafka
 
 data class KafkaEnvironment(
     val KAFKA_BROKERS: String = getEnvVar("KAFKA_BROKERS"),

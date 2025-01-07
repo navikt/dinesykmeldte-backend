@@ -259,13 +259,14 @@ private fun ResultSet.toSykmeldtSoknad(): Pair<SykmeldtDbModel, SoknadDbModel>? 
                 pasientNavn = getString("pasient_navn"),
                 startdatoSykefravaer = getDate("startdato_sykefravaer").toLocalDate(),
                 latestTom = getDate("latest_tom").toLocalDate(),
+                sistOppdatert = null
             ) to
                 SoknadDbModel(
                     soknadId = getString("soknad_id"),
                     sykmeldingId = getString("sykmelding_id"),
                     pasientFnr = getString("pasient_fnr"),
                     orgnummer = getString("orgnummer"),
-                    soknad = objectMapper.readValue(getString("sykepengesoknad")),
+                    sykepengesoknad = objectMapper.readValue(getString("sykepengesoknad")),
                     sendtDato = getDate("sendt_dato").toLocalDate(),
                     lest = getBoolean("lest"),
                     timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
@@ -300,6 +301,7 @@ private fun ResultSet.toSykmeldtSykmelding(): Pair<SykmeldtDbModel, SykmeldingDb
                 pasientNavn = getString("pasient_navn"),
                 startdatoSykefravaer = getDate("startdato_sykefravaer").toLocalDate(),
                 latestTom = getDate("latest_tom").toLocalDate(),
+                sistOppdatert = null,
             ) to
                 SykmeldingDbModel(
                     sykmeldingId = getString("sykmelding_id"),
