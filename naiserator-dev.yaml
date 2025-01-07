@@ -74,6 +74,7 @@ spec:
           cluster: dev-gcp
       external:
         - host: pdl-api.dev-fss-pub.nais.io
+  leaderElection: true
   secureLogs:
     enabled: true
   env:

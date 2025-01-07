@@ -5,6 +5,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import java.time.LocalDate
 import no.nav.syfo.azuread.AccessTokenClient
@@ -35,8 +36,8 @@ class SyfoSyketilfelleClient(
         }
     }
 
-    private suspend fun hentSykeforloep(fnr: String): List<Sykeforloep> =
-        httpClient
+    private suspend fun hentSykeforloep(fnr: String): List<Sykeforloep> {
+        val response = httpClient
             .get("$syketilfelleEndpointURL/api/v1/sykeforloep?inkluderPapirsykmelding=true") {
                 accept(ContentType.Application.Json)
                 val token = accessTokenClient.getAccessToken(syketilfelleScope)
@@ -45,7 +46,9 @@ class SyfoSyketilfelleClient(
                     append("fnr", fnr)
                 }
             }
-            .body()
+        log.info("Henter sykeforloep fra sykeforloep, response status: ${response.status}, ${response.bodyAsText()}")
+        return response.body()
+    }
 }
 
 data class Sykeforloep(
