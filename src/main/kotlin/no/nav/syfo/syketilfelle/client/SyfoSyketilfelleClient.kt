@@ -37,8 +37,10 @@ class SyfoSyketilfelleClient(
     }
 
     private suspend fun hentSykeforloep(fnr: String): List<Sykeforloep> {
-        val response = httpClient
-            .get("$syketilfelleEndpointURL/api/v1/sykeforloep?inkluderPapirsykmelding=true") {
+        val response =
+            httpClient.get(
+                "$syketilfelleEndpointURL/api/v1/sykeforloep?inkluderPapirsykmelding=true"
+            ) {
                 accept(ContentType.Application.Json)
                 val token = accessTokenClient.getAccessToken(syketilfelleScope)
                 headers {
@@ -46,7 +48,9 @@ class SyfoSyketilfelleClient(
                     append("fnr", fnr)
                 }
             }
-        log.info("Henter sykeforloep fra sykeforloep, response status: ${response.status}, ${response.bodyAsText()}")
+        log.info(
+            "Henter sykeforloep fra sykeforloep, response status: ${response.status}, ${response.bodyAsText()}"
+        )
         return response.body()
     }
 }

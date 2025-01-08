@@ -5,7 +5,6 @@ import no.nav.syfo.soknad.kafka.model.FlexSporsmal
 private val whitelistetHovedsporsmal =
     listOf(
         // Vanlige spørsmål
-        "ANSVARSERKLARING",
         "TILBAKE_I_ARBEID",
         "FERIE_V2",
         "PERMISJON_V2",
