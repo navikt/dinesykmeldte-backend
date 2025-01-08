@@ -67,8 +67,20 @@ spec:
     inbound:
       rules:
         - application: dinesykmeldte
+    outbound:
+      rules:
+        - application: flex-syketilfelle
+          namespace: flex
+          cluster: prod-gcp
+      external:
+        - host: pdl-api.prod-fss-pub.nais.io
+  leaderElection: true
   secureLogs:
     enabled: true
   env:
-    - name: ALLOWED_ORIGIN
-      value: tjenester.nav.no,www.nav.no
+    - name: PDL_GRAPHQL_PATH
+      value: https://pdl-api.prod-fss-pub.nais.io/graphql
+    - name: PDL_SCOPE
+      value: api://prod-fss.pdl.pdl-api/.default
+    - name: SYKETILLFELLE_SCOPE
+      value: api://prod-gcp.flex.flex-syketilfelle/.default

@@ -219,17 +219,17 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         sykmeldingId = sykmeldingId,
         navn = sykmeldt.pasientNavn,
         fnr = sykmeldt.pasientFnr,
-        fom = soknadDb.soknad.fom!!,
+        fom = soknadDb.sykepengesoknad.fom!!,
         tom = soknadDb.tom,
         lest = soknadDb.lest,
-        sendtDato = soknadDb.soknad.sendtArbeidsgiver
+        sendtDato = soknadDb.sykepengesoknad.sendtArbeidsgiver
                 ?: throw IllegalStateException("Søknad uten sendt dato: ${soknadDb.soknadId}"),
-        sendtTilNavDato = soknadDb.soknad.sendtNav,
-        korrigererSoknadId = soknadDb.soknad.korrigerer,
-        korrigertBySoknadId = soknadDb.soknad.korrigertAv,
-        perioder = soknadDb.soknad.soknadsperioder.map { it.toSoknadsperiode() },
+        sendtTilNavDato = soknadDb.sykepengesoknad.sendtNav,
+        korrigererSoknadId = soknadDb.sykepengesoknad.korrigerer,
+        korrigertBySoknadId = soknadDb.sykepengesoknad.korrigertAv,
+        perioder = soknadDb.sykepengesoknad.soknadsperioder.map { it.toSoknadsperiode() },
         sporsmal =
-            soknadDb.soknad.sporsmal
+            soknadDb.sykepengesoknad.sporsmal
                 .filter { sp ->
                     sp.tag != "ANSVARSERKLARING" &&
                         sp.tag != "BEKREFT_OPPLYSNINGER" &&

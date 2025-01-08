@@ -49,6 +49,7 @@ fun createSykmeldtDbModel(pasientFnr: String = "12345678910"): SykmeldtDbModel {
         pasientNavn = "Navn Navnesen",
         startdatoSykefravaer = LocalDate.now().minusMonths(2),
         latestTom = LocalDate.now().minusWeeks(2),
+        sistOppdatert = null,
     )
 }
 
@@ -153,7 +154,7 @@ fun Soknad.toSoknadDbModel(): SoknadDbModel {
         pasientFnr = fnr,
         orgnummer = orgnummer
                 ?: throw IllegalStateException("Har mottatt sendt søknad uten orgnummer: $id"),
-        soknad = this,
+        sykepengesoknad = this,
         sendtDato = sendtArbeidsgiver?.toLocalDate(),
         lest = false, // oppdateres fra strangler
         timestamp = OffsetDateTime.now(ZoneOffset.UTC),

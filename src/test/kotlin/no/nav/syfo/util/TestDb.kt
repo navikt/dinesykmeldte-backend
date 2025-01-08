@@ -104,6 +104,7 @@ class TestDb private constructor() {
                 pasientNavn = getString("pasient_navn"),
                 startdatoSykefravaer = getObject("startdato_sykefravaer", LocalDate::class.java),
                 latestTom = getObject("latest_tom", LocalDate::class.java),
+                sistOppdatert = getObject("sist_oppdatert", LocalDate::class.java),
             )
 
         fun getSykmelding(sykmeldingId: String): SykmeldingDbModel? {
@@ -134,7 +135,8 @@ class TestDb private constructor() {
                     getTimestamp("sendt_til_arbeidsgiver_dato")
                         ?.toInstant()
                         ?.atOffset(ZoneOffset.UTC),
-                egenmeldingsdager = objectMapper.readValue(getString("egenmeldingsdager")),
+                egenmeldingsdager =
+                    getString("egenmeldingsdager")?.let { objectMapper.readValue(it) },
             )
 
         fun getSoknad(soknadId: String): SoknadDbModel? {
@@ -151,13 +153,28 @@ class TestDb private constructor() {
             }
         }
 
+        fun getSoknadForSykmelding(sykmeldingId: String): SoknadDbModel? {
+            return database.connection.use {
+                it.prepareStatement(
+                        """
+                    SELECT * FROM soknad WHERE sykmelding_id = ?;
+                """,
+                    )
+                    .use { ps ->
+                        ps.setString(1, sykmeldingId)
+                        ps.executeQuery().toList { toSoknadDbModel() }.firstOrNull()
+                    }
+            }
+        }
+
         private fun ResultSet.toSoknadDbModel(): SoknadDbModel =
             SoknadDbModel(
                 soknadId = getString("soknad_id"),
                 sykmeldingId = getString("sykmelding_id"),
                 pasientFnr = getString("pasient_fnr"),
                 orgnummer = getString("orgnummer"),
-                soknad = objectMapper.readValue(getString("soknad"), Soknad::class.java),
+                sykepengesoknad =
+                    objectMapper.readValue(getString("sykepengesoknad"), Soknad::class.java),
                 sendtDato = getObject("sendt_dato", LocalDate::class.java),
                 lest = getBoolean("lest"),
                 timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
@@ -298,7 +315,7 @@ fun DatabaseInterface.insertOrUpdate(soknadDbModel: SoknadDbModel) {
                 preparedStatement.setString(2, soknadDbModel.sykmeldingId)
                 preparedStatement.setString(3, soknadDbModel.pasientFnr)
                 preparedStatement.setString(4, soknadDbModel.orgnummer)
-                preparedStatement.setObject(5, soknadDbModel.soknad.toPGObject())
+                preparedStatement.setObject(5, soknadDbModel.sykepengesoknad.toPGObject())
                 preparedStatement.setObject(6, soknadDbModel.sendtDato)
                 preparedStatement.setBoolean(7, soknadDbModel.lest)
                 preparedStatement.setTimestamp(
