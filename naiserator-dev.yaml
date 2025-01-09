@@ -15,8 +15,6 @@ spec:
         databases:
           - name: dinesykmeldte-backend
             envVarPrefix: NAIS_DATABASE
-            users:
-              - name: dinesykmeldte-kafka-user
         diskAutoresize: true
         highAvailability: false
         insights:
