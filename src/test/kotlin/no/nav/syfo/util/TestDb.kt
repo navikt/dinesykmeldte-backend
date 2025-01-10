@@ -40,7 +40,7 @@ class TestDb private constructor() {
                         .withExposedPorts(5432)
                         .withUsername("username")
                         .withPassword("password")
-                        .withDatabaseName("database")
+                        .withDatabaseName("dinesykmeldte-backend")
                         .withInitScript("db/testdb-init.sql")
 
                 psqlContainer.start()

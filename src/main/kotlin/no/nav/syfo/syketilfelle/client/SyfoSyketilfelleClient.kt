@@ -5,7 +5,6 @@ import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import java.time.LocalDate
 import no.nav.syfo.azuread.AccessTokenClient
@@ -48,9 +47,7 @@ class SyfoSyketilfelleClient(
                     append("fnr", fnr)
                 }
             }
-        log.info(
-            "Henter sykeforloep fra sykeforloep, response status: ${response.status}"
-        )
+        log.info("Henter sykeforloep fra sykeforloep, response status: ${response.status}")
         return response.body()
     }
 }
