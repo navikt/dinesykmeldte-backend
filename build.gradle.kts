@@ -21,7 +21,7 @@ val googlePostgresVersion = "1.22.0"
 val googleOauthVersion = "1.37.0"
 val ktfmtVersion = "0.44"
 val kafkaVersion = "3.9.0"
-val koinVersion = "4.0.1"
+val koinVersion = "4.0.2"
 val kotestKoinVersion = "1.3.0"
 ///Due to vulnerabilities
 val nettycommonVersion = "4.1.117.Final"
