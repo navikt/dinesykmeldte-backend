@@ -1,5 +1,8 @@
 name: Deploy app to dev and prod
-on: push
+on:
+  push:
+    branches-ignore:
+      - esyfo
 
 permissions:
   actions: read
