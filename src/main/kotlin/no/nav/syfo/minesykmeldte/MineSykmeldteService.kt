@@ -40,12 +40,18 @@ import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.BehandlerAGDTO
 import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.sykmelding.model.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.synchendelse.SyncHendelse
+import no.nav.syfo.synchendelse.SyncHendelseType
 import no.nav.syfo.util.logger
 import no.nav.syfo.util.securelog
 import no.nav.syfo.util.toFormattedNameString
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
 
 class MineSykmeldteService(
     private val mineSykmeldteDb: MineSykmeldteDb,
+    private val kafkaProducer: KafkaProducer<String, SyncHendelse>,
+    private val syncTopic: String,
 ) {
     private val log = logger()
 
@@ -118,7 +124,7 @@ class MineSykmeldteService(
                 Dialogmote(
                     hendelseId = it.hendelseId,
                     tekst = it.tekst
-                            ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}"),
+                        ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}"),
                     mottatt = it.mottatt,
                 )
             }
@@ -151,7 +157,7 @@ class MineSykmeldteService(
             .mapNotNull { sykmeldt ->
                 mapNullableSoknad(
                     sykmeldt,
-                    getHendlersforSoknad(hendelserMap, sykmeldtEntry, sykmeldt)
+                    getHendlersforSoknad(hendelserMap, sykmeldtEntry, sykmeldt),
                 )
             }
     }
@@ -171,19 +177,54 @@ class MineSykmeldteService(
     }
 
     suspend fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): Boolean {
-        return mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr)
+        val ids = mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr)
+        kafkaProducer
+            .send(ProducerRecord(syncTopic, SyncHendelse(ids, type = SyncHendelseType.SYKMELDING)))
+            .get()
+        return ids.isNotEmpty()
     }
 
     suspend fun markSoknadRead(soknadId: String, lederFnr: String): Boolean {
-        return mineSykmeldteDb.markSoknadRead(soknadId, lederFnr)
+        val ids = mineSykmeldteDb.markSoknadRead(soknadId, lederFnr)
+        kafkaProducer
+            .send(ProducerRecord(syncTopic, SyncHendelse(ids, type = SyncHendelseType.SOKNAD)))
+            .get()
+        return ids.isNotEmpty()
     }
 
     suspend fun markHendelseRead(hendelseId: UUID, lederFnr: String): Boolean {
-        return mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr)
+        val ids = mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr)
+        kafkaProducer
+            .send(ProducerRecord(syncTopic, SyncHendelse(ids, type = SyncHendelseType.HENDELSE)))
+            .get()
+        return ids.isNotEmpty()
     }
 
     suspend fun markAllSykmeldingerAndSoknaderRead(lederFnr: String) {
-        mineSykmeldteDb.markAllSykmeldingAndSoknadAsRead(lederFnr)
+        val sykmeldingIdsAndSoknadIds = mineSykmeldteDb.markAllSykmeldingAndSoknadAsRead(lederFnr)
+        val sykmeldingJob =
+            kafkaProducer.send(
+                ProducerRecord(
+                    syncTopic,
+                    SyncHendelse(
+                        sykmeldingIdsAndSoknadIds.sykmeldingIds,
+                        type = SyncHendelseType.SYKMELDING,
+                    ),
+                ),
+            )
+        val soknadJob =
+            kafkaProducer.send(
+                ProducerRecord(
+                    syncTopic,
+                    SyncHendelse(
+                        sykmeldingIdsAndSoknadIds.soknadIds,
+                        type = SyncHendelseType.SOKNAD,
+                    ),
+                ),
+            )
+
+        sykmeldingJob.get()
+        soknadJob.get()
     }
 }
 
@@ -223,7 +264,7 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         tom = soknadDb.tom,
         lest = soknadDb.lest,
         sendtDato = soknadDb.sykepengesoknad.sendtArbeidsgiver
-                ?: throw IllegalStateException("Søknad uten sendt dato: ${soknadDb.soknadId}"),
+            ?: throw IllegalStateException("Søknad uten sendt dato: ${soknadDb.soknadId}"),
         sendtTilNavDato = soknadDb.sykepengesoknad.sendtNav,
         korrigererSoknadId = soknadDb.sykepengesoknad.korrigerer,
         korrigertBySoknadId = soknadDb.sykepengesoknad.korrigertAv,
@@ -238,7 +279,7 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
                         sp.tag != "TIL_SLUTT" &&
                         sp.tag != "VAER_KLAR_OVER_AT"
                 }
-                .map { it.toSporsmal() }
+                .map { it.toSporsmal() },
     )
 }
 
@@ -330,12 +371,14 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
                     )
                 },
             )
+
         PeriodetypeDTO.AVVENTENDE ->
             Avventende(
                 this.fom,
                 this.tom,
                 tilrettelegging = this.innspillTilArbeidsgiver,
             )
+
         PeriodetypeDTO.BEHANDLINGSDAGER ->
             Behandlingsdager(
                 this.fom,
@@ -343,6 +386,7 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
                 this.behandlingsdager
                     ?: throw IllegalStateException("Behandlingsdager without behandlingsdager"),
             )
+
         PeriodetypeDTO.GRADERT -> {
             val gradering = this.gradert
             requireNotNull(gradering) { "Gradert periode uten gradert-data burde ikke eksistere" }
@@ -354,6 +398,7 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
                 gradering.reisetilskudd,
             )
         }
+
         PeriodetypeDTO.REISETILSKUDD ->
             Reisetilskudd(
                 this.fom,
@@ -380,7 +425,7 @@ fun safeParseHendelseEnum(oppgavetype: String): HendelseType {
         HendelseType.valueOf(oppgavetype)
     } catch (e: Exception) {
         securelog.error(
-            "Ukjent oppgave av type $oppgavetype er ikke håndtert i applikasjonen. Mangler vi implementasjon?"
+            "Ukjent oppgave av type $oppgavetype er ikke håndtert i applikasjonen. Mangler vi implementasjon?",
         )
         HendelseType.UNKNOWN
     }

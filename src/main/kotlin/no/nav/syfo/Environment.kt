@@ -5,11 +5,6 @@ data class Environment(
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "dinesykmeldte-backend"),
     val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
     val dineSykmeldteBackendTokenXClientId: String = getEnvVar("TOKEN_X_CLIENT_ID"),
-    val databaseUsername: String = getEnvVar("NAIS_DATABASE_USERNAME"),
-    val databasePassword: String = getEnvVar("NAIS_DATABASE_PASSWORD"),
-    val dbHost: String = getEnvVar("NAIS_DATABASE_HOST"),
-    val dbPort: String = getEnvVar("NAIS_DATABASE_PORT"),
-    val dbName: String = getEnvVar("NAIS_DATABASE_DATABASE"),
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val nlResponseTopic: String = "teamsykmelding.syfo-narmesteleder",
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
@@ -25,11 +20,9 @@ data class Environment(
         getEnvVar("SYKETILLFELLE_ENDPOINT_URL", "http://flex-syketilfelle.flex"),
     val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
-) {
-    fun jdbcUrl(): String {
-        return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
-    }
-}
+    val dbUrl: String = getEnvVar("NAIS_DATABASE_JDBC_URL"),
+    val syncTopic: String = "team-esyfo.dinesykmeldte-lest-topic",
+)
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
     System.getenv(varName)

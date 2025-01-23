@@ -2,21 +2,25 @@ package no.nav.syfo.performancetest
 
 import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.FunSpec
+import io.mockk.mockk
 import java.util.UUID
 import kotlin.system.measureTimeMillis
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.getSoknad
+import no.nav.syfo.synchendelse.SyncHendelse
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
 import no.nav.syfo.util.insertOrUpdate
 import org.amshove.kluent.shouldBeEqualTo
+import org.apache.kafka.clients.producer.KafkaProducer
 
 @Ignored
 class PerformanceTest :
     FunSpec({
         val database = TestDb.database
+        val kafkaProducer = mockk<KafkaProducer<String, SyncHendelse>>(relaxed = true)
         val nlFnr = "70859400564"
         val orgnummer = "972674818"
         (0 until 1000).forEach { number ->
@@ -51,6 +55,8 @@ class PerformanceTest :
         val mineSykmeldteService =
             MineSykmeldteService(
                 mineSykmeldteDb = MineSykmeldteDb(database),
+                kafkaProducer,
+                "topic"
             )
 
         context("Get mine sykmeldginer") {

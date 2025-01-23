@@ -9,6 +9,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.narmesteleder.NarmestelederService
+import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.soknad.SoknadService
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.util.logger
@@ -56,16 +57,22 @@ class CommonKafkaService(
         while (applicationState.ready) {
             val records = kafkaConsumer.poll(Duration.ofSeconds(10))
             records.forEach {
-                when (it.topic()) {
-                    environment.narmestelederLeesahTopic -> narmestelederService.updateNl(it)
-                    environment.sendtSykmeldingTopic ->
-                        sykmeldingService.handleSendtSykmeldingKafkaMessage(it)
-                    environment.sykepengesoknadTopic -> soknadService.handleSykepengesoknad(it)
-                    environment.hendelserTopic -> hendelserService.handleHendelse(it)
-                    else ->
-                        throw IllegalStateException(
-                            "Har mottatt melding på ukjent topic: ${it.topic()}",
-                        )
+                try {
+                    when (it.topic()) {
+                        environment.narmestelederLeesahTopic -> narmestelederService.updateNl(it)
+                        environment.sendtSykmeldingTopic ->
+                            sykmeldingService.handleSendtSykmeldingKafkaMessage(it)
+                        environment.sykepengesoknadTopic -> soknadService.handleSykepengesoknad(it)
+                        environment.hendelserTopic -> hendelserService.handleHendelse(it)
+                        else ->
+                            throw IllegalStateException(
+                                "Har mottatt melding på ukjent topic: ${it.topic()}",
+                            )
+                    }
+                } catch (ex: NameNotFoundInPdlException) {
+                    log.warn(
+                        "Could not find name in PDL skipping, topic ${it.topic()}: partition: ${it.partition()} offset: ${it.offset()}"
+                    )
                 }
             }
             processedMessages += records.count()

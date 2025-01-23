@@ -38,16 +38,15 @@ class TestDb private constructor() {
                 psqlContainer =
                     PsqlContainer()
                         .withExposedPorts(5432)
-                        .withUsername("username")
+                        .withUsername("user")
                         .withPassword("password")
                         .withDatabaseName("dinesykmeldte-backend")
                         .withInitScript("db/testdb-init.sql")
 
                 psqlContainer.start()
                 val mockEnv = mockk<Environment>(relaxed = true)
-                every { mockEnv.databaseUsername } returns "username"
-                every { mockEnv.databasePassword } returns "password"
-                every { mockEnv.jdbcUrl() } returns psqlContainer.jdbcUrl
+                every { mockEnv.dbUrl } returns
+                    "${psqlContainer.jdbcUrl}&user=${psqlContainer.username}&password=${psqlContainer.password}"
                 database = Database(mockEnv)
             } catch (ex: Exception) {
                 throw ex
@@ -265,16 +264,16 @@ fun DatabaseInterface.insertHendelse(hendelseDbModel: HendelseDbModel) {
                 preparedStatement.setString(6, hendelseDbModel.tekst)
                 preparedStatement.setTimestamp(
                     7,
-                    Timestamp.from(hendelseDbModel.timestamp.toInstant())
+                    Timestamp.from(hendelseDbModel.timestamp.toInstant()),
                 )
                 preparedStatement.setTimestamp(
                     8,
-                    hendelseDbModel.utlopstidspunkt?.let { Timestamp.from(it.toInstant()) }
+                    hendelseDbModel.utlopstidspunkt?.let { Timestamp.from(it.toInstant()) },
                 )
                 preparedStatement.setBoolean(9, hendelseDbModel.ferdigstilt)
                 preparedStatement.setTimestamp(
                     10,
-                    hendelseDbModel.ferdigstiltTimestamp?.let { Timestamp.from(it.toInstant()) }
+                    hendelseDbModel.ferdigstiltTimestamp?.let { Timestamp.from(it.toInstant()) },
                 )
                 preparedStatement.setObject(11, hendelseDbModel.hendelseId)
                 preparedStatement.executeUpdate()
@@ -320,7 +319,7 @@ fun DatabaseInterface.insertOrUpdate(soknadDbModel: SoknadDbModel) {
                 preparedStatement.setBoolean(7, soknadDbModel.lest)
                 preparedStatement.setTimestamp(
                     8,
-                    Timestamp.from(soknadDbModel.timestamp.toInstant())
+                    Timestamp.from(soknadDbModel.timestamp.toInstant()),
                 )
                 preparedStatement.setObject(9, soknadDbModel.tom)
                 preparedStatement.executeUpdate()
@@ -374,7 +373,7 @@ fun DatabaseInterface.insertOrUpdate(
                 preparedStatement.setBoolean(6, sykmeldingDbModel.lest)
                 preparedStatement.setTimestamp(
                     7,
-                    Timestamp.from(sykmeldingDbModel.timestamp.toInstant())
+                    Timestamp.from(sykmeldingDbModel.timestamp.toInstant()),
                 )
                 preparedStatement.setObject(8, sykmeldingDbModel.latestTom)
                 preparedStatement.setTimestamp(9, sendtTilArbeidsgiverDato)
@@ -386,7 +385,7 @@ fun DatabaseInterface.insertOrUpdate(
                 preparedStatement.setBoolean(14, sykmeldingDbModel.lest)
                 preparedStatement.setTimestamp(
                     15,
-                    Timestamp.from(sykmeldingDbModel.timestamp.toInstant())
+                    Timestamp.from(sykmeldingDbModel.timestamp.toInstant()),
                 )
                 preparedStatement.setObject(16, sykmeldingDbModel.latestTom)
                 preparedStatement.setTimestamp(17, sendtTilArbeidsgiverDato)
