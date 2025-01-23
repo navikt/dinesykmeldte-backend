@@ -10,7 +10,7 @@ spec:
   gcp:
     sqlInstances:
       - name: dinesykmeldte-backend-db-instance
-        type: POSTGRES_12
+        type: POSTGRES_17
         diskSize: 10
         tier: db-custom-2-5120
         databases:

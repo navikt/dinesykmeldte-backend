@@ -60,12 +60,12 @@ fun Application.configureDependencies() {
 
         modules(
             applicationStateModule(),
-            environmentModule(),
+            /*environmentModule(),
             httpClient(),
             authModule(),
             databaseModule(),
             servicesModule(),
-            commonKafkaConsumer(),
+            commonKafkaConsumer(),*/
         )
     }
 }
