@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "no.nav.helse.flex:sykepengesoknad-kafka"
