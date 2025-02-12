@@ -7,6 +7,7 @@ import java.net.ConnectException
 import java.net.SocketException
 import java.sql.Connection
 import java.sql.ResultSet
+import javax.sql.DataSource
 import no.nav.syfo.Environment
 import no.nav.syfo.util.logger
 import org.flywaydb.core.Flyway
@@ -29,9 +30,7 @@ class Database(private val env: Environment, retries: Long = 30, sleepTime: Long
                 tempDatasource =
                     HikariDataSource(
                         HikariConfig().apply {
-                            jdbcUrl = env.jdbcUrl()
-                            username = env.databaseUsername
-                            password = env.databasePassword
+                            jdbcUrl = env.dbUrl
                             maximumPoolSize = 5
                             minimumIdle = 3
                             isAutoCommit = false
@@ -54,13 +53,13 @@ class Database(private val env: Environment, retries: Long = 30, sleepTime: Long
             throw RuntimeException("Could not connect to DB")
         }
         dataSource = tempDatasource
-        runFlywayMigrations()
+        runFlywayMigrations(dataSource)
     }
 
-    private fun runFlywayMigrations() =
+    private fun runFlywayMigrations(dataSource: DataSource) =
         Flyway.configure().run {
             locations("db")
-            dataSource(env.jdbcUrl(), env.databaseUsername, env.databasePassword)
+            dataSource(dataSource)
             load().migrate()
         }
 }

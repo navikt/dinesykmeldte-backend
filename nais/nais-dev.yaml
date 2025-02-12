@@ -2,9 +2,9 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: dinesykmeldte-backend
-  namespace: teamsykmelding
+  namespace: team-esyfo
   labels:
-    team: teamsykmelding
+    team: team-esyfo
 spec:
   image: {{ image }}
   gcp:
@@ -62,9 +62,6 @@ spec:
       enabled: true
       tenant: trygdeetaten.no
   accessPolicy:
-    inbound:
-      rules:
-        - application: dinesykmeldte
     outbound:
       rules:
         - application: flex-syketilfelle

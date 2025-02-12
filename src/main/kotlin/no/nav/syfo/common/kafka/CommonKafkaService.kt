@@ -35,7 +35,7 @@ class CommonKafkaService(
                     listOf(
                         environment.narmestelederLeesahTopic,
                         environment.sendtSykmeldingTopic,
-                        environment.sykepengesoknadTopic,
+                        // environment.sykepengesoknadTopic,
                         environment.hendelserTopic,
                     ),
                 )

@@ -60,12 +60,12 @@ fun Application.configureDependencies() {
 
         modules(
             applicationStateModule(),
-            /*environmentModule(),
+            environmentModule(),
             httpClient(),
             authModule(),
             databaseModule(),
             servicesModule(),
-            commonKafkaConsumer(),*/
+            commonKafkaConsumer(),
         )
     }
 }
@@ -102,10 +102,10 @@ private fun commonKafkaConsumer() = module {
             KafkaConsumer(
                 KafkaUtils.getKafkaConfig("dinesykmeldte-backend-consumer")
                     .also {
-                        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+                        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
                         it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
                     }
-                    .toConsumerConfig("dinesykmeldte-backend", StringDeserializer::class),
+                    .toConsumerConfig("esyfo-dinesykmeldte-backend", StringDeserializer::class),
                 StringDeserializer(),
                 StringDeserializer(),
             )
