@@ -15,6 +15,11 @@ import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.objectMapper
 
+data class SykmeldingAndSoknadIds(
+    val sykmeldingIds: List<String>,
+    val soknadIds: List<String>,
+)
+
 class MineSykmeldteDb(private val database: DatabaseInterface) {
     suspend fun getMineSykmeldte(lederFnr: String): List<MinSykmeldtDbModel> =
         withContext(Dispatchers.IO) {
@@ -140,7 +145,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
             }
         }
 
-    suspend fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): Boolean =
+    suspend fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): List<String> =
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
                 val updated =
@@ -152,19 +157,20 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 WHERE (narmesteleder.pasient_fnr = sykmelding.pasient_fnr AND narmesteleder.orgnummer = sykmelding.orgnummer) 
                 AND sykmelding.sykmelding_id = ?
                 AND narmesteleder.leder_fnr = ?
+                returning sykmelding.sykmelding_id;
             """,
                         )
                         .use { ps ->
                             ps.setString(1, sykmeldingId)
                             ps.setString(2, lederFnr)
-                            ps.executeUpdate() > 0
+                            ps.executeQuery().toList { getString("sykmelding_id") }
                         }
                 connection.commit()
                 updated
             }
         }
 
-    suspend fun markSoknadRead(soknadId: String, lederFnr: String): Boolean =
+    suspend fun markSoknadRead(soknadId: String, lederFnr: String): List<String> =
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
                 val updated =
@@ -176,19 +182,20 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 WHERE (narmesteleder.pasient_fnr = soknad.pasient_fnr AND narmesteleder.orgnummer = soknad.orgnummer) 
                 AND soknad.soknad_id = ?
                 AND narmesteleder.leder_fnr = ?
+                returning soknad.soknad_id
             """,
                         )
                         .use { ps ->
                             ps.setString(1, soknadId)
                             ps.setString(2, lederFnr)
-                            ps.executeUpdate() > 0
+                            ps.executeQuery().toList { getString("soknad_id") }
                         }
                 connection.commit()
                 updated
             }
         }
 
-    suspend fun markHendelseRead(hendelseId: UUID, lederFnr: String): Boolean =
+    suspend fun markHendelseRead(hendelseId: UUID, lederFnr: String): List<String> =
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
                 val updated =
@@ -200,40 +207,58 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 WHERE (narmesteleder.pasient_fnr = hendelser.pasient_fnr AND narmesteleder.orgnummer = hendelser.orgnummer) 
                 AND hendelser.hendelse_id = ?
                 AND narmesteleder.leder_fnr = ?
+                returning hendelser.hendelse_id
             """,
                         )
                         .use { ps ->
                             ps.setTimestamp(1, Timestamp.from(Instant.now()))
                             ps.setObject(2, hendelseId)
                             ps.setString(3, lederFnr)
-                            ps.executeUpdate() > 0
+                            ps.executeQuery().toList { getString("hendelse_id") }
                         }
                 connection.commit()
                 updated
             }
         }
 
-    suspend fun markAllSykmeldingAndSoknadAsRead(lederFnr: String) =
-        withContext(Dispatchers.IO) {
+    suspend fun markAllSykmeldingAndSoknadAsRead(lederFnr: String): SykmeldingAndSoknadIds {
+        return withContext(Dispatchers.IO) {
             database.connection.use { connection ->
-                connection
-                    .prepareStatement(
-                        """
-                update sykmelding s set lest = TRUE 
-                from narmesteleder nl where s.pasient_fnr = nl.pasient_fnr and nl.leder_fnr = ?;
-                update soknad s set lest = TRUE
-                from narmesteleder nl where s.pasient_fnr = nl.pasient_fnr and nl.leder_fnr = ?;
+                val sykmeldingIds =
+                    connection
+                        .prepareStatement(
+                            """
+                     update sykmelding s set lest = TRUE 
+                from narmesteleder nl where s.pasient_fnr = nl.pasient_fnr and nl.leder_fnr = ? returning s.sykmelding_id;
                 """
-                            .trimIndent(),
-                    )
-                    .use { ps ->
-                        ps.setString(1, lederFnr)
-                        ps.setString(2, lederFnr)
-                        ps.executeUpdate()
-                    }
+                                .trimIndent()
+                        )
+                        .use { ps ->
+                            ps.setString(1, lederFnr)
+                            ps.executeQuery().toList { getString("sykmelding_id") }
+                        }
+                val soknadIds =
+                    connection
+                        .prepareStatement(
+                            """
+                update soknad s set lest = TRUE
+                from narmesteleder nl where s.pasient_fnr = nl.pasient_fnr and nl.leder_fnr = ? returning s.soknad_id;
+                 """
+                                .trimIndent()
+                        )
+                        .use { ps ->
+                            ps.setString(1, lederFnr)
+                            ps.executeQuery().toList { getString("soknad_id") }
+                        }
+
                 connection.commit()
+                SykmeldingAndSoknadIds(
+                    sykmeldingIds = sykmeldingIds,
+                    soknadIds = soknadIds,
+                )
             }
         }
+    }
 }
 
 private fun ResultSet.toHendelseDbModels() =

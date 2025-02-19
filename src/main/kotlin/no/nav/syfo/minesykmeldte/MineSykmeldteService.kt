@@ -40,12 +40,18 @@ import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.BehandlerAGDTO
 import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.sykmelding.model.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.synchendelse.SyncHendelse
+import no.nav.syfo.synchendelse.SyncHendelseType
 import no.nav.syfo.util.logger
 import no.nav.syfo.util.securelog
 import no.nav.syfo.util.toFormattedNameString
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
 
 class MineSykmeldteService(
     private val mineSykmeldteDb: MineSykmeldteDb,
+    private val kafkaProducer: KafkaProducer<String, SyncHendelse>,
+    private val syncTopic: String,
 ) {
     private val log = logger()
 
@@ -171,19 +177,56 @@ class MineSykmeldteService(
     }
 
     suspend fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): Boolean {
-        return mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr)
+        val ids = mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr)
+        kafkaProducer
+            .send(ProducerRecord(syncTopic, SyncHendelse(ids, type = SyncHendelseType.SYKMELDING)))
+            .get()
+        return ids.isNotEmpty()
     }
 
     suspend fun markSoknadRead(soknadId: String, lederFnr: String): Boolean {
-        return mineSykmeldteDb.markSoknadRead(soknadId, lederFnr)
+        // publish to kafka
+        val ids = mineSykmeldteDb.markSoknadRead(soknadId, lederFnr)
+        kafkaProducer
+            .send(ProducerRecord(syncTopic, SyncHendelse(ids, type = SyncHendelseType.SOKNAD)))
+            .get()
+        return ids.isNotEmpty()
     }
 
     suspend fun markHendelseRead(hendelseId: UUID, lederFnr: String): Boolean {
-        return mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr)
+        val ids = mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr)
+        kafkaProducer
+            .send(ProducerRecord(syncTopic, SyncHendelse(ids, type = SyncHendelseType.HENDELSE)))
+            .get()
+        return ids.isNotEmpty()
     }
 
     suspend fun markAllSykmeldingerAndSoknaderRead(lederFnr: String) {
-        mineSykmeldteDb.markAllSykmeldingAndSoknadAsRead(lederFnr)
+        val sykmeldingIdsAndSoknadIds = mineSykmeldteDb.markAllSykmeldingAndSoknadAsRead(lederFnr)
+        val sykmeldingJob =
+            kafkaProducer.send(
+                ProducerRecord(
+                    syncTopic,
+                    SyncHendelse(
+                        sykmeldingIdsAndSoknadIds.sykmeldingIds,
+                        type = SyncHendelseType.SYKMELDING
+                    )
+                )
+            )
+        val soknadJob =
+            kafkaProducer.send(
+                ProducerRecord(
+                    syncTopic,
+                    SyncHendelse(
+                        sykmeldingIdsAndSoknadIds.soknadIds,
+                        type = SyncHendelseType.SOKNAD
+                    )
+                )
+            )
+
+        sykmeldingJob.get()
+        soknadJob.get()
+        // publish to kafka
     }
 }
 

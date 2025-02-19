@@ -33,11 +33,10 @@ class KafkaUtils {
     }
 }
 
-fun <T> createKafkaProducer(applicationName: String, clientId: String): KafkaProducer<String, T> =
+fun <T> createKafkaProducer(clientId: String): KafkaProducer<String, T> =
     KafkaProducer(
         KafkaUtils.getKafkaConfig(clientId)
             .toProducerConfig(
-                "$applicationName-producer",
                 JacksonKafkaSerializer::class,
                 StringSerializer::class,
             ),
@@ -57,13 +56,11 @@ fun Properties.toConsumerConfig(
     }
 
 fun Properties.toProducerConfig(
-    groupId: String,
     valueSerializer: KClass<out Serializer<out Any>>,
     keySerializer: KClass<out Serializer<out Any>> = StringSerializer::class
 ): Properties =
     Properties().also {
         it.putAll(this)
-        it[ConsumerConfig.GROUP_ID_CONFIG] = groupId
         it[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = valueSerializer.java
         it[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = keySerializer.java
     }

@@ -50,6 +50,7 @@ import no.nav.syfo.sykmelding.model.sykmelding.model.ArbeidsrelatertArsakDTO
 import no.nav.syfo.sykmelding.model.sykmelding.model.ArbeidsrelatertArsakTypeDTO
 import no.nav.syfo.sykmelding.model.sykmelding.model.GradertDTO
 import no.nav.syfo.sykmelding.model.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.synchendelse.SyncHendelse
 import no.nav.syfo.util.createArbeidsgiverSykmelding
 import no.nav.syfo.util.createSoknad
 import no.nav.syfo.util.createSykmeldingsperiode
@@ -62,12 +63,14 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldHaveSize
 import org.amshove.kluent.shouldNotBe
 import org.amshove.kluent.shouldNotBeNull
+import org.apache.kafka.clients.producer.KafkaProducer
 
 @ExperimentalContracts
 class MineSykmeldteServiceTest :
     FunSpec({
         val mineSykmeldteDb = mockk<MineSykmeldteDb>(relaxed = true)
-        val mineSykmeldtService = MineSykmeldteService(mineSykmeldteDb)
+        val kafkaProducer = mockk<KafkaProducer<String, SyncHendelse>>(relaxed = true)
+        val mineSykmeldtService = MineSykmeldteService(mineSykmeldteDb, kafkaProducer, "topic")
 
         afterEach { clearMocks(mineSykmeldteDb) }
 

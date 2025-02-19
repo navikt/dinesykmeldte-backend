@@ -19,8 +19,6 @@ import no.nav.syfo.util.insertHendelse
 import no.nav.syfo.util.insertOrUpdate
 import no.nav.syfo.util.objectMapper
 import no.nav.syfo.util.toSoknadDbModel
-import org.amshove.kluent.`should be false`
-import org.amshove.kluent.`should be true`
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
 
@@ -167,7 +165,7 @@ class MineSykmeldteDbTest :
                 val oppdatertSykmelding =
                     minesykmeldteDb.getSykmelding("sykmelding-id-1", "leder-fnr-1")?.second
 
-                didMarkAsRead.`should be true`()
+                didMarkAsRead.size shouldBeEqualTo 1
                 oppdatertSykmelding?.lest shouldBeEqualTo true
             }
 
@@ -189,7 +187,7 @@ class MineSykmeldteDbTest :
                 val didMarkAsRead =
                     minesykmeldteDb.markSykmeldingRead("sykmelding-id-1", "leder-fnr-1")
 
-                didMarkAsRead.`should be false`()
+                didMarkAsRead.size shouldBeEqualTo 0
             }
         }
 
@@ -221,7 +219,7 @@ class MineSykmeldteDbTest :
                 val oppdatertSoknad =
                     minesykmeldteDb.getSoknad("soknad-id-1", "leder-fnr-1")?.second
 
-                didMarkAsRead.`should be true`()
+                didMarkAsRead.size shouldBeEqualTo 1
                 oppdatertSoknad?.lest shouldBeEqualTo true
             }
 
@@ -250,7 +248,7 @@ class MineSykmeldteDbTest :
                 TestDb.database.insertOrUpdate(soknad)
                 val didMarkAsRead = minesykmeldteDb.markSoknadRead("soknad-id-1", "leder-fnr-1")
 
-                didMarkAsRead.`should be false`()
+                didMarkAsRead.size shouldBeEqualTo 0
             }
         }
 
@@ -289,7 +287,7 @@ class MineSykmeldteDbTest :
                     minesykmeldteDb.markHendelseRead(hendelse.hendelseId, "leder-fnr-1")
                 val hendelseErFerdigstilt = minesykmeldteDb.getHendelser("leder-fnr-1").isEmpty()
 
-                didMarkAsRead.`should be true`()
+                didMarkAsRead.size shouldBeEqualTo 1
                 hendelseErFerdigstilt shouldBeEqualTo true
             }
 
@@ -329,7 +327,7 @@ class MineSykmeldteDbTest :
                 val didMarkAsRead =
                     minesykmeldteDb.markHendelseRead(hendelseDbModel.hendelseId, "leder-fnr-1")
 
-                didMarkAsRead.`should be false`()
+                didMarkAsRead.size shouldBeEqualTo 0
             }
         }
 
