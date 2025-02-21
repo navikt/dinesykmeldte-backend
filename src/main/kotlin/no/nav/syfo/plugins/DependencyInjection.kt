@@ -42,6 +42,7 @@ import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.db.SykmeldingDb
+import no.nav.syfo.synchendelse.SyncHendelse
 import no.nav.syfo.util.AuthConfiguration
 import no.nav.syfo.util.getWellKnownTokenX
 import no.nav.syfo.virksomhet.api.VirksomhetService
@@ -66,8 +67,13 @@ fun Application.configureDependencies() {
             databaseModule(),
             servicesModule(),
             commonKafkaConsumer(),
+            hendelseKafkaProducer(),
         )
     }
+}
+
+fun hendelseKafkaProducer() = module {
+    single { createKafkaProducer<SyncHendelse>("dinesykmeldte-sync-hendelse-producer") }
 }
 
 private fun servicesModule() = module {
@@ -84,12 +90,12 @@ private fun servicesModule() = module {
     single {
         val nlResponseProducer =
             NLResponseProducer(
-                createKafkaProducer(env().applicationName, "syfo-narmesteleder-producer"),
+                createKafkaProducer("syfo-narmesteleder-producer"),
                 env().nlResponseTopic
             )
         NarmestelederService(NarmestelederDb(get()), nlResponseProducer)
     }
-    single { MineSykmeldteService(MineSykmeldteDb(get())) }
+    single { MineSykmeldteService(MineSykmeldteDb(get()), get(), env().syncTopic) }
     single { LeaderElection(get(), env().electorPath) }
     single { DeleteDataService(DeleteDataDb(get()), get()) }
 }
@@ -102,7 +108,7 @@ private fun commonKafkaConsumer() = module {
             KafkaConsumer(
                 KafkaUtils.getKafkaConfig("dinesykmeldte-backend-consumer")
                     .also {
-                        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+                        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
                         it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
                     }
                     .toConsumerConfig("dinesykmeldte-backend", StringDeserializer::class),

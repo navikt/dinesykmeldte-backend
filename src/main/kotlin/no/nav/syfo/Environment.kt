@@ -25,6 +25,7 @@ data class Environment(
         getEnvVar("SYKETILLFELLE_ENDPOINT_URL", "http://flex-syketilfelle.flex"),
     val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
+    val syncTopic: String = "team-esyfo.dinesykmeldte-lest-topic",
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
