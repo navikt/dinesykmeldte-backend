@@ -69,9 +69,10 @@ class CommonKafkaService(
                                 "Har mottatt melding på ukjent topic: ${it.topic()}",
                             )
                     }
-
-                } catch (ex : NameNotFoundInPdlException) {
-                    log.warn("Could not find name in PDL skipping, topic ${it.topic()}: partition: ${it.partition()} offset: ${it.offset()}")
+                } catch (ex: NameNotFoundInPdlException) {
+                    log.warn(
+                        "Could not find name in PDL skipping, topic ${it.topic()}: partition: ${it.partition()} offset: ${it.offset()}"
+                    )
                 }
             }
             processedMessages += records.count()

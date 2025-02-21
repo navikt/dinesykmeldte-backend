@@ -70,7 +70,7 @@ jobs:
           VAR: image=${{ needs.build.outputs.image }}
 
   deploy-prod:
-    if: github.ref_name == 'esyfo-prod'
+    if: github.ref_name == 'esyfo'
     name: Deploy to prod
     runs-on: ubuntu-latest
     needs: [test, build]
