@@ -45,7 +45,7 @@ class SyncHendelseDb(private val database: DatabaseInterface) {
             connection
                 .prepareStatement(
                     """
-                        update hendelser set ferdigstilt = true, ferdigstilt_timestamp = now() where hendelse_id = ANY(?);
+                        update hendelser set ferdigstilt = true, ferdigstilt_timestamp = now() where id = ANY(?);
                     """
                         .trimIndent()
                 )
