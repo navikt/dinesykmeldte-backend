@@ -42,7 +42,9 @@ import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.db.SykmeldingDb
+import no.nav.syfo.synchendelse.SyncConsumer
 import no.nav.syfo.synchendelse.SyncHendelse
+import no.nav.syfo.synchendelse.SyncHendelseDb
 import no.nav.syfo.util.AuthConfiguration
 import no.nav.syfo.util.getWellKnownTokenX
 import no.nav.syfo.virksomhet.api.VirksomhetService
@@ -68,7 +70,27 @@ fun Application.configureDependencies() {
             servicesModule(),
             commonKafkaConsumer(),
             hendelseKafkaProducer(),
+            syncConsumer()
         )
+    }
+}
+
+fun syncConsumer() = module {
+    single {
+        val kafkaConsumer =
+            KafkaConsumer(
+                KafkaUtils.getKafkaConfig("dinesykmeldte-backend-sync-consumer")
+                    .also {
+                        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+                        it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
+                    }
+                    .toConsumerConfig("dinesykmeldte-sync-consumer", StringDeserializer::class),
+                StringDeserializer(),
+                StringDeserializer(),
+            )
+        val syncDb = SyncHendelseDb(get())
+        val environment = env()
+        SyncConsumer(syncDb, kafkaConsumer, environment.syncTopic)
     }
 }
 
