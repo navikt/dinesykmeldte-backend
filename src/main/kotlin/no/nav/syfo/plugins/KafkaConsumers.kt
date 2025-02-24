@@ -7,15 +7,19 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import no.nav.syfo.common.delete.DeleteDataService
 import no.nav.syfo.common.kafka.CommonKafkaService
+import no.nav.syfo.synchendelse.SyncConsumer
 
 fun Application.configureRunningTasks(
     commonKafkaService: CommonKafkaService,
-    deleteDataService: DeleteDataService
+    deleteDataService: DeleteDataService,
+    syncConsumer: SyncConsumer,
 ) {
     val commonKafkaServiceJob = launch(Dispatchers.IO) { commonKafkaService.startConsumer() }
     val deleteServiceJob = launch(Dispatchers.IO) { deleteDataService.start() }
+    val syncJob = launch(Dispatchers.IO) { syncConsumer.start() }
     monitor.subscribe(ApplicationStopping) {
         commonKafkaServiceJob.cancel()
         deleteServiceJob.cancel()
+        syncJob.cancel()
     }
 }
