@@ -6,7 +6,6 @@ on:
       - .github/workflows/topic.yaml
 jobs:
   deploy-topic-to-dev:
-    if: github.ref == 'refs/heads/esyfo'
     name: Deploy topic to dev
     permissions:
       id-token: write
@@ -22,7 +21,7 @@ jobs:
           VAR: kafka-pool=nav-dev
 
   deploy-topic-to-prod:
-    if: github.ref == 'refs/heads/esyfo'
+    if: github.ref == 'refs/heads/main'
     name: Deploy topic to prod
     permissions:
       id-token: write
