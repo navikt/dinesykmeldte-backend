@@ -65,9 +65,6 @@ spec:
     inbound:
       rules:
         - application: dinesykmeldte
-          namespace: teamsykmelding
-          cluster: dev-gcp
-        - application: dinesykmeldte
     outbound:
       rules:
         - application: flex-syketilfelle

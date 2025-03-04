@@ -15,7 +15,8 @@ data class Environment(
     val narmestelederLeesahTopic: String = "teamsykmelding.syfo-narmesteleder-leesah",
     val sendtSykmeldingTopic: String = "teamsykmelding.syfo-sendt-sykmelding",
     val sykepengesoknadTopic: String = "flex.sykepengesoknad",
-    val hendelserTopic: String = "teamsykmelding.dinesykmeldte-hendelser-v2",
+    val hendelserTopic: String = "esyfo.dinesykmeldte-hendelser-v2",
+    val hendelserTopicLegacy: String = "teamsykmelding.dinesykmeldte-hendelser-v2",
     val syketilfelleEndpointURL: String =
         getEnvVar("SYKETILLFELLE_ENDPOINT_URL", "http://flex-syketilfelle.flex"),
     val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),

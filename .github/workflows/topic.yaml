@@ -17,7 +17,7 @@ jobs:
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-gcp
-          RESOURCE: nais/topics/dinesykmeldte-lest-topic.yaml
+          RESOURCE: nais/topics/dinesykmeldte-hendelser-v2.yaml
           VAR: kafka-pool=nav-dev
 
   deploy-topic-to-prod:
@@ -33,5 +33,5 @@ jobs:
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: prod-gcp
-          RESOURCE: nais/topics/dinesykmeldte-lest-topic.yaml
+          RESOURCE: nais/topics/dinesykmeldte-hendelser-v2.yaml
           VAR: kafka-pool=nav-prod
