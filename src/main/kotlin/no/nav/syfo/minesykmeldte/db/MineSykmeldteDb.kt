@@ -21,6 +21,41 @@ data class SykmeldingAndSoknadIds(
 )
 
 class MineSykmeldteDb(private val database: DatabaseInterface) {
+
+    suspend fun getMineSykmeldteWithoutSoknad(
+        lederFnr: String,
+        narmestelederId: String?
+    ): List<MinSykmeldtDbModel> =
+        withContext(Dispatchers.IO) {
+            database.connection.use { connection ->
+                val query =
+                    """
+                    SELECT nl.narmeste_leder_id,
+                           nl.pasient_fnr,
+                           nl.orgnummer,
+                           s.pasient_navn,
+                           s.startdato_sykefravaer,
+                           sm.sykmelding_id,
+                           sm.orgnavn,
+                           sm.sykmelding,
+                           sm.lest as sykmelding_lest,
+                           sm.sendt_til_arbeidsgiver_dato as sendt_til_arbeidsgiver_dato,
+                           sm.egenmeldingsdager
+                    FROM narmesteleder AS nl
+                        inner JOIN sykmeldt AS s ON s.pasient_fnr = nl.pasient_fnr
+                        inner join sykmelding AS sm ON sm.pasient_fnr = nl.pasient_fnr AND sm.orgnummer = nl.orgnummer
+                    WHERE nl.leder_fnr = ? ${if (narmestelederId != null) " AND nl.narmeste_leder_id = ?" else "" }
+                """
+                        .trimIndent()
+
+                connection.prepareStatement(query).use { ps ->
+                    ps.setString(1, lederFnr)
+                    narmestelederId?.let { ps.setString(2, it) }
+                    ps.executeQuery().toList { toMinSykmeldtDbModel(withSoknad = false) }
+                }
+            }
+        }
+
     suspend fun getMineSykmeldte(lederFnr: String): List<MinSykmeldtDbModel> =
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
@@ -301,7 +336,7 @@ private fun ResultSet.toSykmeldtSoknad(): Pair<SykmeldtDbModel, SoknadDbModel>? 
         else -> null
     }
 
-private fun ResultSet.toMinSykmeldtDbModel(): MinSykmeldtDbModel =
+private fun ResultSet.toMinSykmeldtDbModel(withSoknad: Boolean = true): MinSykmeldtDbModel =
     MinSykmeldtDbModel(
         narmestelederId = getString("narmeste_leder_id"),
         sykmeldtFnr = getString("pasient_fnr"),
@@ -312,8 +347,10 @@ private fun ResultSet.toMinSykmeldtDbModel(): MinSykmeldtDbModel =
         orgNavn = getString("orgnavn"),
         sykmelding = objectMapper.readValue(getString("sykmelding")),
         lestSykmelding = getBoolean("sykmelding_lest"),
-        soknad = getString("sykepengesoknad")?.let { objectMapper.readValue(it) },
-        lestSoknad = getBoolean("soknad_lest"),
+        soknad =
+            if (withSoknad) getString("sykepengesoknad")?.let { objectMapper.readValue(it) }
+            else null,
+        lestSoknad = if (withSoknad) getBoolean("soknad_lest") else true,
         sendtTilArbeidsgiverDato =
             getTimestamp("sendt_til_arbeidsgiver_dato")?.toInstant()?.atOffset(ZoneOffset.UTC),
         egenmeldingsdager = getString("egenmeldingsdager")?.let { objectMapper.readValue(it) },

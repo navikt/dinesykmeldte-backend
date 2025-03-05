@@ -7,6 +7,8 @@ import io.ktor.server.http.content.staticResources
 import io.ktor.server.routing.routing
 import no.nav.syfo.Environment
 import no.nav.syfo.application.metrics.monitorHttpRequests
+import no.nav.syfo.dinesykmeldte.api.registerDineSykmeldteApi
+import no.nav.syfo.dinesykmeldte.service.DineSykmeldteService
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.api.registerMineSykmeldteApi
 import no.nav.syfo.narmesteleder.NarmestelederService
@@ -20,6 +22,7 @@ fun Application.configureRouting() {
     val virksomhetService by inject<VirksomhetService>()
     val mineSykmeldteService by inject<MineSykmeldteService>()
     val narmestelederService by inject<NarmestelederService>()
+    val dineSykmeldteService by inject<DineSykmeldteService>()
     routing {
         if (env.cluster == "dev-gcp") {
             staticResources("/api/v1/docs/", "api") { default("api/index.html") }
@@ -28,6 +31,7 @@ fun Application.configureRouting() {
             registerMineSykmeldteApi(mineSykmeldteService)
             registerVirksomhetApi(virksomhetService)
             registerNarmestelederApi(narmestelederService)
+            registerDineSykmeldteApi(dineSykmeldteService)
         }
     }
     intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
