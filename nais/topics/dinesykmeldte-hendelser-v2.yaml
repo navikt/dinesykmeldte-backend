@@ -21,12 +21,6 @@ spec:
     - team: team-esyfo
       application: esyfovarsel
       access: write
-    - team: teamsykefravr
-      application: isdialogmote
-      access: write
-    - team: team-esyfo
-      application: syfomotebehov
-      access: write
     - team: team-esyfo
       application: dinesykmeldte-backend
       access: read
