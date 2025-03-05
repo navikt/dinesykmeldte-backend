@@ -65,6 +65,12 @@ spec:
     inbound:
       rules:
         - application: dinesykmeldte
+        - application: oppfolgingsplan-frontend
+          namespace: team-esyfo
+          cluster: dev-gcp
+        - application: dialogmote-frontend
+          namespace: team-esyfo
+          cluster: dev-gcp
     outbound:
       rules:
         - application: flex-syketilfelle
