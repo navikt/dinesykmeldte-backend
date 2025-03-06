@@ -13,7 +13,7 @@ import no.nav.syfo.util.securelog
 private val log = logger("no.nav.syfo.dinesykmeldte")
 
 fun Route.registerDineSykmeldteApi(dineSykmeldteService: DineSykmeldteService) {
-    get("api/dinesykmeldte") {
+    get("api/v2/dinesykmeldte") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
         securelog.info("Mottak kall mot /api/dinesykmeldte for fnr: $fnr")
@@ -22,7 +22,7 @@ fun Route.registerDineSykmeldteApi(dineSykmeldteService: DineSykmeldteService) {
         call.respond(sykmeldte)
     }
 
-    get("api/dinesykmeldte/{narmestelederId}") {
+    get("api/v2/dinesykmeldte/{narmestelederId}") {
         val narmestelederId = call.parameters["narmestelederId"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
