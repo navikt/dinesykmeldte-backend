@@ -19,8 +19,6 @@ import no.nav.syfo.util.insertHendelse
 import no.nav.syfo.util.insertOrUpdate
 import no.nav.syfo.util.objectMapper
 import no.nav.syfo.util.toSoknadDbModel
-import org.amshove.kluent.`should be false`
-import org.amshove.kluent.`should be true`
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
 
@@ -31,6 +29,56 @@ class MineSykmeldteDbTest :
         afterEach { TestDb.clearAllData() }
 
         context("Test getting sykmeldte from database") {
+            test("Test get sykmeldte without soknad") {
+                val narmestelederId = UUID.randomUUID().toString()
+                val narmestelederId2 = UUID.randomUUID().toString()
+                val sykmeldtFnr = "12345678910"
+                val sykmeldtFnr2 = "12345678912"
+                val narmestelederFnr = "01987654321"
+                TestDb.database.insertOrUpdate(
+                    id = narmestelederId,
+                    orgnummer = "orgnummer",
+                    fnr = sykmeldtFnr,
+                    narmesteLederFnr = narmestelederFnr,
+                )
+                TestDb.database.insertOrUpdate(
+                    id = narmestelederId2,
+                    orgnummer = "orgnummer",
+                    fnr = sykmeldtFnr2,
+                    narmesteLederFnr = narmestelederFnr,
+                )
+
+                TestDb.database.insertOrUpdate(
+                    createSykmeldingDbModel(
+                        pasientFnr = sykmeldtFnr,
+                        sykmeldingId = "0615720a-b1a0-47e6-885c-8d927c35ef4c",
+                    ),
+                    createSykmeldtDbModel(sykmeldtFnr),
+                )
+                TestDb.database.insertOrUpdate(
+                    createSykmeldingDbModel(
+                        pasientFnr = sykmeldtFnr2,
+                        sykmeldingId = UUID.randomUUID().toString()
+                    ),
+                    createSykmeldtDbModel(sykmeldtFnr2)
+                )
+
+                val allSykmeldte =
+                    minesykmeldteDb.getMineSykmeldteWithoutSoknad(narmestelederFnr, null)
+                allSykmeldte.size shouldBeEqualTo 2
+
+                val firstSykmeldt =
+                    minesykmeldteDb.getMineSykmeldteWithoutSoknad(narmestelederFnr, narmestelederId)
+                firstSykmeldt.size shouldBeEqualTo 1
+                firstSykmeldt.single().sykmeldtFnr shouldBeEqualTo sykmeldtFnr
+
+                val secondSykmeldt =
+                    minesykmeldteDb.getMineSykmeldteWithoutSoknad(
+                        narmestelederFnr,
+                        narmestelederId2
+                    )
+                secondSykmeldt.single().sykmeldtFnr shouldBeEqualTo sykmeldtFnr2
+            }
             test("Should not get any") {
                 val sykmeldte = minesykmeldteDb.getMineSykmeldte("1")
                 sykmeldte.size shouldBeEqualTo 0

@@ -25,6 +25,7 @@ import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.common.delete.DeleteDataDb
 import no.nav.syfo.common.delete.DeleteDataService
 import no.nav.syfo.common.kafka.CommonKafkaService
+import no.nav.syfo.dinesykmeldte.service.DineSykmeldteService
 import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.kafka.KafkaUtils
@@ -56,7 +57,6 @@ import org.koin.core.scope.Scope
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
-import kotlin.math.sin
 
 fun Application.configureDependencies() {
     install(Koin) {
@@ -82,14 +82,20 @@ fun hendelseKafkaProducer() = module {
 
 fun syncHendelseConsumer() = module {
     single {
-        val kafkaConsumer = KafkaConsumer(
-            KafkaUtils.getKafkaConfig("dinesykmeldte-sync-hendelse-consumer").also {
-                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-                it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
-            }.toConsumerConfig("esyfo-dinesykmeldte-sync-hendelse", StringDeserializer::class),
-            StringDeserializer(),
-            StringDeserializer(),
-        )
+        val kafkaConsumer =
+            KafkaConsumer(
+                KafkaUtils.getKafkaConfig("dinesykmeldte-sync-hendelse-consumer")
+                    .also {
+                        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+                        it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
+                    }
+                    .toConsumerConfig(
+                        "esyfo-dinesykmeldte-sync-hendelse",
+                        StringDeserializer::class
+                    ),
+                StringDeserializer(),
+                StringDeserializer(),
+            )
         val syncHendelseDb = SyncHendelseDb(get())
         val environment = env()
         SyncHendelseConsumer(syncHendelseDb, kafkaConsumer, environment.syncTopic)
@@ -108,29 +114,35 @@ private fun servicesModule() = module {
     single { SykmeldingService(SykmeldingDb(get()), get(), get(), get<Environment>().cluster) }
     single { VirksomhetService(VirksomhetDb(get())) }
     single {
-        val nlResponseProducer = NLResponseProducer(
-            createKafkaProducer("syfo-narmesteleder-producer"),
-            env().nlResponseTopic,
-        )
+        val nlResponseProducer =
+            NLResponseProducer(
+                createKafkaProducer("syfo-narmesteleder-producer"),
+                env().nlResponseTopic,
+            )
         NarmestelederService(NarmestelederDb(get()), nlResponseProducer)
     }
-    single { MineSykmeldteService(MineSykmeldteDb(get()), get(), env().syncTopic) }
+    single { MineSykmeldteDb(get()) }
+    single { MineSykmeldteService(get(), get(), env().syncTopic) }
     single { LeaderElection(get(), env().electorPath) }
     single { DeleteDataService(DeleteDataDb(get()), get()) }
+    single { DineSykmeldteService(get()) }
 }
 
 private fun Scope.env() = get<Environment>()
 
 private fun commonKafkaConsumer() = module {
     single {
-        val kafkaConsumer = KafkaConsumer(
-            KafkaUtils.getKafkaConfig("dinesykmeldte-backend-consumer").also {
-                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-                it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
-            }.toConsumerConfig("esyfo-dinesykmeldte-backend", StringDeserializer::class),
-            StringDeserializer(),
-            StringDeserializer(),
-        )
+        val kafkaConsumer =
+            KafkaConsumer(
+                KafkaUtils.getKafkaConfig("dinesykmeldte-backend-consumer")
+                    .also {
+                        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+                        it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
+                    }
+                    .toConsumerConfig("esyfo-dinesykmeldte-backend", StringDeserializer::class),
+                StringDeserializer(),
+                StringDeserializer(),
+            )
         CommonKafkaService(kafkaConsumer, get(), get(), get(), get(), get(), get())
     }
 }
@@ -162,10 +174,13 @@ private fun authModule() = module {
 
         val wellKnownTokenX = getWellKnownTokenX(httpClient, env.tokenXWellKnownUrl)
         val jwkProviderTokenX =
-            JwkProviderBuilder(URI.create(wellKnownTokenX.jwks_uri).toURL()).cached(
-                10,
-                Duration.ofHours(24),
-            ).rateLimited(10, 1, TimeUnit.MINUTES).build()
+            JwkProviderBuilder(URI.create(wellKnownTokenX.jwks_uri).toURL())
+                .cached(
+                    10,
+                    Duration.ofHours(24),
+                )
+                .rateLimited(10, 1, TimeUnit.MINUTES)
+                .build()
 
         val tokenXIssuer: String = wellKnownTokenX.issuer
 

@@ -1,11 +1,11 @@
 package no.nav.syfo.synchendelse
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.time.Duration
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import no.nav.syfo.util.objectMapper
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import java.time.Duration
 
 class SyncHendelseConsumer(
     private val syncHendelseDb: SyncHendelseDb,
@@ -15,9 +15,11 @@ class SyncHendelseConsumer(
     suspend fun start() = coroutineScope {
         kafkaConsumer.subscribe(listOf(topic))
         while (isActive) {
-            kafkaConsumer.poll(Duration.ofSeconds(10))
+            kafkaConsumer
+                .poll(Duration.ofSeconds(10))
                 .map { objectMapper.readValue<SyncHendelse>(it.value()) }
-                .filter { it.source != SyncSource.ESYFO }.forEach {
+                .filter { it.source != SyncSource.ESYFO }
+                .forEach {
                     when (it.type) {
                         SyncHendelseType.SYKMELDING -> syncHendelseDb.markSykmeldingerRead(it.id)
                         SyncHendelseType.SOKNAD -> syncHendelseDb.markSoknadRead(it.id)

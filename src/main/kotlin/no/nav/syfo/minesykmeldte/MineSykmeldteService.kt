@@ -124,7 +124,7 @@ class MineSykmeldteService(
                 Dialogmote(
                     hendelseId = it.hendelseId,
                     tekst = it.tekst
-                        ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}"),
+                            ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}"),
                     mottatt = it.mottatt,
                 )
             }
@@ -264,7 +264,7 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         tom = soknadDb.tom,
         lest = soknadDb.lest,
         sendtDato = soknadDb.sykepengesoknad.sendtArbeidsgiver
-            ?: throw IllegalStateException("Søknad uten sendt dato: ${soknadDb.soknadId}"),
+                ?: throw IllegalStateException("Søknad uten sendt dato: ${soknadDb.soknadId}"),
         sendtTilNavDato = soknadDb.sykepengesoknad.sendtNav,
         korrigererSoknadId = soknadDb.sykepengesoknad.korrigerer,
         korrigertBySoknadId = soknadDb.sykepengesoknad.korrigertAv,
@@ -371,14 +371,12 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
                     )
                 },
             )
-
         PeriodetypeDTO.AVVENTENDE ->
             Avventende(
                 this.fom,
                 this.tom,
                 tilrettelegging = this.innspillTilArbeidsgiver,
             )
-
         PeriodetypeDTO.BEHANDLINGSDAGER ->
             Behandlingsdager(
                 this.fom,
@@ -386,7 +384,6 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
                 this.behandlingsdager
                     ?: throw IllegalStateException("Behandlingsdager without behandlingsdager"),
             )
-
         PeriodetypeDTO.GRADERT -> {
             val gradering = this.gradert
             requireNotNull(gradering) { "Gradert periode uten gradert-data burde ikke eksistere" }
@@ -398,7 +395,6 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
                 gradering.reisetilskudd,
             )
         }
-
         PeriodetypeDTO.REISETILSKUDD ->
             Reisetilskudd(
                 this.fom,
