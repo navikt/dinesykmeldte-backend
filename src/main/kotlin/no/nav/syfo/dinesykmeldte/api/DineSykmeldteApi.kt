@@ -31,8 +31,12 @@ fun Route.registerDineSykmeldteApi(dineSykmeldteService: DineSykmeldteService) {
                 "og narmestelederId: $narmestelederId"
         )
         when (val sykmeldt = dineSykmeldteService.getSykmeldt(narmestelederId, fnr)) {
-            null -> call.respond(HttpStatusCode.NotFound)
+            null -> {
+                log.info("could not find narmesteleder for narmestelederId: $narmestelederId")
+                call.respond(HttpStatusCode.NotFound)
+            }
             else -> {
+                securelog.info("found sykmeldt for narmestelederId: $narmestelederId, sykmeldt: $sykmeldt")
                 call.respond(sykmeldt)
             }
         }
