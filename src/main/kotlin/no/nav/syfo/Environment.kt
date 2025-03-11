@@ -22,7 +22,6 @@ data class Environment(
     val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val dbUrl: String = getEnvVar("NAIS_DATABASE_JDBC_URL"),
-    val syncTopic: String = "team-esyfo.dinesykmeldte-lest-topic",
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

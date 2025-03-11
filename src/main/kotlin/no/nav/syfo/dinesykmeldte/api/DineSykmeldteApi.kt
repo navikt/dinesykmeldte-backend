@@ -36,7 +36,9 @@ fun Route.registerDineSykmeldteApi(dineSykmeldteService: DineSykmeldteService) {
                 call.respond(HttpStatusCode.NotFound)
             }
             else -> {
-                securelog.info("found sykmeldt for narmestelederId: $narmestelederId, sykmeldt: $sykmeldt")
+                securelog.info(
+                    "found sykmeldt for narmestelederId: $narmestelederId, sykmeldt: $sykmeldt"
+                )
                 call.respond(sykmeldt)
             }
         }
