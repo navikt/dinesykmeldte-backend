@@ -25,5 +25,5 @@ fun Application.module() {
     configureNaisResources(get())
     configureLifecycleHooks(get())
     configureRouting()
-    configureRunningTasks(get(), get(), get())
+    configureRunningTasks(get(), get())
 }

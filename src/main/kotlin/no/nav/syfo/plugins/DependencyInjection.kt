@@ -43,9 +43,6 @@ import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.db.SykmeldingDb
-import no.nav.syfo.synchendelse.SyncHendelse
-import no.nav.syfo.synchendelse.SyncHendelseConsumer
-import no.nav.syfo.synchendelse.SyncHendelseDb
 import no.nav.syfo.util.AuthConfiguration
 import no.nav.syfo.util.getWellKnownTokenX
 import no.nav.syfo.virksomhet.api.VirksomhetService
@@ -70,35 +67,7 @@ fun Application.configureDependencies() {
             databaseModule(),
             servicesModule(),
             commonKafkaConsumer(),
-            hendelseKafkaProducer(),
-            syncHendelseConsumer(),
         )
-    }
-}
-
-fun hendelseKafkaProducer() = module {
-    single { createKafkaProducer<SyncHendelse>("dinesykmeldte-sync-hendelse-producer") }
-}
-
-fun syncHendelseConsumer() = module {
-    single {
-        val kafkaConsumer =
-            KafkaConsumer(
-                KafkaUtils.getKafkaConfig("dinesykmeldte-sync-hendelse-consumer")
-                    .also {
-                        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-                        it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
-                    }
-                    .toConsumerConfig(
-                        "esyfo-dinesykmeldte-sync-hendelse",
-                        StringDeserializer::class
-                    ),
-                StringDeserializer(),
-                StringDeserializer(),
-            )
-        val syncHendelseDb = SyncHendelseDb(get())
-        val environment = env()
-        SyncHendelseConsumer(syncHendelseDb, kafkaConsumer, environment.syncTopic)
     }
 }
 
@@ -122,7 +91,7 @@ private fun servicesModule() = module {
         NarmestelederService(NarmestelederDb(get()), nlResponseProducer)
     }
     single { MineSykmeldteDb(get()) }
-    single { MineSykmeldteService(get(), get(), env().syncTopic) }
+    single { MineSykmeldteService(get()) }
     single { LeaderElection(get(), env().electorPath) }
     single { DeleteDataService(DeleteDataDb(get()), get()) }
     single { DineSykmeldteService(get()) }
