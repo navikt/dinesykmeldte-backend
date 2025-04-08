@@ -38,7 +38,6 @@ class CommonKafkaService(
                         environment.sendtSykmeldingTopic,
                         environment.sykepengesoknadTopic,
                         environment.hendelserTopic,
-                        environment.hendelserTopicLegacy,
                     ),
                 )
                 start()
@@ -65,7 +64,6 @@ class CommonKafkaService(
                             sykmeldingService.handleSendtSykmeldingKafkaMessage(it)
                         environment.sykepengesoknadTopic -> soknadService.handleSykepengesoknad(it)
                         environment.hendelserTopic -> hendelserService.handleHendelse(it)
-                        environment.hendelserTopicLegacy -> hendelserService.handleHendelse(it)
                         else ->
                             throw IllegalStateException(
                                 "Har mottatt melding på ukjent topic: ${it.topic()}",
