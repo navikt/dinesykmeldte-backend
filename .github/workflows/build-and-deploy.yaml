@@ -26,7 +26,7 @@ jobs:
         with:
           languages: kotlin
       - uses: navikt/teamesyfo-github-actions-workflows/actions/gradle-cached@main
-      - run: ./gradlew shadowJar -x test
+      - run: ./gradlew shadowJar --no-build-cache -x test
         env:
           ORG_GRADLE_PROJECT_githubUser: x-access-token
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
