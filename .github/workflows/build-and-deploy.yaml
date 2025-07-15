@@ -64,6 +64,7 @@ jobs:
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          java-version: '21'
 
   deploy-dev:
     if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false }}
@@ -90,4 +91,3 @@ jobs:
           CLUSTER: prod-gcp
           RESOURCE: nais/nais-prod.yaml
           VAR: image=${{ needs.build.outputs.image }}
-
