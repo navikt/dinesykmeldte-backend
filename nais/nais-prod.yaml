@@ -67,6 +67,7 @@ spec:
         - application: dinesykmeldte
         - application: followupplan-backend
         - application: oppfolgingsplan
+        - application: oppfolgingsplan-25-backend
         - application: oppfolgingsplan-frontend
           namespace: team-esyfo
           cluster: prod-gcp
