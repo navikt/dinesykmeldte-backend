@@ -65,7 +65,7 @@ spec:
     inbound:
       rules:
         - application: dinesykmeldte
-        - application: followupplan-backend
+        - application: syfo-oppfolgingsplan-backend
         - application: oppfolgingsplan
         - application: oppfolgingsplan-frontend
           namespace: team-esyfo
