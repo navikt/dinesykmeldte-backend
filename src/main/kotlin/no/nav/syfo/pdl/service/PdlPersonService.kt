@@ -56,6 +56,10 @@ class PdlPersonService(
                     mellomnavn = navn.mellomnavn,
                     etternavn = navn.etternavn
                 ),
+            gtType = data.hentGeografiskTilknytning?.gtType,
+            gtLand = data.hentGeografiskTilknytning?.gtLand,
+            gtKommune = data.hentGeografiskTilknytning?.gtKommune,
+            gtBydel = data.hentGeografiskTilknytning?.gtBydel,
         )
     }
 }

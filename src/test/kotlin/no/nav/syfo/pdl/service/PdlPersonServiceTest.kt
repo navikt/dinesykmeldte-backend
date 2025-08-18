@@ -47,6 +47,16 @@ class PdlPersonServiceTest :
                     person.navn.formatName() shouldBeEqualTo "Rask Saks"
                 }
             }
+            test("Henter kommune og bydel og aktørid for person som finnes i PDL") {
+                httpClient.respond(getTestData())
+                runBlocking {
+                    val person = pdlPersonService.getPerson(fnr, sykmeldingId)
+
+                    person.gtKommune shouldBeEqualTo null
+                    person.gtBydel shouldBeEqualTo "030102"
+
+                }
+            }
 
             test("Feiler hvis navn mangler i PDL") {
                 httpClient.respond(getTestDataUtenNavn())

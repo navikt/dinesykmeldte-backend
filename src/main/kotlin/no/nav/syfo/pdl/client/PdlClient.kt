@@ -14,23 +14,28 @@ import org.intellij.lang.annotations.Language
 @Language("GraphQL")
 private val getPersonQuery =
     """
-    query(${'$'}ident: ID!){
-      person: hentPerson(ident: ${'$'}ident) {
-      	navn(historikk: false) {
-      	  fornavn
-      	  mellomnavn
-      	  etternavn
+    query(${ '$' }ident: ID!){
+      person: hentPerson(ident: ${ '$' }ident) {
+        navn(historikk: false) {
+          fornavn
+          mellomnavn
+          etternavn
+        }
+        hentGeografiskTilknytning(ident: ${ '$' }ident) {
+          gtType
+          gtKommune
+          gtBydel
+          gtLand
         }
       }
-      identer: hentIdenter(ident: ${'$'}ident, historikk: false) {
-          identer {
-            ident,
-            gruppe
-          }
+      identer: hentIdenter(ident: ${ '$' }ident, historikk: false) {
+        identer {
+          ident
+          gruppe
         }
+      }
     }
-"""
-        .trimIndent()
+    """.trimIndent()
 
 class PdlClient(
     private val httpClient: HttpClient,

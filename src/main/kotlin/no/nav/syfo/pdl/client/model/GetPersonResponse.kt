@@ -8,6 +8,7 @@ data class GetPersonResponse(
 data class ResponseData(
     val person: PersonResponse?,
     val identer: IdentResponse?,
+    val hentGeografiskTilknytning: GeografiskTilknytning?,
 )
 
 data class IdentResponse(
@@ -27,6 +28,12 @@ data class Navn(
     val fornavn: String,
     val mellomnavn: String?,
     val etternavn: String,
+)
+data class GeografiskTilknytning(
+    val gtType: String?,
+    val gtLand: String?,
+    val gtKommune: String?,
+    val gtBydel: String?,
 )
 
 data class ResponseError(

@@ -4,6 +4,10 @@ import no.nav.syfo.util.toFormattedNameString
 
 data class PdlPerson(
     val navn: Navn,
+    val gtType: String?,
+    val gtLand: String?,
+    val gtKommune: String?,
+    val gtBydel: String?,
 )
 
 data class Navn(

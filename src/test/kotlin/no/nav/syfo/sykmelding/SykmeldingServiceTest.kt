@@ -58,6 +58,10 @@ class SykmeldingServiceTest :
             coEvery { pdlPersonService.getPerson(any(), any()) } returns
                 PdlPerson(
                     Navn("Syk", null, "Sykesen"),
+                    "BYDEL",
+                    "NO",
+                    "0301",
+                    "030106"
                 )
             coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns
                 LocalDate.now().minusMonths(1)
@@ -266,6 +270,10 @@ class SykmeldingServiceTest :
                 coEvery { pdlPersonService.getPerson(any(), any()) } returns
                     PdlPerson(
                         Navn("Per", null, "Persen"),
+                        "KOMMUNE",
+                        "NO",
+                        "3334",
+                        "0334",
                     )
                 coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns
                     LocalDate.now().minusMonths(2)
