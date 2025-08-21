@@ -15,6 +15,8 @@ import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.api.registerNarmestelederApi
 import no.nav.syfo.virksomhet.api.VirksomhetService
 import no.nav.syfo.virksomhet.api.registerVirksomhetApi
+import no.nav.syfo.pdl.api.registerPdlPersonApi
+import no.nav.syfo.pdl.service.PdlPersonService
 import org.koin.ktor.ext.inject
 
 fun Application.configureRouting() {
@@ -23,6 +25,7 @@ fun Application.configureRouting() {
     val mineSykmeldteService by inject<MineSykmeldteService>()
     val narmestelederService by inject<NarmestelederService>()
     val dineSykmeldteService by inject<DineSykmeldteService>()
+    val pdlPersonService by inject<PdlPersonService>()
     routing {
         if (env.cluster == "dev-gcp") {
             staticResources("/api/v1/docs/", "api") { default("api/index.html") }
@@ -32,6 +35,7 @@ fun Application.configureRouting() {
             registerVirksomhetApi(virksomhetService)
             registerNarmestelederApi(narmestelederService)
             registerDineSykmeldteApi(dineSykmeldteService)
+            registerPdlPersonApi(pdlPersonService, dineSykmeldteService)
         }
     }
     intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
