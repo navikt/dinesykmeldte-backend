@@ -19,7 +19,7 @@ fun Route.registerPdlPersonApi(
     pdlPersonService: PdlPersonService,
     dineSykmeldteService: DineSykmeldteService,
 ) {
-    get("api/getPerson/{narmestelederId}") {
+    get("api/isPilotUser/{narmestelederId}") {
         val principal: BrukerPrincipal = call.getBrukerPrincipal()
         val lederFnr = principal.fnr
         val narmestelederId = call.getParam("narmestelederId")
