@@ -9,6 +9,7 @@ import io.ktor.http.HttpHeaders
 import no.nav.syfo.pdl.client.model.GetPersonRequest
 import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.client.model.GetPersonVariables
+import no.nav.syfo.util.logger
 import org.intellij.lang.annotations.Language
 
 @Language("GraphQL")
@@ -36,7 +37,10 @@ class PdlClient(
     private val httpClient: HttpClient,
     private val basePath: String,
 ) {
+    val log = logger()
+
     suspend fun getPerson(fnr: String, token: String): GetPersonResponse {
+        log.info("Henter person fra PDL: $fnr")
         val getPersonRequest =
             GetPersonRequest(
                 query = getPersonQuery,
