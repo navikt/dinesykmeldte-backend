@@ -17,6 +17,7 @@ data class PreviewSykmeldt(
     val dialogmoter: List<Dialogmote>,
     val aktivitetsvarsler: List<Aktivitetsvarsel>,
     val oppfolgingsplaner: List<Oppfolgingsplan>,
+    val isPilotUser: Boolean,
 )
 
 data class Oppfolgingsplan(

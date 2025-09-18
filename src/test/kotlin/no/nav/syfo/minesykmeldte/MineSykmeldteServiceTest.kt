@@ -32,6 +32,7 @@ import no.nav.syfo.minesykmeldte.model.PreviewSendtSoknad
 import no.nav.syfo.minesykmeldte.model.Reisetilskudd
 import no.nav.syfo.minesykmeldte.model.SoknadStatus
 import no.nav.syfo.minesykmeldte.model.Svar
+import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.model.Soknad
 import no.nav.syfo.soknad.model.SoknadStatus.FREMTIDIG
@@ -68,7 +69,8 @@ class MineSykmeldteServiceTest :
     FunSpec(
         {
             val mineSykmeldteDb = mockk<MineSykmeldteDb>(relaxed = true)
-            val mineSykmeldtService = MineSykmeldteService(mineSykmeldteDb)
+            val pdlPersonService = mockk<PdlPersonService>()
+            val mineSykmeldtService = MineSykmeldteService(mineSykmeldteDb, pdlPersonService)
 
             afterEach { clearMocks(mineSykmeldteDb) }
 

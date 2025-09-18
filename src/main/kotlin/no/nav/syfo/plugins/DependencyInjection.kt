@@ -91,7 +91,7 @@ private fun servicesModule() = module {
         NarmestelederService(NarmestelederDb(get()), nlResponseProducer)
     }
     single { MineSykmeldteDb(get()) }
-    single { MineSykmeldteService(get()) }
+    single { MineSykmeldteService(get(), get()) }
     single { LeaderElection(get(), env().electorPath) }
     single { DeleteDataService(DeleteDataDb(get()), get()) }
     single { DineSykmeldteService(get()) }
