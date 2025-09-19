@@ -22,10 +22,10 @@ class PdlPersonService(
         val accessToken = accessTokenClient.getAccessToken(pdlScope)
         try {
             //val pdlResponseGeografisktilknytning = pdlClient.getGeografiskTilknytning(fnr = fnr, token = accessToken)
-            //log.info("Geografisk tilknytning: ${pdlResponseGeografisktilknytning.data.hentGeografiskTilknytning}")
+            //log.info("Geografisk tilknytning: ${pdlResponseGeografisktilknytning.data.geografiskTilknytning}")
             val pdlResponse = pdlClient.getPerson(fnr = fnr, token = accessToken)
             log.info("Person: ${pdlResponse.data.person}, geografiskTilknytning:" +
-                " ${pdlResponse.data.hentGeografiskTilknytning}")
+                " ${pdlResponse.data.geografiskTilknytning}")
             return pdlResponse.toPerson(callId)
         } catch (e: Exception) {
             log.error("Feil ved henting av person fra PDL for $callId", e)
@@ -60,10 +60,10 @@ class PdlPersonService(
                     mellomnavn = navn.mellomnavn,
                     etternavn = navn.etternavn
                 ),
-            gtType = data.hentGeografiskTilknytning?.gtType,
-            gtLand = data.hentGeografiskTilknytning?.gtLand,
-            gtKommune = data.hentGeografiskTilknytning?.gtKommune,
-            gtBydel = data.hentGeografiskTilknytning?.gtBydel,
+            gtType = data.geografiskTilknytning?.gtType,
+            gtLand = data.geografiskTilknytning?.gtLand,
+            gtKommune = data.geografiskTilknytning?.gtKommune,
+            gtBydel = data.geografiskTilknytning?.gtBydel,
         )
     }
 }

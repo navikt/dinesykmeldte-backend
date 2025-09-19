@@ -12,7 +12,7 @@ fun getTestData(): String {
         "       }\n" +
         "      ]\n" +
         "    },\n" +
-        "    \"hentGeografiskTilknytning\": {\n" +
+        "    \"geografiskTilknytning\": {\n" +
         "      \"gtType\": \"BYDEL\",\n" +
         "      \"gtLand\": null,\n" +
         "      \"gtKommune\": null,\n" +
