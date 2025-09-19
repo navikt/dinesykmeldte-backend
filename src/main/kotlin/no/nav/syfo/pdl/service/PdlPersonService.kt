@@ -21,11 +21,11 @@ class PdlPersonService(
     suspend fun getPerson(fnr: String, callId: String): PdlPerson {
         val accessToken = accessTokenClient.getAccessToken(pdlScope)
         try {
-            val pdlResponseGeografisktilknytning = pdlClient.getGeografiskTilknytning(fnr = fnr, token = accessToken)
-            log.info("Geografisk tilknytning: ${pdlResponseGeografisktilknytning.data.hentGeografiskTilknytning}")
+            //val pdlResponseGeografisktilknytning = pdlClient.getGeografiskTilknytning(fnr = fnr, token = accessToken)
+            //log.info("Geografisk tilknytning: ${pdlResponseGeografisktilknytning.data.hentGeografiskTilknytning}")
             val pdlResponse = pdlClient.getPerson(fnr = fnr, token = accessToken)
             log.info("Person: ${pdlResponse.data.person}, geografiskTilknytning:" +
-                " ${pdlResponseGeografisktilknytning.data.hentGeografiskTilknytning}")
+                " ${pdlResponse.data.hentGeografiskTilknytning}")
             return pdlResponse.toPerson(callId)
         } catch (e: Exception) {
             log.error("Feil ved henting av person fra PDL for $callId", e)
