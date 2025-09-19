@@ -180,13 +180,11 @@ class MineSykmeldteService(
         )
         try {
             val person = pdlPersonService.getPerson(fnr = sykmeldtFnr, callId = callId)
-            val pilotBydelerListe = listOf<String>("300102", "300103", "300104", "300105", "460103")
-            val pilotKommuneListe = listOf<String>("3001", "3002", "3331", "3332", "3333", "4005")
+            val pilotBydelerListe = emptyList<String>()
+            val pilotKommuneListe = listOf<String>("4614")
+            log.info("Personen har følgende kommune: ${person.gtKommune} og bydel: ${person.gtBydel}")
             if (pilotBydelerListe.contains(person.gtBydel) || pilotKommuneListe.contains(person.gtKommune)) {
                 return true
-            } else {
-                log.info("Person fra PDL er ikke i pilotbydel, $callId")
-                return false
             }
         } catch (e: Exception) {
             log.error("Feil ved henting av person fra PDL, $callId", e)
