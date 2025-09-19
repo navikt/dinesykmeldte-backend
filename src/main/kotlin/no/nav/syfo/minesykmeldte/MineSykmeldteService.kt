@@ -180,8 +180,8 @@ class MineSykmeldteService(
         )
         try {
             val person = pdlPersonService.getPerson(fnr = sykmeldtFnr, callId = callId)
-            val pilotBydelerListe = listOf<String>("300102", "300103", "300104", "300105", "300106")
-            val pilotKommuneListe = listOf<String>("3001", "3002", "3331", "3332", "3333")
+            val pilotBydelerListe = listOf<String>("300102", "300103", "300104", "300105", "460103")
+            val pilotKommuneListe = listOf<String>("3001", "3002", "3331", "3332", "3333", "4005")
             if (pilotBydelerListe.contains(person.gtBydel) || pilotKommuneListe.contains(person.gtKommune)) {
                 return true
             } else {

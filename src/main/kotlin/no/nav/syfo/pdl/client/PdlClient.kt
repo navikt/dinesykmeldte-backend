@@ -37,27 +37,6 @@ private val getPersonQuery =
     }
     """.trimIndent()
 
-@Language("GraphQL")
-private val getGeografiskTilknytningQuery =
-    """
-    query(${'$'}ident: ID!){
-      person: hentPerson(ident: ${'$'}ident) {
-        hentGeografiskTilknytning(ident: ${'$'}ident) {
-          gtType
-          gtKommune
-          gtBydel
-          gtLand
-        }
-      }
-      identer: hentIdenter(ident: ${'$'}ident, historikk: false) {
-        identer {
-          ident
-          gruppe
-        }
-      }
-    }
-    """.trimIndent()
-
 class PdlClient(
     private val httpClient: HttpClient,
     private val basePath: String,
@@ -66,24 +45,6 @@ class PdlClient(
         val getPersonRequest =
             GetPersonRequest(
                 query = getPersonQuery,
-                variables = GetPersonVariables(ident = fnr),
-            )
-
-        return httpClient
-            .post(basePath) {
-                setBody(getPersonRequest)
-                header(HttpHeaders.Authorization, "Bearer $token")
-                header("TEMA", "SYM")
-                header("Behandlingsnummer", "B229")
-                header(HttpHeaders.ContentType, "application/json")
-            }
-            .body()
-    }
-
-    suspend fun getGeografiskTilknytning(fnr: String, token: String): GetPersonResponse {
-        val getPersonRequest =
-            GetPersonRequest(
-                query = getGeografiskTilknytningQuery,
                 variables = GetPersonVariables(ident = fnr),
             )
 

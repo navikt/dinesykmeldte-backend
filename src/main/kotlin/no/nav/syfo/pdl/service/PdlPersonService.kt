@@ -21,8 +21,6 @@ class PdlPersonService(
     suspend fun getPerson(fnr: String, callId: String): PdlPerson {
         val accessToken = accessTokenClient.getAccessToken(pdlScope)
         try {
-            //val pdlResponseGeografisktilknytning = pdlClient.getGeografiskTilknytning(fnr = fnr, token = accessToken)
-            //log.info("Geografisk tilknytning: ${pdlResponseGeografisktilknytning.data.geografiskTilknytning}")
             val pdlResponse = pdlClient.getPerson(fnr = fnr, token = accessToken)
             log.info("Person: ${pdlResponse.data.person}, geografiskTilknytning:" +
                 " ${pdlResponse.data.geografiskTilknytning}")
