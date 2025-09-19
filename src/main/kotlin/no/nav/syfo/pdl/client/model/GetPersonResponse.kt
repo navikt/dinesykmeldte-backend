@@ -8,7 +8,7 @@ data class GetPersonResponse(
 data class ResponseData(
     val person: PersonResponse?,
     val identer: IdentResponse?,
-    val hentGeografiskTilknytning: GeografiskTilknytning?,
+    val geografiskTilknytning: GeografiskTilknytning?,
 )
 
 data class IdentResponse(
