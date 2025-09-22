@@ -83,7 +83,7 @@ class MineSykmeldteApiKtTest :
                                     dialogmoter = emptyList(),
                                     aktivitetsvarsler = emptyList(),
                                     oppfolgingsplaner = emptyList(),
-                                    isPilotUser = false
+                                    isOppfolgingsplanPilotUser = false
                                 ),
                             )
                         runBlocking {
@@ -104,7 +104,7 @@ class MineSykmeldteApiKtTest :
                           "dialogmoter": [],
                           "aktivitetsvarsler": [],
                           "oppfolgingsplaner": [],
-                          "isPilotUser": false
+                          "isOppfolgingsplanPilotUser": false
                         }
                     ]"""
                                     .minifyApiResponse()
@@ -240,7 +240,7 @@ class MineSykmeldteApiKtTest :
                                                     ),
                                                 ),
                                             ),
-                                        isPilotUser = false,
+                                        isOppfolgingsplanPilotUser = false,
                                     ),
                                 )
 
@@ -277,7 +277,7 @@ class MineSykmeldteApiKtTest :
                             "dialogmoter":[{"hendelseId": "$hendelseId","tekst":"Ny revidert oppfølgingplan","mottatt":"2022-03-11T10:15:30+02:00"}],
                             "aktivitetsvarsler": [{"hendelseId":"$hendelseId","mottatt":"2022-04-09T10:15:30+02:00","lest":null}],
                             "oppfolgingsplaner": [{"hendelseId": "$hendelseId","tekst":"ny oppfolgingsplan","mottatt":"2022-06-17T10:15:30+02:00"}],
-                            "isPilotUser": false
+                            "isOppfolgingsplanPilotUser": false
                           }
                         ]"""
                                         .minifyApiResponse()

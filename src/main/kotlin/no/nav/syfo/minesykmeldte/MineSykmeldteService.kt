@@ -85,7 +85,7 @@ class MineSykmeldteService(
                     sykmeldinger = getSykmeldinger(sykmeldtEntry),
                     aktivitetsvarsler = getAktivitetsvarsler(hendelserMap, sykmeldtEntry),
                     oppfolgingsplaner = getOppfolgingsplaner(hendelserMap, sykmeldtEntry),
-                    isPilotUser = getIsPilotUser(
+                    isOppfolgingsplanPilotUser = getIsOppfolgingsplanPilotUser(
                         sykmeldtEntry.key.fnr,
                         sykmeldtEntry.key.narmestelederId,
                     ),
@@ -170,7 +170,7 @@ class MineSykmeldteService(
         sykmeldt: MinSykmeldtDbModel,
     ) = hendelserMap[sykmeldtEntry.key.fnr]?.filter { it.id == sykmeldt.soknad?.id }.orEmpty()
 
-    suspend fun getIsPilotUser(
+    suspend fun getIsOppfolgingsplanPilotUser(
         sykmeldtFnr: String,
         narmestelederId: String,
     ): Boolean {
