@@ -7,6 +7,7 @@ import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.util.logger
+import no.nav.syfo.util.securelog
 
 class PdlPersonService(
     private val pdlClient: PdlClient,
@@ -22,7 +23,7 @@ class PdlPersonService(
         val accessToken = accessTokenClient.getAccessToken(pdlScope)
         try {
             val pdlResponse = pdlClient.getPerson(fnr = fnr, token = accessToken)
-            log.info("Person: ${pdlResponse.data.person}, geografiskTilknytning:" +
+            securelog.info("Person: ${pdlResponse.data.person}, geografiskTilknytning:" +
                 " ${pdlResponse.data.geografiskTilknytning}")
             return pdlResponse.toPerson(callId)
         } catch (e: Exception) {
