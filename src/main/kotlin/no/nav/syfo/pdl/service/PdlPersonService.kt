@@ -7,6 +7,7 @@ import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.util.logger
+import no.nav.syfo.util.securelog
 
 class PdlPersonService(
     private val pdlClient: PdlClient,
@@ -22,6 +23,8 @@ class PdlPersonService(
         val accessToken = accessTokenClient.getAccessToken(pdlScope)
         try {
             val pdlResponse = pdlClient.getPerson(fnr = fnr, token = accessToken)
+            securelog.info("Person: ${pdlResponse.data.person}, geografiskTilknytning:" +
+                " ${pdlResponse.data.geografiskTilknytning}")
             return pdlResponse.toPerson(callId)
         } catch (e: Exception) {
             log.error("Feil ved henting av person fra PDL for $callId", e)
@@ -56,6 +59,10 @@ class PdlPersonService(
                     mellomnavn = navn.mellomnavn,
                     etternavn = navn.etternavn
                 ),
+            gtType = data.geografiskTilknytning?.gtType,
+            gtLand = data.geografiskTilknytning?.gtLand,
+            gtKommune = data.geografiskTilknytning?.gtKommune,
+            gtBydel = data.geografiskTilknytning?.gtBydel,
         )
     }
 }
