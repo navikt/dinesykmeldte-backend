@@ -31,7 +31,7 @@ val commonsCompressVersion = "1.27.1"
 plugins {
     id("application")
     id("com.diffplug.spotless") version "7.0.2"
-    kotlin("jvm") version "2.1.10"
+    kotlin("jvm") version "2.2.20"
     id("com.gradleup.shadow") version "8.3.6"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
 }
