@@ -65,8 +65,8 @@ spec:
     inbound:
       rules:
         - application: dinesykmeldte
-        - application: followupplan-backend
-        - application: oppfolgingsplan
+        - application: syfo-oppfolgingsplan-backend
+        - application: syfo-oppfolgingsplan-frontend
         - application: oppfolgingsplan-frontend
           namespace: team-esyfo
           cluster: dev-gcp
