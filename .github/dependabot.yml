@@ -1,18 +1,16 @@
 version: 2
+
 updates:
-  - package-ecosystem: "gradle"
-    directory: "/"
+  - package-ecosystem: github-actions
+    directory: '/'
     schedule:
-      interval: "daily"
-    open-pull-requests-limit: 10
+      interval: daily
+
+  - package-ecosystem: gradle
+    directory: '/'
+    schedule:
+      interval: daily
+      time: '14:30'
+    open-pull-requests-limit: 20
     ignore:
       - dependency-name: "no.nav.helse.flex:sykepengesoknad-kafka"
-    groups:
-      dependencies:
-        patterns:
-          - "*"
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
