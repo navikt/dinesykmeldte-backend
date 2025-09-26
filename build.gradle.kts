@@ -4,7 +4,7 @@ version = "1.0.0"
 val coroutinesVersion = "1.10.1"
 val jacksonVersion = "2.18.3"
 val kluentVersion = "1.73"
-val logbackVersion = "1.5.17"
+val logbackVersion = "1.5.18"
 val ktorVersion = "3.3.0"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
@@ -26,7 +26,7 @@ val kotestKoinVersion = "1.3.0"
 ///Due to vulnerabilities
 val nettycommonVersion = "4.1.119.Final"
 val snappyJavaVersion = "1.1.10.7"
-val commonsCompressVersion = "1.27.1"
+val commonsCompressVersion = "1.28.0"
 
 plugins {
     id("application")
