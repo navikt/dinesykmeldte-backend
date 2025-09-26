@@ -25,7 +25,7 @@ val koinVersion = "4.1.1"
 val kotestKoinVersion = "1.3.0"
 ///Due to vulnerabilities
 val nettycommonVersion = "4.1.119.Final"
-val snappyJavaVersion = "1.1.10.7"
+val snappyJavaVersion = "1.1.10.8"
 val commonsCompressVersion = "1.28.0"
 
 plugins {
