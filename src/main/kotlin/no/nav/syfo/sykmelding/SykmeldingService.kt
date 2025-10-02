@@ -124,6 +124,11 @@ class SykmeldingService(
         }
     }
 
+    fun canSykmeldtGetNarmesteLeder(fnr: String, orgnummer: String): Boolean {
+        val sykmelding = sykmeldingDb.getActiveSendtSykmeldingsperioder(fnr, orgnummer)
+        return sykmelding?.isNotEmpty() == true
+    }
+
     private fun finnSisteTom(perioder: List<SykmeldingsperiodeAGDTO>): LocalDate {
         return perioder.maxByOrNull { it.tom }?.tom
             ?: throw IllegalStateException("Skal ikke kunne ha periode uten tom")
