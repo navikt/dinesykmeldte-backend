@@ -9,6 +9,7 @@ import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.application.database.toList
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel

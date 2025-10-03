@@ -4,7 +4,9 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Timestamp
 import no.nav.syfo.application.database.DatabaseInterface
+import java.time.LocalDateTime
 
+const val ANTALL_TILLATTE_DAGER_TILBAKE: Int = 16
 class SykmeldingDb(private val database: DatabaseInterface) {
     fun insertOrUpdateSykmelding(sykmelding: SykmeldingDbModel) {
         database.connection.use { connection ->
@@ -162,6 +164,35 @@ class SykmeldingDb(private val database: DatabaseInterface) {
         }
     }
 
+    fun getActiveSendtSykmeldingsperioder(
+        employeeIdentificationNumber: String,
+        orgnummer: String,
+    ): List<ExtendedSykmeldtDbModel>? {
+        val today = Timestamp.valueOf(LocalDateTime.now())
+        val selectStatement = """
+        SELECT s.sykmelding_id, s.pasient_fnr, s.orgnummer, s.orgnavn, s.sykmelding, (period->>'fom')::date AS fom_date,
+          s.latest_tom
+            FROM SYKMELDING s, jsonb_array_elements(s.sykmelding->'sykmeldingsperioder') AS period
+            WHERE  PASIENT_FNR = ? AND orgnummer = ? AND (latest_tom >= ?::date - INTERVAL '${ANTALL_TILLATTE_DAGER_TILBAKE} days' OR
+            EXISTS (
+                SELECT 1
+                FROM jsonb_array_elements(sykmelding->'sykmeldingsperioder') AS period
+                WHERE ? BETWEEN (period->>'fom')::date AND ((period->>'tom')::date + INTERVAL '${ANTALL_TILLATTE_DAGER_TILBAKE} days')
+                )
+            );
+    """.trimIndent()
+
+        return database.connection.use { connection ->
+            connection.prepareStatement(selectStatement).use {
+                it.setString(1, employeeIdentificationNumber)
+                it.setString(2, orgnummer)
+                it.setObject(3, today)
+                it.setObject(4, today)
+                it.executeQuery().toList { toExtendedSykmeldingInfo() }
+            }
+        }
+    }
+
     fun deleteSykmeldt(fnr: String) {
         database.connection.use { connection ->
             connection.prepareStatement("""delete from sykmeldt where pasient_fnr = ?""").use { ps
@@ -186,5 +217,15 @@ private fun ResultSet.toSykmeldingInfo(): SykmeldingInfo {
         sykmeldingId = getString("sykmelding_id"),
         latestTom = getDate("latest_tom").toLocalDate(),
         fnr = getString("pasient_fnr"),
+    )
+}
+private fun ResultSet.toExtendedSykmeldingInfo(): ExtendedSykmeldtDbModel {
+    return ExtendedSykmeldtDbModel(
+        sykmeldingId = getString("sykmelding_id"),
+        pasientFnr = getString("pasient_fnr"),
+        orgnummer = getString("orgnummer"),
+        orgNavn = getString("orgnavn"),
+        fomDate = getDate("fom_date").toLocalDate(),
+        latestTom = getDate("latest_tom").toLocalDate(),
     )
 }
