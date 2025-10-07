@@ -20,7 +20,6 @@ import no.nav.syfo.soknad.getFileAsString
 import no.nav.syfo.soknad.kafka.model.FlexSoknad
 import no.nav.syfo.soknad.toSoknadDbModel
 import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
-import no.nav.syfo.sykmelding.db.ExtendedSykmeldtDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.kafka.model.SendtSykmeldingKafkaMessage
 import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.AktivitetIkkeMuligAGDTO
@@ -424,16 +423,7 @@ class SykmeldingServiceTest :
 
                     every {
                         mockedDb.getActiveSendtSykmeldingsperioder("fnr", "orgnummer")
-                    } returns listOf(
-                        ExtendedSykmeldtDbModel(
-                            pasientFnr = "prefix-0",
-                            orgnummer = "orgnummer",
-                            sykmeldingId = "sykmeldingId",
-                            fomDate = LocalDate.now().minusMonths(5),
-                            latestTom = LocalDate.now().minusMonths(4),
-                            orgNavn = "Navn",
-                        ),
-                    )
+                    } returns listOf(1)
 
                     val active = localService.canSykmeldtGetNarmesteLeder("fnr", "orgnummer")
                     active shouldBe true
@@ -451,7 +441,7 @@ class SykmeldingServiceTest :
 
                     every {
                         mockedDb.getActiveSendtSykmeldingsperioder("fnr", "orgnummer")
-                    } returns emptyList()
+                    } returns listOf(0)
 
                     val active = localService.canSykmeldtGetNarmesteLeder("fnr", "orgnummer")
                     active shouldBe false

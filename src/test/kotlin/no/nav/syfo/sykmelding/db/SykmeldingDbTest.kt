@@ -67,7 +67,7 @@ class MineSykmeldteDbTest :
                     val allSykmeldte =
                         sykmeldingDb.getActiveSendtSykmeldingsperioder(sykmeldtFnr, orgnummer)
                     allSykmeldte?.size shouldBeEqualTo 1
-                    allSykmeldte?.first()?.sykmeldingId shouldBeEqualTo sykmeldingId2
+                    allSykmeldte?.first() shouldBeEqualTo 1
                 }
 
                 test("Test get only sykmeldte in requested orgnummer") {
@@ -97,7 +97,7 @@ class MineSykmeldteDbTest :
                     val allSykmeldte =
                         sykmeldingDb.getActiveSendtSykmeldingsperioder(sykmeldtFnr, orgnummer2)
                     allSykmeldte?.size shouldBeEqualTo 1
-                    allSykmeldte?.first()?.sykmeldingId shouldBeEqualTo sykmeldingId2
+                    allSykmeldte?.first() shouldBeEqualTo 1
                 }
 
                 test("Test get only sykmeldte in requested fnr") {
@@ -127,12 +127,13 @@ class MineSykmeldteDbTest :
                     val allSykmeldte =
                         sykmeldingDb.getActiveSendtSykmeldingsperioder(sykmeldtFnr1, orgnummer)
                     allSykmeldte?.size shouldBeEqualTo 1
-                    allSykmeldte?.first()?.sykmeldingId shouldBeEqualTo sykmeldingId1
+                    allSykmeldte?.first() shouldBeEqualTo 1
                 }
 
                 test("Should not get any") {
                     val sykmeldte = sykmeldingDb.getActiveSendtSykmeldingsperioder("1", "2")
-                    sykmeldte?.size shouldBeEqualTo 0
+                    sykmeldte?.size shouldBeEqualTo 1
+                    sykmeldte?.first() shouldBeEqualTo 0
                 }
             }
         },

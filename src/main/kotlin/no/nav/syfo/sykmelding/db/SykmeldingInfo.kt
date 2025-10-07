@@ -7,12 +7,3 @@ data class SykmeldingInfo(
     val latestTom: LocalDate,
     val fnr: String,
 )
-
-data class ExtendedSykmeldtDbModel (
-    val sykmeldingId: String,
-    val pasientFnr: String,
-    val orgnummer: String,
-    val orgNavn: String,
-    val fomDate: LocalDate,
-    val latestTom: LocalDate,
-)

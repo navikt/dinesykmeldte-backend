@@ -125,8 +125,9 @@ class SykmeldingService(
     }
 
     fun canSykmeldtGetNarmesteLeder(fnr: String, orgnummer: String): Boolean {
-        val sykmelding = sykmeldingDb.getActiveSendtSykmeldingsperioder(fnr, orgnummer)
-        return sykmelding?.isNotEmpty() == true
+        val antallSykmeldinger = sykmeldingDb.getActiveSendtSykmeldingsperioder(fnr, orgnummer)?.firstOrNull()
+
+        return antallSykmeldinger != null && antallSykmeldinger> 0
     }
 
     private fun finnSisteTom(perioder: List<SykmeldingsperiodeAGDTO>): LocalDate {
