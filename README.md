@@ -25,7 +25,7 @@ Find the newest version of gradle here: https://gradle.org/releases/ Then run th
 
 ### Contact
 
-This project is maintained by [navikt/teamsykmelding](CODEOWNERS)
+This project is maintained by [navikt/team-esyfo](CODEOWNERS)
 
 Questions and/or feature requests? Please create an [issue](https://github.com/navikt/dinesykmeldte-backend/issues)
 
