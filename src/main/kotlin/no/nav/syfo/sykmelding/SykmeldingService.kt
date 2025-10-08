@@ -37,7 +37,7 @@ class SykmeldingService(
                 throw ex
             } else {
                 log.info(
-                    "Ignoring sykmelding when person is not found in pdl for sykmelding: ${record.key()}"
+                    "Ignoring sykmelding when person is not found in pdl for sykmelding: ${record.key()}",
                 )
             }
         } catch (ex: SyketilfelleNotFoundException) {
@@ -45,7 +45,7 @@ class SykmeldingService(
                 throw ex
             } else {
                 log.info(
-                    "Ignoring sykmelding when syketilfelle is not found in syfosyketilfelle for sykmelding: ${record.key()}"
+                    "Ignoring sykmelding when syketilfelle is not found in syfosyketilfelle for sykmelding: ${record.key()}",
                 )
             }
         } catch (e: Exception) {
@@ -75,7 +75,7 @@ class SykmeldingService(
         if (sisteTom.isAfter(LocalDate.now().minusMonths(4))) {
             if (sykmelding.event.arbeidsgiver == null) {
                 throw IllegalStateException(
-                    "Mottatt sendt sykmelding uten arbeidsgiver, $sykmeldingId"
+                    "Mottatt sendt sykmelding uten arbeidsgiver, $sykmeldingId",
                 )
             }
             sykmeldingDb.insertOrUpdateSykmelding(toSykmeldingDbModel(sykmelding, sisteTom))
@@ -125,9 +125,10 @@ class SykmeldingService(
     }
 
     fun canSykmeldtGetNarmesteLeder(fnr: String, orgnummer: String): Boolean {
-        val antallSykmeldinger = sykmeldingDb.getActiveSendtSykmeldingsperioder(fnr, orgnummer)?.firstOrNull()
+        val antallSykmeldinger =
+            sykmeldingDb.getActiveSendtSykmeldingsperioder(fnr, orgnummer)?.firstOrNull()
 
-        return antallSykmeldinger != null && antallSykmeldinger> 0
+        return antallSykmeldinger != null && antallSykmeldinger > 0
     }
 
     private fun finnSisteTom(perioder: List<SykmeldingsperiodeAGDTO>): LocalDate {
