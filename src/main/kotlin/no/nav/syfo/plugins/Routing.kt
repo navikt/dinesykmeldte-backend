@@ -35,8 +35,6 @@ fun Application.configureRouting() {
             registerVirksomhetApi(virksomhetService)
             registerNarmestelederApi(narmestelederService)
             registerDineSykmeldteApi(dineSykmeldteService)
-        }
-        authenticate  ("azuread") {
             registerSykmeldingApi(sykmeldingService)
         }
     }
