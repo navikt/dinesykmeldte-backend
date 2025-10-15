@@ -1,5 +1,7 @@
 package no.nav.syfo
 
+import no.nav.syfo.texas.TexasEnvironment
+
 data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "dinesykmeldte-backend"),
@@ -21,6 +23,14 @@ data class Environment(
     val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val dbUrl: String = getEnvVar("NAIS_DATABASE_JDBC_URL"),
+    val texas: TexasEnvironment = TexasEnvironment(
+        tokenIntrospectionEndpoint = getEnvVar("NAIS_TOKEN_INTROSPECTION_ENDPOINT"),
+        tokenExchangeEndpoint = getEnvVar("NAIS_TOKEN_EXCHANGE_ENDPOINT"),
+        tokenEndpoint = getEnvVar("NAIS_TOKEN_ENDPOINT"),
+        exchangeTargetDineSykmeldte = "${getEnvVar("NAIS_CLUSTER_NAME")}:team-esyfo:esyfo-narmesteleder",
+        exchangeTargetIsDialogmelding = "${getEnvVar("NAIS_CLUSTER_NAME")}:teamsykefravr:isdialogmelding",
+        exchangeTargetIsTilgangskontroll = "${getEnvVar("NAIS_CLUSTER_NAME")}.teamsykefravr.istilgangskontroll",
+    ),
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
