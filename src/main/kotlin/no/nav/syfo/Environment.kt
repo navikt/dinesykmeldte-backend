@@ -21,8 +21,27 @@ data class Environment(
     val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val dbUrl: String = getEnvVar("NAIS_DATABASE_JDBC_URL"),
-)
+) {
+    companion object {
+        fun createLocal() = Environment(
+            cluster = "local",
+            tokenXWellKnownUrl = " http://localhost:6969/tokenx/.well-known/openid-configuration",
+            dineSykmeldteBackendTokenXClientId = "dinesykmeldte-backend",
+            pdlGraphqlPath = "http://localhost:8080/graphql",
+            pdlScope = "pdl-api://default",
+            clientId = "clientId",
+            clientSecret = "clientSecret",
+            aadAccessTokenUrl = "http://localhost:8080/token",
+            electorPath = "dinesykmeldte-backend-local",
+            dbUrl = "jdbc:postgresql://localhost:5432/dinesykmeldte-backend_dev?user=username&password=password&ssl=false",
+            syketilfelleScope = "syketilfelle-backend",
+        )
+    }
+}
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
     System.getenv(varName)
         ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
+
+fun isLocalEnv(): Boolean =
+    getEnvVar("NAIS_CLUSTER_NAME", "local") == "local"
