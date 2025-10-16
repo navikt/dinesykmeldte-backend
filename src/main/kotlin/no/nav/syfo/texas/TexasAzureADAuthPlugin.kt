@@ -2,7 +2,6 @@ package no.nav.syfo.texas
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.createRouteScopedPlugin
-import io.ktor.server.auth.authentication
 import io.ktor.server.response.respondNullable
 import no.nav.syfo.util.logger
 
@@ -37,12 +36,6 @@ val TexasAzureADAuthPlugin = createRouteScopedPlugin(
                 call.respondNullable(HttpStatusCode.Unauthorized)
                 return@onCall
             }
-            if (introspectionResponse.NAVident == null) {
-                call.application.environment.log.warn("No NAVident in token claims")
-                call.respondNullable(HttpStatusCode.Unauthorized)
-                return@onCall
-            }
-            call.authentication.principal(BrukerPrincipal(introspectionResponse.NAVident, bearerToken))
         }
     }
     logger.info("TexasAzureAdAuthPlugin installed")
