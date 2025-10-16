@@ -25,22 +25,6 @@ class TexasHttpClient(
         }.body<TexasIntrospectionResponse>()
     }
 
-    suspend fun exchangeTokenForDineSykmeldte(token: String): TexasResponse {
-        return exchangeToken(IDENTITY_PROVIDER_TOKENX, environment.exchangeTargetDineSykmeldte, token)
-    }
-
-    suspend fun exchangeTokenForIsDialogmelding(token: String): TexasResponse {
-        return exchangeToken(IDENTITY_PROVIDER_TOKENX, environment.exchangeTargetIsDialogmelding, token)
-    }
-
-    suspend fun exchangeTokenForIsTilgangskontroll(token: String): TexasResponse {
-        return exchangeToken(
-            IDENTITY_PROVIDER_AZUREAD,
-            TexasHttpClient.getTarget(environment.exchangeTargetIsTilgangskontroll),
-            token
-        )
-    }
-
     suspend fun systemToken(identityProvider: String, target: String): TexasResponse {
         return client.post(environment.tokenEndpoint) {
             contentType(ContentType.Application.Json)

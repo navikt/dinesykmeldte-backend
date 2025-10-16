@@ -28,6 +28,7 @@ import no.nav.syfo.common.kafka.CommonKafkaService
 import no.nav.syfo.dinesykmeldte.service.DineSykmeldteService
 import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.hendelser.db.HendelserDb
+import no.nav.syfo.isLocalEnv
 import no.nav.syfo.kafka.KafkaUtils
 import no.nav.syfo.kafka.createKafkaProducer
 import no.nav.syfo.kafka.toConsumerConfig
@@ -136,7 +137,9 @@ private fun httpClient() = module {
     }
 }
 
-private fun environmentModule() = module { single { Environment() } }
+private fun environmentModule() = module {
+    single { if (isLocalEnv()) Environment.createLocal() else  Environment() }
+}
 
 private fun authModule() = module {
     single {
