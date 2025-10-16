@@ -43,6 +43,7 @@ import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.db.SykmeldingDb
+import no.nav.syfo.texas.client.TexasHttpClient
 import no.nav.syfo.util.AuthConfiguration
 import no.nav.syfo.util.getWellKnownTokenX
 import no.nav.syfo.virksomhet.api.VirksomhetService
@@ -72,6 +73,7 @@ fun Application.configureDependencies() {
 }
 
 private fun servicesModule() = module {
+    single { TexasHttpClient(get(), env().texas) }
     single { AccessTokenClient(env().aadAccessTokenUrl, env().clientId, env().clientSecret, get()) }
     single { PdlClient(get(), env().pdlGraphqlPath) }
     single { PdlPersonService(get<PdlClient>(), get(), get<Environment>().pdlScope) }
