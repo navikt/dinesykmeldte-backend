@@ -425,7 +425,7 @@ class SykmeldingServiceTest :
                         mockedDb.getActiveSendtSykmeldingsperioder("fnr", "orgnummer")
                     } returns listOf(1)
 
-                    val active = localService.canSykmeldtGetNarmesteLeder("fnr", "orgnummer")
+                    val active = localService.getActiveSendtSykmeldingsperioder("fnr", "orgnummer")
                     active shouldBe true
                 }
 
@@ -443,7 +443,7 @@ class SykmeldingServiceTest :
                         mockedDb.getActiveSendtSykmeldingsperioder("fnr", "orgnummer")
                     } returns listOf(0)
 
-                    val active = localService.canSykmeldtGetNarmesteLeder("fnr", "orgnummer")
+                    val active = localService.getActiveSendtSykmeldingsperioder("fnr", "orgnummer")
                     active shouldBe false
                 }
             }

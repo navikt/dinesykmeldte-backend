@@ -19,9 +19,8 @@ fun Route.registerSykmeldingApi(
             this.client = texasHttpClient
         }
         val request = call.tryReceive<IsActiveSykmeldingRequestDTO>()
-        val sykmeldtFnr = request.sykmeldtFnr
-        securelog.info("Mottak kall mot /api/dinesykmeldte for pasientFnr: $sykmeldtFnr")
-        val result = sykmeldingService.canSykmeldtGetNarmesteLeder("", sykmeldtFnr)
+        securelog.info("Mottak kall mot /api/dinesykmeldte for pasientFnr: ${request.sykmeldtFnr}")
+        val result = sykmeldingService.getActiveSendtSykmeldingsperioder(request.sykmeldtFnr, orgnummer = request.orgnummer)
         call.respond(HttpStatusCode.OK, result)
     }
 }

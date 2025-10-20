@@ -124,7 +124,7 @@ class SykmeldingService(
         }
     }
 
-    fun canSykmeldtGetNarmesteLeder(fnr: String, orgnummer: String): Boolean {
+    fun getActiveSendtSykmeldingsperioder(fnr: String, orgnummer: String): Boolean {
         val antallSykmeldinger =
             sykmeldingDb.getActiveSendtSykmeldingsperioder(fnr, orgnummer)?.firstOrNull()
 
