@@ -125,6 +125,7 @@ class SykmeldingService(
     }
 
     private fun finnSisteTom(perioder: List<SykmeldingsperiodeAGDTO>): LocalDate {
+
         return perioder.maxByOrNull { it.tom }?.tom
             ?: throw IllegalStateException("Skal ikke kunne ha periode uten tom")
     }
