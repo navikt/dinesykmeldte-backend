@@ -10,13 +10,14 @@ import no.nav.syfo.texas.TexasAzureADAuthPlugin
 import no.nav.syfo.texas.client.TexasHttpClient
 import no.nav.syfo.util.securelog
 
-fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService
-                                , texasHttpClient: TexasHttpClient) {
-    install(TexasAzureADAuthPlugin) {
-        this.client = texasHttpClient
-    }
+fun Route.registerSykmeldingApi(
+    sykmeldingService: SykmeldingService, texasHttpClient: TexasHttpClient
+) {
 
-    post("api/sykmelding/isActiveSykmelding") {
+    post("/api/sykmelding/isActiveSykmelding") {
+        install(TexasAzureADAuthPlugin) {
+            this.client = texasHttpClient
+        }
         val request = call.tryReceive<IsActiveSykmeldingRequestDTO>()
         val sykmeldtFnr = request.sykmeldtFnr
         securelog.info("Mottak kall mot /api/dinesykmeldte for pasientFnr: $sykmeldtFnr")
