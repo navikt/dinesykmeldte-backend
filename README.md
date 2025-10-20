@@ -63,3 +63,11 @@ docker-compose \
 
 ### Kafka-ui
 You can use [kafka-ui](http://localhost:9000) to inspect your consumers and topics. You can also publish or read messages on the topics
+
+## Authentication for dev
+### isActiveSykmelding
+In order to get a azuread token, use the following url:
+Open this in your browser:
+https://azure-token-generator.intern.dev.nav.no/api/m2m?aud=dev-gcp.team-esyfo.dinesykmeldte-backend
+Use a login from @trygdeetaten from Ida.
+This will give you a token that can be used to make a request to internal/api/v1/documents
