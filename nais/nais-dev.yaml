@@ -5,6 +5,8 @@ metadata:
   namespace: team-esyfo
   labels:
     team: team-esyfo
+  annotations:
+    texas.nais.io/enabled: "true"
 spec:
   image: {{ image }}
   gcp:
@@ -59,20 +61,27 @@ spec:
     enabled: true
   azure:
     application:
+      allowAllUsers: true
       enabled: true
       tenant: trygdeetaten.no
+      claims:
+        extra:
+          - "NAVident"
   accessPolicy:
     inbound:
       rules:
         - application: dinesykmeldte
         - application: syfo-oppfolgingsplan-backend
         - application: syfo-oppfolgingsplan-frontend
+        - application: esyfo-narmesteleder
         - application: oppfolgingsplan-frontend
           namespace: team-esyfo
           cluster: dev-gcp
         - application: dialogmote-frontend
           namespace: team-esyfo
           cluster: dev-gcp
+        - application: azure-token-generator
+          namespace: nais
     outbound:
       rules:
         - application: flex-syketilfelle
