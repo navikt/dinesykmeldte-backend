@@ -13,6 +13,9 @@ import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.api.registerMineSykmeldteApi
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.api.registerNarmestelederApi
+import no.nav.syfo.sykmelding.SykmeldingService
+import no.nav.syfo.sykmelding.api.registerSykmeldingApi
+import no.nav.syfo.texas.client.TexasHttpClient
 import no.nav.syfo.virksomhet.api.VirksomhetService
 import no.nav.syfo.virksomhet.api.registerVirksomhetApi
 import org.koin.ktor.ext.inject
@@ -23,6 +26,8 @@ fun Application.configureRouting() {
     val mineSykmeldteService by inject<MineSykmeldteService>()
     val narmestelederService by inject<NarmestelederService>()
     val dineSykmeldteService by inject<DineSykmeldteService>()
+    val sykmeldingService by inject<SykmeldingService>()
+    val texasHttpClient by inject<TexasHttpClient>()
     routing {
         if (env.cluster == "dev-gcp") {
             staticResources("/api/v1/docs/", "api") { default("api/index.html") }
@@ -33,6 +38,9 @@ fun Application.configureRouting() {
             registerNarmestelederApi(narmestelederService)
             registerDineSykmeldteApi(dineSykmeldteService)
         }
+        registerSykmeldingApi(sykmeldingService, texasHttpClient)
+
+
     }
     intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
 }

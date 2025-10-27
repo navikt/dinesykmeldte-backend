@@ -15,9 +15,9 @@ private val log = logger("no.nav.syfo.dinesykmeldte")
 fun Route.registerDineSykmeldteApi(dineSykmeldteService: DineSykmeldteService) {
     get("api/v2/dinesykmeldte") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
-        val fnr = principal.fnr
-        securelog.info("Mottak kall mot /api/dinesykmeldte for fnr: $fnr")
-        val sykmeldte = dineSykmeldteService.getDineSykmeldte(fnr)
+        val narmesteLederfnr = principal.fnr
+        securelog.info("Mottak kall mot /api/dinesykmeldte for narmesteLederfnr: $narmesteLederfnr")
+        val sykmeldte = dineSykmeldteService.getDineSykmeldte(narmesteLederfnr)
         log.info("Hentet ${sykmeldte.size} fra db")
         call.respond(sykmeldte)
     }
@@ -25,14 +25,14 @@ fun Route.registerDineSykmeldteApi(dineSykmeldteService: DineSykmeldteService) {
     get("api/v2/dinesykmeldte/{narmestelederId}") {
         val narmestelederId = call.parameters["narmestelederId"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
-        val fnr = principal.fnr
+        val narmesteLederfnr = principal.fnr
         securelog.info(
-            "Mottak kall mot /api/dinesykmeldte/{narmestelederId} for fnr: $fnr " +
+            "Mottak kall mot /api/dinesykmeldte/{narmestelederId} for narmesteLederFnr: $narmesteLederfnr " +
                 "og narmestelederId: $narmestelederId"
         )
-        when (val sykmeldt = dineSykmeldteService.getSykmeldt(narmestelederId, fnr)) {
+        when (val sykmeldt = dineSykmeldteService.getSykmeldt(narmestelederId, narmesteLederfnr)) {
             null -> {
-                log.info("could not find narmesteleder for narmestelederId: $narmestelederId")
+                log.info("could not find sykemeldt for narmestelederId: $narmestelederId")
                 call.respond(HttpStatusCode.NotFound)
             }
             else -> {

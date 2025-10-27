@@ -122,6 +122,7 @@ private fun FlexSvartype?.toSvarType(): Svartype {
         FlexSvartype.DATOER -> Svartype.DATOER
         FlexSvartype.BELOP -> Svartype.BELOP
         FlexSvartype.KILOMETER -> Svartype.KILOMETER
+        FlexSvartype.AAR_MAANED -> Svartype.AAR_MAANED
         null -> throw IllegalStateException("Svartype is null")
     }
 }

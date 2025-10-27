@@ -5,11 +5,21 @@ data class KafkaEnvironment(
     val KAFKA_CLIENT_ID: String = getEnvVar("HOSTNAME"),
     val KAFKA_TRUSTSTORE_PATH: String = getEnvVar("KAFKA_TRUSTSTORE_PATH"),
     val KAFKA_KEYSTORE_PATH: String = getEnvVar("KAFKA_KEYSTORE_PATH"),
-    val KAFKA_CREDSTORE_PASSWORD: String = getEnvVar("KAFKA_CREDSTORE_PASSWORD")
+    val KAFKA_CREDSTORE_PASSWORD: String = getEnvVar("KAFKA_CREDSTORE_PASSWORD"),
+    val SSL: Boolean = true,
 ) {
     companion object {
         fun getEnvVar(varName: String, defaultValue: String? = null) =
             System.getenv(varName)
                 ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
+
+        fun createLocal() = KafkaEnvironment(
+            SSL = false,
+            KAFKA_BROKERS = "localhost:9092",
+            KAFKA_CLIENT_ID = "dinesykmeldte-backend-local",
+            KAFKA_TRUSTSTORE_PATH = "src/test/resources/kafka-truststore.jks",
+            KAFKA_KEYSTORE_PATH = "src/test/resources/kafka-keystore.p12",
+            KAFKA_CREDSTORE_PASSWORD = "password",
+        )
     }
 }

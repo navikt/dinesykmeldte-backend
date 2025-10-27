@@ -4,6 +4,7 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Timestamp
 import no.nav.syfo.application.database.DatabaseInterface
+import java.time.LocalDateTime
 
 class SykmeldingDb(private val database: DatabaseInterface) {
     fun insertOrUpdateSykmelding(sykmelding: SykmeldingDbModel) {
@@ -159,6 +160,33 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                     ps.setString(1, fnr)
                     ps.executeQuery().toList { toSykmeldingInfo() }
                 }
+        }
+    }
+
+    fun getActiveSendtSykmeldingsperioder(
+        employeeIdentificationNumber: String,
+        orgnummer: String,
+    ): List<Int>? {
+        val selectStatement = """
+        SELECT count(*) as countSykmeldinger
+FROM sykmelding s,
+     jsonb_array_elements(s.sykmelding -> 'sykmeldingsperioder') AS period
+WHERE pasient_fnr = ?
+  AND orgnummer = ?
+  AND (latest_tom >= now()::DATE - INTERVAL '16 days' OR
+       EXISTS (SELECT 1
+               FROM jsonb_array_elements(sykmelding -> 'sykmeldingsperioder') AS period
+               WHERE now() BETWEEN (period ->> 'fom')::DATE  + INTERVAL '16 days' 
+               AND ((period ->> 'tom')::DATE + INTERVAL '16 days'))
+    );
+    """.trimIndent()
+
+        return database.connection.use { connection ->
+            connection.prepareStatement(selectStatement).use {
+                it.setString(1, employeeIdentificationNumber)
+                it.setString(2, orgnummer)
+                it.executeQuery().toList { getInt("countSykmeldinger") }
+            }
         }
     }
 
