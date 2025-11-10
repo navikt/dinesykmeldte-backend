@@ -1,5 +1,7 @@
 package no.nav.syfo.dinesykmeldte.model
 
+import java.time.LocalDate
+
 data class Sykmeldt(
     val narmestelederId: String,
     val orgnummer: String,
@@ -7,4 +9,5 @@ data class Sykmeldt(
     val navn: String,
     val sykmeldinger: List<DineSykmeldteSykmelding>?,
     val aktivSykmelding: Boolean?,
+    val sistSykmeldtTom: LocalDate?,
 )

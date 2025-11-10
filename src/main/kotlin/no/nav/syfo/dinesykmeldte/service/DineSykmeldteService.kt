@@ -49,6 +49,7 @@ class DineSykmeldteService(
                     sykmeldinger = ansatt.value.map { it.toDineSykmeldteSykmelding(ansatt.key) },
                     aktivSykmelding =
                         ansatt.value.any { it.sykmelding.sykmeldingsperioder.isActive() },
+                    sistSykmeldtTom = ansatt.value.maxOfOrNull { it.sykmelding.sykmeldingsperioder.maxOf { periode -> periode.tom } }
                 )
             }
 }
