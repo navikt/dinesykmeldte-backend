@@ -99,6 +99,5 @@ private fun SykmeldingsperiodeAGDTO.toPerioder(): Periode {
     )
 }
 
-fun List<SykmeldingsperiodeAGDTO>.isActive(date: LocalDate = LocalDate.now()): Boolean {
-    return any { !it.fom.isAfter(date) && !date.isAfter(it.tom) }
-}
+fun List<SykmeldingsperiodeAGDTO>.isActive(date: LocalDate = LocalDate.now()): Boolean =
+    any { date in it.fom..it.tom.plusDays(16) }
