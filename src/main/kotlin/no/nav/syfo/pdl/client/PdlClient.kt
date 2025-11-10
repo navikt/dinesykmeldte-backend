@@ -6,6 +6,8 @@ import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpHeaders
+import io.ktor.http.cio.parseResponse
+import io.ktor.http.isSuccess
 import no.nav.syfo.pdl.client.model.GetPersonRequest
 import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.client.model.GetPersonVariables
@@ -16,10 +18,10 @@ private val getPersonQuery =
     """
     query(${'$'}ident: ID!){
       person: hentPerson(ident: ${'$'}ident) {
-      	navn(historikk: false) {
-      	  fornavn
-      	  mellomnavn
-      	  etternavn
+        navn(historikk: false) {
+          fornavn
+          mellomnavn
+          etternavn
         }
       }
       identer: hentIdenter(ident: ${'$'}ident, historikk: false) {
@@ -43,7 +45,7 @@ class PdlClient(
                 variables = GetPersonVariables(ident = fnr),
             )
 
-        return httpClient
+        val response = httpClient
             .post(basePath) {
                 setBody(getPersonRequest)
                 header(HttpHeaders.Authorization, "Bearer $token")
@@ -51,6 +53,13 @@ class PdlClient(
                 header("Behandlingsnummer", "B229")
                 header(HttpHeaders.ContentType, "application/json")
             }
-            .body()
+        if (response.status.isSuccess()) {
+            return response.body()
+
+        } else {
+            val responseText = response.body<String>()
+            throw RuntimeException("Feil ved kall mot PDL: ${response.status}, $responseText")
+        }
+
     }
 }
