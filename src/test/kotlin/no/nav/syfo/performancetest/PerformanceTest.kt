@@ -2,11 +2,13 @@ package no.nav.syfo.performancetest
 
 import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.FunSpec
+import io.mockk.mockk
 import java.util.UUID
 import kotlin.system.measureTimeMillis
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.getSoknad
+import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
@@ -19,6 +21,7 @@ class PerformanceTest :
         val database = TestDb.database
         val nlFnr = "70859400564"
         val orgnummer = "972674818"
+        val pdlPersonService = mockk< PdlPersonService>()
         (0 until 1000).forEach { number ->
             val sykmeldtFnr = number.toString()
             val narmestelederId = UUID.randomUUID().toString()
@@ -51,6 +54,7 @@ class PerformanceTest :
         val mineSykmeldteService =
             MineSykmeldteService(
                 mineSykmeldteDb = MineSykmeldteDb(database),
+                pdlPersonService = pdlPersonService,
             )
 
         context("Get mine sykmeldginer") {
