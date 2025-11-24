@@ -1,11 +1,13 @@
 package no.nav.syfo.minesykmeldte
 
 import io.kotest.core.spec.style.FunSpec
+import io.mockk.mockk
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.getSoknad
+import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
@@ -15,7 +17,8 @@ import org.amshove.kluent.shouldBeEqualTo
 class MineSykmeldteServiceDbTest :
     FunSpec({
         val mineSykmeldteDb = MineSykmeldteDb(TestDb.database)
-        val mineSykmeldteService = MineSykmeldteService(mineSykmeldteDb)
+        val pdlPersonService = mockk< PdlPersonService>()
+        val mineSykmeldteService = MineSykmeldteService(mineSykmeldteDb, pdlPersonService)
 
         afterEach { TestDb.clearAllData() }
 

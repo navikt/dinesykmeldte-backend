@@ -34,6 +34,7 @@ import no.nav.syfo.minesykmeldte.model.Reisetilskudd
 import no.nav.syfo.minesykmeldte.model.Soknad
 import no.nav.syfo.minesykmeldte.model.Sykmelding
 import no.nav.syfo.minesykmeldte.model.UtenlandskSykmelding
+import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
@@ -46,10 +47,13 @@ import no.nav.syfo.util.toFormattedNameString
 
 class MineSykmeldteService(
     private val mineSykmeldteDb: MineSykmeldteDb,
+    private val pdlPersonService: PdlPersonService,
 ) {
     private val log = logger()
 
-    suspend fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> =
+    suspend fun getMineSykmeldte(
+        lederFnr: String,
+    ): List<PreviewSykmeldt> =
         withContext(Dispatchers.IO) {
             val hendelserJob = async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr) }
             val sykmeldteMapJob =
@@ -81,6 +85,10 @@ class MineSykmeldteService(
                     sykmeldinger = getSykmeldinger(sykmeldtEntry),
                     aktivitetsvarsler = getAktivitetsvarsler(hendelserMap, sykmeldtEntry),
                     oppfolgingsplaner = getOppfolgingsplaner(hendelserMap, sykmeldtEntry),
+                    isOppfolgingsplanPilotUser = getIsOppfolgingsplanPilotUser(
+                        sykmeldtEntry.key.fnr,
+                        sykmeldtEntry.key.narmestelederId,
+                    ),
                 )
             }
         }
@@ -162,6 +170,28 @@ class MineSykmeldteService(
         sykmeldt: MinSykmeldtDbModel,
     ) = hendelserMap[sykmeldtEntry.key.fnr]?.filter { it.id == sykmeldt.soknad?.id }.orEmpty()
 
+    suspend fun getIsOppfolgingsplanPilotUser(
+        sykmeldtFnr: String,
+        narmestelederId: String,
+    ): Boolean {
+        val callId: String = UUID.randomUUID().toString()
+        securelog.info(
+            "Henter person fra PDL for sykmeldtFnr: $sykmeldtFnr, narmestelederId: $narmestelederId, callId: $callId",
+        )
+        try {
+            val person = pdlPersonService.getPerson(fnr = sykmeldtFnr, callId = callId)
+            val pilotBydelerListe = emptyList<String>()
+            val pilotKommuneListe = listOf<String>("4614")
+            log.info("Personen har følgende kommune: ${person.gtKommune} og bydel: ${person.gtBydel}")
+            if (pilotBydelerListe.contains(person.gtBydel) || pilotKommuneListe.contains(person.gtKommune)) {
+                return true
+            }
+        } catch (e: Exception) {
+            log.error("Feil ved henting av person fra PDL, $callId", e)
+        }
+        return false
+    }
+
     suspend fun getSykmelding(sykmeldingId: String, lederFnr: String): Sykmelding? {
         return mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr)?.toSykmelding()
     }
@@ -226,7 +256,7 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         tom = soknadDb.tom,
         lest = soknadDb.lest,
         sendtDato = soknadDb.sykepengesoknad.sendtArbeidsgiver
-                ?: throw IllegalStateException("Søknad uten sendt dato: ${soknadDb.soknadId}"),
+            ?: throw IllegalStateException("Søknad uten sendt dato: ${soknadDb.soknadId}"),
         sendtTilNavDato = soknadDb.sykepengesoknad.sendtNav,
         korrigererSoknadId = soknadDb.sykepengesoknad.korrigerer,
         korrigertBySoknadId = soknadDb.sykepengesoknad.korrigertAv,
@@ -333,12 +363,14 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
                     )
                 },
             )
+
         PeriodetypeDTO.AVVENTENDE ->
             Avventende(
                 this.fom,
                 this.tom,
                 tilrettelegging = this.innspillTilArbeidsgiver,
             )
+
         PeriodetypeDTO.BEHANDLINGSDAGER ->
             Behandlingsdager(
                 this.fom,
@@ -346,6 +378,7 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
                 this.behandlingsdager
                     ?: throw IllegalStateException("Behandlingsdager without behandlingsdager"),
             )
+
         PeriodetypeDTO.GRADERT -> {
             val gradering = this.gradert
             requireNotNull(gradering) { "Gradert periode uten gradert-data burde ikke eksistere" }
@@ -357,6 +390,7 @@ private fun SykmeldingsperiodeAGDTO.toSykmeldingPeriode(): Periode =
                 gradering.reisetilskudd,
             )
         }
+
         PeriodetypeDTO.REISETILSKUDD ->
             Reisetilskudd(
                 this.fom,
