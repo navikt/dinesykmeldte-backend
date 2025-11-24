@@ -1,7 +1,7 @@
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.10.1"
+val coroutinesVersion = "1.10.2"
 val jacksonVersion = "2.18.3"
 val kluentVersion = "1.73"
 val logbackVersion = "1.5.18"
@@ -11,8 +11,8 @@ val prometheusVersion = "0.16.0"
 val mockkVersion = "1.14.5"
 val nimbusdsVersion = "10.0.2"
 val hikariVersion = "6.2.1"
-val flywayVersion = "11.4.0"
-val postgresVersion = "42.7.7"
+val flywayVersion = "11.13.2"
+val postgresVersion = "42.7.8"
 val testContainerVersion = "1.21.3"
 val kotlinVersion = "2.2.20"
 val swaggerUiVersion = "5.20.0"
@@ -25,7 +25,7 @@ val koinVersion = "4.1.1"
 val kotestKoinVersion = "1.3.0"
 ///Due to vulnerabilities
 val nettycommonVersion = "4.1.119.Final"
-val snappyJavaVersion = "1.1.10.7"
+val snappyJavaVersion = "1.1.10.8"
 val commonsCompressVersion = "1.28.0"
 
 plugins {

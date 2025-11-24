@@ -1,0 +1,5 @@
+### Check readiness of the service
+GET http://localhost:8080/internal/is_ready
+
+### Check liveness of the service
+GET http://localhost:8080/internal/is_alive

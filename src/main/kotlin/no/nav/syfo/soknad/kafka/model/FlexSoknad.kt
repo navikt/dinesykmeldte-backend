@@ -80,7 +80,8 @@ enum class FlexSvartype {
     KVITTERING,
     DATOER,
     BELOP,
-    KILOMETER
+    KILOMETER,
+    AAR_MAANED
 }
 
 data class FlexSvar(val verdi: String?)
