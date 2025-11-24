@@ -1,8 +1,7 @@
-FROM gcr.io/distroless/java21-debian12@sha256:c23123156441cff6195c85cd28fce8f3395ba927536c928a54cfc380130229a4
+FROM europe-north1-docker.pkg.dev/cgr-nav/pull-through/nav.no/jre:openjdk-21@sha256:086efc0e24d318f47e804fc58b0b1ad5356bc05d27f2c174955f13c9a1efa6a8
 WORKDIR /app
 COPY build/libs/app-*.jar app.jar
 ENV JAVA_OPTS="-Dlogback.configurationFile=logback.xml"
 ENV TZ="Europe/Oslo"
 EXPOSE 8080
-USER nonroot
-CMD [ "app.jar" ]
+ENTRYPOINT ["java", "-jar", "app.jar"]

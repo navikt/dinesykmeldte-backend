@@ -1,0 +1,10 @@
+### POST request to isActiveSykmelding
+
+POST http://localhost:8080/api/sykmelding/isActiveSykmelding
+Authorization: Bearer {{aad_token}}
+Content-Type: application/json
+
+{
+  "sykmeldtFnr": "{{fnr}}",
+  "orgnummer": "{{orgnummer}}"
+}
