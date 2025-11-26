@@ -16,13 +16,12 @@ val postgresVersion = "42.7.8"
 val testContainerVersion = "1.21.3"
 val kotlinVersion = "2.1.10"
 val swaggerUiVersion = "5.20.0"
-val kotestVersion = "5.9.1"
+val kotestVersion = "6.0.5"
 val googlePostgresVersion = "1.25.3"
 val googleOauthVersion = "1.39.0"
 val ktfmtVersion = "0.44"
 val kafkaVersion = "3.9.1"
 val koinVersion = "4.1.1"
-val kotestKoinVersion = "1.3.0"
 ///Due to vulnerabilities
 val nettycommonVersion = "4.1.119.Final"
 val snappyJavaVersion = "1.1.10.8"
@@ -94,7 +93,6 @@ repositories {
         implementation("com.google.oauth-client:google-oauth-client:$googleOauthVersion")
         implementation("io.insert-koin:koin-ktor:$koinVersion")
         implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
-        implementation("io.kotest.extensions:kotest-extensions-koin:$kotestKoinVersion")
 
         swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
         testImplementation("io.insert-koin:koin-test:$koinVersion")
