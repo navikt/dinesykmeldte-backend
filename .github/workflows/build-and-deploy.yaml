@@ -24,7 +24,7 @@ jobs:
         language: [ 'kotlin' ]
     steps:
       - uses: actions/checkout@v5
-      - uses: github/codeql-action/init@v3
+      - uses: github/codeql-action/init@v4
         with:
           languages: kotlin
       - uses: navikt/teamesyfo-github-actions-workflows/actions/gradle-cached@main
@@ -32,7 +32,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_githubUser: x-access-token
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
-      - uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@v4
         with:
           category: "/language:kotlin"
 
