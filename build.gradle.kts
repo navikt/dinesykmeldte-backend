@@ -23,7 +23,7 @@ val ktfmtVersion = "0.44"
 val kafkaVersion = "3.9.1"
 val koinVersion = "4.1.1"
 ///Due to vulnerabilities
-val nettycommonVersion = "4.1.119.Final"
+val nettycommonVersion = "4.2.7.Final"
 val snappyJavaVersion = "1.1.10.8"
 val commonsCompressVersion = "1.28.0"
 
