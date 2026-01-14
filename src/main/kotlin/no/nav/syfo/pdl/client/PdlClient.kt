@@ -24,15 +24,20 @@ private val getPersonQuery =
           etternavn
         }
       }
-      identer: hentIdenter(ident: ${'$'}ident, historikk: false) {
-          identer {
-            ident,
-            gruppe
-          }
+      geografiskTilknytning: hentGeografiskTilknytning(ident: ${'$'}ident) {
+          gtType
+          gtKommune
+          gtBydel
+          gtLand
         }
+      identer: hentIdenter(ident: ${'$'}ident, historikk: false) {
+        identer {
+          ident
+          gruppe
+        }
+      }
     }
-"""
-        .trimIndent()
+    """.trimIndent()
 
 class PdlClient(
     private val httpClient: HttpClient,

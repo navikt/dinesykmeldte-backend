@@ -54,16 +54,20 @@ class SykmeldingServiceTest :
                     "prod-gcp",
                 )
 
-            beforeEach {
-                TestDb.clearAllData()
-                clearMocks(pdlPersonService, syfoSyketilfelleClient)
-                coEvery { pdlPersonService.getPerson(any(), any()) } returns
-                    PdlPerson(
-                        Navn("Syk", null, "Sykesen"),
-                    )
-                coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns
-                    LocalDate.now().minusMonths(1)
-            }
+        beforeEach {
+            TestDb.clearAllData()
+            clearMocks(pdlPersonService, syfoSyketilfelleClient)
+            coEvery { pdlPersonService.getPerson(any(), any()) } returns
+                PdlPerson(
+                    Navn("Syk", null, "Sykesen"),
+                    "BYDEL",
+                    "NO",
+                    "0301",
+                    "030106"
+                )
+            coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns
+                LocalDate.now().minusMonths(1)
+        }
 
             context("SykmeldingService") {
                 test("Ved oppdatering av sykmelding skal den slettes om ny TOM er eldre enn 4mnd") {
@@ -276,18 +280,23 @@ class SykmeldingServiceTest :
                         sykmeldingId,
                         sendtSykmelding,
                     )
+                sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
 
                     val sykmeldt = TestDb.getSykmeldt("12345678910")
                     sykmeldt?.pasientNavn shouldBeEqualTo "Syk Sykesen"
                     sykmeldt?.startdatoSykefravaer shouldBeEqualTo LocalDate.now().minusMonths(1)
                     sykmeldt?.latestTom shouldBeEqualTo LocalDate.now().plusDays(10)
 
-                    coEvery { pdlPersonService.getPerson(any(), any()) } returns
-                        PdlPerson(
-                            Navn("Per", null, "Persen"),
-                        )
-                    coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns
-                        LocalDate.now().minusMonths(2)
+                coEvery { pdlPersonService.getPerson(any(), any()) } returns
+                    PdlPerson(
+                        Navn("Per", null, "Persen"),
+                        "KOMMUNE",
+                        "NO",
+                        "3334",
+                        "0334",
+                    )
+                coEvery { syfoSyketilfelleClient.finnStartdato(any(), any()) } returns
+                    LocalDate.now().minusMonths(2)
 
                     sykmeldingService.handleSendtSykmeldingKafkaMessage(
                         sykmeldingId2,
@@ -324,6 +333,7 @@ class SykmeldingServiceTest :
                         sykmeldingId,
                         sendtSykmelding,
                     )
+                sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding)
 
                     TestDb.getSykmelding(sykmeldingId) shouldBeEqualTo null
                 }
