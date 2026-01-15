@@ -87,11 +87,11 @@ spec:
         - application: flex-syketilfelle
           namespace: flex
           cluster: dev-gcp
+        - application: logging
+          namespace: nais-system
       external:
         - host: pdl-api.dev-fss-pub.nais.io
   leaderElection: true
-  secureLogs:
-    enabled: true
   env:
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.dev-fss-pub.nais.io/graphql
