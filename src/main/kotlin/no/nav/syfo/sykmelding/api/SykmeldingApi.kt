@@ -9,7 +9,10 @@ import no.nav.syfo.dinesykmeldte.api.tryReceive
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.texas.TexasAzureADAuthPlugin
 import no.nav.syfo.texas.client.TexasHttpClient
-import no.nav.syfo.util.securelog
+import no.nav.syfo.util.logger
+import no.nav.syfo.util.teamLogsMarker
+
+private val log = logger("SykmeldingApi")
 
 fun Route.registerSykmeldingApi(
     sykmeldingService: SykmeldingService, texasHttpClient: TexasHttpClient
@@ -21,7 +24,7 @@ fun Route.registerSykmeldingApi(
         }
         post {
             val request = call.tryReceive<IsActiveSykmeldingRequestDTO>()
-            securelog.info("Mottak kall mot /api/dinesykmeldte for pasientFnr: ${request.sykmeldtFnr}")
+            log.info(teamLogsMarker, "Mottak kall mot /api/dinesykmeldte for pasientFnr: ${request.sykmeldtFnr}")
             val result =
                 sykmeldingService.getActiveSendtSykmeldingsperioder(request.sykmeldtFnr, orgnummer = request.orgnummer)
             call.respond(HttpStatusCode.OK, result)

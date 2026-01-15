@@ -8,7 +8,7 @@ import io.ktor.server.routing.get
 import no.nav.syfo.dinesykmeldte.service.DineSykmeldteService
 import no.nav.syfo.plugins.BrukerPrincipal
 import no.nav.syfo.util.logger
-import no.nav.syfo.util.securelog
+import no.nav.syfo.util.teamLogsMarker
 
 private val log = logger("no.nav.syfo.dinesykmeldte")
 
@@ -16,7 +16,7 @@ fun Route.registerDineSykmeldteApi(dineSykmeldteService: DineSykmeldteService) {
     get("api/v2/dinesykmeldte") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val narmesteLederfnr = principal.fnr
-        securelog.info("Mottak kall mot /api/dinesykmeldte for narmesteLederfnr: $narmesteLederfnr")
+        log.info(teamLogsMarker, "Mottak kall mot /api/dinesykmeldte for narmesteLederfnr: $narmesteLederfnr")
         val sykmeldte = dineSykmeldteService.getDineSykmeldte(narmesteLederfnr)
         log.info("Hentet ${sykmeldte.size} fra db")
         call.respond(sykmeldte)
@@ -26,7 +26,7 @@ fun Route.registerDineSykmeldteApi(dineSykmeldteService: DineSykmeldteService) {
         val narmestelederId = call.parameters["narmestelederId"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val narmesteLederfnr = principal.fnr
-        securelog.info(
+        log.info(teamLogsMarker,
             "Mottak kall mot /api/dinesykmeldte/{narmestelederId} for narmesteLederFnr: $narmesteLederfnr " +
                 "og narmestelederId: $narmestelederId"
         )
@@ -36,7 +36,7 @@ fun Route.registerDineSykmeldteApi(dineSykmeldteService: DineSykmeldteService) {
                 call.respond(HttpStatusCode.NotFound)
             }
             else -> {
-                securelog.info(
+                log.info(teamLogsMarker,
                     "found sykmeldt for narmestelederId: $narmestelederId, sykmeldt: $sykmeldt"
                 )
                 call.respond(sykmeldt)
