@@ -41,14 +41,11 @@ import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.BehandlerAGDTO
 import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.sykmelding.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.util.logger
-import no.nav.syfo.util.securelog
 import no.nav.syfo.util.toFormattedNameString
 
 class MineSykmeldteService(
     private val mineSykmeldteDb: MineSykmeldteDb,
 ) {
-    private val log = logger()
-
     suspend fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> =
         withContext(Dispatchers.IO) {
             val hendelserJob = async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr) }
@@ -378,12 +375,14 @@ private fun HendelseDbModel.toHendelse() =
         ferdigstilt = ferdigstiltTimestamp,
     )
 
+private val log = logger("no.nav.syfo.minesykmeldte.service")
+
 fun safeParseHendelseEnum(oppgavetype: String): HendelseType {
     return try {
         HendelseType.valueOf(oppgavetype)
     } catch (e: Exception) {
-        securelog.error(
-            "Ukjent oppgave av type $oppgavetype er ikke håndtert i applikasjonen. Mangler vi implementasjon?",
+        log.error(
+            "Ukjent oppgave av type $oppgavetype er ikke håndtert i applikasjonen. Mangler vi implementasjon?", e
         )
         HendelseType.UNKNOWN
     }
