@@ -14,7 +14,7 @@ import no.nav.syfo.plugins.BrukerPrincipal
 import no.nav.syfo.util.getBrukerPrincipal
 import no.nav.syfo.util.getParam
 import no.nav.syfo.util.logger
-import no.nav.syfo.util.teamLogsMarker
+import no.nav.syfo.util.teamLogsLogger
 
 private val log = logger("no.nav.syfo.minesykmeldte.api")
 
@@ -27,8 +27,7 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         log.info(
             "Calling api path: api/minesykmeldt getting ${timedValue.value.size} sykmeldte, duration: ${timedValue.duration.inWholeMilliseconds} ms"
         )
-        log.info(
-            teamLogsMarker,
+        teamLogsLogger.info(
             "Getting sykmeldte lederFnr: $lederFnr, requestId: $xRequestId, sykmeldte: ${timedValue.value.map { it.narmestelederId }}"
         )
         call.respond(timedValue.value)
@@ -38,7 +37,7 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         val principal: BrukerPrincipal = call.getBrukerPrincipal()
         val lederFnr = principal.fnr
         val sykmeldingId = call.getParam("sykmeldingId")
-        log.info(teamLogsMarker, "Calling api path: api/sykmelding/$sykmeldingId for lederFnr $lederFnr")
+        teamLogsLogger.info("Calling api path: api/sykmelding/$sykmeldingId for lederFnr $lederFnr")
         log.info("Calling api path: api/sykmelding/$sykmeldingId")
 
         val sykmelding = mineSykmeldteService.getSykmelding(sykmeldingId, lederFnr)
@@ -95,7 +94,7 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
         val lederFnr = principal.fnr
         val hendelseId = UUID.fromString(call.getParam("hendelseId"))
 
-        log.info(teamLogsMarker, "Calling api path: api/hendelse/$hendelseId/les for lederFnr $lederFnr")
+        teamLogsLogger.info("Calling api path: api/hendelse/$hendelseId/les for lederFnr $lederFnr")
 
         when (mineSykmeldteService.markHendelseRead(hendelseId, lederFnr)) {
             true -> call.respond(HttpStatusCode.OK, HttpMessage("Markert som lest"))
