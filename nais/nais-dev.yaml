@@ -72,7 +72,6 @@ spec:
       rules:
         - application: dinesykmeldte
         - application: syfo-oppfolgingsplan-backend
-        - application: syfo-oppfolgingsplan-frontend
         - application: esyfo-narmesteleder
         - application: oppfolgingsplan-frontend
           namespace: team-esyfo
