@@ -130,9 +130,7 @@ repositories {
         }
 
         shadowJar {
-            mergeServiceFiles {
-                setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
-            }
+            mergeServiceFiles()
             archiveBaseName.set("app")
             archiveClassifier.set("")
             isZip64 = true
@@ -140,6 +138,7 @@ repositories {
                 attributes(
                     mapOf(
                         "Main-Class" to "no.nav.syfo.BootstrapKt",
+                        "Multi-Release" to "true",
                     ),
                 )
             }
