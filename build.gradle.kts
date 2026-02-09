@@ -137,7 +137,7 @@ repositories {
             manifest {
                 attributes(
                     mapOf(
-                        "Main-Class" to "no.nav.syfo.BootstrapKt",
+                        "Main-Class" to "no.nav.syfo.ApplicationKt",
                         "Multi-Release" to "true",
                     ),
                 )
