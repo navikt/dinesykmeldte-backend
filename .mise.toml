@@ -1,0 +1,52 @@
+[tasks.docker-up]
+description = "Spin up dependency services using Docker Compose. Postgres, Kafka etc."
+run = '''
+docker-compose \
+  -f docker-compose.yml \
+  -f docker-compose.kafka.yml \
+  up \
+  db authserver texas broker kafka-ui \
+  -d
+'''
+
+[tasks.docker-down]
+description = "Tear down dependency services running in Docker Compose."
+run = '''
+docker-compose \
+  -f docker-compose.yml \
+  -f docker-compose.kafka.yml \
+  down
+'''
+
+[tasks.docker-build]
+description = "Build shadowJar and build docker image with gradle"
+run =  '''
+  ./gradlew shadowJar -x test
+  docker build -t esyfo/dine-sykmeldte:local .
+'''
+
+[tasks.docker-run-local-image]
+description = "Run build with gradle"
+run =  '''
+   docker run --network dinesykmeldte-backend_default esyfo/dine-sykmeldte:local
+'''
+
+[tasks.build]
+description = "Run build with gradle"
+run =  './gradlew build'
+
+[tasks.start]
+description = "Run app using gradle"
+run =  './gradlew run'
+
+[tasks.test]
+description = "Run tests with gradle"
+run =  './gradlew test'
+
+[tasks.lint]
+description = "Run check with gradle"
+run =  './gradlew ktlintCheck'
+
+[tasks.format]
+description = "Run ktlintFormat with gradle"
+run =  './gradlew ktlintFormat'
