@@ -28,9 +28,8 @@ fun Route.registerMineSykmeldteApi(mineSykmeldteService: MineSykmeldteService) {
             "Calling api path: api/minesykmeldt getting ${timedValue.value.size} sykmeldte, duration: ${timedValue.duration.inWholeMilliseconds} ms",
         )
         teamLogsLogger.info(
-            "Getting sykmeldte lederFnr: $lederFnr, requestId: $xRequestId, sykmeldte: ${timedValue.value.map {
-                it.narmestelederId
-            }}",
+            "Getting sykmeldte lederFnr: $lederFnr, requestId: $xRequestId, " +
+                "sykmeldte: ${timedValue.value.map { it.narmestelederId }}",
         )
         call.respond(timedValue.value)
     }

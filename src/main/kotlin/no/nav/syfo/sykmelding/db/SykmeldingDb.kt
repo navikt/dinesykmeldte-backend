@@ -192,10 +192,13 @@ WHERE pasient_fnr = ?
 
     fun deleteSykmeldt(fnr: String) {
         database.connection.use { connection ->
-            connection.prepareStatement("""delete from sykmeldt where pasient_fnr = ?""").use { ps ->
-                ps.setString(1, fnr)
-                ps.executeUpdate()
-            }
+            connection
+                .prepareStatement(
+                    """delete from sykmeldt where pasient_fnr = ?""",
+                ).use { ps ->
+                    ps.setString(1, fnr)
+                    ps.executeUpdate()
+                }
             connection.commit()
         }
     }

@@ -29,6 +29,9 @@ data class Environment(
         val authserver = getEnvVar("AUTH_SERVER", "localhost:6969")
         val dbserver = getEnvVar("DB_SERVER", "localhost:5432")
 
+        @Suppress("ktlint:standard:max-line-length")
+        val dbUrl = "jdbc:postgresql://$dbserver/dinesykmeldte-backend_dev?user=username&password=password&ssl=false"
+
         fun createLocal() =
             Environment(
                 cluster = "local",
@@ -40,7 +43,7 @@ data class Environment(
                 clientSecret = "clientSecret",
                 aadAccessTokenUrl = "http://localhost:8080/token",
                 electorPath = "dinesykmeldte-backend-local",
-                dbUrl = "jdbc:postgresql://$dbserver/dinesykmeldte-backend_dev?user=username&password=password&ssl=false",
+                dbUrl = dbUrl,
                 syketilfelleScope = "syketilfelle-backend",
                 texas = TexasEnvironment.createForLocal(),
             )

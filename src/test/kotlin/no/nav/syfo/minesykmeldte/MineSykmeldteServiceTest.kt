@@ -945,6 +945,16 @@ class MineSykmeldteServiceTest :
             context("getSykmelding") {
                 test("should map to aktivitetIkkeMulig") {
                     val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
+                    val aktivitetIkkeMulig =
+                        AktivitetIkkeMuligAGDTO(
+                            ArbeidsrelatertArsakDTO(
+                                "Trenger ståpult",
+                                listOf(
+                                    ArbeidsrelatertArsakTypeDTO
+                                        .MANGLENDE_TILRETTELEGGING,
+                                ),
+                            ),
+                        )
                     coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1") } returns
                         (
                             createSykmeldtDbModel() to
@@ -957,16 +967,7 @@ class MineSykmeldteServiceTest :
                                                 listOf(
                                                     createSykmeldingsperiode(
                                                         type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                                                        aktivitetIkkeMulig =
-                                                            AktivitetIkkeMuligAGDTO(
-                                                                ArbeidsrelatertArsakDTO(
-                                                                    "Trenger ståpult",
-                                                                    listOf(
-                                                                        ArbeidsrelatertArsakTypeDTO
-                                                                            .MANGLENDE_TILRETTELEGGING,
-                                                                    ),
-                                                                ),
-                                                            ),
+                                                        aktivitetIkkeMulig = aktivitetIkkeMulig,
                                                     ),
                                                 ),
                                         ),
@@ -1286,7 +1287,8 @@ class MineSykmeldteServiceTest :
                                                         sporsmalstekst =
                                                             "Hvor mye jobbet du totalt 20. mai - 5. juni 2020 hos 0102983875 sitt orgnavn?",
                                                         undertekst = "Undertekst til spørsmålet",
-                                                        svartype = Svartype.RADIO_GRUPPE_TIMER_PROSENT,
+                                                        svartype =
+                                                            Svartype.RADIO_GRUPPE_TIMER_PROSENT,
                                                         kriterieForVisningAvUndersporsmal = null,
                                                         svar =
                                                             listOf(

@@ -29,8 +29,8 @@ fun Route.registerDineSykmeldteApi(dineSykmeldteService: DineSykmeldteService) {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val narmesteLederfnr = principal.fnr
         teamLogsLogger.info(
-            "Mottak kall mot /api/dinesykmeldte/{narmestelederId} for narmesteLederFnr: $narmesteLederfnr " +
-                "og narmestelederId: $narmestelederId",
+            "Mottak kall mot /api/dinesykmeldte/{narmestelederId} for narmesteLederFnr: " +
+                "$narmesteLederfnr og narmestelederId: $narmestelederId",
         )
         when (val sykmeldt = dineSykmeldteService.getSykmeldt(narmestelederId, narmesteLederfnr)) {
             null -> {

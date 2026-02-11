@@ -9,9 +9,9 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
 import io.ktor.serialization.jackson.jackson
+import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.application.install
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder

@@ -7,7 +7,10 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.SslConfigs
-import org.apache.kafka.common.serialization.*
+import org.apache.kafka.common.serialization.Deserializer
+import org.apache.kafka.common.serialization.Serializer
+import org.apache.kafka.common.serialization.StringDeserializer
+import org.apache.kafka.common.serialization.StringSerializer
 import java.util.Properties
 import kotlin.reflect.KClass
 
@@ -15,7 +18,8 @@ class KafkaUtils {
     companion object {
         fun getKafkaConfig(clientId: String): Properties =
             Properties().also {
-                val kafkaEnv = if (isLocalEnv()) KafkaEnvironment.createLocal() else KafkaEnvironment()
+                val kafkaEnv =
+                    if (isLocalEnv()) KafkaEnvironment.createLocal() else KafkaEnvironment()
                 it[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = kafkaEnv.KAFKA_BROKERS
                 it[CommonClientConfigs.CLIENT_ID_CONFIG] = "${kafkaEnv.KAFKA_CLIENT_ID}-$clientId"
                 if (kafkaEnv.SSL) {
