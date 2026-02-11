@@ -1,11 +1,6 @@
 package no.nav.syfo.hendelser
 
 import io.kotest.core.spec.style.FunSpec
-import java.time.Clock
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.util.UUID
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.hendelser.kafka.model.DineSykmeldteHendelse
@@ -16,6 +11,11 @@ import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.TestDb
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
+import java.time.Clock
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.UUID
 
 class HendelserServiceTest :
     FunSpec({
@@ -76,7 +76,7 @@ class HendelserServiceTest :
                         utlopstidspunkt = null,
                         ferdigstilt = false,
                         ferdigstiltTimestamp = null,
-                        hendelseId = UUID.fromString(hendelseId)
+                        hendelseId = UUID.fromString(hendelseId),
                     ),
                 )
                 val dineSykmeldteHendelseFerdigstill =
@@ -111,7 +111,7 @@ class HendelserServiceTest :
                         utlopstidspunkt = null,
                         ferdigstilt = true,
                         ferdigstiltTimestamp = ferdigstiltTimestamp,
-                        hendelseId = UUID.fromString(hendelseId)
+                        hendelseId = UUID.fromString(hendelseId),
                     ),
                 )
                 val dineSykmeldteHendelseFerdigstill =

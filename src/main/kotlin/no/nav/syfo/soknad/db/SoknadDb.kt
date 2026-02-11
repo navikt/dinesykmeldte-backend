@@ -1,12 +1,13 @@
 package no.nav.syfo.soknad.db
 
+import no.nav.syfo.application.database.DatabaseInterface
 import java.sql.Connection
 import java.sql.Timestamp
 import java.time.LocalDate
-import no.nav.syfo.application.database.DatabaseInterface
 
-class SoknadDb(private val database: DatabaseInterface) {
-
+class SoknadDb(
+    private val database: DatabaseInterface,
+) {
     fun insertOrUpdate(soknadDbModel: SoknadDbModel) {
         database.connection.use { connection ->
             val fnr =
@@ -35,8 +36,7 @@ class SoknadDb(private val database: DatabaseInterface) {
                         tom = excluded.tom
                     ;
             """,
-                )
-                .use { preparedStatement ->
+                ).use { preparedStatement ->
                     preparedStatement.setString(1, soknadDbModel.soknadId)
                     preparedStatement.setString(2, soknadDbModel.sykmeldingId)
                     preparedStatement.setString(3, fnr)
@@ -46,7 +46,7 @@ class SoknadDb(private val database: DatabaseInterface) {
                     preparedStatement.setBoolean(7, soknadDbModel.lest)
                     preparedStatement.setTimestamp(
                         8,
-                        Timestamp.from(soknadDbModel.timestamp.toInstant())
+                        Timestamp.from(soknadDbModel.timestamp.toInstant()),
                     )
                     preparedStatement.setObject(9, soknadDbModel.tom)
                     preparedStatement.executeUpdate()
@@ -57,12 +57,12 @@ class SoknadDb(private val database: DatabaseInterface) {
     }
 
     private fun Connection.updateSistOppdatertForSykmeldt(fnr: String) {
-        this.prepareStatement(
+        this
+            .prepareStatement(
                 """
                 UPDATE sykmeldt SET sist_oppdatert = ? WHERE pasient_fnr = ?;
                 """,
-            )
-            .use {
+            ).use {
                 it.setObject(1, LocalDate.now())
                 it.setString(2, fnr)
                 it.executeUpdate()
@@ -76,8 +76,7 @@ class SoknadDb(private val database: DatabaseInterface) {
                     """
                 delete from soknad where soknad_id = ?;
             """,
-                )
-                .use { ps ->
+                ).use { ps ->
                     ps.setString(1, id)
                     ps.executeUpdate()
                 }
@@ -85,13 +84,13 @@ class SoknadDb(private val database: DatabaseInterface) {
         }
     }
 
-    private fun Connection.getFnr(sykmeldingId: String): String? {
-        return this.prepareStatement(
+    private fun Connection.getFnr(sykmeldingId: String): String? =
+        this
+            .prepareStatement(
                 """
             select pasient_fnr from sykmelding where sykmelding_id = ?;
             """,
-            )
-            .use { preparedStatement ->
+            ).use { preparedStatement ->
                 preparedStatement.setString(1, sykmeldingId)
                 preparedStatement.executeQuery().use {
                     when (it.next()) {
@@ -100,5 +99,4 @@ class SoknadDb(private val database: DatabaseInterface) {
                     }
                 }
             }
-    }
 }

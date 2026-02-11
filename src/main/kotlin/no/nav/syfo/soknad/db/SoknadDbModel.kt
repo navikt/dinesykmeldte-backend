@@ -1,10 +1,10 @@
 package no.nav.syfo.soknad.db
 
-import java.time.LocalDate
-import java.time.OffsetDateTime
 import no.nav.syfo.soknad.model.Soknad
 import no.nav.syfo.util.objectMapper
 import org.postgresql.util.PGobject
+import java.time.LocalDate
+import java.time.OffsetDateTime
 
 data class SoknadDbModel(
     val soknadId: String,

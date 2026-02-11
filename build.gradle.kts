@@ -19,7 +19,6 @@ val swaggerUiVersion = "5.31.0"
 val kotestVersion = "6.1.2"
 val googlePostgresVersion = "1.28.0"
 val googleOauthVersion = "1.39.0"
-val ktfmtVersion = "0.44"
 val kafkaVersion = "3.9.1"
 val koinVersion = "4.1.1"
 // Due to vulnerabilities
@@ -29,10 +28,10 @@ val commonsCompressVersion = "1.28.0"
 
 plugins {
     id("application")
-    id("com.diffplug.spotless") version "7.0.2"
     kotlin("jvm") version "2.2.21"
     id("com.gradleup.shadow") version "9.3.1"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
+    id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
 }
 
 application {
@@ -147,8 +146,6 @@ repositories {
             }
         }
 
-
-
         test {
             useJUnitPlatform {
             }
@@ -158,13 +155,8 @@ repositories {
                 exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
             }
         }
-
-        spotless {
-            kotlin { ktfmt(ktfmtVersion).kotlinlangStyle() }
-            check {
-                dependsOn("spotlessApply")
-            }
+        named("check") {
+            dependsOn("ktlintCheck")
         }
     }
-
 }

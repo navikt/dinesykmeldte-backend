@@ -20,15 +20,15 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import no.nav.syfo.azuread.AccessTokenClient
+import org.amshove.kluent.shouldBeEqualTo
 import java.net.ServerSocket
 import java.time.LocalDate
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertFailsWith
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
-import no.nav.syfo.azuread.AccessTokenClient
-import org.amshove.kluent.shouldBeEqualTo
 
 class SyfoSyketilfelleClientTest :
     FunSpec({
@@ -81,86 +81,85 @@ class SyfoSyketilfelleClientTest :
         val mockHttpServerUrl = "http://localhost:$mockHttpServerPort"
         val mockServer =
             embeddedServer(Netty, mockHttpServerPort) {
-                    install(ContentNegotiation) {
-                        jackson {
-                            registerKotlinModule()
-                            registerModule(JavaTimeModule())
-                            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                        }
+                install(ContentNegotiation) {
+                    jackson {
+                        registerKotlinModule()
+                        registerModule(JavaTimeModule())
+                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                     }
-                    routing {
-                        get("/api/v1/sykeforloep") {
-                            when (call.request.headers["fnr"]) {
-                                fnr3 -> {
-                                    delay(10_000)
-                                    call.respond(emptyList<Sykeforloep>())
-                                }
-                                fnr1 ->
-                                    call.respond(
-                                        listOf(
-                                            Sykeforloep(
-                                                oppfolgingsdato1,
-                                                listOf(
-                                                    SimpleSykmelding(
-                                                        UUID.randomUUID().toString(),
-                                                        oppfolgingsdato1,
-                                                        oppfolgingsdato1.plusWeeks(3),
-                                                    ),
-                                                ),
-                                            ),
-                                            Sykeforloep(
-                                                oppfolgingsdato2,
-                                                listOf(
-                                                    SimpleSykmelding(
-                                                        sykmeldingUUID.toString(),
-                                                        oppfolgingsdato2,
-                                                        oppfolgingsdato2.plusWeeks(4),
-                                                    ),
-                                                ),
-                                            ),
-                                            Sykeforloep(
-                                                oppfolgingsdato3,
-                                                listOf(
-                                                    SimpleSykmelding(
-                                                        UUID.randomUUID().toString(),
-                                                        oppfolgingsdato3,
-                                                        oppfolgingsdato3.plusWeeks(8),
-                                                    ),
-                                                ),
-                                            ),
-                                        ),
-                                    )
-                                fnr2 ->
-                                    call.respond(
-                                        listOf(
-                                            Sykeforloep(
-                                                oppfolgingsdato1,
-                                                listOf(
-                                                    SimpleSykmelding(
-                                                        UUID.randomUUID().toString(),
-                                                        oppfolgingsdato1,
-                                                        oppfolgingsdato1.plusWeeks(3),
-                                                    ),
-                                                ),
-                                            ),
-                                            Sykeforloep(
-                                                oppfolgingsdato3,
-                                                listOf(
-                                                    SimpleSykmelding(
-                                                        UUID.randomUUID().toString(),
-                                                        oppfolgingsdato3,
-                                                        oppfolgingsdato3.plusWeeks(8),
-                                                    ),
-                                                ),
-                                            ),
-                                        ),
-                                    )
+                }
+                routing {
+                    get("/api/v1/sykeforloep") {
+                        when (call.request.headers["fnr"]) {
+                            fnr3 -> {
+                                delay(10_000)
+                                call.respond(emptyList<Sykeforloep>())
                             }
+                            fnr1 ->
+                                call.respond(
+                                    listOf(
+                                        Sykeforloep(
+                                            oppfolgingsdato1,
+                                            listOf(
+                                                SimpleSykmelding(
+                                                    UUID.randomUUID().toString(),
+                                                    oppfolgingsdato1,
+                                                    oppfolgingsdato1.plusWeeks(3),
+                                                ),
+                                            ),
+                                        ),
+                                        Sykeforloep(
+                                            oppfolgingsdato2,
+                                            listOf(
+                                                SimpleSykmelding(
+                                                    sykmeldingUUID.toString(),
+                                                    oppfolgingsdato2,
+                                                    oppfolgingsdato2.plusWeeks(4),
+                                                ),
+                                            ),
+                                        ),
+                                        Sykeforloep(
+                                            oppfolgingsdato3,
+                                            listOf(
+                                                SimpleSykmelding(
+                                                    UUID.randomUUID().toString(),
+                                                    oppfolgingsdato3,
+                                                    oppfolgingsdato3.plusWeeks(8),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                                )
+                            fnr2 ->
+                                call.respond(
+                                    listOf(
+                                        Sykeforloep(
+                                            oppfolgingsdato1,
+                                            listOf(
+                                                SimpleSykmelding(
+                                                    UUID.randomUUID().toString(),
+                                                    oppfolgingsdato1,
+                                                    oppfolgingsdato1.plusWeeks(3),
+                                                ),
+                                            ),
+                                        ),
+                                        Sykeforloep(
+                                            oppfolgingsdato3,
+                                            listOf(
+                                                SimpleSykmelding(
+                                                    UUID.randomUUID().toString(),
+                                                    oppfolgingsdato3,
+                                                    oppfolgingsdato3.plusWeeks(8),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                                )
                         }
                     }
                 }
-                .start()
+            }.start()
 
         val syfoSyketilfelleClient =
             SyfoSyketilfelleClient(
@@ -187,7 +186,7 @@ class SyfoSyketilfelleClientTest :
                 assertFailsWith<SocketTimeoutException> {
                     syfoSyketilfelletSocketTimeoutClient.finnStartdato(
                         fnr3,
-                        sykmeldingUUID.toString()
+                        sykmeldingUUID.toString(),
                     )
                 }
             }

@@ -1,7 +1,7 @@
 package no.nav.syfo.pdl.service
 
-fun getTestData(): String {
-    return "{\n" +
+fun getTestData(): String =
+    "{\n" +
         "  \"data\": {\n" +
         "    \"person\": {\n" +
         "      \"navn\": [\n" +
@@ -27,10 +27,9 @@ fun getTestData(): String {
         "    \"code\": \"ok\"\n" +
         "  }\n" +
         "}"
-}
 
-fun getTestDataUtenNavn(): String {
-    return "{\n" +
+fun getTestDataUtenNavn(): String =
+    "{\n" +
         "  \"data\": {\n" +
         "    \"person\": {\n" +
         "      \"navn\": []\n" +
@@ -50,10 +49,9 @@ fun getTestDataUtenNavn(): String {
         "    \"code\": \"Feil\"\n" +
         "  }\n" +
         "}"
-}
 
-fun getTestDataUtenAktorId(): String {
-    return "{\n" +
+fun getTestDataUtenAktorId(): String =
+    "{\n" +
         "  \"data\": {\n" +
         "    \"person\": {\n" +
         "      \"navn\": [\n" +
@@ -75,10 +73,9 @@ fun getTestDataUtenAktorId(): String {
         "    \"code\": \"Feil\"\n" +
         "  }\n" +
         "}"
-}
 
-fun getErrorResponse(): String {
-    return "{\n" +
+fun getErrorResponse(): String =
+    "{\n" +
         "  \"errors\": [\n" +
         "    {\n" +
         "      \"message\": \"Ikke tilgang til å se person\",\n" +
@@ -101,4 +98,3 @@ fun getErrorResponse(): String {
         "    \"hentPerson\": null\n" +
         "  }\n" +
         "}"
-}

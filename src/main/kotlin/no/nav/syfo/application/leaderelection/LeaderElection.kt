@@ -3,10 +3,10 @@ package no.nav.syfo.application.leaderelection
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import java.net.InetAddress
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.util.logger
+import java.net.InetAddress
 
 class LeaderElection(
     private val httpClient: HttpClient,
@@ -33,5 +33,7 @@ class LeaderElection(
             else -> "http://$url"
         }
 
-    private data class Leader(val name: String)
+    private data class Leader(
+        val name: String,
+    )
 }

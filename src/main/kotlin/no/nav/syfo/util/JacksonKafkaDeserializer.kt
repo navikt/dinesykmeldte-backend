@@ -5,10 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import kotlin.reflect.KClass
 import org.apache.kafka.common.serialization.Deserializer
+import kotlin.reflect.KClass
 
-class JacksonKafkaDeserializer<T : Any>(private val type: KClass<T>) : Deserializer<T> {
+class JacksonKafkaDeserializer<T : Any>(
+    private val type: KClass<T>,
+) : Deserializer<T> {
     private val objectMapper: ObjectMapper =
         jacksonObjectMapper().apply {
             registerModule(JavaTimeModule())
@@ -17,11 +19,15 @@ class JacksonKafkaDeserializer<T : Any>(private val type: KClass<T>) : Deseriali
             configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
         }
 
-    override fun configure(configs: MutableMap<String, *>, isKey: Boolean) {}
+    override fun configure(
+        configs: MutableMap<String, *>,
+        isKey: Boolean,
+    ) {}
 
-    override fun deserialize(topic: String?, data: ByteArray): T {
-        return objectMapper.readValue(data, type.java)
-    }
+    override fun deserialize(
+        topic: String?,
+        data: ByteArray,
+    ): T = objectMapper.readValue(data, type.java)
 
     override fun close() {}
 }

@@ -3,17 +3,20 @@ package no.nav.syfo.application.database
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import com.zaxxer.hikari.pool.HikariPool
+import no.nav.syfo.Environment
+import no.nav.syfo.util.logger
+import org.flywaydb.core.Flyway
 import java.net.ConnectException
 import java.net.SocketException
 import java.sql.Connection
 import java.sql.ResultSet
 import javax.sql.DataSource
-import no.nav.syfo.Environment
-import no.nav.syfo.util.logger
-import org.flywaydb.core.Flyway
 
-class Database(private val env: Environment, retries: Long = 30, sleepTime: Long = 1_000) :
-    DatabaseInterface {
+class Database(
+    private val env: Environment,
+    retries: Long = 30,
+    sleepTime: Long = 1_000,
+) : DatabaseInterface {
     private val dataSource: HikariDataSource
     override val connection: Connection
         get() = dataSource.connection

@@ -10,10 +10,10 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.Parameters
-import java.time.Instant
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import no.nav.syfo.util.logger
+import java.time.Instant
 
 class AccessTokenClient(
     private val aadAccessTokenUrl: String,
@@ -23,12 +23,14 @@ class AccessTokenClient(
 ) {
     private val mutex = Mutex()
     private val log = logger()
+
     @Volatile private var tokenMap = HashMap<String, AadAccessTokenMedExpiry>()
 
     suspend fun getAccessToken(scope: String): String {
         val omToMinutter = Instant.now().plusSeconds(120L)
         return mutex.withLock {
-            (tokenMap[scope]?.takeUnless { it.expiresOn.isBefore(omToMinutter) }
+            (
+                tokenMap[scope]?.takeUnless { it.expiresOn.isBefore(omToMinutter) }
                     ?: run {
                         log.debug("Henter nytt token fra Azure AD")
                         val response: AadAccessTokenV2 =
@@ -46,8 +48,7 @@ class AccessTokenClient(
                                             },
                                         ),
                                     )
-                                }
-                                .body()
+                                }.body()
                         val tokenMedExpiry =
                             AadAccessTokenMedExpiry(
                                 access_token = response.access_token,
@@ -57,8 +58,8 @@ class AccessTokenClient(
                         tokenMap[scope] = tokenMedExpiry
                         log.debug("Har hentet accesstoken")
                         return@run tokenMedExpiry
-                    })
-                .access_token
+                    }
+            ).access_token
         }
     }
 }

@@ -16,14 +16,14 @@ data class FlexSoknad(
     val sendtNav: LocalDateTime?,
     val sendtArbeidsgiver: LocalDateTime?,
     val sporsmal: List<FlexSporsmal>?,
-    val soknadsperioder: List<FlexSoknadsperiode>?
+    val soknadsperioder: List<FlexSoknadsperiode>?,
 )
 
 data class FlexSoknadsperiode(
     val fom: LocalDate,
     val tom: LocalDate,
     val sykmeldingsgrad: Int?,
-    val sykmeldingstype: FlexSykmeldingstype?
+    val sykmeldingstype: FlexSykmeldingstype?,
 )
 
 enum class FlexSykmeldingstype {
@@ -31,7 +31,7 @@ enum class FlexSykmeldingstype {
     GRADERT,
     BEHANDLINGSDAGER,
     AVVENTENDE,
-    REISETILSKUDD
+    REISETILSKUDD,
 }
 
 data class FlexSporsmal(
@@ -44,13 +44,13 @@ data class FlexSporsmal(
     val kriterieForVisningAvUndersporsmal: FlexVisningskriterium?,
     val svartype: FlexSvartype?,
     val svar: List<FlexSvar>?,
-    val undersporsmal: List<FlexSporsmal>?
+    val undersporsmal: List<FlexSporsmal>?,
 )
 
 enum class FlexVisningskriterium {
     NEI,
     JA,
-    CHECKED
+    CHECKED,
 }
 
 enum class FlexSvartype {
@@ -81,10 +81,12 @@ enum class FlexSvartype {
     DATOER,
     BELOP,
     KILOMETER,
-    AAR_MAANED
+    AAR_MAANED,
 }
 
-data class FlexSvar(val verdi: String?)
+data class FlexSvar(
+    val verdi: String?,
+)
 
 enum class FlexSoknadStatus {
     NY,
@@ -96,4 +98,6 @@ enum class FlexSoknadStatus {
     UTGAATT,
 }
 
-data class FlexArbeidsgiver(val orgnummer: String)
+data class FlexArbeidsgiver(
+    val orgnummer: String,
+)

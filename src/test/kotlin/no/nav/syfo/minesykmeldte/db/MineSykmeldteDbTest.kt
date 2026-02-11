@@ -2,11 +2,6 @@ package no.nav.syfo.minesykmeldte.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.util.UUID
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.model.Soknad
@@ -21,6 +16,11 @@ import no.nav.syfo.util.objectMapper
 import no.nav.syfo.util.toSoknadDbModel
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.UUID
 
 class MineSykmeldteDbTest :
     FunSpec({
@@ -58,9 +58,9 @@ class MineSykmeldteDbTest :
                 TestDb.database.insertOrUpdate(
                     createSykmeldingDbModel(
                         pasientFnr = sykmeldtFnr2,
-                        sykmeldingId = UUID.randomUUID().toString()
+                        sykmeldingId = UUID.randomUUID().toString(),
                     ),
-                    createSykmeldtDbModel(sykmeldtFnr2)
+                    createSykmeldtDbModel(sykmeldtFnr2),
                 )
 
                 val allSykmeldte =
@@ -75,7 +75,7 @@ class MineSykmeldteDbTest :
                 val secondSykmeldt =
                     minesykmeldteDb.getMineSykmeldteWithoutSoknad(
                         narmestelederFnr,
-                        narmestelederId2
+                        narmestelederId2,
                     )
                 secondSykmeldt.single().sykmeldtFnr shouldBeEqualTo sykmeldtFnr2
             }
@@ -112,7 +112,7 @@ class MineSykmeldteDbTest :
                 val sykmeldingId = UUID.randomUUID().toString()
                 TestDb.database.insertOrUpdate(
                     createSykmeldingDbModel(sykmeldingId),
-                    createSykmeldtDbModel()
+                    createSykmeldtDbModel(),
                 )
 
                 TestDb.database.insertOrUpdate(getSoknad(sykmeldingId = sykmeldingId))
@@ -135,7 +135,7 @@ class MineSykmeldteDbTest :
                     val sykmeldingId = UUID.randomUUID().toString()
                     TestDb.database.insertOrUpdate(
                         createSykmeldingDbModel(sykmeldingId),
-                        createSykmeldtDbModel()
+                        createSykmeldtDbModel(),
                     )
 
                     TestDb.database.insertOrUpdate(getSoknad(sykmeldingId = sykmeldingId))
@@ -143,7 +143,7 @@ class MineSykmeldteDbTest :
                 val sykmeldingId = UUID.randomUUID().toString()
                 TestDb.database.insertOrUpdate(
                     createSykmeldingDbModel(sykmeldingId),
-                    createSykmeldtDbModel()
+                    createSykmeldtDbModel(),
                 )
 
                 val sykmeldtDbModel = minesykmeldteDb.getMineSykmeldte("01987654321")
@@ -161,7 +161,7 @@ class MineSykmeldteDbTest :
                 val sykmeldingId = UUID.randomUUID().toString()
                 TestDb.database.insertOrUpdate(
                     createSykmeldingDbModel(sykmeldingId),
-                    createSykmeldtDbModel()
+                    createSykmeldtDbModel(),
                 )
 
                 val sykmelding =
@@ -179,11 +179,11 @@ class MineSykmeldteDbTest :
                 val sykmeldingId = UUID.randomUUID().toString()
                 TestDb.database.insertOrUpdate(
                     createSykmeldingDbModel(sykmeldingId),
-                    createSykmeldtDbModel()
+                    createSykmeldtDbModel(),
                 )
 
                 TestDb.database.insertOrUpdate(
-                    getSoknad(sykmeldingId = sykmeldingId, fnr = "11223344556")
+                    getSoknad(sykmeldingId = sykmeldingId, fnr = "11223344556"),
                 )
 
                 val sykmeldtDbModel = minesykmeldteDb.getMineSykmeldte("01987654321")
@@ -200,7 +200,7 @@ class MineSykmeldteDbTest :
                     createSykmeldingDbModel(
                         "sykmelding-id-1",
                         pasientFnr = "pasient-1",
-                        orgnummer = "kul-org"
+                        orgnummer = "kul-org",
                     )
                 TestDb.database.insertOrUpdate(
                     id = UUID.randomUUID().toString(),
@@ -225,7 +225,7 @@ class MineSykmeldteDbTest :
                     createSykmeldingDbModel(
                         "sykmelding-id-1",
                         pasientFnr = "pasient-1",
-                        orgnummer = "kul-org"
+                        orgnummer = "kul-org",
                     )
                 TestDb.database.insertOrUpdate(
                     UUID.randomUUID().toString(),
@@ -248,7 +248,7 @@ class MineSykmeldteDbTest :
                     createSykmeldingDbModel(
                         "sykmelding-id-1",
                         pasientFnr = "pasient-1",
-                        orgnummer = "kul-org"
+                        orgnummer = "kul-org",
                     )
                 val soknad =
                     createSoknadDbModel(
@@ -279,7 +279,7 @@ class MineSykmeldteDbTest :
                     createSykmeldingDbModel(
                         "sykmelding-id-1",
                         pasientFnr = "pasient-1",
-                        orgnummer = "kul-org"
+                        orgnummer = "kul-org",
                     )
                 val soknad =
                     createSoknadDbModel(
@@ -309,7 +309,7 @@ class MineSykmeldteDbTest :
                     createSykmeldingDbModel(
                         "sykmelding-id-1",
                         pasientFnr = "pasient-1",
-                        orgnummer = "kul-org"
+                        orgnummer = "kul-org",
                     )
                 TestDb.database.insertOrUpdate(
                     UUID.randomUUID().toString(),
@@ -347,7 +347,7 @@ class MineSykmeldteDbTest :
                     createSykmeldingDbModel(
                         "sykmelding-id-1",
                         pasientFnr = "pasient-1",
-                        orgnummer = "kul-org"
+                        orgnummer = "kul-org",
                     )
                 TestDb.database.insertOrUpdate(
                     UUID.randomUUID().toString(),
@@ -388,7 +388,7 @@ class MineSykmeldteDbTest :
                     createSykmeldingDbModel(
                         "sykmelding-id-1",
                         pasientFnr = "pasient-1",
-                        orgnummer = "kul-org"
+                        orgnummer = "kul-org",
                     )
                 TestDb.database.insertOrUpdate(
                     UUID.randomUUID().toString(),
@@ -425,27 +425,27 @@ class MineSykmeldteDbTest :
                     createSykmeldingDbModel(
                         UUID.randomUUID().toString(),
                         pasientFnr = "1",
-                        orgnummer = "1"
+                        orgnummer = "1",
                     )
                 val sykmelding2 =
                     createSykmeldingDbModel(
                         UUID.randomUUID().toString(),
                         pasientFnr = "2",
-                        orgnummer = "2"
+                        orgnummer = "2",
                     )
                 val soknad =
                     createSoknadDbModel(
                         UUID.randomUUID().toString(),
                         pasientFnr = "1",
                         sykmeldingId = sykmelding.sykmeldingId,
-                        orgnummer = "1"
+                        orgnummer = "1",
                     )
                 val soknad2 =
                     createSoknadDbModel(
                         UUID.randomUUID().toString(),
                         pasientFnr = "2",
                         sykmeldingId = sykmelding2.sykmeldingId,
-                        orgnummer = "2"
+                        orgnummer = "2",
                     )
 
                 TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
@@ -475,15 +475,15 @@ class MineSykmeldteDbTest :
                     createSykmeldingDbModel(
                         UUID.randomUUID().toString(),
                         pasientFnr = "1",
-                        orgnummer = "orgnummer"
+                        orgnummer = "orgnummer",
                     )
                 TestDb.database.insertOrUpdate(
                     createSoknadDbModel(
                         UUID.randomUUID().toString(),
                         sykmelding.sykmeldingId,
                         "1",
-                        orgnummer = "orgnummer"
-                    )
+                        orgnummer = "orgnummer",
+                    ),
                 )
                 TestDb.database.insertOrUpdate(sykmelding, createSykmeldtDbModel("1"))
                 TestDb.database.insertOrUpdate(
@@ -517,24 +517,20 @@ fun getSoknad(
     sykmeldingId: String = UUID.randomUUID().toString(),
     soknadId: String = UUID.randomUUID().toString(),
     fnr: String = "12345678910",
-): SoknadDbModel {
-    return createSykepengesoknadDto(soknadId, sykmeldingId, fnr).toSoknadDbModel()
-}
+): SoknadDbModel = createSykepengesoknadDto(soknadId, sykmeldingId, fnr).toSoknadDbModel()
 
 fun createSykepengesoknadDto(
     soknadId: String,
     sykmeldingId: String,
     fnr: String = "12345678910",
-) =
-    objectMapper
-        .readValue<Soknad>(
-            getFileAsString("src/test/resources/soknad.json"),
-        )
-        .copy(
-            id = soknadId,
-            fnr = fnr,
-            fom = LocalDate.now().minusMonths(1),
-            tom = LocalDate.now().minusWeeks(2),
-            sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
-            sykmeldingId = sykmeldingId,
-        )
+) = objectMapper
+    .readValue<Soknad>(
+        getFileAsString("src/test/resources/soknad.json"),
+    ).copy(
+        id = soknadId,
+        fnr = fnr,
+        fom = LocalDate.now().minusMonths(1),
+        tom = LocalDate.now().minusWeeks(2),
+        sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
+        sykmeldingId = sykmeldingId,
+    )

@@ -1,11 +1,6 @@
 package no.nav.syfo.minesykmeldte.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.sql.ResultSet
-import java.sql.Timestamp
-import java.time.Instant
-import java.time.ZoneOffset
-import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
@@ -15,17 +10,23 @@ import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.objectMapper
+import java.sql.ResultSet
+import java.sql.Timestamp
+import java.time.Instant
+import java.time.ZoneOffset
+import java.util.UUID
 
 data class SykmeldingAndSoknadIds(
     val sykmeldingIds: List<String>,
     val soknadIds: List<String>,
 )
 
-class MineSykmeldteDb(private val database: DatabaseInterface) {
-
+class MineSykmeldteDb(
+    private val database: DatabaseInterface,
+) {
     suspend fun getMineSykmeldteWithoutSoknad(
         lederFnr: String,
-        narmestelederId: String?
+        narmestelederId: String?,
     ): List<MinSykmeldtDbModel> =
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
@@ -46,8 +47,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                         inner JOIN sykmeldt AS s ON s.pasient_fnr = nl.pasient_fnr
                         inner join sykmelding AS sm ON sm.pasient_fnr = nl.pasient_fnr AND sm.orgnummer = nl.orgnummer
                     WHERE nl.leder_fnr = ? ${if (narmestelederId != null) " AND nl.narmeste_leder_id = ?" else "" }
-                """
-                        .trimIndent()
+                    """.trimIndent()
 
                 connection.prepareStatement(query).use { ps ->
                     ps.setString(1, lederFnr)
@@ -83,8 +83,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                     left join soknad as sk on sk.sykmelding_id = sm.sykmelding_id AND sk.pasient_fnr = sm.pasient_fnr
                 WHERE nl.leder_fnr = ?;
                 """,
-                    )
-                    .use { ps ->
+                    ).use { ps ->
                         ps.setString(1, lederFnr)
                         ps.executeQuery().toList { toMinSykmeldtDbModel() }
                     }
@@ -93,7 +92,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
 
     suspend fun getSykmelding(
         sykmeldingId: String,
-        lederFnr: String
+        lederFnr: String,
     ): Pair<SykmeldtDbModel, SykmeldingDbModel>? =
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
@@ -106,8 +105,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                     INNER JOIN sykmeldt sm ON narmesteleder.pasient_fnr = sm.pasient_fnr
                 WHERE s.sykmelding_id = ? AND narmesteleder.leder_fnr = ?
             """,
-                    )
-                    .use { ps ->
+                    ).use { ps ->
                         ps.setString(1, sykmeldingId)
                         ps.setString(2, lederFnr)
                         ps.executeQuery().toSykmeldtSykmelding()
@@ -117,7 +115,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
 
     suspend fun getSoknad(
         soknadId: String,
-        lederFnr: String
+        lederFnr: String,
     ): Pair<SykmeldtDbModel, SoknadDbModel>? =
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
@@ -142,8 +140,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
             WHERE s.soknad_id = ?
               AND n.leder_fnr = ?
         """,
-                    )
-                    .use { ps ->
+                    ).use { ps ->
                         ps.setString(1, soknadId)
                         ps.setString(2, lederFnr)
                         ps.executeQuery().toSykmeldtSoknad()
@@ -172,8 +169,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
            WHERE ferdigstilt = false and (utlopstidspunkt > ? or utlopstidspunkt is null)
            and n.leder_fnr = ?
         """,
-                    )
-                    .use { ps ->
+                    ).use { ps ->
                         ps.setTimestamp(1, Timestamp.from(Instant.now()))
                         ps.setString(2, lederFnr)
                         ps.executeQuery().toList { toHendelseDbModels() }
@@ -181,7 +177,10 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
             }
         }
 
-    suspend fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): List<String> =
+    suspend fun markSykmeldingRead(
+        sykmeldingId: String,
+        lederFnr: String,
+    ): List<String> =
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
                 val updated =
@@ -195,8 +194,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 AND narmesteleder.leder_fnr = ?
                 returning sykmelding.sykmelding_id;
             """,
-                        )
-                        .use { ps ->
+                        ).use { ps ->
                             ps.setString(1, sykmeldingId)
                             ps.setString(2, lederFnr)
                             ps.executeQuery().toList { getString("sykmelding_id") }
@@ -206,7 +204,10 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
             }
         }
 
-    suspend fun markSoknadRead(soknadId: String, lederFnr: String): List<String> =
+    suspend fun markSoknadRead(
+        soknadId: String,
+        lederFnr: String,
+    ): List<String> =
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
                 val updated =
@@ -220,8 +221,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 AND narmesteleder.leder_fnr = ?
                 returning soknad.soknad_id
             """,
-                        )
-                        .use { ps ->
+                        ).use { ps ->
                             ps.setString(1, soknadId)
                             ps.setString(2, lederFnr)
                             ps.executeQuery().toList { getString("soknad_id") }
@@ -231,7 +231,10 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
             }
         }
 
-    suspend fun markHendelseRead(hendelseId: UUID, lederFnr: String): List<String> =
+    suspend fun markHendelseRead(
+        hendelseId: UUID,
+        lederFnr: String,
+    ): List<String> =
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
                 val updated =
@@ -245,8 +248,7 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 AND narmesteleder.leder_fnr = ?
                 returning hendelser.hendelse_id
             """,
-                        )
-                        .use { ps ->
+                        ).use { ps ->
                             ps.setTimestamp(1, Timestamp.from(Instant.now()))
                             ps.setObject(2, hendelseId)
                             ps.setString(3, lederFnr)
@@ -257,20 +259,18 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
             }
         }
 
-    suspend fun markAllSykmeldingAndSoknadAsRead(lederFnr: String): SykmeldingAndSoknadIds {
-        return withContext(Dispatchers.IO) {
+    suspend fun markAllSykmeldingAndSoknadAsRead(lederFnr: String): SykmeldingAndSoknadIds =
+        withContext(Dispatchers.IO) {
             database.connection.use { connection ->
                 val sykmeldingIds =
                     connection
                         .prepareStatement(
                             """
-                     update sykmelding s set lest = TRUE 
-                from narmesteleder nl where s.pasient_fnr = nl.pasient_fnr and nl.leder_fnr = ? returning s.sykmelding_id;
+                                 update sykmelding s set lest = TRUE 
+                            from narmesteleder nl where s.pasient_fnr = nl.pasient_fnr and nl.leder_fnr = ? returning s.sykmelding_id;
 
-                """
-                                .trimIndent()
-                        )
-                        .use { ps ->
+                            """.trimIndent(),
+                        ).use { ps ->
                             ps.setString(1, lederFnr)
                             ps.executeQuery().toList { getString("sykmelding_id") }
                         }
@@ -278,12 +278,10 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                     connection
                         .prepareStatement(
                             """
-                update soknad s set lest = TRUE
-                from narmesteleder nl where s.pasient_fnr = nl.pasient_fnr and nl.leder_fnr = ? returning s.soknad_id;
-                 """
-                                .trimIndent()
-                        )
-                        .use { ps ->
+                            update soknad s set lest = TRUE
+                            from narmesteleder nl where s.pasient_fnr = nl.pasient_fnr and nl.leder_fnr = ? returning s.soknad_id;
+                            """.trimIndent(),
+                        ).use { ps ->
                             ps.setString(1, lederFnr)
                             ps.executeQuery().toList { getString("soknad_id") }
                         }
@@ -295,7 +293,6 @@ class MineSykmeldteDb(private val database: DatabaseInterface) {
                 )
             }
         }
-    }
 }
 
 private fun ResultSet.toHendelseDbModels() =
@@ -321,7 +318,7 @@ private fun ResultSet.toSykmeldtSoknad(): Pair<SykmeldtDbModel, SoknadDbModel>? 
                 pasientNavn = getString("pasient_navn"),
                 startdatoSykefravaer = getDate("startdato_sykefravaer").toLocalDate(),
                 latestTom = getDate("latest_tom").toLocalDate(),
-                sistOppdatert = null
+                sistOppdatert = null,
             ) to
                 SoknadDbModel(
                     soknadId = getString("soknad_id"),
@@ -349,8 +346,11 @@ private fun ResultSet.toMinSykmeldtDbModel(withSoknad: Boolean = true): MinSykme
         sykmelding = objectMapper.readValue(getString("sykmelding")),
         lestSykmelding = getBoolean("sykmelding_lest"),
         soknad =
-            if (withSoknad) getString("sykepengesoknad")?.let { objectMapper.readValue(it) }
-            else null,
+            if (withSoknad) {
+                getString("sykepengesoknad")?.let { objectMapper.readValue(it) }
+            } else {
+                null
+            },
         lestSoknad = if (withSoknad) getBoolean("soknad_lest") else true,
         sendtTilArbeidsgiverDato =
             getTimestamp("sendt_til_arbeidsgiver_dato")?.toInstant()?.atOffset(ZoneOffset.UTC),

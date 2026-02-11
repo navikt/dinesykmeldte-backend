@@ -16,7 +16,6 @@ import no.nav.syfo.util.logger
 private val log = logger("Authentication")
 
 fun Application.setupAuth(config: AuthConfiguration) {
-
     install(Authentication) {
         jwt(name = "tokenx") {
             authHeader {
@@ -31,7 +30,8 @@ fun Application.setupAuth(config: AuthConfiguration) {
                     harDineSykmeldteBackendAudience(
                         credentials,
                         config.clientIdTokenX,
-                    ) && erNiva4(credentials) -> {
+                    ) &&
+                        erNiva4(credentials) -> {
                         val principal = JWTPrincipal(credentials.payload)
                         BrukerPrincipal(
                             fnr = finnFnrFraToken(principal),
@@ -47,10 +47,13 @@ fun Application.setupAuth(config: AuthConfiguration) {
 
 fun ApplicationCall.getToken(): String? = request.header("Authorization")?.removePrefix("Bearer ")
 
-fun finnFnrFraToken(principal: JWTPrincipal): String {
-    return if (
+fun finnFnrFraToken(principal: JWTPrincipal): String =
+    if (
         principal.payload.getClaim("pid") != null &&
-            !principal.payload.getClaim("pid").asString().isNullOrEmpty()
+        !principal.payload
+            .getClaim("pid")
+            .asString()
+            .isNullOrEmpty()
     ) {
         log.debug("Bruker fnr fra pid-claim")
         principal.payload.getClaim("pid").asString()
@@ -58,7 +61,6 @@ fun finnFnrFraToken(principal: JWTPrincipal): String {
         log.debug("Bruker fnr fra subject")
         principal.payload.subject
     }
-}
 
 fun unauthorized(credentials: JWTCredential): Unit? {
     log.warn(
@@ -69,13 +71,13 @@ fun unauthorized(credentials: JWTCredential): Unit? {
     return null
 }
 
-fun harDineSykmeldteBackendAudience(credentials: JWTCredential, clientId: String): Boolean {
-    return credentials.payload.audience.contains(clientId)
-}
+fun harDineSykmeldteBackendAudience(
+    credentials: JWTCredential,
+    clientId: String,
+): Boolean = credentials.payload.audience.contains(clientId)
 
-fun erNiva4(credentials: JWTCredential): Boolean {
-    return "Level4" == credentials.payload.getClaim("acr").asString()
-}
+fun erNiva4(credentials: JWTCredential): Boolean =
+    "Level4" == credentials.payload.getClaim("acr").asString()
 
 data class BrukerPrincipal(
     val fnr: String,

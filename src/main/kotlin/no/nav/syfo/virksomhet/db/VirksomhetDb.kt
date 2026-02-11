@@ -1,10 +1,10 @@
 package no.nav.syfo.virksomhet.db
 
-import java.sql.ResultSet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
+import java.sql.ResultSet
 
 class VirksomhetDb(
     private val database: DatabaseInterface,
@@ -15,15 +15,13 @@ class VirksomhetDb(
                 connection
                     .prepareStatement(
                         """
-                SELECT s.orgnavn, s.orgnummer
-                FROM sykmelding s
-                JOIN narmesteleder n ON s.orgnummer = n.orgnummer and s.pasient_fnr = n.pasient_fnr
-                WHERE n.leder_fnr = ?
-                GROUP BY s.orgnavn, s.orgnummer
-                """
-                            .trimIndent(),
-                    )
-                    .use { ps ->
+                        SELECT s.orgnavn, s.orgnummer
+                        FROM sykmelding s
+                        JOIN narmesteleder n ON s.orgnummer = n.orgnummer and s.pasient_fnr = n.pasient_fnr
+                        WHERE n.leder_fnr = ?
+                        GROUP BY s.orgnavn, s.orgnummer
+                        """.trimIndent(),
+                    ).use { ps ->
                         ps.setString(1, lederFnr)
                         ps.executeQuery().toList { toVirksomhetDbModel() }
                     }

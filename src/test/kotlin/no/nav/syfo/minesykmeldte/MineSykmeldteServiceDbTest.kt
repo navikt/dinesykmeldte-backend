@@ -1,9 +1,6 @@
 package no.nav.syfo.minesykmeldte
 
 import io.kotest.core.spec.style.FunSpec
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.util.UUID
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.getSoknad
 import no.nav.syfo.util.TestDb
@@ -11,6 +8,9 @@ import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
 import no.nav.syfo.util.insertOrUpdate
 import org.amshove.kluent.shouldBeEqualTo
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.UUID
 
 class MineSykmeldteServiceDbTest :
     FunSpec({
@@ -62,7 +62,7 @@ class MineSykmeldteServiceDbTest :
             }
 
             test(
-                "Bruker orgnavn med sendtTilArbeidsgiverdato hvis orgnavn er forskjellig og sendt-dato mangler"
+                "Bruker orgnavn med sendtTilArbeidsgiverdato hvis orgnavn er forskjellig og sendt-dato mangler",
             ) {
                 TestDb.database.insertOrUpdate(
                     id = UUID.randomUUID().toString(),

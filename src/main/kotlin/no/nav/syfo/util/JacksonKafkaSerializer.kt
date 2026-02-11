@@ -8,10 +8,12 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.apache.kafka.common.serialization.Serializer
 
 class JacksonKafkaSerializer<T : Any> : Serializer<T> {
-
     private val objectMapper: ObjectMapper = ObjectMapper()
 
-    override fun configure(configs: MutableMap<String, *>, isKey: Boolean) {
+    override fun configure(
+        configs: MutableMap<String, *>,
+        isKey: Boolean,
+    ) {
         objectMapper.apply {
             registerKotlinModule()
             registerModule(JavaTimeModule())
@@ -21,8 +23,10 @@ class JacksonKafkaSerializer<T : Any> : Serializer<T> {
         }
     }
 
-    override fun serialize(topic: String?, data: T): ByteArray =
-        objectMapper.writeValueAsBytes(data)
+    override fun serialize(
+        topic: String?,
+        data: T,
+    ): ByteArray = objectMapper.writeValueAsBytes(data)
 
     override fun close() {}
 }

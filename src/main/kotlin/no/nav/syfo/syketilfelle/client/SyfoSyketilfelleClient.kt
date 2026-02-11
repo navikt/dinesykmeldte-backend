@@ -5,10 +5,11 @@ import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
-import io.ktor.http.*
-import java.time.LocalDate
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.util.logger
+import java.time.LocalDate
 
 class SyfoSyketilfelleClient(
     private val syketilfelleEndpointURL: String,
@@ -18,7 +19,10 @@ class SyfoSyketilfelleClient(
 ) {
     private val log = logger()
 
-    suspend fun finnStartdato(fnr: String, sykmeldingId: String): LocalDate {
+    suspend fun finnStartdato(
+        fnr: String,
+        sykmeldingId: String,
+    ): LocalDate {
         val sykeforloep = hentSykeforloep(fnr)
         val aktueltSykeforloep =
             sykeforloep.firstOrNull {
@@ -28,7 +32,7 @@ class SyfoSyketilfelleClient(
         if (aktueltSykeforloep == null) {
             log.error("Fant ikke sykeforløp for sykmelding med id $sykmeldingId")
             throw SyketilfelleNotFoundException(
-                "Fant ikke sykeforløp for sykmelding med id $sykmeldingId"
+                "Fant ikke sykeforløp for sykmelding med id $sykmeldingId",
             )
         } else {
             return aktueltSykeforloep.oppfolgingsdato
@@ -38,7 +42,7 @@ class SyfoSyketilfelleClient(
     private suspend fun hentSykeforloep(fnr: String): List<Sykeforloep> {
         val response =
             httpClient.get(
-                "$syketilfelleEndpointURL/api/v1/sykeforloep?inkluderPapirsykmelding=true"
+                "$syketilfelleEndpointURL/api/v1/sykeforloep?inkluderPapirsykmelding=true",
             ) {
                 accept(ContentType.Application.Json)
                 val token = accessTokenClient.getAccessToken(syketilfelleScope)
@@ -65,4 +69,6 @@ data class SimpleSykmelding(
     val tom: LocalDate,
 )
 
-class SyketilfelleNotFoundException(override val message: String?) : Exception(message)
+class SyketilfelleNotFoundException(
+    override val message: String?,
+) : Exception(message)

@@ -1,13 +1,13 @@
 package no.nav.syfo.virksomhet.db
 
 import io.kotest.core.spec.style.FunSpec
-import java.util.UUID
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
 import no.nav.syfo.util.insertOrUpdate
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.shouldHaveSize
+import java.util.UUID
 
 object VirksomhetDbTest :
     FunSpec({

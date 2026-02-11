@@ -1,8 +1,8 @@
 package no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver
 
-import java.time.LocalDate
 import no.nav.syfo.sykmelding.model.sykmelding.model.GradertDTO
 import no.nav.syfo.sykmelding.model.sykmelding.model.PeriodetypeDTO
+import java.time.LocalDate
 
 data class SykmeldingsperiodeAGDTO(
     val fom: LocalDate,
@@ -12,5 +12,5 @@ data class SykmeldingsperiodeAGDTO(
     val innspillTilArbeidsgiver: String?,
     val type: PeriodetypeDTO,
     val aktivitetIkkeMulig: AktivitetIkkeMuligAGDTO?,
-    val reisetilskudd: Boolean
+    val reisetilskudd: Boolean,
 )

@@ -1,14 +1,15 @@
 package no.nav.syfo.hendelser.db
 
+import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.util.logger
 import java.sql.Connection
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.util.logger
 
-class HendelserDb(private val database: DatabaseInterface) {
-
+class HendelserDb(
+    private val database: DatabaseInterface,
+) {
     private val log = logger()
 
     fun insertHendelse(hendelseDbModel: HendelseDbModel) {
@@ -21,8 +22,7 @@ class HendelserDb(private val database: DatabaseInterface) {
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT (id, oppgavetype) DO NOTHING;
             """,
-                )
-                .use { preparedStatement ->
+                ).use { preparedStatement ->
                     preparedStatement.setString(1, hendelseDbModel.id)
                     preparedStatement.setString(2, hendelseDbModel.pasientFnr)
                     preparedStatement.setString(3, hendelseDbModel.orgnummer)
@@ -31,16 +31,20 @@ class HendelserDb(private val database: DatabaseInterface) {
                     preparedStatement.setString(6, hendelseDbModel.tekst)
                     preparedStatement.setTimestamp(
                         7,
-                        Timestamp.from(hendelseDbModel.timestamp.toInstant())
+                        Timestamp.from(hendelseDbModel.timestamp.toInstant()),
                     )
                     preparedStatement.setTimestamp(
                         8,
-                        hendelseDbModel.utlopstidspunkt?.let { Timestamp.from(it.toInstant()) }
+                        hendelseDbModel.utlopstidspunkt?.let { Timestamp.from(it.toInstant()) },
                     )
                     preparedStatement.setBoolean(9, hendelseDbModel.ferdigstilt)
                     preparedStatement.setTimestamp(
                         10,
-                        hendelseDbModel.ferdigstiltTimestamp?.let { Timestamp.from(it.toInstant()) }
+                        hendelseDbModel.ferdigstiltTimestamp?.let {
+                            Timestamp.from(
+                                it.toInstant(),
+                            )
+                        },
                     )
                     preparedStatement.executeUpdate()
                 }
@@ -50,19 +54,22 @@ class HendelserDb(private val database: DatabaseInterface) {
     }
 
     private fun Connection.updateSistOppdatertForSykmeldt(fnr: String) {
-        this.prepareStatement(
+        this
+            .prepareStatement(
                 """
                 UPDATE sykmeldt SET sist_oppdatert = ? WHERE pasient_fnr = ?;
                 """,
-            )
-            .use {
+            ).use {
                 it.setObject(1, LocalDate.now())
                 it.setString(2, fnr)
                 it.executeUpdate()
             }
     }
 
-    fun ferdigstillHendelse(id: String, ferdigstiltTimestamp: OffsetDateTime) {
+    fun ferdigstillHendelse(
+        id: String,
+        ferdigstiltTimestamp: OffsetDateTime,
+    ) {
         database.connection.use { connection ->
             connection.ferdigstillHendelse(id, ferdigstiltTimestamp)
             connection.commit()
@@ -70,13 +77,16 @@ class HendelserDb(private val database: DatabaseInterface) {
         }
     }
 
-    private fun Connection.ferdigstillHendelse(id: String, ferdigstiltTimestamp: OffsetDateTime) {
-        this.prepareStatement(
+    private fun Connection.ferdigstillHendelse(
+        id: String,
+        ferdigstiltTimestamp: OffsetDateTime,
+    ) {
+        this
+            .prepareStatement(
                 """
                 UPDATE hendelser SET ferdigstilt=?, ferdigstilt_timestamp=? WHERE id=? AND ferdigstilt != true;
                 """,
-            )
-            .use {
+            ).use {
                 it.setBoolean(1, true)
                 it.setTimestamp(2, Timestamp.from(ferdigstiltTimestamp.toInstant()))
                 it.setString(3, id)

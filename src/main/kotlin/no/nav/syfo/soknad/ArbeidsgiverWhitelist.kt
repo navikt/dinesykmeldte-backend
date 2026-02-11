@@ -37,6 +37,5 @@ private fun String.fjernTagIndex(): String {
     return regex.replace(this, "")
 }
 
-fun FlexSporsmal.erWhitelistetForArbeidsgiver(): Boolean {
-    return tag.fjernTagIndex() in whitelistetHovedsporsmal
-}
+fun FlexSporsmal.erWhitelistetForArbeidsgiver(): Boolean =
+    tag.fjernTagIndex() in whitelistetHovedsporsmal

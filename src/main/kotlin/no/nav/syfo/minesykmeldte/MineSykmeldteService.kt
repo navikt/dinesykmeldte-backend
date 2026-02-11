@@ -1,7 +1,5 @@
 package no.nav.syfo.minesykmeldte
 
-import java.time.LocalDate
-import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
@@ -42,6 +40,8 @@ import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAG
 import no.nav.syfo.sykmelding.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.util.logger
 import no.nav.syfo.util.toFormattedNameString
+import java.time.LocalDate
+import java.util.UUID
 
 class MineSykmeldteService(
     private val mineSykmeldteDb: MineSykmeldteDb,
@@ -85,56 +85,56 @@ class MineSykmeldteService(
     private fun getOppfolgingsplaner(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-    ) =
-        hendelserMap[sykmeldtEntry.key.fnr]
-            ?.filter { OppfolgingsplanerHendelser.contains(it.oppgavetype) }
-            ?.map {
-                Oppfolgingsplan(
-                    it.hendelseId,
-                    it.tekst
-                        ?: throw IllegalStateException("Oppfølgningsplan uten tekst: ${it.id}"),
-                    it.mottatt,
-                )
-            }
-            ?: emptyList()
+    ) = hendelserMap[sykmeldtEntry.key.fnr]
+        ?.filter { OppfolgingsplanerHendelser.contains(it.oppgavetype) }
+        ?.map {
+            Oppfolgingsplan(
+                it.hendelseId,
+                it.tekst
+                    ?: throw IllegalStateException("Oppfølgningsplan uten tekst: ${it.id}"),
+                it.mottatt,
+            )
+        }
+        ?: emptyList()
 
     private fun getSykmeldinger(
-        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>
-    ) =
-        sykmeldtEntry.value
-            .distinctBy { it.sykmeldingId }
-            .map { sykmeldtDbModel -> sykmeldtDbModel.toSykmelding() }
+        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
+    ) = sykmeldtEntry.value
+        .distinctBy { it.sykmeldingId }
+        .map { sykmeldtDbModel -> sykmeldtDbModel.toSykmelding() }
 
     private fun getDialogmoter(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-    ) =
-        hendelserMap[sykmeldtEntry.key.fnr]
-            ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
-            ?.map {
-                Dialogmote(
-                    hendelseId = it.hendelseId,
-                    tekst = it.tekst
-                            ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}"),
-                    mottatt = it.mottatt,
-                )
-            }
-            ?: emptyList()
+    ) = hendelserMap[sykmeldtEntry.key.fnr]
+        ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
+        ?.map {
+            Dialogmote(
+                hendelseId = it.hendelseId,
+                tekst =
+                    it.tekst
+                        ?: throw IllegalStateException("Dialogmøte uten tekst: ${it.id}"),
+                mottatt = it.mottatt,
+            )
+        }
+        ?: emptyList()
 
     private fun getAktivitetsvarsler(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
     ): List<Aktivitetsvarsel> =
-        (hendelserMap[sykmeldtEntry.key.fnr]
-            ?.filter { ma -> ma.oppgavetype == HendelseType.AKTIVITETSKRAV }
-            ?.map {
-                Aktivitetsvarsel(
-                    hendelseId = it.hendelseId,
-                    mottatt = it.mottatt,
-                    lest = it.ferdigstilt,
-                )
-            }
-            ?: emptyList())
+        (
+            hendelserMap[sykmeldtEntry.key.fnr]
+                ?.filter { ma -> ma.oppgavetype == HendelseType.AKTIVITETSKRAV }
+                ?.map {
+                    Aktivitetsvarsel(
+                        hendelseId = it.hendelseId,
+                        mottatt = it.mottatt,
+                        lest = it.ferdigstilt,
+                    )
+                }
+                ?: emptyList()
+        )
 
     private fun getPreviewSoknader(
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
@@ -159,25 +159,36 @@ class MineSykmeldteService(
         sykmeldt: MinSykmeldtDbModel,
     ) = hendelserMap[sykmeldtEntry.key.fnr]?.filter { it.id == sykmeldt.soknad?.id }.orEmpty()
 
-    suspend fun getSykmelding(sykmeldingId: String, lederFnr: String): Sykmelding? {
-        return mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr)?.toSykmelding()
-    }
+    suspend fun getSykmelding(
+        sykmeldingId: String,
+        lederFnr: String,
+    ): Sykmelding? = mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr)?.toSykmelding()
 
-    suspend fun getSoknad(soknadId: String, lederFnr: String): Soknad? {
-        return mineSykmeldteDb.getSoknad(soknadId, lederFnr)?.toSoknad()
-    }
+    suspend fun getSoknad(
+        soknadId: String,
+        lederFnr: String,
+    ): Soknad? = mineSykmeldteDb.getSoknad(soknadId, lederFnr)?.toSoknad()
 
-    suspend fun markSykmeldingRead(sykmeldingId: String, lederFnr: String): Boolean {
+    suspend fun markSykmeldingRead(
+        sykmeldingId: String,
+        lederFnr: String,
+    ): Boolean {
         val ids = mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr)
         return ids.isNotEmpty()
     }
 
-    suspend fun markSoknadRead(soknadId: String, lederFnr: String): Boolean {
+    suspend fun markSoknadRead(
+        soknadId: String,
+        lederFnr: String,
+    ): Boolean {
         val ids = mineSykmeldteDb.markSoknadRead(soknadId, lederFnr)
         return ids.isNotEmpty()
     }
 
-    suspend fun markHendelseRead(hendelseId: UUID, lederFnr: String): Boolean {
+    suspend fun markHendelseRead(
+        hendelseId: UUID,
+        lederFnr: String,
+    ): Boolean {
         val ids = mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr)
         return ids.isNotEmpty()
     }
@@ -222,7 +233,8 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         fom = soknadDb.sykepengesoknad.fom!!,
         tom = soknadDb.tom,
         lest = soknadDb.lest,
-        sendtDato = soknadDb.sykepengesoknad.sendtArbeidsgiver
+        sendtDato =
+            soknadDb.sykepengesoknad.sendtArbeidsgiver
                 ?: throw IllegalStateException("Søknad uten sendt dato: ${soknadDb.soknadId}"),
         sendtTilNavDato = soknadDb.sykepengesoknad.sendtNav,
         korrigererSoknadId = soknadDb.sykepengesoknad.korrigerer,
@@ -237,8 +249,7 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
                         sp.tag != "IKKE_SOKT_UTENLANDSOPPHOLD_INFORMASJON" &&
                         sp.tag != "TIL_SLUTT" &&
                         sp.tag != "VAER_KLAR_OVER_AT"
-                }
-                .map { it.toSporsmal() },
+                }.map { it.toSporsmal() },
     )
 }
 
@@ -377,13 +388,13 @@ private fun HendelseDbModel.toHendelse() =
 
 private val log = logger("no.nav.syfo.minesykmeldte.service")
 
-fun safeParseHendelseEnum(oppgavetype: String): HendelseType {
-    return try {
+fun safeParseHendelseEnum(oppgavetype: String): HendelseType =
+    try {
         HendelseType.valueOf(oppgavetype)
     } catch (e: Exception) {
         log.error(
-            "Ukjent oppgave av type $oppgavetype er ikke håndtert i applikasjonen. Mangler vi implementasjon?", e
+            "Ukjent oppgave av type $oppgavetype er ikke håndtert i applikasjonen. Mangler vi implementasjon?",
+            e,
         )
         HendelseType.UNKNOWN
     }
-}

@@ -6,21 +6,24 @@ import io.prometheus.client.Histogram
 const val METRICS_NS = "dinesykmeldte_backend"
 
 val HTTP_HISTOGRAM: Histogram =
-    Histogram.Builder()
+    Histogram
+        .Builder()
         .labelNames("path")
         .name("requests_duration_seconds")
         .help("http requests durations for incoming requests in seconds")
         .register()
 
 val DEAKTIVERT_LEDER_COUNTER: Counter =
-    Counter.build()
+    Counter
+        .build()
         .namespace(METRICS_NS)
         .name("deaktivert_leder_counter")
         .help("Antall NL-koblinger deaktivert av leder")
         .register()
 
 val NL_TOPIC_COUNTER: Counter =
-    Counter.build()
+    Counter
+        .build()
         .labelNames("status")
         .name("nl_topic_counter")
         .namespace(METRICS_NS)
@@ -28,21 +31,24 @@ val NL_TOPIC_COUNTER: Counter =
         .register()
 
 val SYKMELDING_TOPIC_COUNTER: Counter =
-    Counter.build()
+    Counter
+        .build()
         .name("sykmelding_topic_counter")
         .namespace(METRICS_NS)
         .help("Counts sendte sykmeldinger from kafka (new or deleted)")
         .register()
 
 val SOKNAD_TOPIC_COUNTER: Counter =
-    Counter.build()
+    Counter
+        .build()
         .name("soknad_topic_counter")
         .namespace(METRICS_NS)
         .help("Counts sendte soknader from kafka")
         .register()
 
 val HENDELSE_TOPIC_COUNTER: Counter =
-    Counter.build()
+    Counter
+        .build()
         .labelNames("status")
         .name("hendelse_topic_counter")
         .namespace(METRICS_NS)
@@ -50,7 +56,8 @@ val HENDELSE_TOPIC_COUNTER: Counter =
         .register()
 
 val SLETTET_COUNTER: Counter =
-    Counter.build()
+    Counter
+        .build()
         .labelNames("ressurs")
         .name("slettet_counter")
         .namespace(METRICS_NS)

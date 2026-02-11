@@ -31,8 +31,7 @@ private val getPersonQuery =
           }
         }
     }
-"""
-        .trimIndent()
+    """.trimIndent()
 
 class PdlClient(
     private val httpClient: HttpClient,
@@ -41,29 +40,32 @@ class PdlClient(
     companion object {
         private val log = logger()
     }
-    suspend fun getPerson(fnr: String, token: String): GetPersonResponse {
+
+    suspend fun getPerson(
+        fnr: String,
+        token: String,
+    ): GetPersonResponse {
         val getPersonRequest =
             GetPersonRequest(
                 query = getPersonQuery,
                 variables = GetPersonVariables(ident = fnr),
             )
 
-        val response = httpClient
-            .post(basePath) {
-                setBody(getPersonRequest)
-                header(HttpHeaders.Authorization, "Bearer $token")
-                header("TEMA", "SYM")
-                header("Behandlingsnummer", "B229")
-                header(HttpHeaders.ContentType, "application/json")
-            }
+        val response =
+            httpClient
+                .post(basePath) {
+                    setBody(getPersonRequest)
+                    header(HttpHeaders.Authorization, "Bearer $token")
+                    header("TEMA", "SYM")
+                    header("Behandlingsnummer", "B229")
+                    header(HttpHeaders.ContentType, "application/json")
+                }
         if (response.status.isSuccess()) {
             return response.body()
-
         } else {
             val responseText = response.body<String>()
             log.error("Feil ved kall mot PDL: Status: ${response.status}. Message: $responseText")
             throw RuntimeException("Feil ved kall mot PDL: ${response.status}, $responseText")
         }
-
     }
 }

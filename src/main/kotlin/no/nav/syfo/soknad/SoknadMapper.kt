@@ -1,7 +1,5 @@
 package no.nav.syfo.soknad
 
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.kafka.model.FlexSoknad
 import no.nav.syfo.soknad.kafka.model.FlexSoknadStatus
@@ -19,9 +17,11 @@ import no.nav.syfo.soknad.model.Svar
 import no.nav.syfo.soknad.model.Svartype
 import no.nav.syfo.soknad.model.Sykmeldingstype
 import no.nav.syfo.soknad.model.Visningskriterium
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
-fun FlexSoknad.toSoknad(): Soknad {
-    return Soknad(
+fun FlexSoknad.toSoknad(): Soknad =
+    Soknad(
         id = id,
         fnr = fnr,
         orgnummer = arbeidsgiver?.orgnummer,
@@ -33,11 +33,11 @@ fun FlexSoknad.toSoknad(): Soknad {
         fom = fom,
         tom = tom,
         sendtNav = sendtNav,
-        sporsmal = sporsmal?.filter { it.erWhitelistetForArbeidsgiver() }?.map { it.toSporsmal() }
+        sporsmal =
+            sporsmal?.filter { it.erWhitelistetForArbeidsgiver() }?.map { it.toSporsmal() }
                 ?: emptyList(),
         soknadsperioder = soknadsperioder.toSoknadsperioder(),
     )
-}
 
 private fun List<FlexSoknadsperiode>?.toSoknadsperioder(): List<Soknadsperiode> {
     if (this == null) {
@@ -47,14 +47,13 @@ private fun List<FlexSoknadsperiode>?.toSoknadsperioder(): List<Soknadsperiode> 
     }
 }
 
-private fun FlexSoknadsperiode.toSoknadsperiode(): Soknadsperiode {
-    return Soknadsperiode(
+private fun FlexSoknadsperiode.toSoknadsperiode(): Soknadsperiode =
+    Soknadsperiode(
         fom = fom,
         tom = tom,
         sykmeldingsgrad = sykmeldingsgrad,
         sykmeldingstype = sykmeldingstype(),
     )
-}
 
 private fun FlexSoknadsperiode.sykmeldingstype() =
     when (sykmeldingstype) {
@@ -66,8 +65,8 @@ private fun FlexSoknadsperiode.sykmeldingstype() =
         null -> throw IllegalStateException("sykmeldingstype is null")
     }
 
-fun FlexSporsmal.toSporsmal(): Sporsmal {
-    return Sporsmal(
+fun FlexSporsmal.toSporsmal(): Sporsmal =
+    Sporsmal(
         id = id,
         tag = tag,
         min = min,
@@ -79,7 +78,6 @@ fun FlexSporsmal.toSporsmal(): Sporsmal {
         svar = svar.toSvarList(),
         undersporsmal = undersporsmal?.map { it.toSporsmal() } ?: emptyList(),
     )
-}
 
 private fun List<FlexSvar>?.toSvarList(): List<Svar> {
     if (this == null) {
@@ -89,12 +87,11 @@ private fun List<FlexSvar>?.toSvarList(): List<Svar> {
     }
 }
 
-private fun FlexSvar.toSvar(): Svar {
-    return Svar(verdi ?: throw IllegalStateException("svar.verdi is null"))
-}
+private fun FlexSvar.toSvar(): Svar =
+    Svar(verdi ?: throw IllegalStateException("svar.verdi is null"))
 
-private fun FlexSvartype?.toSvarType(): Svartype {
-    return when (this) {
+private fun FlexSvartype?.toSvarType(): Svartype =
+    when (this) {
         FlexSvartype.JA_NEI -> Svartype.JA_NEI
         FlexSvartype.CHECKBOX -> Svartype.CHECKBOX
         FlexSvartype.CHECKBOX_GRUPPE -> Svartype.CHECKBOX_GRUPPE
@@ -125,19 +122,17 @@ private fun FlexSvartype?.toSvarType(): Svartype {
         FlexSvartype.AAR_MAANED -> Svartype.AAR_MAANED
         null -> throw IllegalStateException("Svartype is null")
     }
-}
 
-private fun FlexVisningskriterium?.toVisningskriterium(): Visningskriterium? {
-    return when (this) {
+private fun FlexVisningskriterium?.toVisningskriterium(): Visningskriterium? =
+    when (this) {
         FlexVisningskriterium.NEI -> Visningskriterium.NEI
         FlexVisningskriterium.JA -> Visningskriterium.JA
         FlexVisningskriterium.CHECKED -> Visningskriterium.CHECKED
         null -> null
     }
-}
 
-fun getStatus(status: FlexSoknadStatus): SoknadStatus {
-    return when (status) {
+fun getStatus(status: FlexSoknadStatus): SoknadStatus =
+    when (status) {
         FlexSoknadStatus.NY -> SoknadStatus.NY
         FlexSoknadStatus.SENDT -> SoknadStatus.SENDT
         FlexSoknadStatus.FREMTIDIG -> SoknadStatus.FREMTIDIG
@@ -146,14 +141,14 @@ fun getStatus(status: FlexSoknadStatus): SoknadStatus {
         FlexSoknadStatus.SLETTET -> SoknadStatus.SLETTET
         FlexSoknadStatus.UTGAATT -> SoknadStatus.UTGAATT
     }
-}
 
-fun FlexSoknad.toSoknadDbModel(): SoknadDbModel {
-    return SoknadDbModel(
+fun FlexSoknad.toSoknadDbModel(): SoknadDbModel =
+    SoknadDbModel(
         soknadId = id,
         sykmeldingId = sykmeldingId,
         pasientFnr = fnr,
-        orgnummer = arbeidsgiver?.orgnummer
+        orgnummer =
+            arbeidsgiver?.orgnummer
                 ?: throw IllegalStateException("Har mottatt sendt søknad uten orgnummer: $id"),
         sendtDato = sendtArbeidsgiver?.toLocalDate(),
         lest = false,
@@ -161,4 +156,3 @@ fun FlexSoknad.toSoknadDbModel(): SoknadDbModel {
         tom = tom!!,
         sykepengesoknad = toSoknad(),
     )
-}

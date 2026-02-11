@@ -1,9 +1,6 @@
 package no.nav.syfo.narmesteleder
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.util.UUID
 import no.nav.syfo.application.metrics.NL_TOPIC_COUNTER
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.NLResponseProducer
@@ -14,6 +11,9 @@ import no.nav.syfo.narmesteleder.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.util.logger
 import no.nav.syfo.util.objectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.UUID
 
 class NarmestelederService(
     private val narmestelederDb: NarmestelederDb,
@@ -43,7 +43,11 @@ class NarmestelederService(
         }
     }
 
-    suspend fun deaktiverNarmesteLeder(fnrLeder: String, narmestelederId: String, callId: UUID) {
+    suspend fun deaktiverNarmesteLeder(
+        fnrLeder: String,
+        narmestelederId: String,
+        callId: UUID,
+    ) {
         val nlKoblinger =
             narmestelederDb.finnNarmestelederkoblinger(
                 narmesteLederFnr = fnrLeder,
@@ -61,7 +65,10 @@ class NarmestelederService(
         }
     }
 
-    private suspend fun deaktiverNarmesteLeder(orgnummer: String, fnrSykmeldt: String) {
+    private suspend fun deaktiverNarmesteLeder(
+        orgnummer: String,
+        fnrSykmeldt: String,
+    ) {
         nlResponseProducer.send(
             NlResponseKafkaMessage(
                 kafkaMetadata =

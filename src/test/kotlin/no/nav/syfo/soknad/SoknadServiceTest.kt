@@ -2,12 +2,6 @@ package no.nav.syfo.soknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.UUID
 import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.soknad.kafka.model.FlexSoknad
 import no.nav.syfo.soknad.kafka.model.FlexSoknadStatus
@@ -20,6 +14,12 @@ import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.objectMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.UUID
 
 class SoknadServiceTest :
     FunSpec({
@@ -45,8 +45,7 @@ class SoknadServiceTest :
                     objectMapper
                         .readValue<FlexSoknad>(
                             getFileAsString("src/test/resources/soknadFraKafka.json"),
-                        )
-                        .copy(
+                        ).copy(
                             id = soknadId,
                             fom = LocalDate.now().minusMonths(1),
                             tom = LocalDate.now().minusWeeks(2),
@@ -89,7 +88,7 @@ class SoknadServiceTest :
                 val sporsmalArbeidsgivervisning: List<FlexSporsmal> =
                     objectMapper.readValue(
                         getFileAsString(
-                            "src/test/resources/soknadSporsmalArbeidsgivervisning.json"
+                            "src/test/resources/soknadSporsmalArbeidsgivervisning.json",
                         ),
                     )
                 arbeidsgiverSoknadFraDb.sporsmal shouldBeEqualTo
@@ -102,8 +101,7 @@ class SoknadServiceTest :
                     objectMapper
                         .readValue<FlexSoknad>(
                             getFileAsString("src/test/resources/soknadFraKafka.json"),
-                        )
-                        .copy(
+                        ).copy(
                             id = soknadId,
                             fom = LocalDate.now().minusMonths(6),
                             tom = LocalDate.now().minusMonths(5),
@@ -120,8 +118,7 @@ class SoknadServiceTest :
                     objectMapper
                         .readValue<FlexSoknad>(
                             getFileAsString("src/test/resources/soknadFraKafka.json"),
-                        )
-                        .copy(
+                        ).copy(
                             id = soknadId,
                             fom = LocalDate.now().minusMonths(1),
                             tom = LocalDate.now().minusWeeks(2),
@@ -131,7 +128,7 @@ class SoknadServiceTest :
                 soknadService.handleSykepengesoknad(sykepengesoknadDTO)
                 TestDb.getSoknad(soknadId) shouldNotBeEqualTo null
                 soknadService.handleSykepengesoknad(
-                    sykepengesoknadDTO.copy(status = FlexSoknadStatus.SENDT)
+                    sykepengesoknadDTO.copy(status = FlexSoknadStatus.SENDT),
                 )
                 TestDb.getSoknad(soknadId) shouldBeEqualTo null
             }
@@ -142,8 +139,7 @@ class SoknadServiceTest :
                     objectMapper
                         .readValue<FlexSoknad>(
                             getFileAsString("src/test/resources/soknadFraKafka.json"),
-                        )
-                        .copy(
+                        ).copy(
                             id = soknadId,
                             fom = LocalDate.now().minusMonths(1),
                             tom = LocalDate.now().minusWeeks(2),
@@ -160,8 +156,7 @@ class SoknadServiceTest :
                     objectMapper
                         .readValue<FlexSoknad>(
                             getFileAsString("src/test/resources/soknadFraKafka.json"),
-                        )
-                        .copy(
+                        ).copy(
                             id = soknadId,
                             fom = LocalDate.now().minusMonths(1),
                             tom = LocalDate.now().minusWeeks(2),
@@ -191,7 +186,7 @@ class SoknadServiceTest :
                     createSoknadDbModel(
                         soknadId = soknadId,
                         sykmeldingId = sykmeldingId,
-                        pasientFnr = "OLD"
+                        pasientFnr = "OLD",
                     )
                 database.insertOrUpdate(soknadDbModel)
                 val soknad = TestDb.getSoknad(soknadId)

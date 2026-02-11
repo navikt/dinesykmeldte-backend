@@ -1,9 +1,9 @@
 package no.nav.syfo.minesykmeldte.model
 
-import java.time.LocalDate
-import java.time.LocalDateTime
 import no.nav.syfo.soknad.model.Svartype
 import no.nav.syfo.soknad.model.Visningskriterium
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class Soknad(
     val id: String,

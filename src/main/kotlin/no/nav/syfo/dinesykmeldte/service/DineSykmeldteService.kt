@@ -10,13 +10,16 @@ import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 class DineSykmeldteService(
     private val sykmeldingDb: MineSykmeldteDb,
 ) {
-    suspend fun getSykmeldt(narmestelederId: String, fnr: String): Sykmeldt? {
+    suspend fun getSykmeldt(
+        narmestelederId: String,
+        fnr: String,
+    ): Sykmeldt? {
         val dineSykmeldte =
             toDineSykmeldte(
                 sykmeldingDb.getMineSykmeldteWithoutSoknad(
                     lederFnr = fnr,
-                    narmestelederId = narmestelederId
-                )
+                    narmestelederId = narmestelederId,
+                ),
             )
         if (dineSykmeldte.size > 1) {
             throw RuntimeException("Fant flere sykmeldte med samme narmestelederId")
@@ -24,11 +27,10 @@ class DineSykmeldteService(
         return dineSykmeldte.singleOrNull()
     }
 
-    suspend fun getDineSykmeldte(fnr: String): List<Sykmeldt> {
-        return toDineSykmeldte(
-            sykmeldingDb.getMineSykmeldteWithoutSoknad(lederFnr = fnr, narmestelederId = null)
+    suspend fun getDineSykmeldte(fnr: String): List<Sykmeldt> =
+        toDineSykmeldte(
+            sykmeldingDb.getMineSykmeldteWithoutSoknad(lederFnr = fnr, narmestelederId = null),
         )
-    }
 
     private fun toDineSykmeldte(sykmeldinger: List<MinSykmeldtDbModel>) =
         sykmeldinger
@@ -39,8 +41,7 @@ class DineSykmeldteService(
                     orgnummer = it.orgnummer,
                     narmestelederId = it.narmestelederId,
                 )
-            }
-            .map { ansatt ->
+            }.map { ansatt ->
                 Sykmeldt(
                     narmestelederId = ansatt.key.narmestelederId,
                     orgnummer = ansatt.key.orgnummer,

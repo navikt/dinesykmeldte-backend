@@ -14,7 +14,10 @@ data class WellKnownTokenX(
     val issuer: String,
 )
 
-fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) = runBlocking {
+fun getWellKnownTokenX(
+    httpClient: HttpClient,
+    wellKnownUrl: String,
+) = runBlocking {
     httpClient.get(wellKnownUrl).body<WellKnownTokenX>()
 }
 

@@ -1,8 +1,8 @@
 package no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver
 
+import no.nav.syfo.sykmelding.model.Merknad
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import no.nav.syfo.sykmelding.model.Merknad
 
 data class ArbeidsgiverSykmelding(
     val id: String,

@@ -39,8 +39,6 @@ fun Application.configureRouting() {
             registerDineSykmeldteApi(dineSykmeldteService)
         }
         registerSykmeldingApi(sykmeldingService, texasHttpClient)
-
-
     }
     intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
 }

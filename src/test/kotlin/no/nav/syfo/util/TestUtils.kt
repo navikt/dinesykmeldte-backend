@@ -6,21 +6,23 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.client.request.*
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.header
 import io.ktor.serialization.jackson.jackson
-import io.ktor.server.application.*
+import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.routing
-import io.ktor.server.testing.*
-import java.nio.file.Paths
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
+import io.ktor.server.testing.ApplicationTestBuilder
+import io.ktor.server.testing.testApplication
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.plugins.setupAuth
 import no.nav.syfo.testutils.generateJWTLoginservice
 import org.amshove.kluent.shouldBeInstanceOf
+import java.nio.file.Paths
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 @ExperimentalContracts
 inline fun <reified T> Any?.shouldBeInstance() {
@@ -29,19 +31,21 @@ inline fun <reified T> Any?.shouldBeInstance() {
     this.shouldBeInstanceOf(T::class)
 }
 
-fun withKtor(build: Route.() -> Unit, block: ApplicationTestBuilder.() -> Unit) {
+fun withKtor(
+    build: Route.() -> Unit,
+    block: ApplicationTestBuilder.() -> Unit,
+) {
     testApplication {
         application {
             setupAuth(
                 AuthConfiguration(
                     jwkProviderTokenX =
                         JwkProviderBuilder(
-                                Paths.get("src/test/resources/jwkset.json").toUri().toURL()
-                            )
-                            .build(),
+                            Paths.get("src/test/resources/jwkset.json").toUri().toURL(),
+                        ).build(),
                     tokenXIssuer = "https://sts.issuer.net/myid",
-                    clientIdTokenX = "dummy-client-id"
-                )
+                    clientIdTokenX = "dummy-client-id",
+                ),
             )
             val applicationState = ApplicationState()
             applicationState.ready = true

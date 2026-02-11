@@ -21,5 +21,5 @@ data class EnkelSykmelding(
     val egenmeldt: Boolean,
     val papirsykmelding: Boolean,
     val harRedusertArbeidsgiverperiode: Boolean,
-    val merknader: List<no.nav.syfo.sykmelding.model.Merknad>?
+    val merknader: List<no.nav.syfo.sykmelding.model.Merknad>?,
 )

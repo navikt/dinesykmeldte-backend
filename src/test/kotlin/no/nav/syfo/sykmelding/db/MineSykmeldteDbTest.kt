@@ -1,8 +1,6 @@
 package no.nav.syfo.sykmelding.db
 
 import io.kotest.core.spec.style.FunSpec
-import java.time.LocalDate
-import java.util.UUID
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createArbeidsgiverSykmelding
 import no.nav.syfo.util.createSykmeldingDbModel
@@ -10,6 +8,8 @@ import no.nav.syfo.util.createSykmeldingsperiode
 import no.nav.syfo.util.createSykmeldtDbModel
 import no.nav.syfo.util.insertOrUpdate
 import org.amshove.kluent.shouldBeEqualTo
+import java.time.LocalDate
+import java.util.UUID
 
 class MineSykmeldteDbTest :
     FunSpec(
@@ -31,16 +31,18 @@ class MineSykmeldteDbTest :
                             orgnummer = orgnummer,
                             sykmeldingId = sykmeldingId1,
                             latestTom = LocalDate.now().minusDays(17),
-                            sykmelding = createArbeidsgiverSykmelding(
-                                sykmeldingId = sykmeldingId1,
-                                perioder = listOf(
-                                    createSykmeldingsperiode(
-                                        fom = LocalDate.now().minusDays(18),
-                                        tom = LocalDate.now().minusDays(17),
-                                    ),
+                            sykmelding =
+                                createArbeidsgiverSykmelding(
+                                    sykmeldingId = sykmeldingId1,
+                                    perioder =
+                                        listOf(
+                                            createSykmeldingsperiode(
+                                                fom = LocalDate.now().minusDays(18),
+                                                tom = LocalDate.now().minusDays(17),
+                                            ),
+                                        ),
+                                    land = "Norge",
                                 ),
-                                land = "Norge",
-                            ),
                         ),
                         createSykmeldtDbModel(sykmeldtFnr),
                     )
@@ -50,16 +52,18 @@ class MineSykmeldteDbTest :
                             orgnummer = orgnummer,
                             latestTom = LocalDate.now().minusDays(16),
                             sykmeldingId = sykmeldingId2,
-                            sykmelding = createArbeidsgiverSykmelding(
-                                sykmeldingId = sykmeldingId1,
-                                perioder = listOf(
-                                    createSykmeldingsperiode(
-                                        fom = LocalDate.now().minusDays(17),
-                                        tom = LocalDate.now().minusDays(16),
-                                    ),
+                            sykmelding =
+                                createArbeidsgiverSykmelding(
+                                    sykmeldingId = sykmeldingId1,
+                                    perioder =
+                                        listOf(
+                                            createSykmeldingsperiode(
+                                                fom = LocalDate.now().minusDays(17),
+                                                tom = LocalDate.now().minusDays(16),
+                                            ),
+                                        ),
+                                    land = "Norge",
                                 ),
-                                land = "Norge",
-                            ),
                         ),
                         createSykmeldtDbModel(sykmeldtFnr),
                     )

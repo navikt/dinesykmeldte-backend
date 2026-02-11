@@ -13,9 +13,6 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import java.net.URI
-import java.time.Duration
-import java.util.concurrent.TimeUnit
 import no.nav.syfo.Environment
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.database.Database
@@ -56,6 +53,9 @@ import org.koin.core.scope.Scope
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
+import java.net.URI
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 fun Application.configureDependencies() {
     install(Koin) {
@@ -73,97 +73,116 @@ fun Application.configureDependencies() {
     }
 }
 
-private fun servicesModule() = module {
-    single { TexasHttpClient(get(), env().texas) }
-    single { AccessTokenClient(env().aadAccessTokenUrl, env().clientId, env().clientSecret, get()) }
-    single { PdlClient(get(), env().pdlGraphqlPath) }
-    single { PdlPersonService(get<PdlClient>(), get(), get<Environment>().pdlScope) }
-    single { SoknadService(SoknadDb(get()), env().cluster) }
-    single { HendelserService(HendelserDb(get())) }
-    single {
-        SyfoSyketilfelleClient(env().syketilfelleEndpointURL, get(), env().syketilfelleScope, get())
-    }
-    single { SykmeldingService(SykmeldingDb(get()), get(), get(), get<Environment>().cluster) }
-    single { VirksomhetService(VirksomhetDb(get())) }
-    single {
-        val nlResponseProducer =
-            NLResponseProducer(
-                createKafkaProducer("syfo-narmesteleder-producer"),
-                env().nlResponseTopic,
+private fun servicesModule() =
+    module {
+        single { TexasHttpClient(get(), env().texas) }
+        single {
+            AccessTokenClient(
+                env().aadAccessTokenUrl,
+                env().clientId,
+                env().clientSecret,
+                get(),
             )
-        NarmestelederService(NarmestelederDb(get()), nlResponseProducer)
+        }
+        single { PdlClient(get(), env().pdlGraphqlPath) }
+        single { PdlPersonService(get<PdlClient>(), get(), get<Environment>().pdlScope) }
+        single { SoknadService(SoknadDb(get()), env().cluster) }
+        single { HendelserService(HendelserDb(get())) }
+        single {
+            SyfoSyketilfelleClient(
+                env().syketilfelleEndpointURL,
+                get(),
+                env().syketilfelleScope,
+                get(),
+            )
+        }
+        single { SykmeldingService(SykmeldingDb(get()), get(), get(), get<Environment>().cluster) }
+        single { VirksomhetService(VirksomhetDb(get())) }
+        single {
+            val nlResponseProducer =
+                NLResponseProducer(
+                    createKafkaProducer("syfo-narmesteleder-producer"),
+                    env().nlResponseTopic,
+                )
+            NarmestelederService(NarmestelederDb(get()), nlResponseProducer)
+        }
+        single { MineSykmeldteDb(get()) }
+        single { MineSykmeldteService(get()) }
+        single { LeaderElection(get(), env().electorPath) }
+        single { DeleteDataService(DeleteDataDb(get()), get()) }
+        single { DineSykmeldteService(get()) }
     }
-    single { MineSykmeldteDb(get()) }
-    single { MineSykmeldteService(get()) }
-    single { LeaderElection(get(), env().electorPath) }
-    single { DeleteDataService(DeleteDataDb(get()), get()) }
-    single { DineSykmeldteService(get()) }
-}
 
 private fun Scope.env() = get<Environment>()
 
-private fun commonKafkaConsumer() = module {
-    single {
-        val kafkaConsumer =
-            KafkaConsumer(
-                KafkaUtils.getKafkaConfig("dinesykmeldte-backend-consumer")
-                    .also {
-                        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-                        it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
-                    }
-                    .toConsumerConfig("esyfo-dinesykmeldte-backend", StringDeserializer::class),
-                StringDeserializer(),
-                StringDeserializer(),
-            )
-        CommonKafkaService(kafkaConsumer, get(), get(), get(), get(), get(), get())
+private fun commonKafkaConsumer() =
+    module {
+        single {
+            val kafkaConsumer =
+                KafkaConsumer(
+                    KafkaUtils
+                        .getKafkaConfig("dinesykmeldte-backend-consumer")
+                        .also {
+                            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+                            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
+                        }.toConsumerConfig(
+                            "esyfo-dinesykmeldte-backend",
+                            StringDeserializer::class,
+                        ),
+                    StringDeserializer(),
+                    StringDeserializer(),
+                )
+            CommonKafkaService(kafkaConsumer, get(), get(), get(), get(), get(), get())
+        }
     }
-}
 
 private fun databaseModule() = module { single<DatabaseInterface> { Database(get()) } }
 
-private fun httpClient() = module {
-    single {
-        val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-            install(ContentNegotiation) {
-                jackson {
-                    registerKotlinModule()
-                    registerModule(JavaTimeModule())
-                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+private fun httpClient() =
+    module {
+        single {
+            val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+                install(ContentNegotiation) {
+                    jackson {
+                        registerKotlinModule()
+                        registerModule(JavaTimeModule())
+                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    }
                 }
             }
+            HttpClient(Apache, config)
         }
-        HttpClient(Apache, config)
     }
-}
 
-private fun environmentModule() = module {
-    single { if (isLocalEnv()) Environment.createLocal() else  Environment() }
-}
-
-private fun authModule() = module {
-    single {
-        val env: Environment = get()
-        val httpClient: HttpClient = get()
-
-        val wellKnownTokenX = getWellKnownTokenX(httpClient, env.tokenXWellKnownUrl)
-        val jwkProviderTokenX =
-            JwkProviderBuilder(URI.create(wellKnownTokenX.jwks_uri).toURL())
-                .cached(
-                    10,
-                    Duration.ofHours(24),
-                )
-                .rateLimited(10, 1, TimeUnit.MINUTES)
-                .build()
-
-        val tokenXIssuer: String = wellKnownTokenX.issuer
-
-        AuthConfiguration(
-            jwkProviderTokenX = jwkProviderTokenX,
-            tokenXIssuer = tokenXIssuer,
-            clientIdTokenX = env.dineSykmeldteBackendTokenXClientId,
-        )
+private fun environmentModule() =
+    module {
+        single { if (isLocalEnv()) Environment.createLocal() else Environment() }
     }
-}
+
+private fun authModule() =
+    module {
+        single {
+            val env: Environment = get()
+            val httpClient: HttpClient = get()
+
+            val wellKnownTokenX = getWellKnownTokenX(httpClient, env.tokenXWellKnownUrl)
+            val jwkProviderTokenX =
+                JwkProviderBuilder(URI.create(wellKnownTokenX.jwks_uri).toURL())
+                    .cached(
+                        10,
+                        Duration.ofHours(24),
+                    ).rateLimited(10, 1, TimeUnit.MINUTES)
+                    .build()
+
+            val tokenXIssuer: String = wellKnownTokenX.issuer
+
+            AuthConfiguration(
+                jwkProviderTokenX = jwkProviderTokenX,
+                tokenXIssuer = tokenXIssuer,
+                clientIdTokenX = env.dineSykmeldteBackendTokenXClientId,
+            )
+        }
+    }
 
 private fun applicationStateModule() = module { single { ApplicationState() } }
