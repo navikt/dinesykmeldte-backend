@@ -3,8 +3,6 @@ package no.nav.syfo.pdl.service
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.coEvery
 import io.mockk.mockk
-import java.util.UUID
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.azuread.AccessTokenClient
@@ -14,6 +12,8 @@ import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.pdl.model.formatName
 import no.nav.syfo.util.HttpClientTest
 import org.amshove.kluent.shouldBeEqualTo
+import java.util.UUID
+import kotlin.test.assertFailsWith
 
 class PdlPersonServiceTest :
     FunSpec({

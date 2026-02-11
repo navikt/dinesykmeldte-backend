@@ -2,8 +2,6 @@ package no.nav.syfo.performancetest
 
 import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.FunSpec
-import java.util.UUID
-import kotlin.system.measureTimeMillis
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.getSoknad
@@ -12,6 +10,8 @@ import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
 import no.nav.syfo.util.insertOrUpdate
 import org.amshove.kluent.shouldBeEqualTo
+import java.util.UUID
+import kotlin.system.measureTimeMillis
 
 @Ignored
 class PerformanceTest :
@@ -36,7 +36,7 @@ class PerformanceTest :
                 createSykmeldingDbModel(
                     pasientFnr = sykmeldtFnr,
                     orgnummer = orgnummer,
-                    sykmeldingId = sykmeldingId
+                    sykmeldingId = sykmeldingId,
                 )
             val soknadDbModel =
                 getSoknad(sykmeldingId = sykmeldingId)
@@ -55,10 +55,11 @@ class PerformanceTest :
 
         context("Get mine sykmeldginer") {
             test("get mine sykmeldte") {
-                val duration = measureTimeMillis {
-                    val sykmeldte = mineSykmeldteService.getMineSykmeldte("70859400564")
-                    sykmeldte.size shouldBeEqualTo 1000
-                }
+                val duration =
+                    measureTimeMillis {
+                        val sykmeldte = mineSykmeldteService.getMineSykmeldte("70859400564")
+                        sykmeldte.size shouldBeEqualTo 1000
+                    }
                 println("test took $duration")
             }
         }

@@ -6,12 +6,6 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import java.time.Clock
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.util.UUID
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -39,6 +33,12 @@ import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeAfter
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
+import java.time.Clock
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.UUID
 
 class SykmeldingServiceTest :
     FunSpec(
@@ -380,11 +380,13 @@ class SykmeldingServiceTest :
                     sykmeldingService.handleSendtSykmeldingKafkaMessage(
                         sykmeldingId,
                         sendtSykmelding.copy(
-                            event = sendtSykmelding.event.copy(
-                                sporsmals = listOf(
-                                    egenmeldingsSporsmål,
+                            event =
+                                sendtSykmelding.event.copy(
+                                    sporsmals =
+                                        listOf(
+                                            egenmeldingsSporsmål,
+                                        ),
                                 ),
-                            ),
                         ),
                     )
                     val sykmelding = TestDb.getSykmelding(sykmeldingId)
@@ -403,7 +405,9 @@ class SykmeldingServiceTest :
                         sykmeldingId,
                         sendtSykmelding.copy(
                             event =
-                                sendtSykmelding.event.copy(sporsmals = listOf(egenmeldingsSporsmål2)),
+                                sendtSykmelding.event.copy(
+                                    sporsmals = listOf(egenmeldingsSporsmål2),
+                                ),
                         ),
                     )
 
@@ -450,17 +454,19 @@ class SykmeldingServiceTest :
         },
     )
 
-private fun getPeriode(fom: LocalDate, tom: LocalDate = fom) =
-    SykmeldingsperiodeAGDTO(
-        fom,
-        tom,
-        null,
-        null,
-        null,
-        PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-        AktivitetIkkeMuligAGDTO(null),
-        false,
-    )
+private fun getPeriode(
+    fom: LocalDate,
+    tom: LocalDate = fom,
+) = SykmeldingsperiodeAGDTO(
+    fom,
+    tom,
+    null,
+    null,
+    null,
+    PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+    AktivitetIkkeMuligAGDTO(null),
+    false,
+)
 
 fun getSendtSykmeldingKafkaMessage(
     sykmeldingId: String,
@@ -478,41 +484,36 @@ fun getSendtSykmeldingKafkaMessage(
             ),
         ),
     sendtTilArbeidsgiverDato: OffsetDateTime = OffsetDateTime.now(Clock.tickMillis(ZoneOffset.UTC)),
-) =
-    SendtSykmeldingKafkaMessage(
-        createArbeidsgiverSykmelding(sykmeldingId, perioder),
-        KafkaMetadataDTO(sykmeldingId, OffsetDateTime.now(ZoneOffset.UTC), "12345678910", "user"),
-        SykmeldingStatusKafkaEventDTO(
-            sykmeldingId,
-            sendtTilArbeidsgiverDato,
-            "SENDT",
-            ArbeidsgiverStatusDTO("88888888", null, "Bedriften AS"),
-            null,
-        ),
-    )
+) = SendtSykmeldingKafkaMessage(
+    createArbeidsgiverSykmelding(sykmeldingId, perioder),
+    KafkaMetadataDTO(sykmeldingId, OffsetDateTime.now(ZoneOffset.UTC), "12345678910", "user"),
+    SykmeldingStatusKafkaEventDTO(
+        sykmeldingId,
+        sendtTilArbeidsgiverDato,
+        "SENDT",
+        ArbeidsgiverStatusDTO("88888888", null, "Bedriften AS"),
+        null,
+    ),
+)
 
 fun getSoknad(
     sykmeldingId: String = UUID.randomUUID().toString(),
     soknadId: String = UUID.randomUUID().toString(),
     fnr: String = "12345678910",
-): SoknadDbModel {
-    return createSykepengesoknadDto(soknadId, sykmeldingId, fnr).toSoknadDbModel()
-}
+): SoknadDbModel = createSykepengesoknadDto(soknadId, sykmeldingId, fnr).toSoknadDbModel()
 
 fun createSykepengesoknadDto(
     soknadId: String,
     sykmeldingId: String,
     fnr: String = "12345678910",
-) =
-    objectMapper
-        .readValue<FlexSoknad>(
-            getFileAsString("src/test/resources/soknadFraKafka.json"),
-        )
-        .copy(
-            id = soknadId,
-            fnr = fnr,
-            fom = LocalDate.now().minusMonths(1),
-            tom = LocalDate.now().minusWeeks(2),
-            sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
-            sykmeldingId = sykmeldingId,
-        )
+) = objectMapper
+    .readValue<FlexSoknad>(
+        getFileAsString("src/test/resources/soknadFraKafka.json"),
+    ).copy(
+        id = soknadId,
+        fnr = fnr,
+        fom = LocalDate.now().minusMonths(1),
+        tom = LocalDate.now().minusWeeks(2),
+        sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
+        sykmeldingId = sykmeldingId,
+    )

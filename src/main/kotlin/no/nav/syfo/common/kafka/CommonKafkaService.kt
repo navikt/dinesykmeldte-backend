@@ -1,7 +1,5 @@
 package no.nav.syfo.common.kafka
 
-import java.time.Duration
-import java.time.Instant
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -14,6 +12,8 @@ import no.nav.syfo.soknad.SoknadService
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.util.logger
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import java.time.Duration
+import java.time.Instant
 
 class CommonKafkaService(
     private val kafkaConsumer: KafkaConsumer<String, String>,
@@ -28,29 +28,30 @@ class CommonKafkaService(
     private val logTimer = 60_000L
     private val log = logger()
 
-    suspend fun startConsumer() = coroutineScope {
-        while (isActive) {
-            try {
-                log.info("Starting consuming topics")
-                kafkaConsumer.subscribe(
-                    listOf(
-                        environment.narmestelederLeesahTopic,
-                        environment.sendtSykmeldingTopic,
-                        environment.sykepengesoknadTopic,
-                        environment.hendelserTopic,
-                    ),
-                )
-                start()
-            } catch (ex: Exception) {
-                log.error(
-                    "Error running kafka consumer, unsubscribing and waiting 10 seconds for retry",
-                    ex,
-                )
-                kafkaConsumer.unsubscribe()
-                delay(10_000)
+    suspend fun startConsumer() =
+        coroutineScope {
+            while (isActive) {
+                try {
+                    log.info("Starting consuming topics")
+                    kafkaConsumer.subscribe(
+                        listOf(
+                            environment.narmestelederLeesahTopic,
+                            environment.sendtSykmeldingTopic,
+                            environment.sykepengesoknadTopic,
+                            environment.hendelserTopic,
+                        ),
+                    )
+                    start()
+                } catch (ex: Exception) {
+                    log.error(
+                        "Error running kafka consumer, unsubscribing and waiting 10 seconds for retry",
+                        ex,
+                    )
+                    kafkaConsumer.unsubscribe()
+                    delay(10_000)
+                }
             }
         }
-    }
 
     private suspend fun start() {
         var processedMessages = 0
@@ -71,7 +72,7 @@ class CommonKafkaService(
                     }
                 } catch (ex: NameNotFoundInPdlException) {
                     log.warn(
-                        "Could not find name in PDL skipping, topic ${it.topic()}: partition: ${it.partition()} offset: ${it.offset()}"
+                        "Could not find name in PDL skipping, topic ${it.topic()}: partition: ${it.partition()} offset: ${it.offset()}",
                     )
                 }
             }

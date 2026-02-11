@@ -12,21 +12,29 @@ import no.nav.syfo.texas.client.TexasHttpClient
 import no.nav.syfo.util.teamLogsLogger
 
 fun Route.registerSykmeldingApi(
-    sykmeldingService: SykmeldingService, texasHttpClient: TexasHttpClient
+    sykmeldingService: SykmeldingService,
+    texasHttpClient: TexasHttpClient,
 ) {
-
     route("/api/sykmelding/isActiveSykmelding") {
         install(TexasAzureADAuthPlugin) {
             this.client = texasHttpClient
         }
         post {
             val request = call.tryReceive<IsActiveSykmeldingRequestDTO>()
-            teamLogsLogger.info("Mottak kall mot /api/dinesykmeldte for pasientFnr: ${request.sykmeldtFnr}")
+            teamLogsLogger.info(
+                "Mottak kall mot /api/dinesykmeldte for pasientFnr: ${request.sykmeldtFnr}",
+            )
             val result =
-                sykmeldingService.getActiveSendtSykmeldingsperioder(request.sykmeldtFnr, orgnummer = request.orgnummer)
+                sykmeldingService.getActiveSendtSykmeldingsperioder(
+                    request.sykmeldtFnr,
+                    orgnummer = request.orgnummer,
+                )
             call.respond(HttpStatusCode.OK, result)
         }
     }
 }
 
-data class IsActiveSykmeldingRequestDTO(val sykmeldtFnr: String, val orgnummer: String)
+data class IsActiveSykmeldingRequestDTO(
+    val sykmeldtFnr: String,
+    val orgnummer: String,
+)

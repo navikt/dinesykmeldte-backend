@@ -9,7 +9,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 
 class NLResponseProducer(
     private val kafkaProducer: KafkaProducer<String, NlResponseKafkaMessage>,
-    private val topicName: String
+    private val topicName: String,
 ) {
     private val log = logger()
 
@@ -21,15 +21,14 @@ class NLResponseProducer(
                         ProducerRecord(
                             topicName,
                             nlResponseKafkaMessage.nlAvbrutt.orgnummer,
-                            nlResponseKafkaMessage
+                            nlResponseKafkaMessage,
                         ),
-                    )
-                    .get()
+                    ).get()
             } catch (ex: Exception) {
                 log.error(
                     "Noe gikk galt ved skriving av avbryting av NL til kafka for orgnummer {}, {}",
                     nlResponseKafkaMessage.nlAvbrutt.orgnummer,
-                    ex.message
+                    ex.message,
                 )
                 throw ex
             }

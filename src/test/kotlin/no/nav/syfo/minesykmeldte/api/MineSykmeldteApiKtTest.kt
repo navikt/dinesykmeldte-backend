@@ -9,12 +9,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.util.UUID
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.Environment
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
@@ -37,6 +31,12 @@ import no.nav.syfo.util.addAuthorizationHeader
 import no.nav.syfo.util.minifyApiResponse
 import no.nav.syfo.util.withKtor
 import org.amshove.kluent.shouldBeEqualTo
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.UUID
+import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 class MineSykmeldteApiKtTest :
@@ -104,8 +104,7 @@ class MineSykmeldteApiKtTest :
                           "aktivitetsvarsler": [],
                           "oppfolgingsplaner": []
                         }
-                    ]"""
-                                    .minifyApiResponse()
+                    ]""".minifyApiResponse()
                         }
                     }
                 }
@@ -214,7 +213,7 @@ class MineSykmeldteApiKtTest :
                                                     hendelseId,
                                                     "Ny revidert oppfølgingplan",
                                                     OffsetDateTime.parse(
-                                                        "2022-03-11T10:15:30+02:00"
+                                                        "2022-03-11T10:15:30+02:00",
                                                     ),
                                                 ),
                                             ),
@@ -223,7 +222,7 @@ class MineSykmeldteApiKtTest :
                                                 Aktivitetsvarsel(
                                                     hendelseId,
                                                     OffsetDateTime.parse(
-                                                        "2022-04-09T10:15:30+02:00"
+                                                        "2022-04-09T10:15:30+02:00",
                                                     ),
                                                     null,
                                                 ),
@@ -234,7 +233,7 @@ class MineSykmeldteApiKtTest :
                                                     hendelseId,
                                                     "ny oppfolgingsplan",
                                                     OffsetDateTime.parse(
-                                                        "2022-06-17T10:15:30+02:00"
+                                                        "2022-06-17T10:15:30+02:00",
                                                     ),
                                                 ),
                                             ),
@@ -275,8 +274,7 @@ class MineSykmeldteApiKtTest :
                             "aktivitetsvarsler": [{"hendelseId":"$hendelseId","mottatt":"2022-04-09T10:15:30+02:00","lest":null}],
                             "oppfolgingsplaner": [{"hendelseId": "$hendelseId","tekst":"ny oppfolgingsplan","mottatt":"2022-06-17T10:15:30+02:00"}]
                           }
-                        ]"""
-                                        .minifyApiResponse()
+                        ]""".minifyApiResponse()
                             }
                         }
                     }
@@ -363,8 +361,7 @@ class MineSykmeldteApiKtTest :
                           "utenlandskSykmelding":null,
                           "egenmeldingsdager":null
                         }
-                    """
-                                    .minifyApiResponse()
+                    """.minifyApiResponse()
                         }
                         coVerify(exactly = 1) {
                             mineSykmeldteService.getSykmelding(
@@ -522,8 +519,7 @@ class MineSykmeldteApiKtTest :
                             "undersporsmal": []
                          }]
                       }
-                    """
-                                        .minifyApiResponse()
+                    """.minifyApiResponse()
 
                                 coVerify(exactly = 1) {
                                     mineSykmeldteService.getSoknad(
@@ -552,22 +548,21 @@ fun createSoknadTestData(
     korrigererSoknadId: String? = null,
     korrigertBySoknadId: String = "0422-4a5e-b779-a8819abf",
     sporsmal: List<Sporsmal>,
-) =
-    Soknad(
-        id = id,
-        sykmeldingId = sykmeldingId,
-        navn = navn,
-        fnr = fnr,
-        tom = tom,
-        fom = fom,
-        lest = lest,
-        sendtDato = sendtDato,
-        sendtTilNavDato = sendtTilNavoDato,
-        korrigererSoknadId = korrigererSoknadId,
-        korrigertBySoknadId = korrigertBySoknadId,
-        perioder = listOf(),
-        sporsmal = sporsmal,
-    )
+) = Soknad(
+    id = id,
+    sykmeldingId = sykmeldingId,
+    navn = navn,
+    fnr = fnr,
+    tom = tom,
+    fom = fom,
+    lest = lest,
+    sendtDato = sendtDato,
+    sendtTilNavDato = sendtTilNavoDato,
+    korrigererSoknadId = korrigererSoknadId,
+    korrigertBySoknadId = korrigertBySoknadId,
+    perioder = listOf(),
+    sporsmal = sporsmal,
+)
 
 fun createSykmeldingTestData(
     id: String = UUID.randomUUID().toString(),

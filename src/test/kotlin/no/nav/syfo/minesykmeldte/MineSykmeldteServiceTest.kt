@@ -6,15 +6,6 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.util.UUID
-import kotlin.contracts.ExperimentalContracts
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
@@ -62,6 +53,15 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldHaveSize
 import org.amshove.kluent.shouldNotBe
 import org.amshove.kluent.shouldNotBeNull
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.UUID
+import kotlin.contracts.ExperimentalContracts
 
 @ExperimentalContracts
 class MineSykmeldteServiceTest :
@@ -151,7 +151,13 @@ class MineSykmeldteServiceTest :
                     runBlocking {
                         val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                         mineSykmeldte.size shouldBeEqualTo 1
-                        val periode = mineSykmeldte.first().sykmeldinger.first().perioder.first()
+                        val periode =
+                            mineSykmeldte
+                                .first()
+                                .sykmeldinger
+                                .first()
+                                .perioder
+                                .first()
                         periode.shouldBeInstance<AktivitetIkkeMulig>()
                     }
                 }
@@ -208,17 +214,17 @@ class MineSykmeldteServiceTest :
                             sykmeldtFnrPrefix = "avdeling-1",
                             soknader = 1,
                         ) +
-                            getSykmeldtData(
-                                sykmeldte = 2,
-                                sykmeldinger =
-                                    listOf(
-                                        createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
-                                        createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
-                                        createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
-                                    ),
-                                sykmeldtFnrPrefix = "avdeling-2",
-                                soknader = 0,
-                            )
+                        getSykmeldtData(
+                            sykmeldte = 2,
+                            sykmeldinger =
+                                listOf(
+                                    createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
+                                    createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
+                                    createArbeidsgiverSykmelding(UUID.randomUUID().toString()),
+                                ),
+                            sykmeldtFnrPrefix = "avdeling-2",
+                            soknader = 0,
+                        )
 
                     runBlocking {
                         val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
@@ -880,9 +886,10 @@ class MineSykmeldteServiceTest :
                                 mineSykmeldteModel.copy(soknad = sendtSoknad),
                             )
 
-                        val mineSykmeldte = runBlocking {
-                            mineSykmeldtService.getMineSykmeldte("1")
-                        }
+                        val mineSykmeldte =
+                            runBlocking {
+                                mineSykmeldtService.getMineSykmeldte("1")
+                            }
                         mineSykmeldte.size shouldBeEqualTo 1
 
                         val soknader = mineSykmeldte.first().previewSoknader
@@ -939,30 +946,32 @@ class MineSykmeldteServiceTest :
                 test("should map to aktivitetIkkeMulig") {
                     val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
                     coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1") } returns
-                        (createSykmeldtDbModel() to
-                            createSykmeldingDbModel(
-                                sykmeldingId = sykmeldingId,
-                                sykmelding =
-                                    createArbeidsgiverSykmelding(
-                                        sykmeldingId = sykmeldingId,
-                                        perioder =
-                                            listOf(
-                                                createSykmeldingsperiode(
-                                                    type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                                                    aktivitetIkkeMulig =
-                                                        AktivitetIkkeMuligAGDTO(
-                                                            ArbeidsrelatertArsakDTO(
-                                                                "Trenger ståpult",
-                                                                listOf(
-                                                                    ArbeidsrelatertArsakTypeDTO
-                                                                        .MANGLENDE_TILRETTELEGGING,
+                        (
+                            createSykmeldtDbModel() to
+                                createSykmeldingDbModel(
+                                    sykmeldingId = sykmeldingId,
+                                    sykmelding =
+                                        createArbeidsgiverSykmelding(
+                                            sykmeldingId = sykmeldingId,
+                                            perioder =
+                                                listOf(
+                                                    createSykmeldingsperiode(
+                                                        type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                                                        aktivitetIkkeMulig =
+                                                            AktivitetIkkeMuligAGDTO(
+                                                                ArbeidsrelatertArsakDTO(
+                                                                    "Trenger ståpult",
+                                                                    listOf(
+                                                                        ArbeidsrelatertArsakTypeDTO
+                                                                            .MANGLENDE_TILRETTELEGGING,
+                                                                    ),
                                                                 ),
                                                             ),
-                                                        ),
+                                                    ),
                                                 ),
-                                            ),
-                                    ),
-                            ))
+                                        ),
+                                )
+                        )
 
                     val result = mineSykmeldtService.getSykmelding(sykmeldingId, "red-1")
                     val periode: Periode? = result?.perioder?.first()
@@ -978,22 +987,24 @@ class MineSykmeldteServiceTest :
                 test("should map to avventende") {
                     val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
                     coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1") } returns
-                        (createSykmeldtDbModel() to
-                            createSykmeldingDbModel(
-                                sykmeldingId = sykmeldingId,
-                                sykmelding =
-                                    createArbeidsgiverSykmelding(
-                                        sykmeldingId = sykmeldingId,
-                                        perioder =
-                                            listOf(
-                                                createSykmeldingsperiode(
-                                                    type = PeriodetypeDTO.AVVENTENDE,
-                                                    aktivitetIkkeMulig = null,
-                                                    innspillTilArbeidsgiver = "Vi venter litt",
+                        (
+                            createSykmeldtDbModel() to
+                                createSykmeldingDbModel(
+                                    sykmeldingId = sykmeldingId,
+                                    sykmelding =
+                                        createArbeidsgiverSykmelding(
+                                            sykmeldingId = sykmeldingId,
+                                            perioder =
+                                                listOf(
+                                                    createSykmeldingsperiode(
+                                                        type = PeriodetypeDTO.AVVENTENDE,
+                                                        aktivitetIkkeMulig = null,
+                                                        innspillTilArbeidsgiver = "Vi venter litt",
+                                                    ),
                                                 ),
-                                            ),
-                                    ),
-                            ))
+                                        ),
+                                )
+                        )
 
                     val result = mineSykmeldtService.getSykmelding(sykmeldingId, "red-1")
                     val periode: Periode? = result?.perioder?.first()
@@ -1006,22 +1017,24 @@ class MineSykmeldteServiceTest :
                 test("should map to behandlingsdager") {
                     val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
                     coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1") } returns
-                        (createSykmeldtDbModel() to
-                            createSykmeldingDbModel(
-                                sykmeldingId = sykmeldingId,
-                                sykmelding =
-                                    createArbeidsgiverSykmelding(
-                                        sykmeldingId = sykmeldingId,
-                                        perioder =
-                                            listOf(
-                                                createSykmeldingsperiode(
-                                                    type = PeriodetypeDTO.BEHANDLINGSDAGER,
-                                                    aktivitetIkkeMulig = null,
-                                                    behandlingsdager = 1,
+                        (
+                            createSykmeldtDbModel() to
+                                createSykmeldingDbModel(
+                                    sykmeldingId = sykmeldingId,
+                                    sykmelding =
+                                        createArbeidsgiverSykmelding(
+                                            sykmeldingId = sykmeldingId,
+                                            perioder =
+                                                listOf(
+                                                    createSykmeldingsperiode(
+                                                        type = PeriodetypeDTO.BEHANDLINGSDAGER,
+                                                        aktivitetIkkeMulig = null,
+                                                        behandlingsdager = 1,
+                                                    ),
                                                 ),
-                                            ),
-                                    ),
-                            ))
+                                        ),
+                                )
+                        )
 
                     val result = mineSykmeldtService.getSykmelding(sykmeldingId, "red-1")
                     val periode: Periode? = result?.perioder?.first()
@@ -1033,26 +1046,28 @@ class MineSykmeldteServiceTest :
                 test("should map to gradert") {
                     val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
                     coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1") } returns
-                        (createSykmeldtDbModel() to
-                            createSykmeldingDbModel(
-                                sykmeldingId = sykmeldingId,
-                                sykmelding =
-                                    createArbeidsgiverSykmelding(
-                                        sykmeldingId = sykmeldingId,
-                                        perioder =
-                                            listOf(
-                                                createSykmeldingsperiode(
-                                                    type = PeriodetypeDTO.GRADERT,
-                                                    aktivitetIkkeMulig = null,
-                                                    gradert =
-                                                        GradertDTO(
-                                                            45,
-                                                            true,
-                                                        ),
+                        (
+                            createSykmeldtDbModel() to
+                                createSykmeldingDbModel(
+                                    sykmeldingId = sykmeldingId,
+                                    sykmelding =
+                                        createArbeidsgiverSykmelding(
+                                            sykmeldingId = sykmeldingId,
+                                            perioder =
+                                                listOf(
+                                                    createSykmeldingsperiode(
+                                                        type = PeriodetypeDTO.GRADERT,
+                                                        aktivitetIkkeMulig = null,
+                                                        gradert =
+                                                            GradertDTO(
+                                                                45,
+                                                                true,
+                                                            ),
+                                                    ),
                                                 ),
-                                            ),
-                                    ),
-                            ))
+                                        ),
+                                )
+                        )
 
                     val result = mineSykmeldtService.getSykmelding(sykmeldingId, "red-1")
                     val periode: Periode? = result?.perioder?.first()
@@ -1066,22 +1081,24 @@ class MineSykmeldteServiceTest :
                 test("should map to reisetilskudd") {
                     val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
                     coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1") } returns
-                        (createSykmeldtDbModel() to
-                            createSykmeldingDbModel(
-                                sykmeldingId = sykmeldingId,
-                                sykmelding =
-                                    createArbeidsgiverSykmelding(
-                                        sykmeldingId = sykmeldingId,
-                                        perioder =
-                                            listOf(
-                                                createSykmeldingsperiode(
-                                                    type = PeriodetypeDTO.REISETILSKUDD,
-                                                    aktivitetIkkeMulig = null,
-                                                    reisetilskudd = true,
+                        (
+                            createSykmeldtDbModel() to
+                                createSykmeldingDbModel(
+                                    sykmeldingId = sykmeldingId,
+                                    sykmelding =
+                                        createArbeidsgiverSykmelding(
+                                            sykmeldingId = sykmeldingId,
+                                            perioder =
+                                                listOf(
+                                                    createSykmeldingsperiode(
+                                                        type = PeriodetypeDTO.REISETILSKUDD,
+                                                        aktivitetIkkeMulig = null,
+                                                        reisetilskudd = true,
+                                                    ),
                                                 ),
-                                            ),
-                                    ),
-                            ))
+                                        ),
+                                )
+                        )
 
                     val result = mineSykmeldtService.getSykmelding(sykmeldingId, "red-1")
                     val periode: Periode? = result?.perioder?.first()
@@ -1114,58 +1131,60 @@ class MineSykmeldteServiceTest :
                 test("should map to Soknad") {
                     val soknadId = "e94a7c0f-3240-4a0c-8788-c4cc3ebcdac2"
                     coEvery { mineSykmeldteDb.getSoknad(soknadId, "red-2") } returns
-                        (createSykmeldtDbModel(
-                            pasientNavn = "Navn Navnesen",
-                        ) to
-                            createSoknadDbModel(
-                                soknadId = soknadId,
-                                sykmeldingId = "31c5b5ca-1248-4280-bc2e-3c6b11c365b9",
-                                tom = LocalDate.parse("2021-04-04"),
-                                sendtDato = LocalDate.parse("2021-04-04"),
-                                timestamp = OffsetDateTime.parse("2021-11-18T14:06:12Z"),
-                                soknad =
-                                    mockk<Soknad>().also {
-                                        every { it.fom } returns LocalDate.parse("2021-10-01")
-                                        every { it.korrigerer } returns null
-                                        every { it.korrigertAv } returns
-                                            "jd14jfqd-0422-4a5e-b779-a8819abf"
-                                        every { it.soknadsperioder } returns
-                                            listOf(
-                                                Soknadsperiode(
-                                                    fom = LocalDate.parse("2021-10-04"),
-                                                    tom = LocalDate.parse("2021-10-12"),
-                                                    sykmeldingstype =
-                                                        Sykmeldingstype.AKTIVITET_IKKE_MULIG,
-                                                    sykmeldingsgrad = null,
-                                                ),
-                                            )
-                                        every { it.sendtNav } returns
-                                            LocalDateTime.parse("2022-05-09T08:56:24")
-                                        every { it.sendtArbeidsgiver } returns
-                                            LocalDateTime.parse("2022-05-10T08:56:24")
-                                        every { it.sporsmal } returns
-                                            listOf(
-                                                Sporsmal(
-                                                    id = "54217564",
-                                                    tag = "label",
-                                                    min = "2021-10-03",
-                                                    max = "2021-10-06",
-                                                    sporsmalstekst = "Er dette et spørsmål?",
-                                                    undertekst = "Undertekst til spørsmålet",
-                                                    svartype = Svartype.FRITEKST,
-                                                    kriterieForVisningAvUndersporsmal =
-                                                        Visningskriterium.JA,
-                                                    svar =
-                                                        listOf(
-                                                            no.nav.syfo.soknad.model.Svar(
-                                                                verdi = "Ja",
+                        (
+                            createSykmeldtDbModel(
+                                pasientNavn = "Navn Navnesen",
+                            ) to
+                                createSoknadDbModel(
+                                    soknadId = soknadId,
+                                    sykmeldingId = "31c5b5ca-1248-4280-bc2e-3c6b11c365b9",
+                                    tom = LocalDate.parse("2021-04-04"),
+                                    sendtDato = LocalDate.parse("2021-04-04"),
+                                    timestamp = OffsetDateTime.parse("2021-11-18T14:06:12Z"),
+                                    soknad =
+                                        mockk<Soknad>().also {
+                                            every { it.fom } returns LocalDate.parse("2021-10-01")
+                                            every { it.korrigerer } returns null
+                                            every { it.korrigertAv } returns
+                                                "jd14jfqd-0422-4a5e-b779-a8819abf"
+                                            every { it.soknadsperioder } returns
+                                                listOf(
+                                                    Soknadsperiode(
+                                                        fom = LocalDate.parse("2021-10-04"),
+                                                        tom = LocalDate.parse("2021-10-12"),
+                                                        sykmeldingstype =
+                                                            Sykmeldingstype.AKTIVITET_IKKE_MULIG,
+                                                        sykmeldingsgrad = null,
+                                                    ),
+                                                )
+                                            every { it.sendtNav } returns
+                                                LocalDateTime.parse("2022-05-09T08:56:24")
+                                            every { it.sendtArbeidsgiver } returns
+                                                LocalDateTime.parse("2022-05-10T08:56:24")
+                                            every { it.sporsmal } returns
+                                                listOf(
+                                                    Sporsmal(
+                                                        id = "54217564",
+                                                        tag = "label",
+                                                        min = "2021-10-03",
+                                                        max = "2021-10-06",
+                                                        sporsmalstekst = "Er dette et spørsmål?",
+                                                        undertekst = "Undertekst til spørsmålet",
+                                                        svartype = Svartype.FRITEKST,
+                                                        kriterieForVisningAvUndersporsmal =
+                                                            Visningskriterium.JA,
+                                                        svar =
+                                                            listOf(
+                                                                no.nav.syfo.soknad.model.Svar(
+                                                                    verdi = "Ja",
+                                                                ),
                                                             ),
-                                                        ),
-                                                    undersporsmal = emptyList(),
-                                                ),
-                                            )
-                                    },
-                            ))
+                                                        undersporsmal = emptyList(),
+                                                    ),
+                                                )
+                                        },
+                                )
+                        )
 
                     val result = mineSykmeldtService.getSoknad(soknadId, "red-2")
 
@@ -1196,89 +1215,91 @@ class MineSykmeldteServiceTest :
                 ) {
                     val soknadId = "b8aa4075-7347-48c9-b006-a770ee023bf8"
                     coEvery { mineSykmeldteDb.getSoknad(soknadId, "soknad-112") } returns
-                        (createSykmeldtDbModel(
-                            pasientNavn = "Navn Navnesen",
-                        ) to
-                            createSoknadDbModel(
-                                soknadId = soknadId,
-                                soknad =
-                                    mockk<Soknad>().also {
-                                        every { it.fom } returns LocalDate.parse("2021-10-01")
-                                        every { it.korrigerer } returns null
-                                        every { it.korrigertAv } returns
-                                            "jd14jfqd-0422-4a5e-b779-a8819abf"
-                                        every { it.soknadsperioder } returns
-                                            listOf(
-                                                Soknadsperiode(
-                                                    fom = LocalDate.parse("2021-10-04"),
-                                                    tom = LocalDate.parse("2021-10-12"),
-                                                    sykmeldingstype =
-                                                        Sykmeldingstype.AKTIVITET_IKKE_MULIG,
-                                                    sykmeldingsgrad = null,
-                                                ),
-                                            )
-                                        every { it.sendtNav } returns
-                                            LocalDateTime.parse("2022-05-09T08:56:24")
-                                        every { it.sendtArbeidsgiver } returns
-                                            LocalDateTime.parse("2022-05-10T08:56:24")
-                                        every { it.sporsmal } returns
-                                            listOf(
-                                                Sporsmal(
-                                                    id = "54217564",
-                                                    tag = "BEKREFT_OPPLYSNINGER",
-                                                    min = "2024-03-03",
-                                                    max = "2024-03-06",
-                                                    sporsmalstekst =
-                                                        "Jeg har lest all informasjonen jeg har fått i søknaden og bekrefter at opplysningene jeg har gitt er korrekte.",
-                                                    undertekst = "Undertekst til spørsmålet",
-                                                    svartype = Svartype.CHECKBOX_PANEL,
-                                                    kriterieForVisningAvUndersporsmal = null,
-                                                    svar =
-                                                        listOf(
-                                                            no.nav.syfo.soknad.model.Svar(
-                                                                verdi = "CHECKED",
+                        (
+                            createSykmeldtDbModel(
+                                pasientNavn = "Navn Navnesen",
+                            ) to
+                                createSoknadDbModel(
+                                    soknadId = soknadId,
+                                    soknad =
+                                        mockk<Soknad>().also {
+                                            every { it.fom } returns LocalDate.parse("2021-10-01")
+                                            every { it.korrigerer } returns null
+                                            every { it.korrigertAv } returns
+                                                "jd14jfqd-0422-4a5e-b779-a8819abf"
+                                            every { it.soknadsperioder } returns
+                                                listOf(
+                                                    Soknadsperiode(
+                                                        fom = LocalDate.parse("2021-10-04"),
+                                                        tom = LocalDate.parse("2021-10-12"),
+                                                        sykmeldingstype =
+                                                            Sykmeldingstype.AKTIVITET_IKKE_MULIG,
+                                                        sykmeldingsgrad = null,
+                                                    ),
+                                                )
+                                            every { it.sendtNav } returns
+                                                LocalDateTime.parse("2022-05-09T08:56:24")
+                                            every { it.sendtArbeidsgiver } returns
+                                                LocalDateTime.parse("2022-05-10T08:56:24")
+                                            every { it.sporsmal } returns
+                                                listOf(
+                                                    Sporsmal(
+                                                        id = "54217564",
+                                                        tag = "BEKREFT_OPPLYSNINGER",
+                                                        min = "2024-03-03",
+                                                        max = "2024-03-06",
+                                                        sporsmalstekst =
+                                                            "Jeg har lest all informasjonen jeg har fått i søknaden og bekrefter at opplysningene jeg har gitt er korrekte.",
+                                                        undertekst = "Undertekst til spørsmålet",
+                                                        svartype = Svartype.CHECKBOX_PANEL,
+                                                        kriterieForVisningAvUndersporsmal = null,
+                                                        svar =
+                                                            listOf(
+                                                                no.nav.syfo.soknad.model.Svar(
+                                                                    verdi = "CHECKED",
+                                                                ),
                                                             ),
-                                                        ),
-                                                    undersporsmal = emptyList(),
-                                                ),
-                                                Sporsmal(
-                                                    id = "54217564",
-                                                    tag = "VAER_KLAR_OVER_AT",
-                                                    min = "2024-03-03",
-                                                    max = "2024-03-06",
-                                                    sporsmalstekst = "Viktig å være klar over:",
-                                                    undertekst = "Undertekst til spørsmålet",
-                                                    svartype = Svartype.IKKE_RELEVANT,
-                                                    kriterieForVisningAvUndersporsmal = null,
-                                                    svar =
-                                                        listOf(
-                                                            no.nav.syfo.soknad.model.Svar(
-                                                                verdi = "CHECKED",
+                                                        undersporsmal = emptyList(),
+                                                    ),
+                                                    Sporsmal(
+                                                        id = "54217564",
+                                                        tag = "VAER_KLAR_OVER_AT",
+                                                        min = "2024-03-03",
+                                                        max = "2024-03-06",
+                                                        sporsmalstekst = "Viktig å være klar over:",
+                                                        undertekst = "Undertekst til spørsmålet",
+                                                        svartype = Svartype.IKKE_RELEVANT,
+                                                        kriterieForVisningAvUndersporsmal = null,
+                                                        svar =
+                                                            listOf(
+                                                                no.nav.syfo.soknad.model.Svar(
+                                                                    verdi = "CHECKED",
+                                                                ),
                                                             ),
-                                                        ),
-                                                    undersporsmal = emptyList(),
-                                                ),
-                                                Sporsmal(
-                                                    id = "54217564",
-                                                    tag = "HVOR_MYE_HAR_DU_JOBBET",
-                                                    min = "2024-03-03",
-                                                    max = "2024-03-06",
-                                                    sporsmalstekst =
-                                                        "Hvor mye jobbet du totalt 20. mai - 5. juni 2020 hos 0102983875 sitt orgnavn?",
-                                                    undertekst = "Undertekst til spørsmålet",
-                                                    svartype = Svartype.RADIO_GRUPPE_TIMER_PROSENT,
-                                                    kriterieForVisningAvUndersporsmal = null,
-                                                    svar =
-                                                        listOf(
-                                                            no.nav.syfo.soknad.model.Svar(
-                                                                verdi = "Ja",
+                                                        undersporsmal = emptyList(),
+                                                    ),
+                                                    Sporsmal(
+                                                        id = "54217564",
+                                                        tag = "HVOR_MYE_HAR_DU_JOBBET",
+                                                        min = "2024-03-03",
+                                                        max = "2024-03-06",
+                                                        sporsmalstekst =
+                                                            "Hvor mye jobbet du totalt 20. mai - 5. juni 2020 hos 0102983875 sitt orgnavn?",
+                                                        undertekst = "Undertekst til spørsmålet",
+                                                        svartype = Svartype.RADIO_GRUPPE_TIMER_PROSENT,
+                                                        kriterieForVisningAvUndersporsmal = null,
+                                                        svar =
+                                                            listOf(
+                                                                no.nav.syfo.soknad.model.Svar(
+                                                                    verdi = "Ja",
+                                                                ),
                                                             ),
-                                                        ),
-                                                    undersporsmal = emptyList(),
-                                                ),
-                                            )
-                                    },
-                            ))
+                                                        undersporsmal = emptyList(),
+                                                    ),
+                                                )
+                                        },
+                                )
+                        )
 
                     val result = mineSykmeldtService.getSoknad(soknadId, "soknad-112")
 
@@ -1329,33 +1350,31 @@ private fun createSykmeldingDbModel(
     timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
     latestTom: LocalDate = LocalDate.now(),
     sendtTilArbeidsgiverDato: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
-) =
-    SykmeldingDbModel(
-        sykmeldingId = sykmeldingId,
-        pasientFnr = pasientFnr,
-        orgnummer = orgnummer,
-        orgnavn = orgnavn,
-        sykmelding = sykmelding,
-        lest = lest,
-        timestamp = timestamp,
-        latestTom = latestTom,
-        sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato,
-        egenmeldingsdager = null,
-    )
+) = SykmeldingDbModel(
+    sykmeldingId = sykmeldingId,
+    pasientFnr = pasientFnr,
+    orgnummer = orgnummer,
+    orgnavn = orgnavn,
+    sykmelding = sykmelding,
+    lest = lest,
+    timestamp = timestamp,
+    latestTom = latestTom,
+    sendtTilArbeidsgiverDato = sendtTilArbeidsgiverDato,
+    egenmeldingsdager = null,
+)
 
 private fun createSykmeldtDbModel(
     pasientFnr: String = "08088012345",
     pasientNavn: String = "Ola Normann",
     startdatoSykefravaer: LocalDate = LocalDate.now(),
     latestTom: LocalDate = LocalDate.now(),
-) =
-    SykmeldtDbModel(
-        pasientFnr = pasientFnr,
-        pasientNavn = pasientNavn,
-        startdatoSykefravaer = startdatoSykefravaer,
-        latestTom = latestTom,
-        sistOppdatert = null,
-    )
+) = SykmeldtDbModel(
+    pasientFnr = pasientFnr,
+    pasientNavn = pasientNavn,
+    startdatoSykefravaer = startdatoSykefravaer,
+    latestTom = latestTom,
+    sistOppdatert = null,
+)
 
 fun getSykmeldtData(
     sykmeldte: Int,

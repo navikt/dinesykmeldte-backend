@@ -2,7 +2,6 @@ package no.nav.syfo.soknad
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.LocalDate
 import no.nav.syfo.application.metrics.SOKNAD_TOPIC_COUNTER
 import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.soknad.kafka.model.FlexSoknad
@@ -10,6 +9,7 @@ import no.nav.syfo.soknad.kafka.model.FlexSoknadStatus
 import no.nav.syfo.util.logger
 import no.nav.syfo.util.objectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import java.time.LocalDate
 
 class SoknadService(
     private val soknadDb: SoknadDb,
@@ -26,7 +26,7 @@ class SoknadService(
                 throw exception
             } else {
                 log.info(
-                    "Ignoring sykepengesøknad when error InvalidFormatException med id: ${record.key()}"
+                    "Ignoring sykepengesøknad when error InvalidFormatException med id: ${record.key()}",
                 )
             }
         } catch (exception: Exception) {
@@ -60,9 +60,8 @@ class SoknadService(
         }
     }
 
-    private fun hasArbeidsgiver(sykepengesoknad: FlexSoknad): Boolean {
-        return sykepengesoknad.arbeidsgiver?.orgnummer != null
-    }
+    private fun hasArbeidsgiver(sykepengesoknad: FlexSoknad): Boolean =
+        sykepengesoknad.arbeidsgiver?.orgnummer != null
 
     private fun shouldHandleSoknad(sykepengesoknad: FlexSoknad) =
         hasArbeidsgiver(sykepengesoknad) &&

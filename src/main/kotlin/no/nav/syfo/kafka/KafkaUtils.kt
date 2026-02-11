@@ -1,7 +1,5 @@
 package no.nav.syfo.kafka
 
-import java.util.Properties
-import kotlin.reflect.KClass
 import no.nav.syfo.isLocalEnv
 import no.nav.syfo.util.JacksonKafkaSerializer
 import org.apache.kafka.clients.CommonClientConfigs
@@ -10,11 +8,13 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.*
+import java.util.Properties
+import kotlin.reflect.KClass
 
 class KafkaUtils {
     companion object {
-        fun getKafkaConfig(clientId: String): Properties {
-            return Properties().also {
+        fun getKafkaConfig(clientId: String): Properties =
+            Properties().also {
                 val kafkaEnv = if (isLocalEnv()) KafkaEnvironment.createLocal() else KafkaEnvironment()
                 it[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = kafkaEnv.KAFKA_BROKERS
                 it[CommonClientConfigs.CLIENT_ID_CONFIG] = "${kafkaEnv.KAFKA_CLIENT_ID}-$clientId"
@@ -33,13 +33,13 @@ class KafkaUtils {
                 it[ProducerConfig.ACKS_CONFIG] = "all"
                 it[ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG] = "true"
             }
-        }
     }
 }
 
 fun <T> createKafkaProducer(clientId: String): KafkaProducer<String, T> =
     KafkaProducer(
-        KafkaUtils.getKafkaConfig(clientId)
+        KafkaUtils
+            .getKafkaConfig(clientId)
             .toProducerConfig(
                 JacksonKafkaSerializer::class,
                 StringSerializer::class,
@@ -49,7 +49,7 @@ fun <T> createKafkaProducer(clientId: String): KafkaProducer<String, T> =
 fun Properties.toConsumerConfig(
     groupId: String,
     valueDeserializer: KClass<out Deserializer<out Any>>,
-    keyDeserializer: KClass<out Deserializer<out Any>> = StringDeserializer::class
+    keyDeserializer: KClass<out Deserializer<out Any>> = StringDeserializer::class,
 ): Properties =
     Properties().also {
         it.putAll(this)
@@ -61,7 +61,7 @@ fun Properties.toConsumerConfig(
 
 fun Properties.toProducerConfig(
     valueSerializer: KClass<out Serializer<out Any>>,
-    keySerializer: KClass<out Serializer<out Any>> = StringSerializer::class
+    keySerializer: KClass<out Serializer<out Any>> = StringSerializer::class,
 ): Properties =
     Properties().also {
         it.putAll(this)

@@ -1,9 +1,9 @@
 package no.nav.syfo.minesykmeldte.db
 
-import java.time.LocalDate
-import java.time.OffsetDateTime
 import no.nav.syfo.soknad.model.Soknad
 import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
+import java.time.LocalDate
+import java.time.OffsetDateTime
 
 data class MinSykmeldtDbModel(
     val narmestelederId: String,

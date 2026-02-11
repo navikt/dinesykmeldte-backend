@@ -1,6 +1,5 @@
 package no.nav.syfo.dinesykmeldte.util
 
-import java.time.LocalDate
 import no.nav.syfo.dinesykmeldte.model.Ansatt
 import no.nav.syfo.dinesykmeldte.model.Arbeidsevne
 import no.nav.syfo.dinesykmeldte.model.Bekreftelse
@@ -12,9 +11,10 @@ import no.nav.syfo.dinesykmeldte.model.Periode
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.BehandlerAGDTO
 import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
+import java.time.LocalDate
 
-fun MinSykmeldtDbModel.toDineSykmeldteSykmelding(ansatt: Ansatt): DineSykmeldteSykmelding {
-    return DineSykmeldteSykmelding(
+fun MinSykmeldtDbModel.toDineSykmeldteSykmelding(ansatt: Ansatt): DineSykmeldteSykmelding =
+    DineSykmeldteSykmelding(
         pasient =
             Pasient(
                 fnr = sykmeldtFnr,
@@ -47,49 +47,45 @@ fun MinSykmeldtDbModel.toDineSykmeldteSykmelding(ansatt: Ansatt): DineSykmeldteS
                 hensynPaaArbeidsplassen = this.sykmelding.prognose?.hensynArbeidsplassen,
             ),
     )
-}
 
-fun getSykmelderNavn(behandlerDTO: BehandlerAGDTO): String {
-    return if (behandlerDTO.mellomnavn.isNullOrEmpty()) {
+fun getSykmelderNavn(behandlerDTO: BehandlerAGDTO): String =
+    if (behandlerDTO.mellomnavn.isNullOrEmpty()) {
         capitalizeFirstLetter("${behandlerDTO.fornavn} ${behandlerDTO.etternavn}")
     } else {
         capitalizeFirstLetter(
-            "${behandlerDTO.fornavn} ${behandlerDTO.mellomnavn} ${behandlerDTO.etternavn}"
+            "${behandlerDTO.fornavn} ${behandlerDTO.mellomnavn} ${behandlerDTO.etternavn}",
         )
     }
-}
 
-fun capitalizeFirstLetter(string: String): String {
-    return string
+fun capitalizeFirstLetter(string: String): String =
+    string
         .lowercase()
         .split(" ")
         .joinToString(" ") { it.replaceFirstChar { char -> char.titlecaseChar() } }
         .split("-")
         .joinToString("-") { it.replaceFirstChar { char -> char.titlecaseChar() } }
         .trimEnd()
-}
 
-fun getAktivitetIkkeMuligBeskrivelse(sykmeldingsperioder: List<SykmeldingsperiodeAGDTO>): String {
-    return sykmeldingsperioder
+fun getAktivitetIkkeMuligBeskrivelse(sykmeldingsperioder: List<SykmeldingsperiodeAGDTO>): String =
+    sykmeldingsperioder
         .mapNotNull { it.aktivitetIkkeMulig?.arbeidsrelatertArsak?.beskrivelse }
         .distinct()
         .joinToString(separator = ", ")
-}
 
-fun getAktivitetIkkeMulig(sykmeldingsperioder: List<SykmeldingsperiodeAGDTO>): List<String> {
-    return sykmeldingsperioder
+fun getAktivitetIkkeMulig(sykmeldingsperioder: List<SykmeldingsperiodeAGDTO>): List<String> =
+    sykmeldingsperioder
         .mapNotNull { it.aktivitetIkkeMulig?.arbeidsrelatertArsak }
         .flatMap { it.arsak }
         .map { it.name }
         .distinct()
-}
 
-private fun MinSykmeldtDbModel.getPerioder(): List<Periode> {
-    return sykmelding.sykmeldingsperioder.map { it.toPerioder() }
-}
+private fun MinSykmeldtDbModel.getPerioder(): List<Periode> =
+    sykmelding.sykmeldingsperioder.map {
+        it.toPerioder()
+    }
 
-private fun SykmeldingsperiodeAGDTO.toPerioder(): Periode {
-    return Periode(
+private fun SykmeldingsperiodeAGDTO.toPerioder(): Periode =
+    Periode(
         fom = this.fom,
         tom = this.tom,
         grad = this.gradert?.grad ?: 100,
@@ -97,7 +93,6 @@ private fun SykmeldingsperiodeAGDTO.toPerioder(): Periode {
         reisetilskudd = this.reisetilskudd,
         avventende = this.innspillTilArbeidsgiver,
     )
-}
 
 fun List<SykmeldingsperiodeAGDTO>.isActive(date: LocalDate = LocalDate.now()): Boolean =
     any { date in it.fom..it.tom.plusDays(16) }

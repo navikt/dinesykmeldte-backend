@@ -70,8 +70,7 @@ object VirksomhetApiKtTest :
                             "orgnummer": "test-virksomhet-2"
                           }
                         ]
-                        """
-                                    .minifyApiResponse()
+                        """.minifyApiResponse()
                         }
                     }
                 }

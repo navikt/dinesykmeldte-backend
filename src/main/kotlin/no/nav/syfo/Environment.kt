@@ -23,31 +23,34 @@ data class Environment(
     val syketilfelleScope: String = getEnvVar("SYKETILLFELLE_SCOPE"),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val dbUrl: String = getEnvVar("NAIS_DATABASE_JDBC_URL"),
-    val texas: TexasEnvironment = TexasEnvironment.createFromEnvVars()
+    val texas: TexasEnvironment = TexasEnvironment.createFromEnvVars(),
 ) {
     companion object {
         val authserver = getEnvVar("AUTH_SERVER", "localhost:6969")
         val dbserver = getEnvVar("DB_SERVER", "localhost:5432")
-        fun createLocal() = Environment(
-            cluster = "local",
-            tokenXWellKnownUrl = "http://${authserver}/tokenx/.well-known/openid-configuration",
-            dineSykmeldteBackendTokenXClientId = "dinesykmeldte-backend",
-            pdlGraphqlPath = "http://localhost:8080/graphql",
-            pdlScope = "pdl-api://default",
-            clientId = "clientId",
-            clientSecret = "clientSecret",
-            aadAccessTokenUrl = "http://localhost:8080/token",
-            electorPath = "dinesykmeldte-backend-local",
-            dbUrl = "jdbc:postgresql://${dbserver}/dinesykmeldte-backend_dev?user=username&password=password&ssl=false",
-            syketilfelleScope = "syketilfelle-backend",
-            texas = TexasEnvironment.createForLocal(),
-        )
+
+        fun createLocal() =
+            Environment(
+                cluster = "local",
+                tokenXWellKnownUrl = "http://$authserver/tokenx/.well-known/openid-configuration",
+                dineSykmeldteBackendTokenXClientId = "dinesykmeldte-backend",
+                pdlGraphqlPath = "http://localhost:8080/graphql",
+                pdlScope = "pdl-api://default",
+                clientId = "clientId",
+                clientSecret = "clientSecret",
+                aadAccessTokenUrl = "http://localhost:8080/token",
+                electorPath = "dinesykmeldte-backend-local",
+                dbUrl = "jdbc:postgresql://$dbserver/dinesykmeldte-backend_dev?user=username&password=password&ssl=false",
+                syketilfelleScope = "syketilfelle-backend",
+                texas = TexasEnvironment.createForLocal(),
+            )
     }
 }
 
-fun getEnvVar(varName: String, defaultValue: String? = null) =
-    System.getenv(varName)
-        ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
+fun getEnvVar(
+    varName: String,
+    defaultValue: String? = null,
+) = System.getenv(varName)
+    ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
 
-fun isLocalEnv(): Boolean =
-    getEnvVar("NAIS_CLUSTER_NAME", "local") == "local"
+fun isLocalEnv(): Boolean = getEnvVar("NAIS_CLUSTER_NAME", "local") == "local"

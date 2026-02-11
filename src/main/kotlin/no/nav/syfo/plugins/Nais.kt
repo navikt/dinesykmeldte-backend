@@ -16,9 +16,9 @@ import io.ktor.server.routing.routing
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.exporter.common.TextFormat
 import io.prometheus.client.exporter.common.TextFormat.write004
-import java.util.UUID
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.util.logger
+import java.util.UUID
 
 fun Application.configureNaisResources(applicationState: ApplicationState) {
     val logger = logger()
@@ -57,12 +57,15 @@ private fun Routing.registerNaisApi(
         } else {
             call.respondText(
                 "Please wait! I'm not ready :(",
-                status = HttpStatusCode.InternalServerError
+                status = HttpStatusCode.InternalServerError,
             )
         }
     }
     get("/internal/prometheus") {
-        val names = call.request.queryParameters.getAll("name[]")?.toSet() ?: setOf()
+        val names =
+            call.request.queryParameters
+                .getAll("name[]")
+                ?.toSet() ?: setOf()
         call.respondTextWriter(ContentType.parse(TextFormat.CONTENT_TYPE_004)) {
             write004(this, collectorRegistry.filteredMetricFamilySamples(names))
         }

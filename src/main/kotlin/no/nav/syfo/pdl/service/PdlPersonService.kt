@@ -18,7 +18,10 @@ class PdlPersonService(
         private val log = logger()
     }
 
-    suspend fun getPerson(fnr: String, callId: String): PdlPerson {
+    suspend fun getPerson(
+        fnr: String,
+        callId: String,
+    ): PdlPerson {
         val accessToken = accessTokenClient.getAccessToken(pdlScope)
         try {
             val pdlResponse = pdlClient.getPerson(fnr = fnr, token = accessToken)
@@ -31,13 +34,17 @@ class PdlPersonService(
 
     private fun GetPersonResponse.toPerson(callId: String): PdlPerson {
         val navn = data.person?.navn?.firstOrNull()
-        val aktorId = data.identer?.identer?.firstOrNull { it.gruppe == AKTORID_GRUPPE }?.ident
+        val aktorId =
+            data.identer
+                ?.identer
+                ?.firstOrNull { it.gruppe == AKTORID_GRUPPE }
+                ?.ident
 
         errors?.forEach {
             log.error("PDL returnerte feilmelding: ${it.message}, ${it.extensions?.code}, $callId")
             it.extensions?.details?.let { details ->
                 log.error(
-                    "Type: ${details.type}, cause: ${details.cause}, policy: ${details.policy}, $callId"
+                    "Type: ${details.type}, cause: ${details.cause}, policy: ${details.policy}, $callId",
                 )
             }
         }
@@ -54,7 +61,7 @@ class PdlPersonService(
                 Navn(
                     fornavn = navn.fornavn,
                     mellomnavn = navn.mellomnavn,
-                    etternavn = navn.etternavn
+                    etternavn = navn.etternavn,
                 ),
         )
     }

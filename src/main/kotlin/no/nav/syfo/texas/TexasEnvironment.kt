@@ -8,11 +8,12 @@ data class TexasEnvironment(
     val tokenExchangeEndpoint: String,
 ) {
     companion object {
-        fun createForLocal() = TexasEnvironment(
-            tokenIntrospectionEndpoint = "http://localhost:3000/api/v1/introspect",
-            tokenExchangeEndpoint = "http://localhost:3000/api/v1/token/exchange",
-            tokenEndpoint = "http://localhost:3000/api/v1/token",
-        )
+        fun createForLocal() =
+            TexasEnvironment(
+                tokenIntrospectionEndpoint = "http://localhost:3000/api/v1/introspect",
+                tokenExchangeEndpoint = "http://localhost:3000/api/v1/token/exchange",
+                tokenEndpoint = "http://localhost:3000/api/v1/token",
+            )
 
         fun createFromEnvVars() =
             TexasEnvironment(

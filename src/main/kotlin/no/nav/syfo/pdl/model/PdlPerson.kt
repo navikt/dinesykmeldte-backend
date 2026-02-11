@@ -12,6 +12,4 @@ data class Navn(
     val etternavn: String,
 )
 
-fun Navn.formatName(): String {
-    return toFormattedNameString(fornavn, mellomnavn, etternavn)
-}
+fun Navn.formatName(): String = toFormattedNameString(fornavn, mellomnavn, etternavn)

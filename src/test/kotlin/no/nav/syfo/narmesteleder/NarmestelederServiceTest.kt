@@ -4,16 +4,16 @@ import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coVerify
 import io.mockk.mockk
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.util.UUID
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.insertOrUpdate
 import org.amshove.kluent.shouldBeEqualTo
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.UUID
 
 class NarmestelederServiceTest :
     FunSpec({
@@ -42,13 +42,13 @@ class NarmestelederServiceTest :
                 val id = UUID.randomUUID()
                 narmestelederService.updateNl(createNarmestelederLeesahKafkaMessage(id))
                 narmestelederService.updateNl(
-                    createNarmestelederLeesahKafkaMessage(id, aktivTom = LocalDate.now())
+                    createNarmestelederLeesahKafkaMessage(id, aktivTom = LocalDate.now()),
                 )
 
                 TestDb.getNarmesteleder(pasientFnr = "12345678910").size shouldBeEqualTo 0
             }
             test(
-                "Deaktiverer kobling hvis finnes aktiv NL-kobling i databasen og sletter fra databasen"
+                "Deaktiverer kobling hvis finnes aktiv NL-kobling i databasen og sletter fra databasen",
             ) {
                 val id = UUID.randomUUID()
                 TestDb.database.insertOrUpdate(
@@ -60,7 +60,7 @@ class NarmestelederServiceTest :
                 narmestelederService.deaktiverNarmesteLeder(
                     "01987654321",
                     id.toString(),
-                    UUID.randomUUID()
+                    UUID.randomUUID(),
                 )
 
                 coVerify(exactly = 1) {
@@ -85,7 +85,7 @@ class NarmestelederServiceTest :
                 narmestelederService.deaktiverNarmesteLeder(
                     "01987654321",
                     UUID.randomUUID().toString(),
-                    UUID.randomUUID()
+                    UUID.randomUUID(),
                 )
 
                 coVerify(exactly = 0) { nlResponseProducer.send(any()) }

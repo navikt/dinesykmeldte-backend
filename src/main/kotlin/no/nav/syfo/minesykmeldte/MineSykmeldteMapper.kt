@@ -28,7 +28,10 @@ class MineSykmeldteMapper private constructor() {
                 else -> throw IllegalArgumentException("Incorrect soknad status ${soknad.status}")
             }
 
-        private fun getSendtSoknad(soknad: Soknad, lest: Boolean): PreviewSendtSoknad =
+        private fun getSendtSoknad(
+            soknad: Soknad,
+            lest: Boolean,
+        ): PreviewSendtSoknad =
             PreviewSendtSoknad(
                 id = soknad.id,
                 sykmeldingId = soknad.sykmeldingId,
@@ -36,11 +39,12 @@ class MineSykmeldteMapper private constructor() {
                 tom = soknad.tom,
                 lest = lest,
                 korrigererSoknadId = soknad.korrigerer,
-                sendtDato = soknad.sendtArbeidsgiver
+                sendtDato =
+                    soknad.sendtArbeidsgiver
                         ?: throw IllegalStateException(
-                            "sendtArbeidsgiver is null for soknad: ${soknad.id}"
+                            "sendtArbeidsgiver is null for soknad: ${soknad.id}",
                         ),
-                perioder = soknad.soknadsperioder.map { it.toSoknadsperiode() }
+                perioder = soknad.soknadsperioder.map { it.toSoknadsperiode() },
             )
 
         private fun getFremtidigSoknad(soknad: Soknad): PreviewFremtidigSoknad =
@@ -49,13 +53,13 @@ class MineSykmeldteMapper private constructor() {
                 sykmeldingId = soknad.sykmeldingId,
                 fom = soknad.fom,
                 tom = soknad.tom,
-                perioder = soknad.soknadsperioder.map { it.toSoknadsperiode() }
+                perioder = soknad.soknadsperioder.map { it.toSoknadsperiode() },
             )
 
         private fun getNySoknad(
             soknad: Soknad,
             lest: Boolean,
-            hendelser: List<Hendelse>
+            hendelser: List<Hendelse>,
         ): PreviewNySoknad =
             PreviewNySoknad(
                 lest = lest,
@@ -72,8 +76,7 @@ class MineSykmeldteMapper private constructor() {
                     hendelser
                         .find {
                             it.id == soknad.id && it.oppgavetype == HendelseType.IKKE_SENDT_SOKNAD
-                        }
-                        ?.mottatt,
+                        }?.mottatt,
             )
 
         fun no.nav.syfo.soknad.model.Soknadsperiode.toSoknadsperiode(): Soknadsperiode =

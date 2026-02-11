@@ -10,48 +10,58 @@ import no.nav.syfo.texas.TexasEnvironment
 
 class TexasHttpClient(
     val client: HttpClient,
-    val environment: TexasEnvironment
+    val environment: TexasEnvironment,
 ) {
-
-    suspend fun introspectToken(identityProvider: String, token: String): TexasIntrospectionResponse {
-        return client.post(environment.tokenIntrospectionEndpoint) {
-            contentType(ContentType.Application.Json)
-            setBody(
-                TexasIntrospectionRequest(
-                    identityProvider = identityProvider,
-                    token = token
+    suspend fun introspectToken(
+        identityProvider: String,
+        token: String,
+    ): TexasIntrospectionResponse =
+        client
+            .post(environment.tokenIntrospectionEndpoint) {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    TexasIntrospectionRequest(
+                        identityProvider = identityProvider,
+                        token = token,
+                    ),
                 )
-            )
-        }.body<TexasIntrospectionResponse>()
-    }
+            }.body<TexasIntrospectionResponse>()
 
-    suspend fun systemToken(identityProvider: String, target: String): TexasResponse {
-        return client.post(environment.tokenEndpoint) {
-            contentType(ContentType.Application.Json)
-            setBody(
-                TexasTokenRequest(
-                    identityProvider = identityProvider,
-                    target = target,
+    suspend fun systemToken(
+        identityProvider: String,
+        target: String,
+    ): TexasResponse =
+        client
+            .post(environment.tokenEndpoint) {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    TexasTokenRequest(
+                        identityProvider = identityProvider,
+                        target = target,
+                    ),
                 )
-            )
-        }.body<TexasResponse>()
-    }
+            }.body<TexasResponse>()
 
-    private suspend fun exchangeToken(identityProvider: String, target: String, token: String): TexasResponse {
-        return client.post(environment.tokenExchangeEndpoint) {
-            contentType(ContentType.Application.Json)
-            setBody(
-                TexasExchangeRequest(
-                    identityProvider = identityProvider,
-                    target = target,
-                    userToken = token
+    private suspend fun exchangeToken(
+        identityProvider: String,
+        target: String,
+        token: String,
+    ): TexasResponse =
+        client
+            .post(environment.tokenExchangeEndpoint) {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    TexasExchangeRequest(
+                        identityProvider = identityProvider,
+                        target = target,
+                        userToken = token,
+                    ),
                 )
-            )
-        }.body<TexasResponse>()
-    }
+            }.body<TexasResponse>()
 
     companion object {
         fun getTarget(scope: String) = "api://$scope/.default"
+
         const val IDENTITY_PROVIDER_TOKENX = "tokenx"
         const val IDENTITY_PROVIDER_AZUREAD = "azuread"
     }

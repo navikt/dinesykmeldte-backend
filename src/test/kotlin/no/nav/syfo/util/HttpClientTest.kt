@@ -26,8 +26,8 @@ import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
-import java.net.ServerSocket
 import no.nav.syfo.common.exception.ServiceUnavailableException
+import java.net.ServerSocket
 
 data class ResponseData(
     val httpStatusCode: HttpStatusCode,
@@ -36,25 +36,23 @@ data class ResponseData(
 )
 
 class HttpClientTest {
-
     val mockHttpServerPort = ServerSocket(0).use { it.localPort }
     val mockHttpServerUrl = "http://localhost:$mockHttpServerPort"
     val mockServer =
         embeddedServer(Netty, mockHttpServerPort) {
-                install(ContentNegotiation) {
-                    jackson {
-                        registerKotlinModule()
-                        registerModule(JavaTimeModule())
-                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                    }
-                }
-                routing {
-                    get("*") { response() }
-                    post("*") { response() }
+            install(ContentNegotiation) {
+                jackson {
+                    registerKotlinModule()
+                    registerModule(JavaTimeModule())
+                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 }
             }
-            .start(false)
+            routing {
+                get("*") { response() }
+                post("*") { response() }
+            }
+        }.start(false)
 
     private suspend fun RoutingContext.response() {
         when (val response = responseFunction.invoke()) {
@@ -63,7 +61,7 @@ class HttpClientTest {
                 call.respondText(
                     response.content,
                     ContentType.Application.Json,
-                    response.httpStatusCode
+                    response.httpStatusCode,
                 )
                 call.respond(response.httpStatusCode, response.content)
             }
@@ -74,7 +72,10 @@ class HttpClientTest {
 
     var responseData: ResponseData? = null
 
-    fun respond(status: HttpStatusCode, content: String = "") {
+    fun respond(
+        status: HttpStatusCode,
+        content: String = "",
+    ) {
         responseData = ResponseData(status, content, headersOf())
     }
 

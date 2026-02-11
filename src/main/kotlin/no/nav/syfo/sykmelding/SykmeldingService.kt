@@ -1,7 +1,6 @@
 package no.nav.syfo.sykmelding
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.LocalDate
 import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_COUNTER
 import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.pdl.model.formatName
@@ -17,6 +16,7 @@ import no.nav.syfo.sykmelding.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAG
 import no.nav.syfo.util.logger
 import no.nav.syfo.util.objectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import java.time.LocalDate
 
 class SykmeldingService(
     private val sykmeldingDb: SykmeldingDb,
@@ -56,7 +56,7 @@ class SykmeldingService(
 
     suspend fun handleSendtSykmeldingKafkaMessage(
         sykmeldingId: String,
-        sykmelding: SendtSykmeldingKafkaMessage?
+        sykmelding: SendtSykmeldingKafkaMessage?,
     ) {
         val existingSykmelding = sykmeldingDb.getSykmeldingInfo(sykmeldingId)
         when (sykmelding) {
@@ -87,7 +87,7 @@ class SykmeldingService(
 
     private suspend fun deleteSykmelding(
         sykmeldingId: String,
-        existingSykmelding: SykmeldingInfo?
+        existingSykmelding: SykmeldingInfo?,
     ) {
         if (existingSykmelding != null) {
             log.info("Sletter sykmelding med id $sykmeldingId")
@@ -124,15 +124,17 @@ class SykmeldingService(
         }
     }
 
-    fun getActiveSendtSykmeldingsperioder(fnr: String, orgnummer: String): Boolean {
+    fun getActiveSendtSykmeldingsperioder(
+        fnr: String,
+        orgnummer: String,
+    ): Boolean {
         val antallSykmeldinger =
             sykmeldingDb.getActiveSendtSykmeldingsperioder(fnr, orgnummer)?.firstOrNull()
 
         return antallSykmeldinger != null && antallSykmeldinger > 0
     }
 
-    private fun finnSisteTom(perioder: List<SykmeldingsperiodeAGDTO>): LocalDate {
-        return perioder.maxByOrNull { it.tom }?.tom
+    private fun finnSisteTom(perioder: List<SykmeldingsperiodeAGDTO>): LocalDate =
+        perioder.maxByOrNull { it.tom }?.tom
             ?: throw IllegalStateException("Skal ikke kunne ha periode uten tom")
-    }
 }
