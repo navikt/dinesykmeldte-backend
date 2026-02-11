@@ -1,8 +1,10 @@
 package no.nav.syfo.minesykmeldte.api
 
 import io.kotest.core.spec.style.FunSpec
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.put
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.mockk.clearMocks
 import io.mockk.coEvery

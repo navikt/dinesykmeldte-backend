@@ -1,10 +1,10 @@
 package no.nav.syfo
 
 import io.kotest.core.spec.style.FunSpec
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.*
+import io.ktor.server.testing.testApplication
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.plugins.configureNaisResources
 import org.amshove.kluent.shouldBeEqualTo
