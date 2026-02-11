@@ -22,7 +22,7 @@ val googleOauthVersion = "1.39.0"
 val ktfmtVersion = "0.44"
 val kafkaVersion = "3.9.1"
 val koinVersion = "4.1.1"
-///Due to vulnerabilities
+// Due to vulnerabilities
 val nettycommonVersion = "4.2.9.Final"
 val snappyJavaVersion = "1.1.10.8"
 val commonsCompressVersion = "1.28.0"
@@ -31,7 +31,7 @@ plugins {
     id("application")
     id("com.diffplug.spotless") version "7.0.2"
     kotlin("jvm") version "2.2.21"
-    id("com.gradleup.shadow") version "8.3.6"
+    id("com.gradleup.shadow") version "9.3.1"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
 }
 
@@ -86,8 +86,8 @@ repositories {
         implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
         implementation("com.zaxxer:HikariCP:$hikariVersion")
-        compileOnly("org.flywaydb:flyway-core:$flywayVersion")
         implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
+        compileOnly("org.flywaydb:flyway-core:$flywayVersion")
         implementation("org.postgresql:postgresql:$postgresVersion")
         implementation("com.google.cloud.sql:postgres-socket-factory:$googlePostgresVersion")
         implementation("com.google.oauth-client:google-oauth-client:$googleOauthVersion")
@@ -130,6 +130,9 @@ repositories {
         }
 
         shadowJar {
+            filesMatching("META-INF/services/**") {
+                duplicatesStrategy = DuplicatesStrategy.INCLUDE
+            }
             mergeServiceFiles()
             archiveBaseName.set("app")
             archiveClassifier.set("")
@@ -137,7 +140,7 @@ repositories {
             manifest {
                 attributes(
                     mapOf(
-                        "Main-Class" to "no.nav.syfo.BootstrapKt",
+                        "Main-Class" to "no.nav.syfo.ApplicationKt",
                         "Multi-Release" to "true",
                     ),
                 )
@@ -165,4 +168,3 @@ repositories {
     }
 
 }
-
