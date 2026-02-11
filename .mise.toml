@@ -28,7 +28,11 @@ run =  '''
 [tasks.docker-run-local-image]
 description = "Run build with gradle"
 run =  '''
-   docker run --network dinesykmeldte-backend_default esyfo/dine-sykmeldte:local
+   docker run \
+    --network dinesykmeldte-backend_default \
+    -e AUTH_SERVER=authserver:6969 \
+    -e DB_SERVER=db:5432 \
+    esyfo/dine-sykmeldte:local
 '''
 
 [tasks.build]

@@ -26,10 +26,11 @@ data class Environment(
     val texas: TexasEnvironment = TexasEnvironment.createFromEnvVars()
 ) {
     companion object {
+        val authserver = getEnvVar("AUTH_SERVER", "localhost:6969")
+        val dbserver = getEnvVar("DB_SERVER", "localhost:5432")
         fun createLocal() = Environment(
             cluster = "local",
-            tokenXWellKnownUrl = " http://localhost:6969/tokenx/.well-known/openid-configuration",
-//            tokenXWellKnownUrl = " http://authserver:6969/tokenx/.well-known/openid-configuration",
+            tokenXWellKnownUrl = "http://${authserver}/tokenx/.well-known/openid-configuration",
             dineSykmeldteBackendTokenXClientId = "dinesykmeldte-backend",
             pdlGraphqlPath = "http://localhost:8080/graphql",
             pdlScope = "pdl-api://default",
@@ -37,10 +38,9 @@ data class Environment(
             clientSecret = "clientSecret",
             aadAccessTokenUrl = "http://localhost:8080/token",
             electorPath = "dinesykmeldte-backend-local",
-            dbUrl = "jdbc:postgresql://localhost:5432/dinesykmeldte-backend_dev?user=username&password=password&ssl=false",
-//            dbUrl = "jdbc:postgresql://db:5432/dinesykmeldte-backend_dev?user=username&password=password&ssl=false",
+            dbUrl = "jdbc:postgresql://${dbserver}/dinesykmeldte-backend_dev?user=username&password=password&ssl=false",
             syketilfelleScope = "syketilfelle-backend",
-            texas = TexasEnvironment.createForLocal()
+            texas = TexasEnvironment.createForLocal(),
         )
     }
 }
