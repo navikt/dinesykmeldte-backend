@@ -19,7 +19,7 @@ val swaggerUiVersion = "5.31.2"
 val kotestVersion = "6.1.3"
 val googlePostgresVersion = "1.28.0"
 val googleOauthVersion = "1.39.0"
-val kafkaVersion = "3.9.1"
+val kafkaVersion = "3.9.2"
 val koinVersion = "4.1.1"
 // Due to vulnerabilities
 val nettycommonVersion = "4.2.10.Final"
