@@ -50,7 +50,8 @@ class SykmeldingService(
                 )
             }
         } catch (e: Exception) {
-            log.error("Noe gikk galt ved mottak av sendt sykmelding med id ${record.key()}")
+            log.error("Noe gikk galt ved mottak av sendt sykmelding med id ${record.key()}. "
+                + "Exception type: ${e::class.java.simpleName}", e)
             SYKMELDING_TOPIC_STATUS_COUNTER.labels("error").inc()
             throw e
         }

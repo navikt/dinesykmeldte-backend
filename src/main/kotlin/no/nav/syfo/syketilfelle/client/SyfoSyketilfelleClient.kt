@@ -52,7 +52,12 @@ class SyfoSyketilfelleClient(
                 }
             }
         if (response.status != HttpStatusCode.OK) {
-            log.warn("Henter sykeforloep fra sykeforloep, response status: ${response.status}")
+            val responseText = response.body<String>()
+            val message =
+                "Henter sykeforloep fra sykeforloep, response status: ${response.status} " +
+                    " response body: $responseText"
+            log.warn(message)
+            throw SyketilfelleRequestException(message)
         }
         return response.body()
     }
@@ -70,5 +75,9 @@ data class SimpleSykmelding(
 )
 
 class SyketilfelleNotFoundException(
+    override val message: String?,
+) : Exception(message)
+
+class SyketilfelleRequestException(
     override val message: String?,
 ) : Exception(message)
