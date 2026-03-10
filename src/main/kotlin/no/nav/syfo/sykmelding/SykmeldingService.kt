@@ -17,7 +17,7 @@ import no.nav.syfo.util.logger
 import no.nav.syfo.util.objectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import java.time.LocalDate
-import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_STATUS_COUNTER
+import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_ACTION_COUNTER
 
 class SykmeldingService(
     private val sykmeldingDb: SykmeldingDb,
@@ -52,7 +52,7 @@ class SykmeldingService(
         } catch (e: Exception) {
             log.error("Noe gikk galt ved mottak av sendt sykmelding med id ${record.key()}. "
                 + "Exception type: ${e::class.java.simpleName}", e)
-            SYKMELDING_TOPIC_STATUS_COUNTER.labels("error").inc()
+            SYKMELDING_TOPIC_ACTION_COUNTER.labels("error").inc()
             throw e
         }
     }
@@ -65,7 +65,7 @@ class SykmeldingService(
         when (sykmelding) {
             null -> {
                 deleteSykmelding(sykmeldingId, existingSykmelding)
-                SYKMELDING_TOPIC_STATUS_COUNTER.labels("tombstone").inc()
+                SYKMELDING_TOPIC_ACTION_COUNTER.labels("tombstone").inc()
             }
             else -> {
                 handleSendtSykmelding(sykmelding, sykmeldingId, existingSykmelding)
@@ -89,10 +89,10 @@ class SykmeldingService(
             }
             sykmeldingDb.insertOrUpdateSykmelding(toSykmeldingDbModel(sykmelding, sisteTom))
             updateSykmeldt(sykmelding.kafkaMetadata.fnr)
-            SYKMELDING_TOPIC_STATUS_COUNTER.labels("upsert").inc()
+            SYKMELDING_TOPIC_ACTION_COUNTER.labels("upsert").inc()
         } else if (existingSykmelding != null) {
             deleteSykmelding(existingSykmelding.sykmeldingId, existingSykmelding)
-            SYKMELDING_TOPIC_STATUS_COUNTER.labels("delete").inc()
+            SYKMELDING_TOPIC_ACTION_COUNTER.labels("delete").inc()
         }
     }
 

@@ -38,14 +38,14 @@ val SYKMELDING_TOPIC_COUNTER: Counter =
         .help("Counts sendte sykmeldinger from kafka (new or deleted)")
         .register()
 
-val SYKMELDING_TOPIC_STATUS_COUNTER: Counter =
+val SYKMELDING_TOPIC_ACTION_COUNTER: Counter =
     Counter
         .build()
-        .labelNames("status")
-        .name("sykmelding_topic_status_counter")
+        .labelNames("action")
+        .name("sykmelding_topic_action_counter")
         .namespace(METRICS_NS)
         .help(
-            "Counts sendte sykmeldinger from kafka, separating by status(error, success or error)",
+            "Counts sendte sykmeldinger from kafka, separating by action(upsert, delete, tombstone)",
         )
         .register()
 
