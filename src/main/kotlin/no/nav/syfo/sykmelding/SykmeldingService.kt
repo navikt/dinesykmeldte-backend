@@ -53,6 +53,7 @@ class SykmeldingService(
             log.error("Noe gikk galt ved mottak av sendt sykmelding med id ${record.key()}. "
                 + "Exception type: ${e::class.java.simpleName}", e)
             SYKMELDING_TOPIC_ACTION_COUNTER.labels("error").inc()
+            log.info("sykmelding_topic_action_counter.error")
             throw e
         }
     }
@@ -66,6 +67,7 @@ class SykmeldingService(
             null -> {
                 deleteSykmelding(sykmeldingId, existingSykmelding)
                 SYKMELDING_TOPIC_ACTION_COUNTER.labels("tombstone").inc()
+                log.info("sykmelding_topic_action_counter.tombstone")
             }
             else -> {
                 handleSendtSykmelding(sykmelding, sykmeldingId, existingSykmelding)
@@ -90,9 +92,11 @@ class SykmeldingService(
             sykmeldingDb.insertOrUpdateSykmelding(toSykmeldingDbModel(sykmelding, sisteTom))
             updateSykmeldt(sykmelding.kafkaMetadata.fnr)
             SYKMELDING_TOPIC_ACTION_COUNTER.labels("upsert").inc()
+            log.info("sykmelding_topic_action_counter.upsert")
         } else if (existingSykmelding != null) {
             deleteSykmelding(existingSykmelding.sykmeldingId, existingSykmelding)
             SYKMELDING_TOPIC_ACTION_COUNTER.labels("delete").inc()
+            log.info("sykmelding_topic_action_counter.delete")
         }
     }
 
