@@ -10,6 +10,7 @@ import io.ktor.http.isSuccess
 import no.nav.syfo.pdl.client.model.GetPersonRequest
 import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.client.model.GetPersonVariables
+import no.nav.syfo.pdl.exceptions.PdlRequestFailedException
 import no.nav.syfo.util.logger
 import org.intellij.lang.annotations.Language
 
@@ -65,7 +66,7 @@ class PdlClient(
         } else {
             val responseText = response.body<String>()
             log.error("Feil ved kall mot PDL: Status: ${response.status}. Message: $responseText")
-            throw RuntimeException("Feil ved kall mot PDL: ${response.status}, $responseText")
+            throw PdlRequestFailedException("Feil ved kall mot PDL: ${response.status}, $responseText")
         }
     }
 }
