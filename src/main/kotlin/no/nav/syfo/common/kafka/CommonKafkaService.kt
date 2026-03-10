@@ -14,7 +14,7 @@ import no.nav.syfo.util.logger
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import java.time.Duration
 import java.time.Instant
-import no.nav.syfo.application.metrics.KAFKA_COUNSUMER_RESTART_COUNTER
+import no.nav.syfo.application.metrics.KAFKA_CONSUMER_RESTART_COUNTER
 
 class CommonKafkaService(
     private val kafkaConsumer: KafkaConsumer<String, String>,
@@ -49,7 +49,7 @@ class CommonKafkaService(
                         ex,
                     )
                     kafkaConsumer.unsubscribe()
-                    KAFKA_COUNSUMER_RESTART_COUNTER.inc()
+                    KAFKA_CONSUMER_RESTART_COUNTER.inc()
                     delay(10_000)
                 }
             }

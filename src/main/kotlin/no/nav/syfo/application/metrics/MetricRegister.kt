@@ -75,10 +75,10 @@ val SLETTET_COUNTER: Counter =
         .help("Antall slettede ressurser")
         .register()
 
-val KAFKA_COUNSUMER_RESTART_COUNTER: Counter =
+val KAFKA_CONSUMER_RESTART_COUNTER: Counter =
     Counter
         .build()
         .name("kafka_consumer_restart")
         .namespace(METRICS_NS)
-        .help("Antall ganger kafka consumer har restartet grunnet feil")
+        .help("Number of times kafka consumer has restarted due to error in message processing")
         .register()
