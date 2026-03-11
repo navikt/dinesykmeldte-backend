@@ -194,7 +194,7 @@ class SyfoSyketilfelleClientTest :
                 }
             }
 
-            test("Should get SyketilfelleRequestException  on non 200 response") {
+            test("Should get SyketilfelleRequestException on non 200 response") {
                 assertFailsWith<SyketilfelleRequestException> {
                     syfoSyketilfelletSocketTimeoutClient.finnStartdato(
                         fnr4,
