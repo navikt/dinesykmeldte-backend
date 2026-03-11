@@ -38,6 +38,17 @@ val SYKMELDING_TOPIC_COUNTER: Counter =
         .help("Counts sendte sykmeldinger from kafka (new or deleted)")
         .register()
 
+val SYKMELDING_TOPIC_ACTION_COUNTER: Counter =
+    Counter
+        .build()
+        .labelNames("action")
+        .name("sykmelding_topic_action_counter")
+        .namespace(METRICS_NS)
+        .help(
+            "Counts sendte sykmeldinger from kafka, separating by action(upsert, delete, tombstone)",
+        )
+        .register()
+
 val SOKNAD_TOPIC_COUNTER: Counter =
     Counter
         .build()
@@ -62,4 +73,12 @@ val SLETTET_COUNTER: Counter =
         .name("slettet_counter")
         .namespace(METRICS_NS)
         .help("Antall slettede ressurser")
+        .register()
+
+val KAFKA_CONSUMER_RESTART_COUNTER: Counter =
+    Counter
+        .build()
+        .name("kafka_consumer_restart")
+        .namespace(METRICS_NS)
+        .help("Number of times kafka consumer has restarted due to error in message processing")
         .register()
