@@ -9,6 +9,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
@@ -150,10 +152,28 @@ private fun httpClient() =
                         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                     }
                 }
+                install(HttpTimeout) {
+                    socketTimeoutMillis = 20_000
+                    connectTimeoutMillis = 10_000
+                    requestTimeoutMillis = 40_000
+                }
+                install(HttpRequestRetry) {
+                    retryOnServerErrors(maxRetries = 3)
+                    retryOnExceptionIf(maxRetries = 3) { _, cause ->
+                        cause.isRetryableException()
+                    }
+                    exponentialDelay()
+                }
             }
             HttpClient(Apache, config)
         }
     }
+
+private fun Throwable.isRetryableException(): Boolean {
+    return this is java.net.SocketTimeoutException ||
+        this is java.net.ConnectException ||
+        cause?.isRetryableException() == true
+}
 
 private fun environmentModule() =
     module {
