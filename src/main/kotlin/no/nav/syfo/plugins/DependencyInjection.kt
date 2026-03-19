@@ -166,7 +166,9 @@ private fun httpClient() =
                     }
                     exponentialDelay()
                     modifyRequest { request ->
-                        logger().warn("Retrying request to ${request.url} (attempt $retryCount of 3)")
+                        val reason = response?.status ?: cause?.message ?: "unknown"
+                        logger("HttpRequestRetry")
+                            .warn("Retry attempt $retryCount for ${request.url}: $reason")
                     }
                 }
             }
