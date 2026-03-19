@@ -28,6 +28,7 @@ import no.nav.syfo.dinesykmeldte.service.DineSykmeldteService
 import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.isLocalEnv
+import no.nav.syfo.util.logger
 import no.nav.syfo.kafka.KafkaUtils
 import no.nav.syfo.kafka.createKafkaProducer
 import no.nav.syfo.kafka.toConsumerConfig
@@ -55,6 +56,7 @@ import org.koin.core.scope.Scope
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
+import no.nav.syfo.util.logger
 import java.net.URI
 import java.time.Duration
 import java.util.concurrent.TimeUnit
@@ -163,6 +165,9 @@ private fun httpClient() =
                         cause.isRetryableException()
                     }
                     exponentialDelay()
+                    modifyRequest { request ->
+                        logger().warn("Retrying request to ${request.url} (attempt $retryCount of 3)")
+                    }
                 }
             }
             HttpClient(Apache, config)
