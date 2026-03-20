@@ -31,7 +31,7 @@ plugins {
     kotlin("jvm") version "2.3.10"
     id("com.gradleup.shadow") version "9.3.2"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
-    id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
 }
 
 application {
