@@ -7,8 +7,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.engine.apache5.Apache5
+import io.ktor.client.engine.apache5.Apache5EngineConfig
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -56,10 +56,10 @@ import org.koin.core.scope.Scope
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
-import no.nav.syfo.util.logger
 import java.net.URI
 import java.time.Duration
 import java.util.concurrent.TimeUnit
+import no.nav.syfo.util.httpClientDefault
 
 fun Application.configureDependencies() {
     install(Koin) {
@@ -144,43 +144,8 @@ private fun databaseModule() = module { single<DatabaseInterface> { Database(get
 
 private fun httpClient() =
     module {
-        single {
-            val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-                install(ContentNegotiation) {
-                    jackson {
-                        registerKotlinModule()
-                        registerModule(JavaTimeModule())
-                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                    }
-                }
-                install(HttpTimeout) {
-                    socketTimeoutMillis = 20_000
-                    connectTimeoutMillis = 10_000
-                    requestTimeoutMillis = 40_000
-                }
-                install(HttpRequestRetry) {
-                    retryOnServerErrors(maxRetries = 3)
-                    retryOnExceptionIf(maxRetries = 3) { _, cause ->
-                        cause.isRetryableException()
-                    }
-                    exponentialDelay()
-                    modifyRequest { request ->
-                        val reason = response?.status ?: cause?.message ?: "unknown"
-                        logger("HttpRequestRetry")
-                            .warn("Retry attempt $retryCount for ${request.url}: $reason")
-                    }
-                }
-            }
-            HttpClient(Apache, config)
-        }
+        single { httpClientDefault() }
     }
-
-private fun Throwable.isRetryableException(): Boolean {
-    return this is java.net.SocketTimeoutException ||
-        this is java.net.ConnectException ||
-        cause?.isRetryableException() == true
-}
 
 private fun environmentModule() =
     module {
