@@ -5,6 +5,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import no.nav.syfo.Environment
 import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.application.metrics.KAFKA_CONSUMER_RESTART_COUNTER
 import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
@@ -14,7 +15,6 @@ import no.nav.syfo.util.logger
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import java.time.Duration
 import java.time.Instant
-import no.nav.syfo.application.metrics.KAFKA_CONSUMER_RESTART_COUNTER
 
 class CommonKafkaService(
     private val kafkaConsumer: KafkaConsumer<String, String>,
