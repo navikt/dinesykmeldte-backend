@@ -6,7 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.apache5.Apache5
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.http.HttpStatusCode
@@ -44,7 +44,7 @@ class SyfoSyketilfelleClientTest :
         val fnr4 = "12345678901"
         val accessTokenClient = mockk<AccessTokenClient>()
         val httpClient =
-            HttpClient(Apache) {
+            HttpClient(Apache5) {
                 install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
                     jackson {
                         registerKotlinModule()
@@ -56,7 +56,7 @@ class SyfoSyketilfelleClientTest :
             }
 
         val socketTimeoutClient =
-            HttpClient(Apache) {
+            HttpClient(Apache5) {
                 install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
                     jackson {
                         registerKotlinModule()
