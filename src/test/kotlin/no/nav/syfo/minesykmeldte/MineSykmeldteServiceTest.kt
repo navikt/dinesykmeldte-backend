@@ -980,7 +980,7 @@ class MineSykmeldteServiceTest :
                     periode.shouldBeInstance<AktivitetIkkeMulig>()
                     periode.type shouldBeEqualTo PeriodeEnum.AKTIVITET_IKKE_MULIG
                     periode.arbeidsrelatertArsak.`should not be null`()
-                    periode.arbeidsrelatertArsak.arsak?.first() shouldBeEqualTo
+                    periode.arbeidsrelatertArsak.arsak.first() shouldBeEqualTo
                         ArbeidsrelatertArsakEnum.MANGLENDE_TILRETTELEGGING
                     periode.arbeidsrelatertArsak.beskrivelse shouldBeEqualTo "Trenger ståpult"
                 }
