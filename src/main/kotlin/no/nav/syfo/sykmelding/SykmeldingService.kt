@@ -1,6 +1,7 @@
 package no.nav.syfo.sykmelding
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_ACTION_COUNTER
 import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_COUNTER
 import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.pdl.model.formatName
@@ -17,7 +18,6 @@ import no.nav.syfo.util.logger
 import no.nav.syfo.util.objectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import java.time.LocalDate
-import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_ACTION_COUNTER
 
 class SykmeldingService(
     private val sykmeldingDb: SykmeldingDb,
@@ -50,8 +50,11 @@ class SykmeldingService(
                 )
             }
         } catch (e: Exception) {
-            log.error("Noe gikk galt ved mottak av sendt sykmelding med id ${record.key()}. "
-                + "Exception type: ${e::class.java.simpleName}", e)
+            log.error(
+                "Noe gikk galt ved mottak av sendt sykmelding med id ${record.key()}. " +
+                    "Exception type: ${e::class.java.simpleName}",
+                e,
+            )
             SYKMELDING_TOPIC_ACTION_COUNTER.labels("error").inc()
             log.info("sykmelding_topic_action_counter.error")
             throw e
@@ -74,7 +77,6 @@ class SykmeldingService(
             }
         }
         SYKMELDING_TOPIC_COUNTER.inc()
-
     }
 
     private suspend fun handleSendtSykmelding(

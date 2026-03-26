@@ -43,8 +43,8 @@ fun httpClientDefault(): HttpClient {
     }
     return HttpClient(Apache5, config)
 }
-private fun Throwable.isRetryableException(): Boolean {
-    return this is java.net.SocketTimeoutException ||
+
+private fun Throwable.isRetryableException(): Boolean =
+    this is java.net.SocketTimeoutException ||
         this is java.net.ConnectException ||
         cause?.isRetryableException() == true
-}

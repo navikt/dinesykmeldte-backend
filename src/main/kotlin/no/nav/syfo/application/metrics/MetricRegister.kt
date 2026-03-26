@@ -46,8 +46,7 @@ val SYKMELDING_TOPIC_ACTION_COUNTER: Counter =
         .namespace(METRICS_NS)
         .help(
             "Counts sendte sykmeldinger from kafka, separating by action(upsert, delete, tombstone)",
-        )
-        .register()
+        ).register()
 
 val SOKNAD_TOPIC_COUNTER: Counter =
     Counter
