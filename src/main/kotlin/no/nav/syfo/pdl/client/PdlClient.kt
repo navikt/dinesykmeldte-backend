@@ -66,7 +66,9 @@ class PdlClient(
         } else {
             val responseText = response.body<String>()
             log.error("Feil ved kall mot PDL: Status: ${response.status}. Message: $responseText")
-            throw PdlRequestFailedException("Feil ved kall mot PDL: ${response.status}, $responseText")
+            throw PdlRequestFailedException(
+                "Feil ved kall mot PDL: ${response.status}, $responseText",
+            )
         }
     }
 }

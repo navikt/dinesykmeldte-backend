@@ -1,18 +1,7 @@
 package no.nav.syfo.plugins
 
 import com.auth0.jwk.JwkProviderBuilder
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.apache5.Apache5
-import io.ktor.client.engine.apache5.Apache5EngineConfig
-import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import no.nav.syfo.Environment
@@ -28,7 +17,6 @@ import no.nav.syfo.dinesykmeldte.service.DineSykmeldteService
 import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.isLocalEnv
-import no.nav.syfo.util.logger
 import no.nav.syfo.kafka.KafkaUtils
 import no.nav.syfo.kafka.createKafkaProducer
 import no.nav.syfo.kafka.toConsumerConfig
@@ -47,6 +35,7 @@ import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.texas.client.TexasHttpClient
 import no.nav.syfo.util.AuthConfiguration
 import no.nav.syfo.util.getWellKnownTokenX
+import no.nav.syfo.util.httpClientDefault
 import no.nav.syfo.virksomhet.api.VirksomhetService
 import no.nav.syfo.virksomhet.db.VirksomhetDb
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -59,7 +48,6 @@ import org.koin.logger.slf4jLogger
 import java.net.URI
 import java.time.Duration
 import java.util.concurrent.TimeUnit
-import no.nav.syfo.util.httpClientDefault
 
 fun Application.configureDependencies() {
     install(Koin) {
