@@ -351,7 +351,7 @@ fun DatabaseInterface.insertOrUpdate(
             ).use { preparedStatement ->
                 val sendtTilArbeidsgiverDato =
                     if (sykmeldingDbModel.sendtTilArbeidsgiverDato != null) {
-                        Timestamp.from(sykmeldingDbModel.sendtTilArbeidsgiverDato!!.toInstant())
+                        Timestamp.from(sykmeldingDbModel.sendtTilArbeidsgiverDato.toInstant())
                     } else {
                         null
                     }
