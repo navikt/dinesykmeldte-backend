@@ -1,16 +1,7 @@
 package no.nav.syfo.plugins
 
 import com.auth0.jwk.JwkProviderBuilder
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.engine.apache.ApacheEngineConfig
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import no.nav.syfo.Environment
@@ -44,6 +35,7 @@ import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.texas.client.TexasHttpClient
 import no.nav.syfo.util.AuthConfiguration
 import no.nav.syfo.util.getWellKnownTokenX
+import no.nav.syfo.util.httpClientDefault
 import no.nav.syfo.virksomhet.api.VirksomhetService
 import no.nav.syfo.virksomhet.db.VirksomhetDb
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -140,19 +132,7 @@ private fun databaseModule() = module { single<DatabaseInterface> { Database(get
 
 private fun httpClient() =
     module {
-        single {
-            val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-                install(ContentNegotiation) {
-                    jackson {
-                        registerKotlinModule()
-                        registerModule(JavaTimeModule())
-                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                    }
-                }
-            }
-            HttpClient(Apache, config)
-        }
+        single { httpClientDefault() }
     }
 
 private fun environmentModule() =

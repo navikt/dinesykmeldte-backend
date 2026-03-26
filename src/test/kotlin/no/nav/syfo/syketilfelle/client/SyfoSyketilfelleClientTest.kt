@@ -6,9 +6,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.apache5.Apache5
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.http.HttpStatusCode
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.install
@@ -40,9 +41,10 @@ class SyfoSyketilfelleClientTest :
         val fnr1 = "123456"
         val fnr2 = "654321"
         val fnr3 = "1234567"
+        val fnr4 = "12345678901"
         val accessTokenClient = mockk<AccessTokenClient>()
         val httpClient =
-            HttpClient(Apache) {
+            HttpClient(Apache5) {
                 install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
                     jackson {
                         registerKotlinModule()
@@ -54,7 +56,7 @@ class SyfoSyketilfelleClientTest :
             }
 
         val socketTimeoutClient =
-            HttpClient(Apache) {
+            HttpClient(Apache5) {
                 install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
                     jackson {
                         registerKotlinModule()
@@ -156,6 +158,7 @@ class SyfoSyketilfelleClientTest :
                                         ),
                                     ),
                                 )
+                            fnr4 -> call.respond(HttpStatusCode.InternalServerError, "Forced error")
                         }
                     }
                 }
@@ -186,6 +189,15 @@ class SyfoSyketilfelleClientTest :
                 assertFailsWith<SocketTimeoutException> {
                     syfoSyketilfelletSocketTimeoutClient.finnStartdato(
                         fnr3,
+                        sykmeldingUUID.toString(),
+                    )
+                }
+            }
+
+            test("Should get SyketilfelleRequestException on non 200 response") {
+                assertFailsWith<SyketilfelleRequestException> {
+                    syfoSyketilfelletSocketTimeoutClient.finnStartdato(
+                        fnr4,
                         sykmeldingUUID.toString(),
                     )
                 }

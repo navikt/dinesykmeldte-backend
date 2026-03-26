@@ -5,6 +5,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import no.nav.syfo.Environment
 import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.application.metrics.KAFKA_CONSUMER_RESTART_COUNTER
 import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
@@ -43,11 +44,12 @@ class CommonKafkaService(
                     )
                     start()
                 } catch (ex: Exception) {
-                    log.error(
+                    log.warn(
                         "Error running kafka consumer, unsubscribing and waiting 10 seconds for retry",
                         ex,
                     )
                     kafkaConsumer.unsubscribe()
+                    KAFKA_CONSUMER_RESTART_COUNTER.inc()
                     delay(10_000)
                 }
             }

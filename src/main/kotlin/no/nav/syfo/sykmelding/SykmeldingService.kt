@@ -1,6 +1,7 @@
 package no.nav.syfo.sykmelding
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_ACTION_COUNTER
 import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_COUNTER
 import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.pdl.model.formatName
@@ -49,7 +50,13 @@ class SykmeldingService(
                 )
             }
         } catch (e: Exception) {
-            log.error("Noe gikk galt ved mottak av sendt sykmelding med id ${record.key()}")
+            log.error(
+                "Noe gikk galt ved mottak av sendt sykmelding med id ${record.key()}. " +
+                    "Exception type: ${e::class.java.simpleName}",
+                e,
+            )
+            SYKMELDING_TOPIC_ACTION_COUNTER.labels("error").inc()
+            log.info("sykmelding_topic_action_counter.error")
             throw e
         }
     }
@@ -60,8 +67,14 @@ class SykmeldingService(
     ) {
         val existingSykmelding = sykmeldingDb.getSykmeldingInfo(sykmeldingId)
         when (sykmelding) {
-            null -> deleteSykmelding(sykmeldingId, existingSykmelding)
-            else -> handleSendtSykmelding(sykmelding, sykmeldingId, existingSykmelding)
+            null -> {
+                deleteSykmelding(sykmeldingId, existingSykmelding)
+                SYKMELDING_TOPIC_ACTION_COUNTER.labels("tombstone").inc()
+                log.info("sykmelding_topic_action_counter.tombstone")
+            }
+            else -> {
+                handleSendtSykmelding(sykmelding, sykmeldingId, existingSykmelding)
+            }
         }
         SYKMELDING_TOPIC_COUNTER.inc()
     }
@@ -80,8 +93,12 @@ class SykmeldingService(
             }
             sykmeldingDb.insertOrUpdateSykmelding(toSykmeldingDbModel(sykmelding, sisteTom))
             updateSykmeldt(sykmelding.kafkaMetadata.fnr)
+            SYKMELDING_TOPIC_ACTION_COUNTER.labels("upsert").inc()
+            log.info("sykmelding_topic_action_counter.upsert")
         } else if (existingSykmelding != null) {
             deleteSykmelding(existingSykmelding.sykmeldingId, existingSykmelding)
+            SYKMELDING_TOPIC_ACTION_COUNTER.labels("delete").inc()
+            log.info("sykmelding_topic_action_counter.delete")
         }
     }
 
