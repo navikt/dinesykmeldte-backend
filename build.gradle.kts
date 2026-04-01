@@ -22,7 +22,7 @@ val googleOauthVersion = "1.39.0"
 val kafkaVersion = "3.9.2"
 val koinVersion = "4.2.0"
 // Due to vulnerabilities
-val nettycommonVersion = "4.2.10.Final"
+val nettycommonVersion = "4.2.12.Final"
 val snappyJavaVersion = "1.1.10.8"
 val commonsCompressVersion = "1.28.0"
 
