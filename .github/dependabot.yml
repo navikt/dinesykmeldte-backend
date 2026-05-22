@@ -22,3 +22,6 @@ updates:
     open-pull-requests-limit: 20
     ignore:
       - dependency-name: "no.nav.helse.flex:sykepengesoknad-kafka"
+      - dependency-name: "io.ktor:*"
+        versions:
+          - "3.5.x"
