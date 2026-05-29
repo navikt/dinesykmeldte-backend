@@ -26,7 +26,7 @@ flowchart LR
 
 ## API
 
-OpenAPI-kontrakten ligger i [`api/oas3/dinesykmeldte-backend-api.yaml`](api/oas3/dinesykmeldte-backend-api.yaml). I dev eksponeres Swagger UI på `/api/v1/docs/`.
+OpenAPI-kontrakten ligger i [`api/oas3/dinesykmeldte-backend-api.yaml`](api/oas3/dinesykmeldte-backend-api.yaml). I dev vises kontrakten i Swagger UI på `/api/v1/docs/`. Kontrakten dekker ikke nødvendigvis alle Ktor-ruter i applikasjonen.
 
 Kontrakten dokumenterer blant annet:
 
