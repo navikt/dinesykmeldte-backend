@@ -1,73 +1,80 @@
-# dinesykmeldte-backend
-This project contains the application code and infrastructure for dinesykmeldte-backend
+# Backend for nærmeste leders oversikt over sykmeldte (dinesykmeldte)
 
-## Technologies used
-* Kotlin
-* Ktor
-* Gradle
-* Kafka
+[![CI](https://github.com/navikt/dinesykmeldte-backend/actions/workflows/build-and-deploy.yaml/badge.svg)](https://github.com/navikt/dinesykmeldte-backend/actions/workflows/build-and-deploy.yaml)
+![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white)
+![Ktor](https://img.shields.io/badge/Ktor-087CFA?logo=ktor&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+![Kafka](https://img.shields.io/badge/Kafka-231F20?logo=apachekafka&logoColor=white)
 
-#### Requirements
+Dette er backenden for nærmeste leders oversikt over sykmeldte. Tjenesten samler data om sykmeldinger, søknader, hendelser og virksomheter, og gjør dem tilgjengelige for lederflater i team-esyfo.
 
-* JDK 21
+Repoet brukes av klienter og tjenester som `dinesykmeldte`, `esyfo-narmesteleder`, `oppfolgingsplan-frontend`, `dialogmote-frontend` og `syfo-oppfolgingsplan-backend`, slik de er satt opp i NAIS-manifestene.
 
-## Getting started
-### Building the application
-#### Compile and package application
-To build locally and run the integration tests you can simply run `./gradlew shadowJar` or  on windows 
-`gradlew.bat shadowJar`
-
-
-### Upgrading the gradle wrapper
-Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
-
-```./gradlew wrapper --gradle-version $gradleVersjon```
-
-### Contact
-
-This project is maintained by [navikt/team-esyfo](CODEOWNERS)
-
-Questions and/or feature requests? Please create an [issue](https://github.com/navikt/dinesykmeldte-backend/issues)
-
-If you work in [@navikt](https://github.com/navikt) you can reach us at the Slack
-channel [#team-sykmelding](https://nav-it.slack.com/archives/CMA3XV997)
-
-## Docker compose
-### Size of container platform
-In order to run kafka++ you will probably need to extend the default size of your container platform. (Rancher Desktop, Colima etc.)
-
-Suggestion for Colima
-```bash
-colima start --arch aarch64 --memory 8 --cpu 4 
+```mermaid
+flowchart LR
+    A[Lederflater] -->|TokenX| B[dinesykmeldte-backend]
+    X[Interne klienter] -->|Azure AD via Texas| B
+    K1[teamsykmelding.syfo-narmesteleder-leesah] --> B
+    K2[teamsykmelding.syfo-sendt-sykmelding] --> B
+    K3[flex.sykepengesoknad] --> B
+    K4[team-esyfo.dinesykmeldte-hendelser-v2] --> B
+    B --> DB[(PostgreSQL)]
+    B --> PDL[PDL]
+    B --> F[flex-syketilfelle]
+    B --> K5[teamsykmelding.syfo-narmesteleder]
 ```
 
-We have a docker-compose.yml file to run a postgresql database, texas and a fake authserver.
-In addition, we have a docker-compose.kafka.yml that will run a kafka broker, schema registry and kafka-io
+## API
 
-Start them both using
-```bash
-docker-compose \
-  -f docker-compose.yml \
-  -f docker-compose.kafka.yml \
-  up \
-  db authserver texas broker kafka-ui \
-  -d
-```
-Stop them all again
-```bash
-docker-compose \
-  -f docker-compose.yml \
-  -f docker-compose.kafka.yml \
-  down
-```
+OpenAPI-kontrakten ligger i [`api/oas3/dinesykmeldte-backend-api.yaml`](api/oas3/dinesykmeldte-backend-api.yaml). I dev eksponeres Swagger UI på `/api/v1/docs/`.
 
-### Kafka-ui
-You can use [kafka-ui](http://localhost:9000) to inspect your consumers and topics. You can also publish or read messages on the topics
+Kontrakten dokumenterer blant annet:
 
-## Authentication for dev
-### isActiveSykmelding
-In order to get a azuread token, use the following url:
-Open this in your browser:
-https://azure-token-generator.intern.dev.nav.no/api/m2m?aud=dev-gcp.team-esyfo.dinesykmeldte-backend
-Use a login from @trygdeetaten from Ida.
-This will give you a token that can be used to make a request to internal/api/v1/documents
+- `GET /api/minesykmeldte`
+- `GET /api/sykmelding/{sykmeldingId}`
+- `PUT /api/sykmelding/{sykmeldingId}/lest`
+- `GET /api/soknad/{soknadId}`
+- `PUT /api/soknad/{soknadId}/lest`
+- `PUT /api/hendelse/{hendelseId}/lest`
+- `GET /api/virksomheter`
+
+Koden eksponerer også disse verifiserte endepunktene:
+
+- `GET /api/v2/dinesykmeldte`
+- `GET /api/v2/dinesykmeldte/{narmestelederId}`
+- `POST /api/narmesteleder/{narmesteLederId}/avkreft`
+- `PUT /api/hendelser/read`
+- `POST /api/sykmelding/isActiveSykmelding`
+
+## Kafka
+
+Tjenesten konsumerer meldinger fra:
+
+- `teamsykmelding.syfo-narmesteleder-leesah`
+- `teamsykmelding.syfo-sendt-sykmelding`
+- `flex.sykepengesoknad`
+- `team-esyfo.dinesykmeldte-hendelser-v2`
+
+Tjenesten produserer meldinger til:
+
+- `teamsykmelding.syfo-narmesteleder`
+
+Kafka-topicet `dinesykmeldte-hendelser-v2` er definert i [`nais/topics/dinesykmeldte-hendelser-v2.yaml`](nais/topics/dinesykmeldte-hendelser-v2.yaml).
+
+## Autentisering og tilgang
+
+- De fleste API-ene ligger bak TokenX og krever nivå 4.
+- `POST /api/sykmelding/isActiveSykmelding` validerer Azure AD-token via Texas.
+- NAIS `accessPolicy` åpner for innkommende kall fra verifiserte klienter i manifestene, blant annet `dinesykmeldte`, `esyfo-narmesteleder`, `oppfolgingsplan-frontend`, `dialogmote-frontend` og `syfo-oppfolgingsplan-backend`.
+
+## Utvikling
+
+Bruk `mise tasks` for oppdatert oversikt over tilgjengelige oppgaver.
+
+## Kontakt
+
+Repoet vedlikeholdes av [navikt/team-esyfo](CODEOWNERS).
+
+Spørsmål eller forslag kan meldes inn som [issue](https://github.com/navikt/dinesykmeldte-backend/issues).
+
+For Nav-ansatte: kontakt oss i [#esyfo på Slack](https://nav-it.slack.com/archives/C012X796B4L).
