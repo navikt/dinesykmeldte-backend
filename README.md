@@ -75,6 +75,4 @@ Bruk `mise tasks` for oppdatert oversikt over tilgjengelige oppgaver.
 
 Repoet vedlikeholdes av [navikt/team-esyfo](CODEOWNERS).
 
-Spørsmål eller forslag kan meldes inn som [issue](https://github.com/navikt/dinesykmeldte-backend/issues).
-
 For Nav-ansatte: kontakt oss i [#esyfo på Slack](https://nav-it.slack.com/archives/C012X796B4L).
