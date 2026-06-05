@@ -22,7 +22,7 @@ val googleOauthVersion = "1.39.0"
 val kafkaVersion = "3.9.2"
 val koinVersion = "4.2.1"
 // Due to vulnerabilities
-val nettycommonVersion = "4.2.14.Final"
+val nettyCodecHttpVersion = "4.2.15.Final"
 val snappyJavaVersion = "1.1.10.8"
 val commonsCompressVersion = "1.28.0"
 
@@ -43,7 +43,6 @@ repositories {
     maven {
         url = uri("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
     }
-
     dependencies {
         implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
@@ -54,8 +53,8 @@ repositories {
         implementation("io.ktor:ktor-server-core:$ktorVersion")
         implementation("io.ktor:ktor-server-netty:$ktorVersion")
         constraints {
-            implementation("io.netty:netty-common:$nettycommonVersion") {
-                because("Due to vulnerabilities in io.ktor:ktor-server-netty")
+            implementation("io.netty:netty-codec-http:$nettyCodecHttpVersion") {
+                because("Due to vulnerabilities in netty pulled in by ktor 3.4.x")
             }
         }
         implementation("io.ktor:ktor-server-auth:$ktorVersion")
