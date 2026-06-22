@@ -20,7 +20,7 @@ val kotestVersion = "6.1.11"
 val googlePostgresVersion = "1.28.4"
 val googleOauthVersion = "1.39.0"
 val kafkaVersion = "3.9.2"
-val koinVersion = "4.2.1"
+val koinVersion = "4.2.2"
 // Due to vulnerabilities
 val nettyCodecHttpVersion = "4.2.15.Final"
 val snappyJavaVersion = "1.1.10.8"
