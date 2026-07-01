@@ -14,6 +14,8 @@ enum class HendelseType {
     OPPFOLGINGSPLAN_OPPRETTET,
     OPPFOLGINGSPLAN_TIL_GODKJENNING,
     UNKNOWN,
+    OPPFOLGINGSPLAN_PAAMINNELSE,
+    OPPFOLGINGSPLAN_ETTERSPOERSEL,
 }
 
 val DialogmoteHendelser =
@@ -29,6 +31,8 @@ val OppfolgingsplanerHendelser =
     listOf(
         HendelseType.OPPFOLGINGSPLAN_OPPRETTET,
         HendelseType.OPPFOLGINGSPLAN_TIL_GODKJENNING,
+        HendelseType.OPPFOLGINGSPLAN_PAAMINNELSE,
+        HendelseType.OPPFOLGINGSPLAN_ETTERSPOERSEL,
     )
 
 data class Hendelse(
