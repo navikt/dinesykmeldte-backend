@@ -22,7 +22,8 @@ val googleOauthVersion = "1.39.0"
 val kafkaVersion = "3.9.2"
 val koinVersion = "4.2.2"
 // Due to vulnerabilities
-val nettyCodecHttpVersion = "4.2.15.Final"
+val nettyVersion = "4.2.15.Final"
+val zookeeperVersion = "3.8.6"
 val snappyJavaVersion = "1.1.10.8"
 val commonsCompressVersion = "1.28.0"
 
@@ -53,7 +54,16 @@ repositories {
         implementation("io.ktor:ktor-server-core:$ktorVersion")
         implementation("io.ktor:ktor-server-netty:$ktorVersion")
         constraints {
-            implementation("io.netty:netty-codec-http:$nettyCodecHttpVersion") {
+            implementation("io.netty:netty-codec-http:$nettyVersion") {
+                because("Due to vulnerabilities in netty pulled in by ktor 3.4.x")
+            }
+            implementation("io.netty:netty-codec-http2:$nettyVersion") {
+                because("Due to vulnerabilities in netty pulled in by ktor 3.4.x")
+            }
+            implementation("io.netty:netty-transport-native-epoll:$nettyVersion") {
+                because("Due to vulnerabilities in netty pulled in by ktor 3.4.x")
+            }
+            implementation("io.netty:netty-transport-native-kqueue:$nettyVersion") {
                 because("Due to vulnerabilities in netty pulled in by ktor 3.4.x")
             }
         }
@@ -71,6 +81,11 @@ repositories {
 
         implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
         constraints {
+            implementation("org.apache.zookeeper:zookeeper:$zookeeperVersion") {
+                because(
+                    "override transient from org.apache.kafka:kafka_2.12 due to vulnerabilities in zookeeper 3.8.4",
+                )
+            }
             implementation("org.xerial.snappy:snappy-java:$snappyJavaVersion") {
                 because("override transient from org.apache.kafka:kafka_2.12")
             }
