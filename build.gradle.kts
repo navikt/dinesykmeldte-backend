@@ -28,7 +28,7 @@ val commonsCompressVersion = "1.28.0"
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.3.21"
+    kotlin("jvm") version "2.4.0"
     id("com.gradleup.shadow") version "9.4.3"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
