@@ -15,7 +15,7 @@ data class Environment(
     val clientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val aadAccessTokenUrl: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
     val narmestelederLeesahTopic: String = "teamsykmelding.syfo-narmesteleder-leesah",
-    val syfoNarmestelederLeesahTopic: String = "teams-esyfo.syfo-narmesteleder-leesah",
+    val syfoNarmestelederLeesahTopic: String = "team-esyfo.syfo-narmesteleder-leesah",
     val sendtSykmeldingTopic: String = "teamsykmelding.syfo-sendt-sykmelding",
     val sykepengesoknadTopic: String = "flex.sykepengesoknad",
     val hendelserTopic: String = "team-esyfo.dinesykmeldte-hendelser-v2",
