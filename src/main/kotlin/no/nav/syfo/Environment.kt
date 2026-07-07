@@ -15,6 +15,7 @@ data class Environment(
     val clientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val aadAccessTokenUrl: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
     val narmestelederLeesahTopic: String = "teamsykmelding.syfo-narmesteleder-leesah",
+    val syfoNarmestelederLeesahTopic: String = "teams-esyfo.syfo-narmesteleder-leesah",
     val sendtSykmeldingTopic: String = "teamsykmelding.syfo-sendt-sykmelding",
     val sykepengesoknadTopic: String = "flex.sykepengesoknad",
     val hendelserTopic: String = "team-esyfo.dinesykmeldte-hendelser-v2",
@@ -24,13 +25,24 @@ data class Environment(
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val dbUrl: String = getEnvVar("NAIS_DATABASE_JDBC_URL"),
     val texas: TexasEnvironment = TexasEnvironment.createFromEnvVars(),
+    val consumeTeamsykmeldingNlLeesahTopic: Boolean =
+        getEnvVar(
+            "CONSUME_TEAMSYKMELDING_NL_LEESAH_TOPIC",
+            "true",
+        ).toBoolean(),
+    val consumeTeamEsyfoNlLeesahTopic: Boolean =
+        getEnvVar(
+            "CONSUME_TEAM_ESYFO_NL_LEESAH_TOPIC",
+            "false",
+        ).toBoolean(),
 ) {
     companion object {
         val authserver = getEnvVar("AUTH_SERVER", "localhost:6969")
         val dbserver = getEnvVar("DB_SERVER", "localhost:5432")
 
         @Suppress("ktlint:standard:max-line-length")
-        val dbUrl = "jdbc:postgresql://$dbserver/dinesykmeldte-backend_dev?user=username&password=password&ssl=false"
+        val dbUrl =
+            "jdbc:postgresql://$dbserver/dinesykmeldte-backend_dev?user=username&password=password&ssl=false"
 
         fun createLocal() =
             Environment(
@@ -57,3 +69,9 @@ fun getEnvVar(
     ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
 
 fun isLocalEnv(): Boolean = getEnvVar("NAIS_CLUSTER_NAME", "local") == "local"
+
+fun isProdEnv(): Boolean =
+    getEnvVar(
+        "NAIS_CLUSTER_NAME",
+        "local",
+    ) == "prod-gcp"

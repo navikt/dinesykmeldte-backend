@@ -33,15 +33,10 @@ class CommonKafkaService(
         coroutineScope {
             while (isActive) {
                 try {
-                    log.info("Starting consuming topics")
-                    kafkaConsumer.subscribe(
-                        listOf(
-                            environment.narmestelederLeesahTopic,
-                            environment.sendtSykmeldingTopic,
-                            environment.sykepengesoknadTopic,
-                            environment.hendelserTopic,
-                        ),
-                    )
+                    val topics = determineTopics()
+                    log.info("Starting consuming topics: $topics")
+
+                    kafkaConsumer.subscribe(topics)
                     start()
                 } catch (ex: Exception) {
                     log.warn(
@@ -55,6 +50,25 @@ class CommonKafkaService(
             }
         }
 
+    private fun determineTopics(): List<String> {
+        val topics =
+            mutableListOf(
+                environment.sendtSykmeldingTopic,
+                environment.sykepengesoknadTopic,
+                environment.hendelserTopic,
+            )
+        if (environment.consumeTeamsykmeldingNlLeesahTopic) {
+            topics.add(environment.narmestelederLeesahTopic)
+        }
+        if (environment.consumeTeamEsyfoNlLeesahTopic) {
+            topics.add(environment.syfoNarmestelederLeesahTopic)
+        }
+        return topics
+    }
+
+    private fun consumingBothLeesahTopics(): Boolean =
+        environment.consumeTeamsykmeldingNlLeesahTopic && environment.consumeTeamEsyfoNlLeesahTopic
+
     private suspend fun start() {
         var processedMessages = 0
         while (applicationState.ready) {
@@ -62,9 +76,21 @@ class CommonKafkaService(
             records.forEach {
                 try {
                     when (it.topic()) {
-                        environment.narmestelederLeesahTopic -> narmestelederService.updateNl(it)
+                        environment.narmestelederLeesahTopic ->
+                            narmestelederService.updateNl(
+                                record = it,
+                                incrementMetrics = true,
+                            )
+
+                        environment.syfoNarmestelederLeesahTopic ->
+                            narmestelederService.updateNl(
+                                record = it,
+                                incrementMetrics = !consumingBothLeesahTopics(),
+                            )
+
                         environment.sendtSykmeldingTopic ->
                             sykmeldingService.handleSendtSykmeldingKafkaMessage(it)
+
                         environment.sykepengesoknadTopic -> soknadService.handleSykepengesoknad(it)
                         environment.hendelserTopic -> hendelserService.handleHendelse(it)
                         else ->
