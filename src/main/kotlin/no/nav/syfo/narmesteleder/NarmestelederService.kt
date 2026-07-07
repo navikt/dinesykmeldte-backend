@@ -21,38 +21,24 @@ class NarmestelederService(
 ) {
     private val log = logger()
 
-    suspend fun updateNl(
-        record: ConsumerRecord<String, String>,
-        incrementMetrics: Boolean = true,
-    ) {
+    suspend fun updateNl(record: ConsumerRecord<String, String>) {
         try {
-            updateNl(
-                objectMapper.readValue<NarmestelederLeesahKafkaMessage>(record.value()),
-                incrementMetrics,
-            )
+            updateNl(objectMapper.readValue<NarmestelederLeesahKafkaMessage>(record.value()))
         } catch (e: Exception) {
             log.error("Noe gikk galt ved mottak av oppdatert nærmeste leder med id ${record.key()}")
             throw e
         }
     }
 
-    suspend fun updateNl(
-        narmesteleder: NarmestelederLeesahKafkaMessage,
-        incrementMetrics: Boolean = true,
-    ) {
+    suspend fun updateNl(narmesteleder: NarmestelederLeesahKafkaMessage) {
         when (narmesteleder.aktivTom) {
             null -> {
                 narmestelederDb.insertOrUpdate(narmesteleder)
-                if (incrementMetrics) {
-                    NL_TOPIC_COUNTER.labels("ny").inc()
-                }
+                NL_TOPIC_COUNTER.labels("ny").inc()
             }
-
             else -> {
                 narmestelederDb.remove(narmesteleder.narmesteLederId.toString())
-                if (incrementMetrics) {
-                    NL_TOPIC_COUNTER.labels("avbrutt").inc()
-                }
+                NL_TOPIC_COUNTER.labels("avbrutt").inc()
             }
         }
     }

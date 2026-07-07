@@ -98,7 +98,3 @@ spec:
       value: api://dev-fss.pdl.pdl-api/.default
     - name: SYKETILLFELLE_SCOPE
       value: api://dev-gcp.flex.flex-syketilfelle/.default
-    - name: CONSUME_TEAMSYKMELDING_NL_LEESAH_TOPIC
-      value: "true"
-    - name: CONSUME_TEAM_ESYFO_NL_LEESAH_TOPIC
-      value: "true"
