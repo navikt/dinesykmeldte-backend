@@ -97,13 +97,21 @@ class CommonKafkaService(
                             narmestelederService.updateNl(
                                 record = it,
                                 incrementMetrics = true,
-                            )
+                            ).also {
+                                log.info(
+                                    "Recieced message on ${environment.narmestelederLeesahTopic}",
+                                )
+                            }
 
                         environment.syfoNarmestelederLeesahTopic ->
                             narmestelederService.updateNl(
                                 record = it,
                                 incrementMetrics = !consumingBothLeesahTopics(),
-                            )
+                            ).also {
+                                log.info(
+                                    "Recieced message on ${environment.syfoNarmestelederLeesahTopic}",
+                                )
+                            }
 
                         environment.sendtSykmeldingTopic ->
                             sykmeldingService.handleSendtSykmeldingKafkaMessage(it)
