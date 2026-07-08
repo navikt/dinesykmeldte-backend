@@ -1,5 +1,6 @@
 package no.nav.syfo.common.kafka
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -13,6 +14,7 @@ import no.nav.syfo.soknad.SoknadService
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.util.logger
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.errors.WakeupException
 import java.time.Duration
 import java.time.Instant
 
@@ -29,28 +31,43 @@ class CommonKafkaService(
     private val logTimer = 60_000L
     private val log = logger()
 
+    fun kafkaWakeup() = kafkaConsumer.wakeup()
+
     suspend fun startConsumer() =
         coroutineScope {
-            while (isActive) {
+            try {
+                while (isActive) {
+                    try {
+                        log.info("Starting consuming topics")
+                        kafkaConsumer.subscribe(
+                            listOf(
+                                environment.narmestelederLeesahTopic,
+                                environment.sendtSykmeldingTopic,
+                                environment.sykepengesoknadTopic,
+                                environment.hendelserTopic,
+                            ),
+                        )
+                        start()
+                    } catch (ex: WakeupException) {
+                        log.info("Kafka consumer received wakeup signal, shutting down")
+                        break
+                    } catch (ex: CancellationException) {
+                        throw ex
+                    } catch (ex: Exception) {
+                        log.warn(
+                            "Error running kafka consumer, unsubscribing and waiting 10 seconds for retry",
+                            ex,
+                        )
+                        kafkaConsumer.unsubscribe()
+                        KAFKA_CONSUMER_RESTART_COUNTER.inc()
+                        delay(10_000)
+                    }
+                }
+            } finally {
                 try {
-                    log.info("Starting consuming topics")
-                    kafkaConsumer.subscribe(
-                        listOf(
-                            environment.narmestelederLeesahTopic,
-                            environment.sendtSykmeldingTopic,
-                            environment.sykepengesoknadTopic,
-                            environment.hendelserTopic,
-                        ),
-                    )
-                    start()
+                    kafkaConsumer.close(Duration.ofSeconds(3))
                 } catch (ex: Exception) {
-                    log.warn(
-                        "Error running kafka consumer, unsubscribing and waiting 10 seconds for retry",
-                        ex,
-                    )
-                    kafkaConsumer.unsubscribe()
-                    KAFKA_CONSUMER_RESTART_COUNTER.inc()
-                    delay(10_000)
+                    log.warn("Error closing kafka consumer during shutdown", ex)
                 }
             }
         }
