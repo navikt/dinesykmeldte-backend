@@ -14,6 +14,7 @@ fun Application.configureRunningTasks(
     val commonKafkaServiceJob = launch(Dispatchers.IO) { commonKafkaService.startConsumer() }
     val deleteServiceJob = launch(Dispatchers.IO) { deleteDataService.start() }
     monitor.subscribe(ApplicationStopping) {
+        commonKafkaService.kafkaWakeup()
         commonKafkaServiceJob.cancel()
         deleteServiceJob.cancel()
     }
