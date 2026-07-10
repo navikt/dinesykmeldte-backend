@@ -112,9 +112,13 @@ private fun createCommonKafkaService(
     val environment = mockk<Environment>()
     every { environment.narmestelederLeesahTopic } returns
         "teamsykmelding.syfo-narmesteleder-leesah"
+    every { environment.syfoNarmestelederLeesahTopic } returns
+        "team-esyfo.syfo-narmesteleder-leesah"
     every { environment.sendtSykmeldingTopic } returns "teamsykmelding.syfo-sendt-sykmelding"
     every { environment.sykepengesoknadTopic } returns "flex.sykepengesoknad"
     every { environment.hendelserTopic } returns "team-esyfo.dinesykmeldte-hendelser-v2"
+    every { environment.consumeTeamsykmeldingNlLeesahTopic } returns true
+    every { environment.consumeTeamEsyfoNlLeesahTopic } returns false
 
     return CommonKafkaService(
         kafkaConsumer = kafkaConsumer,
