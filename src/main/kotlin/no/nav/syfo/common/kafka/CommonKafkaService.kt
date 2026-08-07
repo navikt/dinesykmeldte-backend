@@ -99,7 +99,7 @@ class CommonKafkaService(
                                 incrementMetrics = true,
                             )
                             log.info(
-                                "Recieced message on ${environment.narmestelederLeesahTopic}",
+                                "Recieved message on ${environment.narmestelederLeesahTopic}",
                             )
                         }
 
@@ -109,7 +109,7 @@ class CommonKafkaService(
                                 incrementMetrics = !consumingBothLeesahTopics(),
                             )
                             log.info(
-                                "Recieced message on ${environment.syfoNarmestelederLeesahTopic}",
+                                "Recieved message on ${environment.syfoNarmestelederLeesahTopic}",
                             )
                         }
 
