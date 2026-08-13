@@ -1,5 +1,6 @@
 package no.nav.syfo.sykmelding.model.sykmeldingstatus
 
+import com.fasterxml.jackson.databind.JsonNode
 import no.nav.syfo.sykmelding.model.sykmelding.model.TidligereArbeidsgiverDTO
 import java.time.OffsetDateTime
 
@@ -9,6 +10,7 @@ data class SykmeldingStatusKafkaEventDTO(
     val statusEvent: String,
     val arbeidsgiver: ArbeidsgiverStatusDTO? = null,
     val sporsmals: List<SporsmalOgSvarDTO>? = null,
+    val brukerSvar: JsonNode? = null,
     val erSvarOppdatering: Boolean? = null,
     val tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null,
 )

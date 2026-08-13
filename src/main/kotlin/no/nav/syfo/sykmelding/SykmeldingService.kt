@@ -73,6 +73,9 @@ class SykmeldingService(
                 log.info("sykmelding_topic_action_counter.tombstone")
             }
             else -> {
+                if (cluster == "dev-gcp" && sykmelding.event.brukerSvar != null) {
+                    log.info("brukerSvar: {}", sykmelding.event.brukerSvar)
+                }
                 handleSendtSykmelding(sykmelding, sykmeldingId, existingSykmelding)
             }
         }
