@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_ACTION_COUNTER
 import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_COUNTER
 import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
+import no.nav.syfo.pdl.exceptions.PdlPersonoppslagFailedException
 import no.nav.syfo.pdl.model.formatName
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
@@ -49,6 +50,10 @@ class SykmeldingService(
                     "Ignoring sykmelding when syketilfelle is not found in syfosyketilfelle for sykmelding: ${record.key()}",
                 )
             }
+        } catch (ex: PdlPersonoppslagFailedException) {
+            SYKMELDING_TOPIC_ACTION_COUNTER.labels("error").inc()
+            log.info("sykmelding_topic_action_counter.error")
+            throw ex
         } catch (e: Exception) {
             log.error(
                 "Noe gikk galt ved mottak av sendt sykmelding med id ${record.key()}. " +
@@ -120,7 +125,7 @@ class SykmeldingService(
             null -> sykmeldingDb.deleteSykmeldt(fnr)
             else -> {
                 val person =
-                    pdlPersonService.getPerson(fnr = fnr, callId = latestSykmelding.sykmeldingId)
+                    pdlPersonService.getPerson(fnr = fnr)
 
                 val startdato =
                     syfoSyketilfelleClient.finnStartdato(

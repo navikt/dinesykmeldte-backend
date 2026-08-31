@@ -11,7 +11,6 @@ import no.nav.syfo.pdl.client.model.GetPersonRequest
 import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.client.model.GetPersonVariables
 import no.nav.syfo.pdl.exceptions.PdlRequestFailedException
-import no.nav.syfo.util.logger
 import org.intellij.lang.annotations.Language
 
 @Language("GraphQL")
@@ -38,10 +37,6 @@ class PdlClient(
     private val httpClient: HttpClient,
     private val basePath: String,
 ) {
-    companion object {
-        private val log = logger()
-    }
-
     suspend fun getPerson(
         fnr: String,
         token: String,
@@ -64,11 +59,7 @@ class PdlClient(
         if (response.status.isSuccess()) {
             return response.body()
         } else {
-            val responseText = response.body<String>()
-            log.error("Feil ved kall mot PDL: Status: ${response.status}. Message: $responseText")
-            throw PdlRequestFailedException(
-                "Feil ved kall mot PDL: ${response.status}, $responseText",
-            )
+            throw PdlRequestFailedException(statusCode = response.status.value)
         }
     }
 }

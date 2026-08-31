@@ -1,11 +1,16 @@
 package no.nav.syfo.sykmelding
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.syfo.pdl.exceptions.PdlPersonoppslagFailedException
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -33,12 +38,15 @@ import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeAfter
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
+import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.slf4j.LoggerFactory
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
+import kotlin.test.assertFailsWith
 
 class SykmeldingServiceTest :
     FunSpec(
@@ -57,7 +65,7 @@ class SykmeldingServiceTest :
             beforeEach {
                 TestDb.clearAllData()
                 clearMocks(pdlPersonService, syfoSyketilfelleClient)
-                coEvery { pdlPersonService.getPerson(any(), any()) } returns
+                coEvery { pdlPersonService.getPerson(any()) } returns
                     PdlPerson(
                         Navn("Syk", null, "Sykesen"),
                     )
@@ -66,6 +74,36 @@ class SykmeldingServiceTest :
             }
 
             context("SykmeldingService") {
+                test("logger ikke PDL-feil på nytt i ytre tjenestelag") {
+                    val sykmeldingId = UUID.randomUUID().toString()
+                    val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
+                    val record =
+                        ConsumerRecord(
+                            "sendt-sykmelding",
+                            0,
+                            0,
+                            sykmeldingId,
+                            objectMapper.writeValueAsString(sendtSykmelding),
+                        )
+                    coEvery { pdlPersonService.getPerson(any()) } throws
+                        PdlPersonoppslagFailedException("PDL-feilen er allerede logget")
+                    val serviceLogger =
+                        LoggerFactory.getLogger(SykmeldingService::class.java) as Logger
+                    val appender = ListAppender<ILoggingEvent>().apply { start() }
+                    serviceLogger.addAppender(appender)
+
+                    try {
+                        assertFailsWith<PdlPersonoppslagFailedException> {
+                            sykmeldingService.handleSendtSykmeldingKafkaMessage(record)
+                        }
+                    } finally {
+                        serviceLogger.detachAppender(appender)
+                        appender.stop()
+                    }
+
+                    appender.list.count { it.level == Level.ERROR } shouldBeEqualTo 0
+                }
+
                 test("Ved oppdatering av sykmelding skal den slettes om ny TOM er eldre enn 4mnd") {
                     val sykmelding = getSendtSykmeldingKafkaMessage(UUID.randomUUID().toString())
                     sykmeldingService.handleSendtSykmeldingKafkaMessage(
@@ -282,7 +320,7 @@ class SykmeldingServiceTest :
                     sykmeldt?.startdatoSykefravaer shouldBeEqualTo LocalDate.now().minusMonths(1)
                     sykmeldt?.latestTom shouldBeEqualTo LocalDate.now().plusDays(10)
 
-                    coEvery { pdlPersonService.getPerson(any(), any()) } returns
+                    coEvery { pdlPersonService.getPerson(any()) } returns
                         PdlPerson(
                             Navn("Per", null, "Persen"),
                         )

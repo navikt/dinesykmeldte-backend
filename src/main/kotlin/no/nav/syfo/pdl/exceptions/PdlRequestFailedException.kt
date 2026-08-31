@@ -1,5 +1,5 @@
 package no.nav.syfo.pdl.exceptions
 
 class PdlRequestFailedException(
-    override val message: String?,
-) : RuntimeException(message)
+    val statusCode: Int,
+) : PdlPersonoppslagFailedException("PDL svarte med HTTP-status $statusCode")
