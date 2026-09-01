@@ -1,6 +1,7 @@
 package no.nav.syfo.sykmelding
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import kotlinx.coroutines.CancellationException
 import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_ACTION_COUNTER
 import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_COUNTER
 import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
@@ -34,6 +35,8 @@ class SykmeldingService(
                 record.key(),
                 record.value()?.let { objectMapper.readValue<SendtSykmeldingKafkaMessage>(it) },
             )
+        } catch (ex: CancellationException) {
+            throw ex
         } catch (ex: NameNotFoundInPdlException) {
             if (cluster != "dev-gcp") {
                 throw ex
