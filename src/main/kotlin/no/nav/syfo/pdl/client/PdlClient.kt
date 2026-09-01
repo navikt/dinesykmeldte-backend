@@ -5,6 +5,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import no.nav.syfo.pdl.client.model.GetPersonRequest
@@ -24,12 +25,6 @@ private val getPersonQuery =
           etternavn
         }
       }
-      identer: hentIdenter(ident: ${'$'}ident, historikk: false) {
-          identer {
-            ident,
-            gruppe
-          }
-        }
     }
     """.trimIndent()
 
@@ -59,6 +54,7 @@ class PdlClient(
         if (response.status.isSuccess()) {
             return response.body()
         } else {
+            response.bodyAsChannel().cancel(null)
             throw PdlRequestFailedException(statusCode = response.status.value)
         }
     }

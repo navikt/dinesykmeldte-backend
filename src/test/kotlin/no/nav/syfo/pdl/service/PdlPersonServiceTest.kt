@@ -42,7 +42,7 @@ class PdlPersonServiceTest :
                     assertIs<ServiceUnavailableException>(exception.cause)
                 }
             }
-            test("Henter navn og aktørid for person som finnes i PDL") {
+            test("Henter navn for person som finnes i PDL") {
                 httpClient.respond(getTestData())
                 runBlocking {
                     val person = pdlPersonService.getPerson(fnr)
@@ -57,18 +57,14 @@ class PdlPersonServiceTest :
                     runBlocking { pdlPersonService.getPerson(fnr) }
                 }
             }
-            test("Feiler hvis aktørid mangler i PDL") {
-                httpClient.respond(getTestDataUtenAktorId())
-                assertFailsWith<RuntimeException> {
-                    runBlocking { pdlPersonService.getPerson(fnr) }
-                }
-            }
-
             test("Feiler operasjonelt hvis PDL returnerer unauthorized") {
                 httpClient.respond(getErrorResponse())
-                assertFailsWith<PdlPersonoppslagFailedException> {
-                    runBlocking { pdlPersonService.getPerson(fnr) }
-                }
+                val exception =
+                    assertFailsWith<PdlPersonoppslagFailedException> {
+                        runBlocking { pdlPersonService.getPerson(fnr) }
+                    }
+
+                exception.retryable shouldBeEqualTo false
             }
 
             test("Behandler not_found fra PDL som manglende person") {

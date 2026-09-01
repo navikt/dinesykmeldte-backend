@@ -1,10 +1,14 @@
 package no.nav.syfo.pdl.service
 
+import com.fasterxml.jackson.databind.JsonNode
+import io.ktor.client.call.NoTransformationFoundException
+import io.ktor.serialization.ContentConvertException
 import kotlinx.coroutines.CancellationException
 import no.nav.syfo.azuread.AccessTokenClient
+import no.nav.syfo.azuread.AccessTokenRequestFailedException
+import no.nav.syfo.common.exception.ServiceUnavailableException
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.client.model.GetPersonResponse
-import no.nav.syfo.pdl.client.model.ResponseError
 import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.pdl.exceptions.PdlPersonoppslagFailedException
 import no.nav.syfo.pdl.exceptions.PdlRequestFailedException
@@ -12,9 +16,12 @@ import no.nav.syfo.pdl.exceptions.PdlResponseIncompleteException
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.util.logger
+import no.nav.syfo.util.objectMapper
+import java.io.IOException
 
 internal const val PDL_PERSONOPPSLAG_FAILED = "pdl_personoppslag_failed"
 internal const val PDL_PERSONOPPSLAG_PARTIAL_RESPONSE = "pdl_personoppslag_partial_response"
+internal const val PDL_PERSONOPPSLAG_NOT_FOUND = "pdl_personoppslag_not_found"
 internal const val HENT_PERSONOPPLYSNINGER = "hent_personopplysninger"
 
 internal enum class PdlPersonoppslagErrorCode {
@@ -41,12 +48,15 @@ private val pdlErrorCodeMapping =
         "server_error" to PdlPersonoppslagErrorCode.PDL_SERVER_ERROR,
     )
 
-internal fun List<ResponseError>.toPdlPersonoppslagErrorCode(): PdlPersonoppslagErrorCode =
+internal fun List<JsonNode>.toPdlPersonoppslagErrorCode(): PdlPersonoppslagErrorCode =
     map { error ->
-        val runtimeCode = error.extensions?.code
+        val extensions = error.get("extensions")
+        val runtimeCode = extensions?.get("code")
         when {
-            runtimeCode == null -> PdlPersonoppslagErrorCode.PDL_GRAPHQL_ERROR
-            runtimeCode in pdlErrorCodeMapping -> pdlErrorCodeMapping.getValue(runtimeCode)
+            extensions == null || extensions.isNull -> PdlPersonoppslagErrorCode.PDL_GRAPHQL_ERROR
+            runtimeCode?.isTextual != true -> PdlPersonoppslagErrorCode.PDL_UNKNOWN_ERROR
+            runtimeCode.asText() in pdlErrorCodeMapping ->
+                pdlErrorCodeMapping.getValue(runtimeCode.asText())
             else -> PdlPersonoppslagErrorCode.PDL_UNKNOWN_ERROR
         }
     }.toSet()
@@ -58,15 +68,32 @@ internal fun List<ResponseError>.toPdlPersonoppslagErrorCode(): PdlPersonoppslag
             }
         }
 
+internal fun PdlPersonoppslagErrorCode.isRetryableGraphQlResponse(): Boolean =
+    when (this) {
+        PdlPersonoppslagErrorCode.PDL_SERVER_ERROR,
+        -> true
+
+        PdlPersonoppslagErrorCode.PDL_UNAUTHENTICATED,
+        PdlPersonoppslagErrorCode.PDL_UNAUTHORIZED,
+        PdlPersonoppslagErrorCode.PDL_NOT_FOUND,
+        PdlPersonoppslagErrorCode.PDL_BAD_REQUEST,
+        PdlPersonoppslagErrorCode.PDL_GRAPHQL_ERROR,
+        PdlPersonoppslagErrorCode.PDL_UNKNOWN_ERROR,
+        PdlPersonoppslagErrorCode.PDL_MULTIPLE_ERRORS,
+        PdlPersonoppslagErrorCode.PDL_RESPONSE_INCOMPLETE,
+        -> false
+
+        PdlPersonoppslagErrorCode.PDL_ACCESS_TOKEN_FAILED,
+        PdlPersonoppslagErrorCode.PDL_HTTP_ERROR,
+        PdlPersonoppslagErrorCode.PDL_REQUEST_FAILED,
+        -> error("Retry-policy for $this avgjøres ved den eksterne feilgrensen")
+    }
+
 class PdlPersonService(
     private val pdlClient: PdlClient,
     private val accessTokenClient: AccessTokenClient,
     private val pdlScope: String,
 ) {
-    companion object {
-        const val AKTORID_GRUPPE = "AKTORID"
-    }
-
     private val log = logger()
 
     suspend fun getPerson(fnr: String): PdlPerson {
@@ -76,13 +103,19 @@ class PdlPersonService(
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: Exception) {
+                val failure = exception.toAccessTokenFailure() ?: throw exception
                 val errorMessage = "Klarte ikke å hente tilgangstoken for PDL"
                 logPersonoppslagFailed(
                     errorCode = PdlPersonoppslagErrorCode.PDL_ACCESS_TOKEN_FAILED,
+                    retryable = failure.retryable,
+                    upstreamStatus =
+                        (exception as? AccessTokenRequestFailedException)?.statusCode,
                     message = errorMessage,
+                    causeType = exception.javaClass.simpleName,
                 )
                 throw PdlPersonoppslagFailedException(
                     message = errorMessage,
+                    retryable = failure.retryable,
                     cause = exception,
                 )
             }
@@ -93,21 +126,19 @@ class PdlPersonService(
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: Exception) {
-                val errorCode =
-                    if (exception is PdlRequestFailedException) {
-                        PdlPersonoppslagErrorCode.PDL_HTTP_ERROR
-                    } else {
-                        PdlPersonoppslagErrorCode.PDL_REQUEST_FAILED
-                    }
+                val failure = exception.toPdlRequestFailure() ?: throw exception
                 logPersonoppslagFailed(
-                    errorCode = errorCode,
+                    errorCode = failure.errorCode,
+                    retryable = failure.retryable,
                     upstreamStatus = (exception as? PdlRequestFailedException)?.statusCode,
+                    causeType = exception.javaClass.simpleName,
                 )
                 throw if (exception is PdlPersonoppslagFailedException) {
                     exception
                 } else {
                     PdlPersonoppslagFailedException(
                         message = "Klarte ikke å hente personopplysninger fra PDL",
+                        retryable = failure.retryable,
                         cause = exception,
                     )
                 }
@@ -117,9 +148,7 @@ class PdlPersonService(
         val person =
             try {
                 pdlResponse.toPerson()
-            } catch (exception: CancellationException) {
-                throw exception
-            } catch (exception: Exception) {
+            } catch (exception: PdlResponseIncompleteException) {
                 val errorCode =
                     if (pdlErrors.isEmpty()) {
                         PdlPersonoppslagErrorCode.PDL_RESPONSE_INCOMPLETE
@@ -129,10 +158,16 @@ class PdlPersonService(
                 if (pdlErrors.isEmpty()) {
                     logPersonoppslagFailed(
                         errorCode = errorCode,
+                        retryable = errorCode.isRetryableGraphQlResponse(),
                         message = "PDL-responsen manglet nødvendige personopplysninger",
                     )
+                } else if (errorCode == PdlPersonoppslagErrorCode.PDL_NOT_FOUND) {
+                    logPersonoppslagNotFound(pdlErrors)
                 } else {
-                    logPersonoppslagFailed(pdlErrors)
+                    logPersonoppslagFailed(
+                        pdlErrors = pdlErrors,
+                        retryable = errorCode.isRetryableGraphQlResponse(),
+                    )
                 }
                 throw when {
                     pdlErrors.isEmpty() -> exception
@@ -141,6 +176,7 @@ class PdlPersonService(
                     else ->
                         PdlPersonoppslagFailedException(
                             message = "PDL returnerte feil ved personoppslag",
+                            retryable = errorCode.isRetryableGraphQlResponse(),
                             cause = exception,
                         )
                 }
@@ -155,18 +191,9 @@ class PdlPersonService(
 
     private fun GetPersonResponse.toPerson(): PdlPerson {
         val navn = data?.person?.navn?.firstOrNull()
-        val aktorId =
-            data
-                ?.identer
-                ?.identer
-                ?.firstOrNull { it.gruppe == AKTORID_GRUPPE }
-                ?.ident
 
         if (navn == null) {
             throw PdlResponseIncompleteException("Fant ikke navn i PDL-respons")
-        }
-        if (aktorId == null) {
-            throw PdlResponseIncompleteException("Fant ikke aktør-ID i PDL")
         }
 
         return PdlPerson(
@@ -179,21 +206,27 @@ class PdlPersonService(
         )
     }
 
-    private fun logPersonoppslagFailed(pdlErrors: List<ResponseError>) {
+    private fun logPersonoppslagFailed(
+        pdlErrors: List<JsonNode>,
+        retryable: Boolean,
+    ) {
         val errorCode = pdlErrors.toPdlPersonoppslagErrorCode()
         log
             .atError()
             .addKeyValue("event_type", PDL_PERSONOPPSLAG_FAILED)
             .addKeyValue("error_code", errorCode.name)
             .addKeyValue("operation", HENT_PERSONOPPLYSNINGER)
-            .addKeyValue("pdl_errors", pdlErrors)
+            .addKeyValue("retryable", retryable)
+            .addKeyValue("pdl_errors", pdlErrors.toStructuredLogValue())
             .log("Klarte ikke å fullføre personoppslag i PDL")
     }
 
     private fun logPersonoppslagFailed(
         errorCode: PdlPersonoppslagErrorCode,
+        retryable: Boolean,
         upstreamStatus: Int? = null,
         message: String = "Klarte ikke å hente personopplysninger fra PDL",
+        causeType: String? = null,
     ) {
         val logBuilder =
             log
@@ -201,19 +234,89 @@ class PdlPersonService(
                 .addKeyValue("event_type", PDL_PERSONOPPSLAG_FAILED)
                 .addKeyValue("error_code", errorCode.name)
                 .addKeyValue("operation", HENT_PERSONOPPLYSNINGER)
+                .addKeyValue("retryable", retryable)
         if (upstreamStatus != null && upstreamStatus in 100..599) {
             logBuilder.addKeyValue("upstream_status", upstreamStatus)
+        }
+        if (causeType != null) {
+            logBuilder.addKeyValue("cause_type", causeType)
         }
         logBuilder.log(message)
     }
 
-    private fun logPartialPersonoppslag(pdlErrors: List<ResponseError>) {
+    private fun logPersonoppslagNotFound(pdlErrors: List<JsonNode>) {
+        log
+            .atWarn()
+            .addKeyValue("event_type", PDL_PERSONOPPSLAG_NOT_FOUND)
+            .addKeyValue("error_code", PdlPersonoppslagErrorCode.PDL_NOT_FOUND.name)
+            .addKeyValue("operation", HENT_PERSONOPPLYSNINGER)
+            .addKeyValue("pdl_errors", pdlErrors.toStructuredLogValue())
+            .log("Fant ikke person i PDL")
+    }
+
+    private fun logPartialPersonoppslag(pdlErrors: List<JsonNode>) {
         log
             .atWarn()
             .addKeyValue("event_type", PDL_PERSONOPPSLAG_PARTIAL_RESPONSE)
             .addKeyValue("error_code", pdlErrors.toPdlPersonoppslagErrorCode().name)
             .addKeyValue("operation", HENT_PERSONOPPLYSNINGER)
-            .addKeyValue("pdl_errors", pdlErrors)
+            .addKeyValue("pdl_errors", pdlErrors.toStructuredLogValue())
             .log("PDL returnerte feil sammen med brukbare personopplysninger")
     }
 }
+
+private data class PdlRequestFailure(
+    val errorCode: PdlPersonoppslagErrorCode,
+    val retryable: Boolean,
+)
+
+private fun List<JsonNode>.toStructuredLogValue(): List<Any?> =
+    map { objectMapper.convertValue(it, Any::class.java) }
+
+private fun Exception.toPdlRequestFailure(): PdlRequestFailure? =
+    when (this) {
+        is PdlRequestFailedException ->
+            PdlRequestFailure(
+                errorCode = PdlPersonoppslagErrorCode.PDL_HTTP_ERROR,
+                retryable = retryable,
+            )
+        is IOException,
+        is ServiceUnavailableException,
+        ->
+            PdlRequestFailure(
+                errorCode = PdlPersonoppslagErrorCode.PDL_REQUEST_FAILED,
+                retryable = true,
+            )
+        is ContentConvertException,
+        is NoTransformationFoundException,
+        ->
+            PdlRequestFailure(
+                errorCode = PdlPersonoppslagErrorCode.PDL_REQUEST_FAILED,
+                retryable = false,
+            )
+        else -> null
+    }
+
+private fun Exception.toAccessTokenFailure(): PdlRequestFailure? =
+    when (this) {
+        is AccessTokenRequestFailedException ->
+            PdlRequestFailure(
+                errorCode = PdlPersonoppslagErrorCode.PDL_ACCESS_TOKEN_FAILED,
+                retryable = retryable,
+            )
+        is IOException,
+        is ServiceUnavailableException,
+        ->
+            PdlRequestFailure(
+                errorCode = PdlPersonoppslagErrorCode.PDL_ACCESS_TOKEN_FAILED,
+                retryable = true,
+            )
+        is ContentConvertException,
+        is NoTransformationFoundException,
+        ->
+            PdlRequestFailure(
+                errorCode = PdlPersonoppslagErrorCode.PDL_ACCESS_TOKEN_FAILED,
+                retryable = false,
+            )
+        else -> null
+    }

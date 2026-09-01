@@ -86,7 +86,10 @@ class SykmeldingServiceTest :
                             objectMapper.writeValueAsString(sendtSykmelding),
                         )
                     coEvery { pdlPersonService.getPerson(any()) } throws
-                        PdlPersonoppslagFailedException("PDL-feilen er allerede logget")
+                        PdlPersonoppslagFailedException(
+                            message = "PDL-feilen er allerede logget",
+                            retryable = true,
+                        )
                     val serviceLogger =
                         LoggerFactory.getLogger(SykmeldingService::class.java) as Logger
                     val appender = ListAppender<ILoggingEvent>().apply { start() }
