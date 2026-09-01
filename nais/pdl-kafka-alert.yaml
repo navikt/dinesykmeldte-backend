@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: dinesykmeldte-backend-pdl-kafka
+  namespace: team-esyfo
+  labels:
+    team: team-esyfo
+spec:
+  groups:
+    - name: dinesykmeldte-backend-pdl-kafka
+      rules:
+        - alert: PdlKafkaPartitionQuarantined
+          expr: |
+            max(dinesykmeldte_backend_kafka_pdl_quarantined_partitions{app="dinesykmeldte-backend", namespace="team-esyfo"}) > 0
+          for: 1m
+          annotations:
+            summary: "En Kafka-partisjon er satt i karantene etter PDL-feil"
+            consequence: "Partisjonen er pauset lokalt uten commit. Andre partisjoner fortsetter; rebalance eller restart kan levere offseten på nytt."
+            action: "Finn kafka_pdl_retry_exhausted i loggene, rett årsaken og følg runbook for kontrollert restart."
+            runbook_url: "https://github.com/navikt/dinesykmeldte-backend/blob/main/docs/runbooks/pdl-kafka-quarantine.md"
+          labels:
+            namespace: team-esyfo
+            severity: critical

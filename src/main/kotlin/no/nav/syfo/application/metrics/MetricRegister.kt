@@ -1,6 +1,7 @@
 package no.nav.syfo.application.metrics
 
 import io.prometheus.client.Counter
+import io.prometheus.client.Gauge
 import io.prometheus.client.Histogram
 
 const val METRICS_NS = "dinesykmeldte_backend"
@@ -80,4 +81,37 @@ val KAFKA_CONSUMER_RESTART_COUNTER: Counter =
         .name("kafka_consumer_restart")
         .namespace(METRICS_NS)
         .help("Number of times kafka consumer has restarted due to error in message processing")
+        .register()
+
+val KAFKA_PDL_RETRY_COUNTER: Counter =
+    Counter
+        .build()
+        .name("kafka_pdl_retry")
+        .namespace(METRICS_NS)
+        .labelNames("state")
+        .help("Number of partition-local PDL retries by retry state")
+        .register()
+
+val KAFKA_PDL_PAUSED_PARTITIONS: Gauge =
+    Gauge
+        .build()
+        .name("kafka_pdl_paused_partitions")
+        .namespace(METRICS_NS)
+        .help("Number of Kafka partitions paused while waiting for retry or operator action")
+        .register()
+
+val KAFKA_PDL_TERMINAL_FAILURE_COUNTER: Counter =
+    Counter
+        .build()
+        .name("kafka_pdl_terminal_failure")
+        .namespace(METRICS_NS)
+        .help("Number of exhausted PDL retry sequences that quarantined a Kafka partition")
+        .register()
+
+val KAFKA_PDL_QUARANTINED_PARTITIONS: Gauge =
+    Gauge
+        .build()
+        .name("kafka_pdl_quarantined_partitions")
+        .namespace(METRICS_NS)
+        .help("Number of Kafka partitions quarantined after exhausting PDL retries")
         .register()

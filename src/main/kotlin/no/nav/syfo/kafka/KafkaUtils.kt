@@ -60,7 +60,10 @@ fun Properties.toConsumerConfig(
         it[ConsumerConfig.GROUP_ID_CONFIG] = groupId
         it[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = keyDeserializer.java
         it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = valueDeserializer.java
+        // Record-lokal PDL-retry søker tilbake før neste poll; behold én record per poll.
         it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
+        // Offset committes først etter vellykket recordbehandling.
+        it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = "false"
     }
 
 fun Properties.toProducerConfig(
