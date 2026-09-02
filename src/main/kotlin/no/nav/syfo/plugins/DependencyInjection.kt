@@ -114,8 +114,10 @@ private fun commonKafkaConsumer() =
                 KafkaConsumer(
                     KafkaUtils
                         .getKafkaConfig("dinesykmeldte-backend-consumer")
-                        .also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest" }
-                        .toConsumerConfig(
+                        .also {
+                            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+                            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
+                        }.toConsumerConfig(
                             "esyfo-dinesykmeldte-backend",
                             StringDeserializer::class,
                         ),
