@@ -34,6 +34,7 @@ import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.errors.WakeupException
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.time.Duration
 import java.util.UUID
 import java.util.concurrent.CountDownLatch
@@ -138,7 +139,7 @@ class CommonKafkaServiceTest :
             every { kafkaConsumer.unsubscribe() } answers { unsubscribeLatch.countDown() }
             val accessTokenClient = mockk<AccessTokenClient>()
             coEvery { accessTokenClient.getAccessToken(any()) } throws
-                IllegalStateException(causeCanary)
+                IOException(causeCanary)
             val pdlPersonService =
                 PdlPersonService(
                     pdlClient = mockk<PdlClient>(),
