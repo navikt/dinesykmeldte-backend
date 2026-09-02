@@ -29,7 +29,7 @@ class SykmeldingService(
 ) {
     private val log = logger()
 
-    suspend fun handleSendtSykmeldingKafkaMessage(record: ConsumerRecord<String, String>) {
+    suspend fun handleSendtSykmeldingKafkaMessage(record: ConsumerRecord<String, String?>) {
         try {
             handleSendtSykmeldingKafkaMessage(
                 record.key(),
@@ -38,7 +38,13 @@ class SykmeldingService(
         } catch (ex: CancellationException) {
             throw ex
         } catch (ex: NameNotFoundInPdlException) {
-            throw ex
+            if (cluster != "dev-gcp") {
+                throw ex
+            } else {
+                log.info(
+                    "Ignoring sykmelding when person is not found in pdl for sykmelding: ${record.key()}",
+                )
+            }
         } catch (ex: SyketilfelleNotFoundException) {
             if (cluster != "dev-gcp") {
                 throw ex
@@ -109,35 +115,15 @@ class SykmeldingService(
         existingSykmelding: SykmeldingInfo?,
     ) {
         if (existingSykmelding != null) {
-            val remainingSykmeldinger =
-                sykmeldingDb
-                    .getSykmeldingInfos(existingSykmelding.fnr)
-                    .filterNot { it.sykmeldingId == sykmeldingId }
-            try {
-                updateSykmeldt(existingSykmelding.fnr, remainingSykmeldinger)
-            } catch (_: NameNotFoundInPdlException) {
-                sykmeldingDb.deleteSykmeldt(existingSykmelding.fnr)
-            } catch (exception: SyketilfelleNotFoundException) {
-                if (cluster != "dev-gcp") throw exception
-                sykmeldingDb.deleteSykmeldt(existingSykmelding.fnr)
-                log.info(
-                    "Ignorerer manglende syketilfelle under sletting av sykmelding $sykmeldingId i dev",
-                )
-            }
+            log.info("Sletter sykmelding med id $sykmeldingId")
             sykmeldingDb.remove(sykmeldingId)
-            log.info("Slettet sykmelding med id $sykmeldingId")
+            updateSykmeldt(existingSykmelding.fnr)
         }
     }
 
     suspend fun updateSykmeldt(fnr: String) {
         val sykmeldingInfos = sykmeldingDb.getSykmeldingInfos(fnr)
-        updateSykmeldt(fnr, sykmeldingInfos)
-    }
 
-    private suspend fun updateSykmeldt(
-        fnr: String,
-        sykmeldingInfos: List<SykmeldingInfo>,
-    ) {
         when (val latestSykmelding = sykmeldingInfos.maxByOrNull { it.latestTom }) {
             null -> sykmeldingDb.deleteSykmeldt(fnr)
             else -> {
