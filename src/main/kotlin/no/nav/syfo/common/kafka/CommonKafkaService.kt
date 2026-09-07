@@ -10,6 +10,7 @@ import no.nav.syfo.application.metrics.KAFKA_CONSUMER_RESTART_COUNTER
 import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
+import no.nav.syfo.pdl.exceptions.PdlPersonoppslagFailedException
 import no.nav.syfo.soknad.SoknadService
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.util.logger
@@ -48,14 +49,14 @@ class CommonKafkaService(
                         break
                     } catch (ex: CancellationException) {
                         throw ex
+                    } catch (ex: PdlPersonoppslagFailedException) {
+                        restartConsumerAfterFailure()
                     } catch (ex: Exception) {
                         log.warn(
                             "Error running kafka consumer, unsubscribing and waiting 10 seconds for retry",
                             ex,
                         )
-                        kafkaConsumer.unsubscribe()
-                        KAFKA_CONSUMER_RESTART_COUNTER.inc()
-                        delay(10_000)
+                        restartConsumerAfterFailure()
                     }
                 }
             } finally {
@@ -66,6 +67,12 @@ class CommonKafkaService(
                 }
             }
         }
+
+    private suspend fun restartConsumerAfterFailure() {
+        kafkaConsumer.unsubscribe()
+        KAFKA_CONSUMER_RESTART_COUNTER.inc()
+        delay(10_000)
+    }
 
     private fun determineTopics(): List<String> {
         val topics =

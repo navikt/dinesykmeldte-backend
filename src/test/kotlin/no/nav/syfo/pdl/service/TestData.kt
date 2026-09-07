@@ -12,18 +12,6 @@ fun getTestData(): String =
         "       }\n" +
         "      ]\n" +
         "    },\n" +
-        "    \"identer\": {\n" +
-        "     \"identer\": [\n" +
-        "      {\n" +
-        "        \"ident\": \"99999999999\",\n" +
-        "        \"gruppe\": \"AKTORID\"\n" +
-        "      },\n" +
-        "      {\n" +
-        "       \"ident\": \"12345678910\",\n" +
-        "       \"gruppe\": \"FOLKEREGISTERIDENT\"\n" +
-        "      }\n" +
-        "     ]\n" +
-        "    },\n" +
         "    \"code\": \"ok\"\n" +
         "  }\n" +
         "}"
@@ -33,42 +21,6 @@ fun getTestDataUtenNavn(): String =
         "  \"data\": {\n" +
         "    \"person\": {\n" +
         "      \"navn\": []\n" +
-        "    },\n" +
-        "    \"identer\": {\n" +
-        "     \"identer\": [\n" +
-        "      {\n" +
-        "        \"ident\": \"99999999999\",\n" +
-        "        \"gruppe\": \"AKTORID\"\n" +
-        "      },\n" +
-        "      {\n" +
-        "       \"ident\": \"12345678910\",\n" +
-        "       \"gruppe\": \"FOLKEREGISTERIDENT\"\n" +
-        "      }\n" +
-        "     ]\n" +
-        "    },\n" +
-        "    \"code\": \"Feil\"\n" +
-        "  }\n" +
-        "}"
-
-fun getTestDataUtenAktorId(): String =
-    "{\n" +
-        "  \"data\": {\n" +
-        "    \"person\": {\n" +
-        "      \"navn\": [\n" +
-        "       {\n" +
-        "         \"fornavn\": \"RASK\",\n" +
-        "         \"mellomnavn\": null,\n" +
-        "         \"etternavn\": \"SAKS\"\n" +
-        "       }\n" +
-        "      ]\n" +
-        "    },\n" +
-        "    \"identer\": {\n" +
-        "     \"identer\": [\n" +
-        "      {\n" +
-        "       \"ident\": \"12345678910\",\n" +
-        "       \"gruppe\": \"FOLKEREGISTERIDENT\"\n" +
-        "      }\n" +
-        "     ]\n" +
         "    },\n" +
         "    \"code\": \"Feil\"\n" +
         "  }\n" +

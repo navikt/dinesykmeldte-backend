@@ -5,13 +5,13 @@ import io.ktor.client.call.body
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import no.nav.syfo.pdl.client.model.GetPersonRequest
 import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.client.model.GetPersonVariables
 import no.nav.syfo.pdl.exceptions.PdlRequestFailedException
-import no.nav.syfo.util.logger
 import org.intellij.lang.annotations.Language
 
 @Language("GraphQL")
@@ -25,12 +25,6 @@ private val getPersonQuery =
           etternavn
         }
       }
-      identer: hentIdenter(ident: ${'$'}ident, historikk: false) {
-          identer {
-            ident,
-            gruppe
-          }
-        }
     }
     """.trimIndent()
 
@@ -38,10 +32,6 @@ class PdlClient(
     private val httpClient: HttpClient,
     private val basePath: String,
 ) {
-    companion object {
-        private val log = logger()
-    }
-
     suspend fun getPerson(
         fnr: String,
         token: String,
@@ -64,11 +54,8 @@ class PdlClient(
         if (response.status.isSuccess()) {
             return response.body()
         } else {
-            val responseText = response.body<String>()
-            log.error("Feil ved kall mot PDL: Status: ${response.status}. Message: $responseText")
-            throw PdlRequestFailedException(
-                "Feil ved kall mot PDL: ${response.status}, $responseText",
-            )
+            response.bodyAsChannel().cancel(null)
+            throw PdlRequestFailedException(statusCode = response.status.value)
         }
     }
 }

@@ -7,9 +7,11 @@ import io.ktor.client.request.accept
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.Parameters
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import no.nav.syfo.util.logger
@@ -33,7 +35,7 @@ class AccessTokenClient(
                 tokenMap[scope]?.takeUnless { it.expiresOn.isBefore(omToMinutter) }
                     ?: run {
                         log.debug("Henter nytt token fra Azure AD")
-                        val response: AadAccessTokenV2 =
+                        val response =
                             httpClient
                                 .post(aadAccessTokenUrl) {
                                     accept(ContentType.Application.Json)
@@ -48,12 +50,19 @@ class AccessTokenClient(
                                             },
                                         ),
                                     )
-                                }.body()
+                                }
+                        if (!response.status.isSuccess()) {
+                            response.bodyAsChannel().cancel(null)
+                            throw AccessTokenRequestFailedException(response.status.value)
+                        }
+                        val accessTokenResponse: AadAccessTokenV2 = response.body()
+                        val expiresOn =
+                            Instant.now().plusSeconds(accessTokenResponse.expires_in.toLong())
                         val tokenMedExpiry =
                             AadAccessTokenMedExpiry(
-                                access_token = response.access_token,
-                                expires_in = response.expires_in,
-                                expiresOn = Instant.now().plusSeconds(response.expires_in.toLong()),
+                                access_token = accessTokenResponse.access_token,
+                                expires_in = accessTokenResponse.expires_in,
+                                expiresOn = expiresOn,
                             )
                         tokenMap[scope] = tokenMedExpiry
                         log.debug("Har hentet accesstoken")
@@ -75,3 +84,13 @@ data class AadAccessTokenMedExpiry(
     val expires_in: Int,
     val expiresOn: Instant,
 )
+
+class AccessTokenRequestFailedException(
+    val statusCode: Int,
+) : RuntimeException("Azure AD svarte med HTTP-status $statusCode") {
+    val retryable: Boolean =
+        statusCode == 408 ||
+            statusCode == 425 ||
+            statusCode == 429 ||
+            statusCode in 500..599
+}

@@ -9,15 +9,15 @@ import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.common.exception.ServiceUnavailableException
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
+import no.nav.syfo.pdl.exceptions.PdlPersonoppslagFailedException
 import no.nav.syfo.pdl.model.formatName
 import no.nav.syfo.util.HttpClientTest
 import org.amshove.kluent.shouldBeEqualTo
-import java.util.UUID
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 
 class PdlPersonServiceTest :
     FunSpec({
-        val sykmeldingId = UUID.randomUUID().toString()
         val fnr = "12345678910"
         val accessTokenClient = mockk<AccessTokenClient>()
         val httpClient = HttpClientTest()
@@ -34,15 +34,17 @@ class PdlPersonServiceTest :
                         delay(2_000)
                         null
                     }
-                    assertFailsWith<ServiceUnavailableException> {
-                        pdlPersonService.getPerson(fnr, sykmeldingId)
-                    }
+                    val exception =
+                        assertFailsWith<PdlPersonoppslagFailedException> {
+                            pdlPersonService.getPerson(fnr)
+                        }
+                    assertIs<ServiceUnavailableException>(exception.cause)
                 }
             }
-            test("Henter navn og aktørid for person som finnes i PDL") {
+            test("Henter navn for person som finnes i PDL") {
                 httpClient.respond(getTestData())
                 runBlocking {
-                    val person = pdlPersonService.getPerson(fnr, sykmeldingId)
+                    val person = pdlPersonService.getPerson(fnr)
 
                     person.navn.formatName() shouldBeEqualTo "Rask Saks"
                 }
@@ -51,20 +53,33 @@ class PdlPersonServiceTest :
             test("Feiler hvis navn mangler i PDL") {
                 httpClient.respond(getTestDataUtenNavn())
                 assertFailsWith<NameNotFoundInPdlException> {
-                    runBlocking { pdlPersonService.getPerson(fnr, sykmeldingId) }
+                    runBlocking { pdlPersonService.getPerson(fnr) }
                 }
             }
-            test("Feiler hvis aktørid mangler i PDL") {
-                httpClient.respond(getTestDataUtenAktorId())
-                assertFailsWith<RuntimeException> {
-                    runBlocking { pdlPersonService.getPerson(fnr, sykmeldingId) }
+            test("Bevarer manglende navn når PDL returnerer unauthorized med data") {
+                httpClient.respond(getErrorResponse())
+                assertFailsWith<NameNotFoundInPdlException> {
+                    runBlocking { pdlPersonService.getPerson(fnr) }
                 }
             }
 
-            test("Feiler hvis PDL returnerer feilmelding") {
-                httpClient.respond(getErrorResponse())
+            test("Behandler not_found fra PDL som manglende person") {
+                httpClient.respond(getErrorResponse().replace("unauthorized", "not_found"))
                 assertFailsWith<NameNotFoundInPdlException> {
-                    runBlocking { pdlPersonService.getPerson(fnr, sykmeldingId) }
+                    runBlocking { pdlPersonService.getPerson(fnr) }
+                }
+            }
+
+            listOf(
+                "{}",
+                """{"data":null}""",
+                """{"data":null,"errors":[{"extensions":{"code":"server_error"}}]}""",
+            ).forEach { response ->
+                test("Respons uten data beholder feilsporet: $response") {
+                    httpClient.respond(response)
+                    assertFailsWith<PdlPersonoppslagFailedException> {
+                        pdlPersonService.getPerson(fnr)
+                    }
                 }
             }
         }
