@@ -4,13 +4,16 @@ import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.OutputStreamAppender
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -21,6 +24,7 @@ import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.pdl.client.PdlClient
+import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.service.PDL_PERSONOPPSLAG_FAILED
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.soknad.SoknadService
@@ -44,6 +48,75 @@ import kotlin.test.assertFalse
 
 class CommonKafkaServiceTest :
     FunSpec({
+        listOf(null, "unauthorized", "server_error").forEach { errorCode ->
+            test(
+                "manglende navn med PDL-feil $errorCode hopper over record uten å restarte consumer",
+            ) {
+                val topic = "teamsykmelding.syfo-sendt-sykmelding"
+                val missingNameRecord = ConsumerRecord(topic, 0, 0, "missing-name", "{}")
+                val nextRecord = ConsumerRecord(topic, 0, 1, "next-record", "{}")
+                val records =
+                    ConsumerRecords(
+                        mapOf(
+                            TopicPartition(topic, 0) to listOf(missingNameRecord, nextRecord),
+                        ),
+                    )
+                val kafkaConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
+                var pollCount = 0
+                every { kafkaConsumer.poll(any<Duration>()) } answers {
+                    if (pollCount++ == 0) records else throw WakeupException()
+                }
+                val outcomeObserved = CountDownLatch(1)
+                every { kafkaConsumer.unsubscribe() } answers { outcomeObserved.countDown() }
+                val errors =
+                    if (errorCode == null) {
+                        "[]"
+                    } else {
+                        """[{"message":"PDL diagnostic","extensions":{"code":"$errorCode"}}]"""
+                    }
+                val pdlResponse =
+                    objectMapper.readValue<GetPersonResponse>(
+                        """{"data":{"person":null},"errors":$errors}""",
+                    )
+                val pdlClient = mockk<PdlClient>()
+                coEvery { pdlClient.getPerson(any(), any()) } returns pdlResponse
+                val accessTokenClient = mockk<AccessTokenClient>()
+                coEvery { accessTokenClient.getAccessToken(any()) } returns "token"
+                val pdlPersonService = PdlPersonService(pdlClient, accessTokenClient, "scope")
+                val sykmeldingService = mockk<SykmeldingService>()
+                coEvery {
+                    sykmeldingService.handleSendtSykmeldingKafkaMessage(
+                        missingNameRecord,
+                    )
+                } coAnswers
+                    {
+                        pdlPersonService.getPerson("12345678910")
+                        Unit
+                    }
+                coEvery { sykmeldingService.handleSendtSykmeldingKafkaMessage(nextRecord) } answers
+                    {
+                        outcomeObserved.countDown()
+                    }
+                val service =
+                    createCommonKafkaService(kafkaConsumer, sykmeldingService = sykmeldingService)
+
+                runBlocking {
+                    val job = launch(Dispatchers.Default) { service.startConsumer() }
+                    try {
+                        outcomeObserved.await(1, TimeUnit.SECONDS) shouldBeEqualTo true
+                    } finally {
+                        job.cancelAndJoin()
+                    }
+                }
+
+                coVerify(
+                    exactly = 1,
+                ) { sykmeldingService.handleSendtSykmeldingKafkaMessage(nextRecord) }
+                verify(exactly = 0) { kafkaConsumer.unsubscribe() }
+                verify(exactly = 1) { kafkaConsumer.close(Duration.ofSeconds(3)) }
+            }
+        }
+
         test("wakeup exception avslutter kontrollert og lukker consumer med timeout") {
             val kafkaConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
             every { kafkaConsumer.poll(any<Duration>()) } throws WakeupException()

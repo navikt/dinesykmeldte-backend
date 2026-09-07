@@ -170,6 +170,8 @@ class PdlPersonService(
                     )
                 }
                 throw when {
+                    // Preserve the existing Kafka skip path for a response without a name.
+                    pdlResponse.data != null -> NameNotFoundInPdlException("Fant ikke navn i PDL")
                     pdlErrors.isEmpty() -> exception
                     errorCode == PdlPersonoppslagErrorCode.PDL_NOT_FOUND ->
                         NameNotFoundInPdlException("Fant ikke person i PDL")

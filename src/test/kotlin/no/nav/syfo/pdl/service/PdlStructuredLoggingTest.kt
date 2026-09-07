@@ -18,7 +18,6 @@ import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.pdl.exceptions.PdlPersonoppslagFailedException
 import no.nav.syfo.pdl.exceptions.PdlRequestFailedException
-import no.nav.syfo.pdl.exceptions.PdlResponseIncompleteException
 import no.nav.syfo.util.HttpClientTest
 import no.nav.syfo.util.ResponseData
 import no.nav.syfo.util.objectMapper
@@ -76,7 +75,7 @@ class PdlStructuredLoggingTest :
                 try {
                     withContext(MDCContext()) {
                         capturePdlLogs {
-                            assertFailsWith<PdlPersonoppslagFailedException> {
+                            assertFailsWith<NameNotFoundInPdlException> {
                                 pdlPersonService.getPerson(fnrCanary)
                             }
                         }
@@ -183,7 +182,7 @@ class PdlStructuredLoggingTest :
 
             val logs =
                 capturePdlLogs {
-                    assertFailsWith<PdlPersonoppslagFailedException> {
+                    assertFailsWith<NameNotFoundInPdlException> {
                         pdlPersonService.getPerson(fnrCanary)
                     }
                 }
@@ -367,7 +366,7 @@ class PdlStructuredLoggingTest :
 
             val logs =
                 capturePdlLogs {
-                    assertFailsWith<PdlResponseIncompleteException> {
+                    assertFailsWith<NameNotFoundInPdlException> {
                         pdlPersonService.getPerson(fnrCanary)
                     }
                 }

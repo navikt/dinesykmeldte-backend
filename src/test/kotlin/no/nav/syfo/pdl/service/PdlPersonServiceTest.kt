@@ -10,7 +10,6 @@ import no.nav.syfo.common.exception.ServiceUnavailableException
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.pdl.exceptions.PdlPersonoppslagFailedException
-import no.nav.syfo.pdl.exceptions.PdlResponseIncompleteException
 import no.nav.syfo.pdl.model.formatName
 import no.nav.syfo.util.HttpClientTest
 import org.amshove.kluent.shouldBeEqualTo
@@ -53,24 +52,34 @@ class PdlPersonServiceTest :
 
             test("Feiler hvis navn mangler i PDL") {
                 httpClient.respond(getTestDataUtenNavn())
-                assertFailsWith<PdlResponseIncompleteException> {
+                assertFailsWith<NameNotFoundInPdlException> {
                     runBlocking { pdlPersonService.getPerson(fnr) }
                 }
             }
-            test("Feiler operasjonelt hvis PDL returnerer unauthorized") {
+            test("Bevarer manglende navn når PDL returnerer unauthorized med data") {
                 httpClient.respond(getErrorResponse())
-                val exception =
-                    assertFailsWith<PdlPersonoppslagFailedException> {
-                        runBlocking { pdlPersonService.getPerson(fnr) }
-                    }
-
-                exception.retryable shouldBeEqualTo false
+                assertFailsWith<NameNotFoundInPdlException> {
+                    runBlocking { pdlPersonService.getPerson(fnr) }
+                }
             }
 
             test("Behandler not_found fra PDL som manglende person") {
                 httpClient.respond(getErrorResponse().replace("unauthorized", "not_found"))
                 assertFailsWith<NameNotFoundInPdlException> {
                     runBlocking { pdlPersonService.getPerson(fnr) }
+                }
+            }
+
+            listOf(
+                "{}",
+                """{"data":null}""",
+                """{"data":null,"errors":[{"extensions":{"code":"server_error"}}]}""",
+            ).forEach { response ->
+                test("Respons uten data beholder feilsporet: $response") {
+                    httpClient.respond(response)
+                    assertFailsWith<PdlPersonoppslagFailedException> {
+                        pdlPersonService.getPerson(fnr)
+                    }
                 }
             }
         }
