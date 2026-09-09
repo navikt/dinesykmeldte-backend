@@ -1,92 +1,15 @@
 # dinesykmeldte-backend
 
-This project contains the application code and infrastructure for dinesykmeldte-backend, frontend app https://github.com/navikt/dinesykmeldte
-
-## Team
-- **Team**: team-esyfo, Nav IT
-- **Org**: navikt
-
-## Commands
-
-```bash
-./gradlew build   # Build + test + lint
-./gradlew test    # Tests only
-```
-
-## Nav Principles
-- **Team First**: Autonomous teams with circles of autonomy
-- **Product Development**: Continuous development over ad hoc approaches
-- **Essential Complexity**: Focus on essential, avoid accidental complexity
-- **DORA Metrics**: Measure and improve team performance
-
-## Platform & Auth
-- **Platform**: NAIS (Kubernetes on GCP)
-- **Auth**: Azure AD (internal users), TokenX (on-behalf-of token exchange), ID-porten (citizens), Maskinporten (machine-to-machine)
-- **Observability**: Prometheus metrics, Grafana Loki logs, Tempo tracing (OpenTelemetry)
-
-## Conventions
-- English code and comments — Norwegian for user-facing text and domain terms (e.g. dialogmote, sykmelding, oppfolgingsplan)
-- **Documentation lookup strategy** (prioritert rekkefølge):
-  1. **Repo first**: Sjekk eksisterende kode og custom instructions (`.github/instructions/`)
-  2. **NAV-docs ved behov**: Slå opp aksel.nav.no (UI-komponenter, design tokens) og doc.nais.io (plattform, deploy, observability) når du lager eller endrer noe i disse domenene
-  3. **Ekstern docs ved usikkerhet**: Bruk web search for eksterne biblioteker kun når du er usikker på API-korrekthet — ikke rutinemessig
-- Check existing code patterns in the repository before writing new code
-- Prefer obvious, readable code over clever code
-- Follow the ✅ Always / ⚠️ Ask First / 🚫 Never boundaries in agent and instruction files
-
-## Documentation
-
-Keep temporary notes outside the repository unless an existing ignored workspace is configured.
-Maintain durable service documentation in `README.md` and any established domain documentation as
-part of the authorized change. Record an ADR for a lasting architectural
-tradeoff or a change to an earlier architectural decision, following existing
-ADR paths and numbering when present. The task scope determines which docs
-need updating; ask only when a material decision or authority is missing.
-
-## Repository guidance
-
-This repository owns `.github/copilot-instructions.md`, applicable files under
-`.github/instructions/`, and retained local agents and skills. Update affected
-repository guidance together with an authorized change, preserving service
-facts, build commands, data rules, and operational constraints.
-
-Portable agents and task workflows come from the selected nav-pilot package.
-Use the exact component identities offered by the active session. Check local
-and user components for name collisions when a skill is missing or resolves to
-unexpected content.
-
-## Tech Stack
-- **Language**: Kotlin
-- **Framework**: Ktor
-- **Build**: Gradle (Kotlin DSL)
-- **Database**: PostgreSQL (via JDBC (HikariCP))
-- **Messaging**: Apache Kafka
-- **Testing**: Kotest, MockK
-- **Auth**: Les NAIS-manifestene i prosjektet for å finne hvilke auth-mekanismer som er konfigurert (mulige: Azure AD, TokenX, ID-porten, Maskinporten)
-
-## Backend Patterns
-- Check `build.gradle.kts` for actual dependencies before suggesting libraries
-- Use Flyway for all database migrations — never modify existing migrations
-- Parameterized queries always — never string interpolation in SQL
-- Follow the existing data access pattern in the repository (extension functions, repositories, etc.)
-- Structured logging — check which pattern this repo uses (KotlinLogging, SLF4J, kv() fields, MDC)
-- Follow existing code patterns in the repository
-
-## Boundaries
-
-### ✅ Always
-- Run `./gradlew build` after changes
-- Use Flyway for database migrations
-- Add Prometheus metrics for business operations
-- Validate JWT issuer, audience, and expiration
-
-### ⚠️ Ask First
-- Changing database schema or Kafka event schemas
-- Modifying authentication configuration
-- Adding new GCP resources
-
-### 🚫 Never
-- Skip database migration versioning
-- Hardcode secrets or configuration values
-- Use `!!` operator without null checks
-- Bypass authentication checks
+- `./gradlew build` runs build, tests and lint; `./gradlew test` runs tests.
+  Database tests start PostgreSQL through Testcontainers and need Docker.
+- Local startup: `mise docker-up`, then `mise start`. The compose tasks include
+  the local auth server, Texas, PostgreSQL and Kafka.
+- A valid TokenX token does not establish access to an employee's data. Keep
+  sykmelding, søknad and hendelse reads/updates scoped to the authenticated
+  leader's person identifier and the corresponding nearest-leader relation.
+- `/api/sykmelding/isActiveSykmelding` uses Azure AD through Texas; keep this
+  machine API separate from the citizen/leader TokenX routes.
+- The OpenAPI file `api/oas3/dinesykmeldte-backend-api.yaml` is incomplete;
+  inspect the actual route when changing an endpoint.
+- Person identifiers and sykmelding/søknad content belong outside ordinary
+  logs; preserve the existing separation from restricted team logs.
