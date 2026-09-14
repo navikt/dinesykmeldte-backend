@@ -53,26 +53,30 @@ fun generateJWTLoginservice(
     expiry: LocalDateTime? = LocalDateTime.now().plusHours(1),
     subject: String = "subject",
     issuer: String = "issuer",
-    level: String = "Level4",
+    level: String? = "Level4",
 ): String {
     val now = Date()
     val key = getDefaultRSAKey()
     val alg = Algorithm.RSA256(key.toRSAPublicKey(), key.toRSAPrivateKey())
 
-    return JWT
-        .create()
-        .withKeyId(KEY_ID)
-        .withSubject(subject)
-        .withIssuer(issuer)
-        .withAudience(audience)
-        .withJWTId(UUID.randomUUID().toString())
-        .withClaim("ver", "1.0")
-        .withClaim("nonce", "myNonce")
-        .withClaim("auth_time", now)
-        .withClaim("nbf", now)
-        .withClaim("azp", consumerClientId)
-        .withClaim("iat", now)
-        .withClaim("acr", level)
+    val token =
+        JWT
+            .create()
+            .withKeyId(KEY_ID)
+            .withSubject(subject)
+            .withIssuer(issuer)
+            .withAudience(audience)
+            .withJWTId(UUID.randomUUID().toString())
+            .withClaim("ver", "1.0")
+            .withClaim("nonce", "myNonce")
+            .withClaim("auth_time", now)
+            .withClaim("nbf", now)
+            .withClaim("azp", consumerClientId)
+            .withClaim("iat", now)
+
+    level?.let { token.withClaim("acr", it) }
+
+    return token
         .withClaim("exp", Date.from(expiry?.atZone(ZoneId.systemDefault())?.toInstant()))
         .sign(alg)
 }

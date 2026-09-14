@@ -73,6 +73,7 @@ spec:
         - application: dinesykmeldte
         - application: syfo-oppfolgingsplan-backend
         - application: esyfo-narmesteleder
+        - application: syfomotebehov
         - application: oppfolgingsplan-frontend
           namespace: team-esyfo
           cluster: dev-gcp
