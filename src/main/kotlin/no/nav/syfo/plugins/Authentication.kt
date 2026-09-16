@@ -77,7 +77,10 @@ fun harDineSykmeldteBackendAudience(
 ): Boolean = credentials.payload.audience.contains(clientId)
 
 fun erNiva4(credentials: JWTCredential): Boolean =
-    "Level4" == credentials.payload.getClaim("acr").asString()
+    when (credentials.payload.getClaim("acr").asString()) {
+        "Level4", "idporten-loa-high" -> true
+        else -> false
+    }
 
 data class BrukerPrincipal(
     val fnr: String,
