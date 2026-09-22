@@ -34,8 +34,16 @@ fun Route.registerDineSykmeldteApi(dineSykmeldteService: DineSykmeldteService) {
         )
         when (val sykmeldt = dineSykmeldteService.getSykmeldt(narmestelederId, narmesteLederfnr)) {
             null -> {
-                log.info("could not find sykemeldt for narmestelederId: $narmestelederId")
-                call.respond(HttpStatusCode.NotFound)
+                log
+                    .atInfo()
+                    .addKeyValue("event_type", "sykmeldt_not_found")
+                    .addKeyValue("operation", "sykmeldt_fetch")
+                    .addKeyValue("error_code", "SYKMELDT_NOT_FOUND")
+                    .log("No sykmeldt found within the authenticated leader's access")
+                call.respond(
+                    HttpStatusCode.NotFound,
+                    mapOf("error_code" to "SYKMELDT_NOT_FOUND"),
+                )
             }
             else -> {
                 teamLogsLogger.info(
