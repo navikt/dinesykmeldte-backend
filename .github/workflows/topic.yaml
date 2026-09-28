@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
       - name: Deploy topic varselbus to dev
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@v3
         env:
           CLUSTER: dev-gcp
           RESOURCE: nais/topics/dinesykmeldte-hendelser-v2.yaml
@@ -30,7 +30,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
       - name: Deploy topic varselbus to prod
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@v3
         env:
           CLUSTER: prod-gcp
           RESOURCE: nais/topics/dinesykmeldte-hendelser-v2.yaml
