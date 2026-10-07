@@ -9,10 +9,6 @@ enum class HendelseType {
     DIALOGMOTE_ENDRING,
     DIALOGMOTE_REFERAT,
     DIALOGMOTE_SVAR_BEHOV,
-
-    // Sendes ikke lenger og vises ikke. Fjernes når databasesjekken i prod viser 0 aktive rader,
-    // så gamle rader ikke gir feillogg i safeParseHendelseEnum.
-    AKTIVITETSKRAV,
     IKKE_SENDT_SOKNAD,
     OPPFOLGINGSPLAN_OPPRETTET,
     OPPFOLGINGSPLAN_TIL_GODKJENNING,
