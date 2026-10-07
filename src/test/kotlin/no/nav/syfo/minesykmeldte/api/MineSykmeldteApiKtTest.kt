@@ -14,7 +14,6 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.Environment
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
-import no.nav.syfo.minesykmeldte.model.Aktivitetsvarsel
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.Behandler
 import no.nav.syfo.minesykmeldte.model.Dialogmote
@@ -83,7 +82,6 @@ class MineSykmeldteApiKtTest :
                                     sykmeldinger = emptyList(),
                                     previewSoknader = emptyList(),
                                     dialogmoter = emptyList(),
-                                    aktivitetsvarsler = emptyList(),
                                     oppfolgingsplaner = emptyList(),
                                 ),
                             )
@@ -103,7 +101,6 @@ class MineSykmeldteApiKtTest :
                           "sykmeldinger": [],
                           "previewSoknader": [],
                           "dialogmoter": [],
-                          "aktivitetsvarsler": [],
                           "oppfolgingsplaner": []
                         }
                     ]""".minifyApiResponse()
@@ -219,16 +216,6 @@ class MineSykmeldteApiKtTest :
                                                     ),
                                                 ),
                                             ),
-                                        aktivitetsvarsler =
-                                            listOf(
-                                                Aktivitetsvarsel(
-                                                    hendelseId,
-                                                    OffsetDateTime.parse(
-                                                        "2022-04-09T10:15:30+02:00",
-                                                    ),
-                                                    null,
-                                                ),
-                                            ),
                                         oppfolgingsplaner =
                                             listOf(
                                                 Oppfolgingsplan(
@@ -273,7 +260,6 @@ class MineSykmeldteApiKtTest :
                               }
                             ],
                             "dialogmoter":[{"hendelseId": "$hendelseId","tekst":"Ny revidert oppfølgingplan","mottatt":"2022-03-11T10:15:30+02:00"}],
-                            "aktivitetsvarsler": [{"hendelseId":"$hendelseId","mottatt":"2022-04-09T10:15:30+02:00","lest":null}],
                             "oppfolgingsplaner": [{"hendelseId": "$hendelseId","tekst":"ny oppfolgingsplan","mottatt":"2022-06-17T10:15:30+02:00"}]
                           }
                         ]""".minifyApiResponse()
