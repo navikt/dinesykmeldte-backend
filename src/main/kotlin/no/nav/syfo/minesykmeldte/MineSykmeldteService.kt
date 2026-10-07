@@ -10,7 +10,6 @@ import no.nav.syfo.minesykmeldte.MineSykmeldteMapper.Companion.toSporsmal
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.model.AktivitetIkkeMulig
-import no.nav.syfo.minesykmeldte.model.Aktivitetsvarsel
 import no.nav.syfo.minesykmeldte.model.Arbeidsgiver
 import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsak
 import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsakEnum
@@ -76,7 +75,6 @@ class MineSykmeldteService(
                     previewSoknader = getPreviewSoknader(sykmeldtEntry, hendelserMap),
                     dialogmoter = getDialogmoter(hendelserMap, sykmeldtEntry),
                     sykmeldinger = getSykmeldinger(sykmeldtEntry),
-                    aktivitetsvarsler = getAktivitetsvarsler(hendelserMap, sykmeldtEntry),
                     oppfolgingsplaner = getOppfolgingsplaner(hendelserMap, sykmeldtEntry),
                 )
             }
@@ -118,23 +116,6 @@ class MineSykmeldteService(
             )
         }
         ?: emptyList()
-
-    private fun getAktivitetsvarsler(
-        hendelserMap: Map<String, List<Hendelse>>,
-        sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-    ): List<Aktivitetsvarsel> =
-        (
-            hendelserMap[sykmeldtEntry.key.fnr]
-                ?.filter { ma -> ma.oppgavetype == HendelseType.AKTIVITETSKRAV }
-                ?.map {
-                    Aktivitetsvarsel(
-                        hendelseId = it.hendelseId,
-                        mottatt = it.mottatt,
-                        lest = it.ferdigstilt,
-                    )
-                }
-                ?: emptyList()
-        )
 
     private fun getPreviewSoknader(
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,

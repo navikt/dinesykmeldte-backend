@@ -15,9 +15,11 @@ import no.nav.syfo.soknad.model.Soknad
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.TestDb.Companion.database
+import org.flywaydb.core.Flyway
 import org.postgresql.util.PGobject
 import org.testcontainers.containers.PostgreSQLContainer
 import java.sql.Connection
+import java.sql.DriverManager
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.LocalDate
@@ -25,6 +27,24 @@ import java.time.ZoneOffset
 import java.util.UUID
 
 class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
+
+class MigreringsDatabase(
+    private val url: String,
+    private val username: String,
+    private val password: String,
+) {
+    fun migrerTil(versjon: String) {
+        Flyway
+            .configure()
+            .dataSource(url, username, password)
+            .locations("classpath:db")
+            .target(versjon)
+            .load()
+            .migrate()
+    }
+
+    fun connection(): Connection = DriverManager.getConnection(url, username, password)
+}
 
 class TestDb private constructor() {
     companion object {
@@ -51,6 +71,25 @@ class TestDb private constructor() {
             } catch (ex: Exception) {
                 throw ex
             }
+        }
+
+        fun opprettTomDatabase(databasenavn: String): MigreringsDatabase {
+            DriverManager
+                .getConnection(
+                    psqlContainer.jdbcUrl,
+                    psqlContainer.username,
+                    psqlContainer.password,
+                ).use { connection ->
+                    connection.createStatement().use {
+                        it.execute("DROP DATABASE IF EXISTS $databasenavn")
+                        it.execute("CREATE DATABASE $databasenavn")
+                    }
+                }
+            return MigreringsDatabase(
+                url = psqlContainer.jdbcUrl.replace("/dinesykmeldte-backend", "/$databasenavn"),
+                username = psqlContainer.username,
+                password = psqlContainer.password,
+            )
         }
 
         fun clearAllData() =
