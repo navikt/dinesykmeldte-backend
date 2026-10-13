@@ -99,7 +99,7 @@ spec:
     - name: ESYFO_NARMESTELEDER_AUDIENCE
       value: dev-gcp:team-esyfo:esyfo-narmesteleder
     - name: SEND_NL_BRUDD_TO_ESYFO_NARMESTELEDER
-      value: "false"
+      value: "true"
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.dev-fss-pub.nais.io/graphql
     - name: PDL_SCOPE
