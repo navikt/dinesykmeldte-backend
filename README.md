@@ -21,7 +21,8 @@ flowchart LR
     B --> DB[(PostgreSQL)]
     B --> PDL[PDL]
     B --> F[flex-syketilfelle]
-    B --> K5[teamsykmelding.syfo-narmesteleder]
+    B -->|NL-brudd: toggle av| K5[teamsykmelding.syfo-narmesteleder]
+    B -->|NL-brudd: toggle på, REST med TokenX OBO| E[esyfo-narmesteleder]
 ```
 
 ## API
@@ -59,11 +60,14 @@ Tjenesten produserer meldinger til:
 
 - `teamsykmelding.syfo-narmesteleder`
 
+Når `SEND_NL_BRUDD_TO_ESYFO_NARMESTELEDER` er `true`, sendes NL-brudd i stedet med `DELETE /internal/api/v1/linemanager/{id}` til `esyfo-narmesteleder`. Lokale koblinger slettes først etter svar med status 202. Ved feil beholdes koblingen, uten fallback til Kafka. Toggle er som standard `false` og er satt til `false` i begge NAIS-manifestene. Kafka-produsenten beholdes.
+
 Kafka-topicet `dinesykmeldte-hendelser-v2` er definert i [`nais/topics/dinesykmeldte-hendelser-v2.yaml`](nais/topics/dinesykmeldte-hendelser-v2.yaml).
 
 ## Autentisering og tilgang
 
 - De fleste API-ene ligger bak TokenX og krever nivå 4.
+- REST-kall for NL-brudd bruker lederens TokenX-token til OBO-tokenutveksling via Texas. `ESYFO_NARMESTELEDER_URL` angir tjenestens adresse, og `ESYFO_NARMESTELEDER_AUDIENCE` har formatet `<cluster>:team-esyfo:esyfo-narmesteleder`.
 - `POST /api/sykmelding/isActiveSykmelding` validerer Azure AD-token via Texas.
 - NAIS `accessPolicy` åpner for innkommende kall fra verifiserte klienter i manifestene, blant annet `dinesykmeldte`, `esyfo-narmesteleder`, `oppfolgingsplan-frontend`, `dialogmote-frontend` og `syfo-oppfolgingsplan-backend`.
 

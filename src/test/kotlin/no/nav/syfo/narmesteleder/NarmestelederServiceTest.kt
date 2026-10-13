@@ -2,8 +2,11 @@ package no.nav.syfo.narmesteleder
 
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import no.nav.syfo.narmesteleder.client.EsyfoNarmestelederClient
+import no.nav.syfo.narmesteleder.client.EsyfoNarmestelederException
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
@@ -14,16 +17,102 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
+import kotlin.test.assertFailsWith
 
 class NarmestelederServiceTest :
     FunSpec({
         val database = NarmestelederDb(TestDb.database)
         val nlResponseProducer = mockk<NLResponseProducer>(relaxed = true)
-        val narmestelederService = NarmestelederService(database, nlResponseProducer)
+        val esyfoClient = mockk<EsyfoNarmestelederClient>(relaxed = true)
+        val narmestelederService =
+            NarmestelederService(database, nlResponseProducer, esyfoClient, false)
+        val restService = NarmestelederService(database, nlResponseProducer, esyfoClient, true)
 
         beforeEach {
             TestDb.clearAllData()
-            clearMocks(nlResponseProducer)
+            clearMocks(nlResponseProducer, esyfoClient)
+        }
+
+        context("REST revocation") {
+            test("revokes remotely before deleting local rows without Kafka") {
+                val id = UUID.randomUUID().toString()
+                val callId = UUID.randomUUID()
+                TestDb.database.insertOrUpdate(
+                    id = id,
+                    orgnummer = "88888888",
+                    fnr = "12345678910",
+                    narmesteLederFnr = "01987654321",
+                )
+                coEvery {
+                    esyfoClient.deaktiverNarmesteLeder(id, "test-user-token", callId)
+                } coAnswers {
+                    val relations = database.finnNarmestelederkoblinger("01987654321", id)
+                    relations.size shouldBeEqualTo 1
+                }
+
+                restService.deaktiverNarmesteLeder("01987654321", id, callId, "test-user-token")
+
+                coVerify(exactly = 1) {
+                    esyfoClient.deaktiverNarmesteLeder(id, "test-user-token", callId)
+                }
+                coVerify(exactly = 0) { nlResponseProducer.send(any()) }
+                database.finnNarmestelederkoblinger("01987654321", id).size shouldBeEqualTo 0
+            }
+
+            test("keeps local rows and propagates remote failure without Kafka") {
+                val id = UUID.randomUUID().toString()
+                TestDb.database.insertOrUpdate(
+                    id = id,
+                    orgnummer = "88888888",
+                    fnr = "12345678910",
+                    narmesteLederFnr = "01987654321",
+                )
+                coEvery {
+                    esyfoClient.deaktiverNarmesteLeder(any(), any(), any())
+                } throws EsyfoNarmestelederException()
+
+                assertFailsWith<EsyfoNarmestelederException> {
+                    restService.deaktiverNarmesteLeder(
+                        "01987654321",
+                        id,
+                        UUID.randomUUID(),
+                        "test-user-token",
+                    )
+                }
+
+                coVerify(exactly = 1) {
+                    esyfoClient.deaktiverNarmesteLeder(id, "test-user-token", any())
+                }
+                coVerify(exactly = 0) { nlResponseProducer.send(any()) }
+                database.finnNarmestelederkoblinger("01987654321", id).size shouldBeEqualTo 1
+            }
+
+            test("does not call REST when no local relation belongs to this leader") {
+                val id = UUID.randomUUID().toString()
+                TestDb.database.insertOrUpdate(
+                    id = id,
+                    orgnummer = "88888888",
+                    fnr = "12345678910",
+                    narmesteLederFnr = "01987654321",
+                )
+                restService.deaktiverNarmesteLeder(
+                    "01987654322",
+                    id,
+                    UUID.randomUUID(),
+                    "test-user-token",
+                )
+                restService.deaktiverNarmesteLeder(
+                    "01987654321",
+                    UUID.randomUUID().toString(),
+                    UUID.randomUUID(),
+                    "test-user-token",
+                )
+                coVerify(exactly = 0) { nlResponseProducer.send(any()) }
+                coVerify(exactly = 0) {
+                    esyfoClient.deaktiverNarmesteLeder(any(), any(), any())
+                }
+                database.finnNarmestelederkoblinger("01987654321", id).size shouldBeEqualTo 1
+            }
         }
 
         context("Deaktiver NL-kobling") {
@@ -46,6 +135,9 @@ class NarmestelederServiceTest :
                 )
 
                 TestDb.getNarmesteleder(pasientFnr = "12345678910").size shouldBeEqualTo 0
+                coVerify(exactly = 0) {
+                    esyfoClient.deaktiverNarmesteLeder(any(), any(), any())
+                }
             }
             test(
                 "Deaktiverer kobling hvis finnes aktiv NL-kobling i databasen og sletter fra databasen",
@@ -61,6 +153,7 @@ class NarmestelederServiceTest :
                     "01987654321",
                     id.toString(),
                     UUID.randomUUID(),
+                    "test-user-token",
                 )
 
                 coVerify(exactly = 1) {
@@ -86,9 +179,13 @@ class NarmestelederServiceTest :
                     "01987654321",
                     UUID.randomUUID().toString(),
                     UUID.randomUUID(),
+                    "test-user-token",
                 )
 
                 coVerify(exactly = 0) { nlResponseProducer.send(any()) }
+                coVerify(exactly = 0) {
+                    esyfoClient.deaktiverNarmesteLeder(any(), any(), any())
+                }
                 TestDb.getNarmesteleder(pasientFnr = "12345678910").size shouldBeEqualTo 1
             }
         }

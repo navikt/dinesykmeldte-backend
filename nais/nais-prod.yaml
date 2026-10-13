@@ -76,6 +76,7 @@ spec:
           cluster: prod-gcp
     outbound:
       rules:
+        - application: esyfo-narmesteleder
         - application: flex-syketilfelle
           namespace: flex
           cluster: prod-gcp
@@ -85,6 +86,12 @@ spec:
         - host: pdl-api.prod-fss-pub.nais.io
   leaderElection: true
   env:
+    - name: ESYFO_NARMESTELEDER_URL
+      value: http://esyfo-narmesteleder
+    - name: ESYFO_NARMESTELEDER_AUDIENCE
+      value: prod-gcp:team-esyfo:esyfo-narmesteleder
+    - name: SEND_NL_BRUDD_TO_ESYFO_NARMESTELEDER
+      value: "false"
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.prod-fss-pub.nais.io/graphql
     - name: PDL_SCOPE
