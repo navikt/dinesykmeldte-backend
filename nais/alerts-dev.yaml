@@ -1,0 +1,62 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: dinesykmeldte-backend-alerts
+  namespace: team-esyfo
+  labels:
+    team: team-esyfo
+spec:
+  groups:
+    - name: dinesykmeldte-backend-kafka
+      rules:
+        # CommonKafkaService melder seg av topicene, venter 10 sekunder og prøver på nytt når en
+        # melding feiler. En consumer som står fast, gir rundt 30 restarter per pod per 5 minutter.
+        # nais/deploy templater filen, så Prometheus-maler må escapes som \{{ ... }}.
+        - alert: DinesykmeldteKafkaConsumerRestarter
+          expr: >
+            sum by (app) (increase(dinesykmeldte_backend_kafka_consumer_restart_total{app="dinesykmeldte-backend",
+            namespace="team-esyfo"}[5m])) > 3
+          for: 5m
+          labels:
+            namespace: team-esyfo
+            severity: warning
+          annotations:
+            summary: >-
+              Kafka-consumeren i dinesykmeldte-backend har startet på nytt mer enn 3 ganger per
+              5 minutter i minst 5 minutter.
+            consequence: >-
+              Consumeren kommer ikke forbi en melding. Alle topicene står stille fordi de deler én
+              consumer, og lederne i Dine sykmeldte ser gamle data.
+            action: >-
+              Finn exception under «Error running kafka consumer» i loggene til dinesykmeldte-backend.
+              Finn topic og partition med kafka_consumergroup_group_lag{group="esyfo-dinesykmeldte-backend"} > 0
+              i Grafana Explore. Offset finner du med kafka_consumergroup_group_offset for samme topic og
+              partition. Consumeren leser én melding om gangen, så meldingen som feiler, ligger på dette
+              offsetet eller noen få meldinger etter. Ikke logg eller del innholdet i meldingen.
+        # Fanger en consumer som har stoppet uten exception. Lag > 0 alene er ikke nok: partisjonen må
+        # også ha stått uten fremdrift. Topicene må samsvare med CommonKafkaService.determineTopics og
+        # CONSUME_*_LEESAH_TOPIC i nais/nais-dev.yaml.
+        - alert: DinesykmeldteKafkaPartisjonStaarStille
+          expr: >
+            max by (topic, partition) (kafka_consumergroup_group_lag{group="esyfo-dinesykmeldte-backend",
+            topic=~"teamsykmelding.syfo-sendt-sykmelding|flex.sykepengesoknad|team-esyfo.dinesykmeldte-hendelser-v2|team-esyfo.syfo-narmesteleder-leesah"}) > 0
+            and on (topic, partition)
+            max by (topic, partition) (changes(kafka_consumergroup_group_offset{group="esyfo-dinesykmeldte-backend",
+            topic=~"teamsykmelding.syfo-sendt-sykmelding|flex.sykepengesoknad|team-esyfo.dinesykmeldte-hendelser-v2|team-esyfo.syfo-narmesteleder-leesah"}[10m])) == 0
+          for: 5m
+          labels:
+            namespace: team-esyfo
+            severity: warning
+          annotations:
+            summary: >-
+              dinesykmeldte-backend har ukonsumerte meldinger på \{{ $labels.topic }} partition
+              \{{ $labels.partition }}, og offset har ikke flyttet seg på minst 15 minutter.
+            consequence: >-
+              Meldinger på topicet blir ikke behandlet. Står consumeren fast på én melding, står alle
+              topicene stille, og lederne i Dine sykmeldte ser gamle data.
+            action: >-
+              Sjekk om DinesykmeldteKafkaConsumerRestarter også er aktiv, og finn exception under
+              «Error running kafka consumer» i loggene. Uten restarter: sjekk at podene kjører og
+              konsumerer. Offset finner du med kafka_consumergroup_group_offset{group="esyfo-dinesykmeldte-backend",
+              topic="\{{ $labels.topic }}", partition="\{{ $labels.partition }}"} i Grafana Explore. Meldingen som
+              feiler, ligger på dette offsetet eller noen få meldinger etter. Ikke logg eller del innholdet i meldingen.
