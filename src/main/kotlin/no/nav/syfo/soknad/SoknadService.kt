@@ -36,34 +36,40 @@ class SoknadService(
     }
 
     suspend fun handleSykepengesoknad(sykepengesoknad: FlexSoknad) {
-        if (shouldHandleSoknad(sykepengesoknad)) {
-            when (sykepengesoknad.status) {
-                FlexSoknadStatus.NY -> soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
-                FlexSoknadStatus.FREMTIDIG ->
-                    soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
-                FlexSoknadStatus.SENDT -> handleSendt(sykepengesoknad)
-                FlexSoknadStatus.KORRIGERT -> handleSendt(sykepengesoknad)
-                FlexSoknadStatus.AVBRUTT -> soknadDb.deleteSoknad(sykepengesoknad.id)
-                FlexSoknadStatus.SLETTET -> soknadDb.deleteSoknad(sykepengesoknad.id)
-                FlexSoknadStatus.UTGAATT -> soknadDb.deleteSoknad(sykepengesoknad.id)
+        when (sykepengesoknad.status) {
+            FlexSoknadStatus.NY, FlexSoknadStatus.FREMTIDIG -> {
+                insertIfRelevant(sykepengesoknad)
+            }
+
+            FlexSoknadStatus.SENDT, FlexSoknadStatus.KORRIGERT -> {
+                handleSendt(sykepengesoknad)
+            }
+
+            FlexSoknadStatus.AVBRUTT, FlexSoknadStatus.SLETTET, FlexSoknadStatus.UTGAATT -> {
+                soknadDb.deleteSoknad(sykepengesoknad.id)
             }
         }
         SOKNAD_TOPIC_COUNTER.inc()
     }
 
+    private fun insertIfRelevant(sykepengesoknad: FlexSoknad) {
+        if (isRelevant(sykepengesoknad)) {
+            soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
+        }
+    }
+
     private fun handleSendt(sykepengesoknad: FlexSoknad) {
-        when (sykepengesoknad.sendtArbeidsgiver != null) {
-            true -> {
-                soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
-            }
-            else -> soknadDb.deleteSoknad(sykepengesoknad.id)
+        if (sykepengesoknad.sendtArbeidsgiver != null) {
+            insertIfRelevant(sykepengesoknad)
+        } else {
+            soknadDb.deleteSoknad(sykepengesoknad.id)
         }
     }
 
     private fun hasArbeidsgiver(sykepengesoknad: FlexSoknad): Boolean =
         sykepengesoknad.arbeidsgiver?.orgnummer != null
 
-    private fun shouldHandleSoknad(sykepengesoknad: FlexSoknad) =
+    private fun isRelevant(sykepengesoknad: FlexSoknad) =
         hasArbeidsgiver(sykepengesoknad) &&
             sykepengesoknad.tom?.isAfter(LocalDate.now().minusMonths(4)) == true
 }

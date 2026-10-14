@@ -1,5 +1,6 @@
 package no.nav.syfo.soknad
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
 import no.nav.syfo.soknad.db.SoknadDb
@@ -14,6 +15,7 @@ import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.objectMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
+import org.apache.kafka.clients.consumer.ConsumerRecord
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -169,6 +171,64 @@ class SoknadServiceTest :
                 TestDb.getSoknad(soknadId) shouldNotBeEqualTo null
             }
 
+            test("Hopper over søknad der arbeidsgiver har orgnummer null") {
+                val soknadId = UUID.randomUUID().toString()
+                val soknad = relevantSoknad(soknadId)
+
+                soknadService.handleSykepengesoknad(
+                    soknad.toRecord { it.putObject("arbeidsgiver").putNull("orgnummer") },
+                )
+
+                TestDb.getSoknad(soknadId) shouldBeEqualTo null
+            }
+
+            test("Hopper over søknad der arbeidsgiver mangler orgnummer") {
+                val soknadId = UUID.randomUUID().toString()
+                val soknad = relevantSoknad(soknadId)
+
+                soknadService.handleSykepengesoknad(
+                    soknad.toRecord { it.putObject("arbeidsgiver") },
+                )
+
+                TestDb.getSoknad(soknadId) shouldBeEqualTo null
+            }
+
+            listOf(
+                FlexSoknadStatus.AVBRUTT,
+                FlexSoknadStatus.SLETTET,
+                FlexSoknadStatus.UTGAATT,
+            ).forEach { status ->
+                test("Sletter lagret søknad ved $status uten orgnummer") {
+                    val soknadId = UUID.randomUUID().toString()
+                    val soknad = relevantSoknad(soknadId).copy(status = FlexSoknadStatus.NY)
+                    soknadService.handleSykepengesoknad(soknad.toRecord())
+                    TestDb.getSoknad(soknadId) shouldNotBeEqualTo null
+
+                    soknadService.handleSykepengesoknad(
+                        soknad.copy(status = status).toRecord { it.putNull("arbeidsgiver") },
+                    )
+
+                    TestDb.getSoknad(soknadId) shouldBeEqualTo null
+                }
+            }
+
+            listOf(FlexSoknadStatus.SENDT, FlexSoknadStatus.KORRIGERT).forEach { status ->
+                test("Sletter lagret søknad ved $status kun til NAV uten orgnummer") {
+                    val soknadId = UUID.randomUUID().toString()
+                    val soknad = relevantSoknad(soknadId).copy(status = FlexSoknadStatus.NY)
+                    soknadService.handleSykepengesoknad(soknad.toRecord())
+                    TestDb.getSoknad(soknadId) shouldNotBeEqualTo null
+
+                    soknadService.handleSykepengesoknad(
+                        soknad
+                            .copy(status = status, sendtArbeidsgiver = null)
+                            .toRecord { it.putNull("arbeidsgiver") },
+                    )
+
+                    TestDb.getSoknad(soknadId) shouldBeEqualTo null
+                }
+            }
+
             test("ikke oppdater fnr når sykmelding ikke er i db") {
                 val soknadId = UUID.randomUUID().toString()
                 val soknadDbModel = createSoknadDbModel(soknadId = soknadId, pasientFnr = "OLD")
@@ -194,6 +254,21 @@ class SoknadServiceTest :
             }
         }
     })
+
+private fun relevantSoknad(soknadId: String): FlexSoknad =
+    objectMapper
+        .readValue<FlexSoknad>(getFileAsString("src/test/resources/soknadFraKafka.json"))
+        .copy(
+            id = soknadId,
+            fom = LocalDate.now().minusMonths(1),
+            tom = LocalDate.now().minusWeeks(2),
+            sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
+        )
+
+private fun FlexSoknad.toRecord(modify: (ObjectNode) -> Unit = {}): ConsumerRecord<String, String> {
+    val json = objectMapper.valueToTree<ObjectNode>(this).also(modify)
+    return ConsumerRecord("flex.sykepengesoknad", 0, 0L, id, objectMapper.writeValueAsString(json))
+}
 
 fun getFileAsString(filePath: String) =
     String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8)

@@ -99,5 +99,5 @@ enum class FlexSoknadStatus {
 }
 
 data class FlexArbeidsgiver(
-    val orgnummer: String,
+    val orgnummer: String?,
 )
