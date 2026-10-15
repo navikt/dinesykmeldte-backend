@@ -21,6 +21,16 @@ val DEAKTIVERT_LEDER_COUNTER: Counter =
         .help("Antall NL-koblinger deaktivert av leder")
         .register()
 
+val NL_BRUDD_ESYFO_NARMESTELEDER_COUNTER: Counter =
+    Counter
+        .build()
+        .namespace(METRICS_NS)
+        .name("nl_brudd_esyfo_narmesteleder_counter")
+        .labelNames("result")
+        .help(
+            "Antall forsøk på deaktivering av NL-kobling via esyfo-narmesteleder, fordelt på resultat",
+        ).register()
+
 val NL_TOPIC_COUNTER: Counter =
     Counter
         .build()

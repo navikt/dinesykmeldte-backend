@@ -25,6 +25,13 @@ data class Environment(
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val dbUrl: String = getEnvVar("NAIS_DATABASE_JDBC_URL"),
     val texas: TexasEnvironment = TexasEnvironment.createFromEnvVars(),
+    val esyfoNarmestelederUrl: String = getEnvVar("ESYFO_NARMESTELEDER_URL"),
+    val esyfoNarmestelederAudience: String = getEnvVar("ESYFO_NARMESTELEDER_AUDIENCE"),
+    val sendNlBruddToEsyfoNarmesteleder: Boolean =
+        getEnvVar(
+            "SEND_NL_BRUDD_TO_ESYFO_NARMESTELEDER",
+            "false",
+        ).toBoolean(),
     val consumeTeamsykmeldingNlLeesahTopic: Boolean =
         getEnvVar(
             "CONSUME_TEAMSYKMELDING_NL_LEESAH_TOPIC",
@@ -58,6 +65,8 @@ data class Environment(
                 dbUrl = dbUrl,
                 syketilfelleScope = "syketilfelle-backend",
                 texas = TexasEnvironment.createForLocal(),
+                esyfoNarmestelederUrl = "http://localhost:8081",
+                esyfoNarmestelederAudience = "local:team-esyfo:esyfo-narmesteleder",
             )
     }
 }

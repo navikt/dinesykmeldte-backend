@@ -8,6 +8,7 @@ import no.nav.syfo.application.metrics.DEAKTIVERT_LEDER_COUNTER
 import no.nav.syfo.minesykmeldte.model.HttpMessage
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.plugins.BrukerPrincipal
+import no.nav.syfo.plugins.getToken
 import no.nav.syfo.util.getBrukerPrincipal
 import no.nav.syfo.util.getParam
 import no.nav.syfo.util.logger
@@ -26,6 +27,7 @@ fun Route.registerNarmestelederApi(narmestelederService: NarmestelederService) {
             fnrLeder = lederFnr,
             narmestelederId = narmestelederId,
             callId = callId,
+            userToken = requireNotNull(call.getToken()) { "Mangler brukertoken" },
         )
         log.info(
             "Nærmeste leder har deaktivert NL-kobling for narmestelederId $narmestelederId, $callId",

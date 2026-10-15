@@ -2,10 +2,12 @@ package no.nav.syfo.texas.client
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import no.nav.syfo.texas.TexasEnvironment
 
 class TexasHttpClient(
@@ -42,13 +44,14 @@ class TexasHttpClient(
                 )
             }.body<TexasResponse>()
 
-    private suspend fun exchangeToken(
+    suspend fun exchangeToken(
         identityProvider: String,
         target: String,
         token: String,
-    ): TexasResponse =
-        client
-            .post(environment.tokenExchangeEndpoint) {
+    ): TexasResponse {
+        val response =
+            client.post(environment.tokenExchangeEndpoint) {
+                expectSuccess = false
                 contentType(ContentType.Application.Json)
                 setBody(
                     TexasExchangeRequest(
@@ -57,7 +60,10 @@ class TexasHttpClient(
                         userToken = token,
                     ),
                 )
-            }.body<TexasResponse>()
+            }
+        check(response.status.isSuccess()) { "Tokenutveksling via Texas feilet" }
+        return response.body<TexasResponse>()
+    }
 
     companion object {
         fun getTarget(scope: String) = "api://$scope/.default"

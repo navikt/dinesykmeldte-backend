@@ -23,6 +23,7 @@ import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.narmesteleder.NarmestelederService
+import no.nav.syfo.narmesteleder.client.EsyfoNarmestelederClient
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.NLResponseProducer
 import no.nav.syfo.pdl.client.PdlClient
@@ -69,6 +70,15 @@ private fun servicesModule() =
     module {
         single { TexasHttpClient(get(), env().texas) }
         single {
+            EsyfoNarmestelederClient(
+                env().esyfoNarmestelederUrl,
+                env().esyfoNarmestelederAudience,
+                env().applicationName,
+                get(),
+                get(),
+            )
+        }
+        single {
             AccessTokenClient(
                 env().aadAccessTokenUrl,
                 env().clientId,
@@ -96,7 +106,12 @@ private fun servicesModule() =
                     createKafkaProducer("syfo-narmesteleder-producer"),
                     env().nlResponseTopic,
                 )
-            NarmestelederService(NarmestelederDb(get()), nlResponseProducer)
+            NarmestelederService(
+                NarmestelederDb(get()),
+                nlResponseProducer,
+                get(),
+                env().sendNlBruddToEsyfoNarmesteleder,
+            )
         }
         single { MineSykmeldteDb(get()) }
         single { MineSykmeldteService(get()) }

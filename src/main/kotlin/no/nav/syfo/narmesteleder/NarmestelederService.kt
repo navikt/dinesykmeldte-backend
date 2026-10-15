@@ -2,6 +2,7 @@ package no.nav.syfo.narmesteleder
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.syfo.application.metrics.NL_TOPIC_COUNTER
+import no.nav.syfo.narmesteleder.client.EsyfoNarmestelederClient
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.kafka.model.KafkaMetadata
@@ -18,6 +19,8 @@ import java.util.UUID
 class NarmestelederService(
     private val narmestelederDb: NarmestelederDb,
     private val nlResponseProducer: NLResponseProducer,
+    private val esyfoNarmestelederClient: EsyfoNarmestelederClient,
+    private val sendNlBruddToEsyfoNarmesteleder: Boolean,
 ) {
     private val log = logger()
 
@@ -61,6 +64,7 @@ class NarmestelederService(
         fnrLeder: String,
         narmestelederId: String,
         callId: UUID,
+        userToken: String,
     ) {
         val nlKoblinger =
             narmestelederDb.finnNarmestelederkoblinger(
@@ -69,10 +73,14 @@ class NarmestelederService(
             )
         if (nlKoblinger.isNotEmpty()) {
             log.info("Deaktiverer ${nlKoblinger.size} NL-koblinger for $callId")
-            deaktiverNarmesteLeder(
-                orgnummer = nlKoblinger.first().orgnummer,
-                fnrSykmeldt = nlKoblinger.first().pasientFnr,
-            )
+            if (sendNlBruddToEsyfoNarmesteleder) {
+                esyfoNarmestelederClient.deaktiverNarmesteLeder(narmestelederId, userToken, callId)
+            } else {
+                deaktiverNarmesteLeder(
+                    orgnummer = nlKoblinger.first().orgnummer,
+                    fnrSykmeldt = nlKoblinger.first().pasientFnr,
+                )
+            }
             nlKoblinger.forEach { narmestelederDb.remove(it.narmestelederId) }
         } else {
             log.info("Ingen aktive koblinger å deaktivere $callId")
