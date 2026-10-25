@@ -10,6 +10,8 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
+import no.nav.syfo.minesykmeldte.db.RelationHendelse
+import no.nav.syfo.minesykmeldte.db.RelationScope
 import no.nav.syfo.minesykmeldte.model.AktivitetIkkeMulig
 import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsakEnum
 import no.nav.syfo.minesykmeldte.model.Avventende
@@ -70,6 +72,22 @@ class MineSykmeldteServiceTest :
             val mineSykmeldteDb = mockk<MineSykmeldteDb>(relaxed = true)
             val mineSykmeldtService = MineSykmeldteService(mineSykmeldteDb)
 
+            beforeEach {
+                coEvery { mineSykmeldteDb.scopesForLeder(any(), any()) } returns emptyList()
+                coEvery { mineSykmeldteDb.getMineSykmeldte(any(), any(), any()) } coAnswers {
+                    mineSykmeldteDb.getMineSykmeldte(firstArg<String>())
+                }
+                coEvery {
+                    mineSykmeldteDb.getHendelser(
+                        any(),
+                        any<List<RelationScope>>(),
+                    )
+                } coAnswers
+                    {
+                        mineSykmeldteDb.getHendelser(firstArg<String>())
+                    }
+            }
+
             afterEach { clearMocks(mineSykmeldteDb) }
 
             context("getMineSykmeldte") {
@@ -77,18 +95,21 @@ class MineSykmeldteServiceTest :
                     val hendelseid = UUID.randomUUID()
                     coEvery { mineSykmeldteDb.getHendelser("1") } returns
                         listOf(
-                            HendelseDbModel(
-                                id = "12",
-                                pasientFnr = "prefix-0",
-                                orgnummer = "orgnummer",
-                                oppgavetype = "OPPFOLGINGSPLAN_OPPRETTET",
-                                lenke = "localhost",
-                                tekst = "Ny oppfolgingsplan",
-                                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                                utlopstidspunkt = null,
-                                ferdigstilt = false,
-                                ferdigstiltTimestamp = null,
-                                hendelseId = hendelseid,
+                            RelationHendelse(
+                                "relation-prefix-0",
+                                HendelseDbModel(
+                                    id = "12",
+                                    pasientFnr = "prefix-0",
+                                    orgnummer = "orgnummer",
+                                    oppgavetype = "OPPFOLGINGSPLAN_OPPRETTET",
+                                    lenke = "localhost",
+                                    tekst = "Ny oppfolgingsplan",
+                                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                                    utlopstidspunkt = null,
+                                    ferdigstilt = false,
+                                    ferdigstiltTimestamp = null,
+                                    hendelseId = hendelseid,
+                                ),
                             ),
                         )
                     coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
@@ -103,18 +124,21 @@ class MineSykmeldteServiceTest :
                 test("Should get mine sykmeldte with hendelser") {
                     coEvery { mineSykmeldteDb.getHendelser("1") } returns
                         listOf(
-                            HendelseDbModel(
-                                id = "12",
-                                pasientFnr = "avdeling-1-0",
-                                orgnummer = "orgnummer",
-                                oppgavetype = "DIALOGMOTE_INNKALLING",
-                                lenke = "localhost",
-                                tekst = "Innkalling til dialogmøte",
-                                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                                utlopstidspunkt = null,
-                                ferdigstilt = false,
-                                ferdigstiltTimestamp = null,
-                                hendelseId = UUID.randomUUID(),
+                            RelationHendelse(
+                                "relation-avdeling-1-0",
+                                HendelseDbModel(
+                                    id = "12",
+                                    pasientFnr = "avdeling-1-0",
+                                    orgnummer = "orgnummer",
+                                    oppgavetype = "DIALOGMOTE_INNKALLING",
+                                    lenke = "localhost",
+                                    tekst = "Innkalling til dialogmøte",
+                                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                                    utlopstidspunkt = null,
+                                    ferdigstilt = false,
+                                    ferdigstiltTimestamp = null,
+                                    hendelseId = UUID.randomUUID(),
+                                ),
                             ),
                         )
                     coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
@@ -170,18 +194,21 @@ class MineSykmeldteServiceTest :
 
                     coEvery { mineSykmeldteDb.getHendelser("1") } returns
                         listOf(
-                            HendelseDbModel(
-                                id = sykmeldtData.first().soknad!!.id,
-                                pasientFnr = "prefix-0",
-                                orgnummer = "orgnummer",
-                                oppgavetype = "IKKE_SENDT_SOKNAD",
-                                lenke = null,
-                                tekst = null,
-                                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                                utlopstidspunkt = null,
-                                ferdigstilt = false,
-                                ferdigstiltTimestamp = null,
-                                hendelseId = UUID.randomUUID(),
+                            RelationHendelse(
+                                "relation-prefix-0",
+                                HendelseDbModel(
+                                    id = sykmeldtData.first().soknad!!.id,
+                                    pasientFnr = "prefix-0",
+                                    orgnummer = "orgnummer",
+                                    oppgavetype = "IKKE_SENDT_SOKNAD",
+                                    lenke = null,
+                                    tekst = null,
+                                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                                    utlopstidspunkt = null,
+                                    ferdigstilt = false,
+                                    ferdigstiltTimestamp = null,
+                                    hendelseId = UUID.randomUUID(),
+                                ),
                             ),
                         )
 
@@ -1391,7 +1418,7 @@ fun getSykmeldtData(
 ): List<MinSykmeldtDbModel> =
     (0 until sykmeldte).flatMap {
         val sykmeldtFnr = "$sykmeldtFnrPrefix-$it"
-        val narmestelederId = UUID.randomUUID().toString()
+        val narmestelederId = "relation-$sykmeldtFnr"
         val orgnummer = "orgnummer"
         val sykmeldtNavn = "Navn"
         val startDatoSykefravar = LocalDate.now()

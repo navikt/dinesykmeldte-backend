@@ -47,17 +47,23 @@ class MineSykmeldteService(
 ) {
     suspend fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> =
         withContext(Dispatchers.IO) {
-            val hendelserJob = async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr) }
+            val scopes = mineSykmeldteDb.scopesForLeder(lederFnr)
+            val hendelserJob =
+                async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr, scopes) }
             val sykmeldteMapJob =
                 async(Dispatchers.IO) {
-                    mineSykmeldteDb.getMineSykmeldte(lederFnr).groupBy { it.toMinSykmeldtKey() }
+                    mineSykmeldteDb
+                        .getMineSykmeldte(
+                            lederFnr,
+                            scopes,
+                        ).groupBy { it.toMinSykmeldtKey() }
                 }
 
             val hendelserMap =
                 hendelserJob
                     .await()
-                    .groupBy { it.pasientFnr }
-                    .mapValues { it.value.map { hendelse -> hendelse.toHendelse() } }
+                    .groupBy { it.narmestelederId }
+                    .mapValues { it.value.map { hendelse -> hendelse.hendelse.toHendelse() } }
 
             val sykmeldteMap = sykmeldteMapJob.await()
 
@@ -83,7 +89,7 @@ class MineSykmeldteService(
     private fun getOppfolgingsplaner(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-    ) = hendelserMap[sykmeldtEntry.key.fnr]
+    ) = hendelserMap[sykmeldtEntry.key.narmestelederId]
         ?.filter { OppfolgingsplanerHendelser.contains(it.oppgavetype) }
         ?.map {
             Oppfolgingsplan(
@@ -104,7 +110,7 @@ class MineSykmeldteService(
     private fun getDialogmoter(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-    ) = hendelserMap[sykmeldtEntry.key.fnr]
+    ) = hendelserMap[sykmeldtEntry.key.narmestelederId]
         ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
         ?.map {
             Dialogmote(
@@ -138,7 +144,10 @@ class MineSykmeldteService(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
         sykmeldt: MinSykmeldtDbModel,
-    ) = hendelserMap[sykmeldtEntry.key.fnr]?.filter { it.id == sykmeldt.soknad?.id }.orEmpty()
+    ) = hendelserMap[sykmeldtEntry.key.narmestelederId]
+        ?.filter {
+            it.id == sykmeldt.soknad?.id
+        }.orEmpty()
 
     suspend fun getSykmelding(
         sykmeldingId: String,
@@ -240,7 +249,7 @@ private fun MinSykmeldtDbModel.toSykmelding(): Sykmelding {
     return Sykmelding(
         id = sykmelding.id,
         kontaktDato = sykmelding.kontaktMedPasient.kontaktDato,
-        fnr = this.sykmeldtFnr,
+        fnr = this.sykmeldingFnr,
         lest = this.lestSykmelding,
         behandletTidspunkt = this.sykmelding.behandletTidspunkt.toLocalDate(),
         arbeidsgiver =

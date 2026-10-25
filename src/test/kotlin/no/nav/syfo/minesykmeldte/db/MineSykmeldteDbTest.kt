@@ -10,6 +10,7 @@ import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSoknadDbModel
 import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
+import no.nav.syfo.util.exactRelationScopeResolver
 import no.nav.syfo.util.insertHendelse
 import no.nav.syfo.util.insertOrUpdate
 import no.nav.syfo.util.objectMapper
@@ -24,7 +25,8 @@ import java.util.UUID
 
 class MineSykmeldteDbTest :
     FunSpec({
-        val minesykmeldteDb = MineSykmeldteDb(TestDb.database)
+        val minesykmeldteDb =
+            MineSykmeldteDb(TestDb.database, exactRelationScopeResolver(TestDb.database))
 
         afterEach { TestDb.clearAllData() }
 

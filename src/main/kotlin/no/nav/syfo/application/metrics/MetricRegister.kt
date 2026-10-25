@@ -5,6 +5,42 @@ import io.prometheus.client.Histogram
 
 const val METRICS_NS = "dinesykmeldte_backend"
 
+val IDENTER_LOOKUP_COUNTER: Counter =
+    Counter
+        .build()
+        .namespace(METRICS_NS)
+        .name("identer_lookup_total")
+        .labelNames(
+            "outcome",
+        ).help("Identifier lookups per requested ident, including cache hits")
+        .register()
+
+val IDENTER_FALLBACK_COUNTER: Counter =
+    Counter
+        .build()
+        .namespace(METRICS_NS)
+        .name("identer_fallback_total")
+        .labelNames("reason")
+        .help("Identifier lookups falling back to exact match")
+        .register()
+
+val IDENTER_CACHE_COUNTER: Counter =
+    Counter
+        .build()
+        .namespace(METRICS_NS)
+        .name("identer_cache_total")
+        .labelNames("result")
+        .help("Identifier cache hits, misses and errors")
+        .register()
+
+val RELATION_SCOPE_DENIED_COUNTER: Counter =
+    Counter
+        .build()
+        .namespace(METRICS_NS)
+        .name("relation_scope_denied_total")
+        .help("Relations denied widened scope because of multiple active relations")
+        .register()
+
 val HTTP_HISTOGRAM: Histogram =
     Histogram
         .Builder()

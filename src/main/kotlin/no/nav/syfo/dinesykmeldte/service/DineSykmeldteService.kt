@@ -34,22 +34,26 @@ class DineSykmeldteService(
 
     private fun toDineSykmeldte(sykmeldinger: List<MinSykmeldtDbModel>) =
         sykmeldinger
-            .groupBy {
-                Ansatt(
-                    fnr = it.sykmeldtFnr,
-                    navn = it.sykmeldtNavn,
-                    orgnummer = it.orgnummer,
-                    narmestelederId = it.narmestelederId,
-                )
-            }.map { ansatt ->
+            .groupBy { it.narmestelederId }
+            .map { (narmestelederId, documents) ->
+                // SQL selects one sykmeldt row per relation, independent of the document ident.
+                // The relation ID, not person metadata, is the grouping key.
+                val relation = documents.first()
+                val ansatt =
+                    Ansatt(
+                        fnr = relation.sykmeldtFnr,
+                        navn = relation.sykmeldtNavn,
+                        orgnummer = relation.orgnummer,
+                        narmestelederId = narmestelederId,
+                    )
                 Sykmeldt(
-                    narmestelederId = ansatt.key.narmestelederId,
-                    orgnummer = ansatt.key.orgnummer,
-                    fnr = ansatt.key.fnr,
-                    ansatt.key.navn,
-                    sykmeldinger = ansatt.value.map { it.toDineSykmeldteSykmelding(ansatt.key) },
+                    narmestelederId = narmestelederId,
+                    orgnummer = ansatt.orgnummer,
+                    fnr = ansatt.fnr,
+                    navn = ansatt.navn,
+                    sykmeldinger = documents.map { it.toDineSykmeldteSykmelding(ansatt) },
                     aktivSykmelding =
-                        ansatt.value.any { it.sykmelding.sykmeldingsperioder.isActive() },
+                        documents.any { it.sykmelding.sykmeldingsperioder.isActive() },
                 )
             }
 }

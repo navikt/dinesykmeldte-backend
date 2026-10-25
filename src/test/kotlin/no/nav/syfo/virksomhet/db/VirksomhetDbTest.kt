@@ -4,6 +4,7 @@ import io.kotest.core.spec.style.FunSpec
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
+import no.nav.syfo.util.exactRelationScopeResolver
 import no.nav.syfo.util.insertOrUpdate
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.shouldHaveSize
@@ -11,7 +12,8 @@ import java.util.UUID
 
 object VirksomhetDbTest :
     FunSpec({
-        val virksomhetDb = VirksomhetDb(TestDb.database)
+        val virksomhetDb =
+            VirksomhetDb(TestDb.database, exactRelationScopeResolver(TestDb.database))
 
         afterEach { TestDb.clearAllData() }
 

@@ -19,6 +19,7 @@ flowchart LR
     K3[flex.sykepengesoknad] --> B
     K4[team-esyfo.dinesykmeldte-hendelser-v2] --> B
     B --> DB[(PostgreSQL)]
+    B --> V[(Valkey)]
     B --> PDL[PDL]
     B --> F[flex-syketilfelle]
     B -->|NL-brudd: toggle av| K5[teamsykmelding.syfo-narmesteleder]
@@ -69,11 +70,13 @@ Kafka-topicet `dinesykmeldte-hendelser-v2` er definert i [`nais/topics/dinesykme
 - De fleste API-ene ligger bak TokenX og krever nivå 4.
 - REST-kall for NL-brudd bruker lederens TokenX-token til OBO-tokenutveksling via Texas. `ESYFO_NARMESTELEDER_URL` angir tjenestens adresse, og `ESYFO_NARMESTELEDER_AUDIENCE` har formatet `<cluster>:team-esyfo:esyfo-narmesteleder`.
 - `POST /api/sykmelding/isActiveSykmelding` validerer Azure AD-token via Texas.
+- Lederen leser sykmeldinger, søknader og hendelser på alle personens folkeregisteridenter fra PDL (`hentIdenterBolk`). Det gjelder bare når relasjonen er den eneste aktive for personen i virksomheten. Ellers, og når oppslaget feiler, gjelder bare identen på relasjonen.
+- Svarene fra PDL caches i 5 minutter i Valkey-instansen `dinesykmeldte-identer`. Instansen må finnes i dev og prod før deploy.
 - NAIS `accessPolicy` åpner for innkommende kall fra verifiserte klienter i manifestene, blant annet `dinesykmeldte`, `esyfo-narmesteleder`, `oppfolgingsplan-frontend`, `dialogmote-frontend` og `syfo-oppfolgingsplan-backend`.
 
 ## Utvikling
 
-Bruk `mise tasks` for oppdatert oversikt over tilgjengelige oppgaver.
+Bruk `mise tasks` for oppdatert oversikt over tilgjengelige oppgaver. `mise docker-up` starter også Valkey på `localhost:6379`.
 
 ## Kontakt
 

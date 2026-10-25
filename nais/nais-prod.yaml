@@ -25,6 +25,9 @@ spec:
     max: 6
     cpuThresholdPercentage: 90
   port: 8080
+  valkey:
+    - instance: dinesykmeldte-identer
+      access: readwrite
   liveness:
     path: /internal/is_alive
     initialDelay: 10

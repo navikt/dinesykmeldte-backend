@@ -11,6 +11,7 @@ data class Environment(
     val nlResponseTopic: String = "teamsykmelding.syfo-narmesteleder",
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val pdlScope: String = getEnvVar("PDL_SCOPE"),
+    val valkey: ValkeyEnvironment = ValkeyEnvironment.fromEnvironment(),
     val clientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
     val clientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val aadAccessTokenUrl: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
@@ -58,6 +59,7 @@ data class Environment(
                 dineSykmeldteBackendTokenXClientId = "dinesykmeldte-backend",
                 pdlGraphqlPath = "http://localhost:8080/graphql",
                 pdlScope = "pdl-api://default",
+                valkey = ValkeyEnvironment("localhost", 6379, null, null, false),
                 clientId = "clientId",
                 clientSecret = "clientSecret",
                 aadAccessTokenUrl = "http://localhost:8080/token",
@@ -67,6 +69,26 @@ data class Environment(
                 texas = TexasEnvironment.createForLocal(),
                 esyfoNarmestelederUrl = "http://localhost:8081",
                 esyfoNarmestelederAudience = "local:team-esyfo:esyfo-narmesteleder",
+            )
+    }
+}
+
+// Not a data class: generated toString must never expose cache credentials.
+class ValkeyEnvironment(
+    val host: String,
+    val port: Int,
+    val username: String?,
+    val password: String?,
+    val ssl: Boolean,
+) {
+    companion object {
+        fun fromEnvironment() =
+            ValkeyEnvironment(
+                getEnvVar("VALKEY_HOST_DINESYKMELDTE_IDENTER"),
+                getEnvVar("VALKEY_PORT_DINESYKMELDTE_IDENTER").toInt(),
+                getEnvVar("VALKEY_USERNAME_DINESYKMELDTE_IDENTER"),
+                getEnvVar("VALKEY_PASSWORD_DINESYKMELDTE_IDENTER"),
+                true,
             )
     }
 }
