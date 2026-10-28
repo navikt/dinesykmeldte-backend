@@ -6,19 +6,23 @@ import no.nav.syfo.dinesykmeldte.util.isActive
 import no.nav.syfo.dinesykmeldte.util.toDineSykmeldteSykmelding
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
+import no.nav.syfo.narmesteleder.RelationScopeService
 
 class DineSykmeldteService(
     private val sykmeldingDb: MineSykmeldteDb,
+    private val relationScopeService: RelationScopeService,
 ) {
     suspend fun getSykmeldt(
         narmestelederId: String,
         fnr: String,
     ): Sykmeldt? {
+        val scopes = relationScopeService.forLeder(fnr, narmestelederId = narmestelederId)
         val dineSykmeldte =
             toDineSykmeldte(
-                sykmeldingDb.getMineSykmeldteWithoutSoknad(
+                sykmeldingDb.getMineSykmeldte(
                     lederFnr = fnr,
-                    narmestelederId = narmestelederId,
+                    scopes = scopes,
+                    withSoknad = false,
                 ),
             )
         if (dineSykmeldte.size > 1) {
@@ -27,10 +31,12 @@ class DineSykmeldteService(
         return dineSykmeldte.singleOrNull()
     }
 
-    suspend fun getDineSykmeldte(fnr: String): List<Sykmeldt> =
-        toDineSykmeldte(
-            sykmeldingDb.getMineSykmeldteWithoutSoknad(lederFnr = fnr, narmestelederId = null),
+    suspend fun getDineSykmeldte(fnr: String): List<Sykmeldt> {
+        val scopes = relationScopeService.forLeder(fnr)
+        return toDineSykmeldte(
+            sykmeldingDb.getMineSykmeldte(lederFnr = fnr, scopes = scopes, withSoknad = false),
         )
+    }
 
     private fun toDineSykmeldte(sykmeldinger: List<MinSykmeldtDbModel>) =
         sykmeldinger

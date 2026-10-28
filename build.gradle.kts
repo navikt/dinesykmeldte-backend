@@ -84,7 +84,6 @@ repositories {
         implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
         implementation("com.zaxxer:HikariCP:$hikariVersion")
-        implementation("io.valkey:valkey-java:5.5.0")
         implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
         compileOnly("org.flywaydb:flyway-core:$flywayVersion")
         implementation("org.postgresql:postgresql:$postgresVersion")
@@ -98,7 +97,6 @@ repositories {
         testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
         testImplementation("org.amshove.kluent:kluent:$kluentVersion")
         testImplementation("io.mockk:mockk:$mockkVersion")
-        testImplementation("org.testcontainers:testcontainers:$testContainerVersion")
         testImplementation("org.testcontainers:postgresql:$testContainerVersion")
         constraints {
             implementation("org.apache.commons:commons-compress:$commonsCompressVersion") {

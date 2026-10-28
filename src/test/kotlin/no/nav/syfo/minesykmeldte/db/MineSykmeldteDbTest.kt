@@ -10,7 +10,7 @@ import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSoknadDbModel
 import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
-import no.nav.syfo.util.exactRelationScopeResolver
+import no.nav.syfo.util.exactRelationScopeService
 import no.nav.syfo.util.insertHendelse
 import no.nav.syfo.util.insertOrUpdate
 import no.nav.syfo.util.objectMapper
@@ -25,8 +25,8 @@ import java.util.UUID
 
 class MineSykmeldteDbTest :
     FunSpec({
-        val minesykmeldteDb =
-            MineSykmeldteDb(TestDb.database, exactRelationScopeResolver(TestDb.database))
+        val minesykmeldteDb = MineSykmeldteDb(TestDb.database)
+        val scopeService = exactRelationScopeService(TestDb.database)
 
         afterEach { TestDb.clearAllData() }
 
@@ -66,23 +66,32 @@ class MineSykmeldteDbTest :
                 )
 
                 val allSykmeldte =
-                    minesykmeldteDb.getMineSykmeldteWithoutSoknad(narmestelederFnr, null)
+                    minesykmeldteDb.getMineSykmeldte(
+                        narmestelederFnr,
+                        scopeService.forLeder(narmestelederFnr),
+                        withSoknad = false,
+                    )
                 allSykmeldte.size shouldBeEqualTo 2
 
                 val firstSykmeldt =
-                    minesykmeldteDb.getMineSykmeldteWithoutSoknad(narmestelederFnr, narmestelederId)
+                    minesykmeldteDb.getMineSykmeldte(
+                        narmestelederFnr,
+                        scopeService.forLeder(narmestelederFnr, narmestelederId),
+                        withSoknad = false,
+                    )
                 firstSykmeldt.size shouldBeEqualTo 1
                 firstSykmeldt.single().sykmeldtFnr shouldBeEqualTo sykmeldtFnr
 
                 val secondSykmeldt =
-                    minesykmeldteDb.getMineSykmeldteWithoutSoknad(
+                    minesykmeldteDb.getMineSykmeldte(
                         narmestelederFnr,
-                        narmestelederId2,
+                        scopeService.forLeder(narmestelederFnr, narmestelederId2),
+                        withSoknad = false,
                     )
                 secondSykmeldt.single().sykmeldtFnr shouldBeEqualTo sykmeldtFnr2
             }
             test("Should not get any") {
-                val sykmeldte = minesykmeldteDb.getMineSykmeldte("1")
+                val sykmeldte = minesykmeldteDb.getMineSykmeldte("1", scopeService.forLeder("1"))
                 sykmeldte.size shouldBeEqualTo 0
             }
             test("Should get sykmeldte without soknad") {
@@ -99,7 +108,11 @@ class MineSykmeldteDbTest :
                     createSykmeldtDbModel(),
                 )
 
-                val sykmeldtDbModel = minesykmeldteDb.getMineSykmeldte("01987654321")
+                val sykmeldtDbModel =
+                    minesykmeldteDb.getMineSykmeldte(
+                        "01987654321",
+                        scopeService.forLeder("01987654321"),
+                    )
                 sykmeldtDbModel.size shouldBeEqualTo 1
                 sykmeldtDbModel[0].sykmelding shouldNotBeEqualTo null
                 sykmeldtDbModel[0].soknad shouldBeEqualTo null
@@ -119,7 +132,11 @@ class MineSykmeldteDbTest :
 
                 TestDb.database.insertOrUpdate(getSoknad(sykmeldingId = sykmeldingId))
 
-                val sykmeldtDbModel = minesykmeldteDb.getMineSykmeldte("01987654321")
+                val sykmeldtDbModel =
+                    minesykmeldteDb.getMineSykmeldte(
+                        "01987654321",
+                        scopeService.forLeder("01987654321"),
+                    )
                 sykmeldtDbModel.size shouldBeEqualTo 1
                 sykmeldtDbModel[0].sykmelding shouldNotBeEqualTo null
                 sykmeldtDbModel[0].soknad shouldNotBeEqualTo null
@@ -148,7 +165,11 @@ class MineSykmeldteDbTest :
                     createSykmeldtDbModel(),
                 )
 
-                val sykmeldtDbModel = minesykmeldteDb.getMineSykmeldte("01987654321")
+                val sykmeldtDbModel =
+                    minesykmeldteDb.getMineSykmeldte(
+                        "01987654321",
+                        scopeService.forLeder("01987654321"),
+                    )
                 sykmeldtDbModel.size shouldBeEqualTo 6
 
                 sykmeldtDbModel.filter { it.soknad == null }.size shouldBeEqualTo 1
@@ -167,7 +188,11 @@ class MineSykmeldteDbTest :
                 )
 
                 val sykmelding =
-                    minesykmeldteDb.getSykmelding(sykmeldingId = sykmeldingId, "01987654321")
+                    minesykmeldteDb.getSykmelding(
+                        sykmeldingId,
+                        "01987654321",
+                        scopeService.forLeder("01987654321"),
+                    )
 
                 sykmelding shouldNotBeEqualTo null
             }
@@ -188,7 +213,11 @@ class MineSykmeldteDbTest :
                     getSoknad(sykmeldingId = sykmeldingId, fnr = "11223344556"),
                 )
 
-                val sykmeldtDbModel = minesykmeldteDb.getMineSykmeldte("01987654321")
+                val sykmeldtDbModel =
+                    minesykmeldteDb.getMineSykmeldte(
+                        "01987654321",
+                        scopeService.forLeder("01987654321"),
+                    )
                 sykmeldtDbModel.size shouldBeEqualTo 1
                 sykmeldtDbModel[0].sykmelding shouldNotBeEqualTo null
                 sykmeldtDbModel[0].soknad shouldBeEqualTo null
@@ -213,9 +242,18 @@ class MineSykmeldteDbTest :
                 TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
 
                 val didMarkAsRead =
-                    minesykmeldteDb.markSykmeldingRead("sykmelding-id-1", "leder-fnr-1")
+                    minesykmeldteDb.markSykmeldingRead(
+                        "sykmelding-id-1",
+                        "leder-fnr-1",
+                        scopeService.forLeder("leder-fnr-1"),
+                    )
                 val oppdatertSykmelding =
-                    minesykmeldteDb.getSykmelding("sykmelding-id-1", "leder-fnr-1")?.second
+                    minesykmeldteDb
+                        .getSykmelding(
+                            "sykmelding-id-1",
+                            "leder-fnr-1",
+                            scopeService.forLeder("leder-fnr-1"),
+                        )?.second
 
                 didMarkAsRead.size shouldBeEqualTo 1
                 oppdatertSykmelding?.lest shouldBeEqualTo true
@@ -237,7 +275,11 @@ class MineSykmeldteDbTest :
                 )
                 TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
                 val didMarkAsRead =
-                    minesykmeldteDb.markSykmeldingRead("sykmelding-id-1", "leder-fnr-1")
+                    minesykmeldteDb.markSykmeldingRead(
+                        "sykmelding-id-1",
+                        "leder-fnr-1",
+                        scopeService.forLeder("leder-fnr-1"),
+                    )
 
                 didMarkAsRead.size shouldBeEqualTo 0
             }
@@ -267,9 +309,19 @@ class MineSykmeldteDbTest :
                 )
                 TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
                 TestDb.database.insertOrUpdate(soknad)
-                val didMarkAsRead = minesykmeldteDb.markSoknadRead("soknad-id-1", "leder-fnr-1")
+                val didMarkAsRead =
+                    minesykmeldteDb.markSoknadRead(
+                        "soknad-id-1",
+                        "leder-fnr-1",
+                        scopeService.forLeder("leder-fnr-1"),
+                    )
                 val oppdatertSoknad =
-                    minesykmeldteDb.getSoknad("soknad-id-1", "leder-fnr-1")?.second
+                    minesykmeldteDb
+                        .getSoknad(
+                            "soknad-id-1",
+                            "leder-fnr-1",
+                            scopeService.forLeder("leder-fnr-1"),
+                        )?.second
 
                 didMarkAsRead.size shouldBeEqualTo 1
                 oppdatertSoknad?.lest shouldBeEqualTo true
@@ -298,7 +350,12 @@ class MineSykmeldteDbTest :
                 )
                 TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
                 TestDb.database.insertOrUpdate(soknad)
-                val didMarkAsRead = minesykmeldteDb.markSoknadRead("soknad-id-1", "leder-fnr-1")
+                val didMarkAsRead =
+                    minesykmeldteDb.markSoknadRead(
+                        "soknad-id-1",
+                        "leder-fnr-1",
+                        scopeService.forLeder("leder-fnr-1"),
+                    )
 
                 didMarkAsRead.size shouldBeEqualTo 0
             }
@@ -336,8 +393,17 @@ class MineSykmeldteDbTest :
                 TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
                 TestDb.database.insertHendelse(hendelse)
                 val didMarkAsRead =
-                    minesykmeldteDb.markHendelseRead(hendelse.hendelseId, "leder-fnr-1")
-                val hendelseErFerdigstilt = minesykmeldteDb.getHendelser("leder-fnr-1").isEmpty()
+                    minesykmeldteDb.markHendelseRead(
+                        hendelse.hendelseId,
+                        "leder-fnr-1",
+                        scopeService.forLeder("leder-fnr-1"),
+                    )
+                val hendelseErFerdigstilt =
+                    minesykmeldteDb
+                        .getHendelser(
+                            "leder-fnr-1",
+                            scopeService.forLeder("leder-fnr-1"),
+                        ).isEmpty()
 
                 didMarkAsRead.size shouldBeEqualTo 1
                 hendelseErFerdigstilt shouldBeEqualTo true
@@ -377,7 +443,11 @@ class MineSykmeldteDbTest :
                 TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
 
                 val didMarkAsRead =
-                    minesykmeldteDb.markHendelseRead(hendelseDbModel.hendelseId, "leder-fnr-1")
+                    minesykmeldteDb.markHendelseRead(
+                        hendelseDbModel.hendelseId,
+                        "leder-fnr-1",
+                        scopeService.forLeder("leder-fnr-1"),
+                    )
 
                 didMarkAsRead.size shouldBeEqualTo 0
             }
@@ -415,7 +485,11 @@ class MineSykmeldteDbTest :
                 TestDb.database.insertOrUpdate(sykmelding, sykmeldt)
                 TestDb.database.insertHendelse(hendelse)
 
-                minesykmeldteDb.getHendelser("leder-fnr-1").size shouldBeEqualTo 1
+                minesykmeldteDb
+                    .getHendelser(
+                        "leder-fnr-1",
+                        scopeService.forLeder("leder-fnr-1"),
+                    ).size shouldBeEqualTo 1
             }
         }
 
@@ -466,8 +540,12 @@ class MineSykmeldteDbTest :
                     fnr = "2",
                     narmesteLederFnr = "3",
                 )
-                minesykmeldteDb.markAllSykmeldingAndSoknadAsRead(lederFnr = "3")
-                val mineSykmeldte = minesykmeldteDb.getMineSykmeldte("3")
+                minesykmeldteDb.markAllSykmeldingAndSoknadAsRead("3", scopeService.forLeder("3"))
+                val mineSykmeldte =
+                    minesykmeldteDb.getMineSykmeldte(
+                        "3",
+                        scopeService.forLeder("3"),
+                    )
                 val lest = mineSykmeldte.flatMap { listOf(it.lestSoknad, it.lestSykmelding) }
                 lest.all { it } shouldBeEqualTo true
             }
@@ -501,14 +579,20 @@ class MineSykmeldteDbTest :
                     "leder-2",
                 )
 
-                minesykmeldteDb.markAllSykmeldingAndSoknadAsRead("leder")
+                minesykmeldteDb.markAllSykmeldingAndSoknadAsRead(
+                    "leder",
+                    scopeService.forLeder("leder"),
+                )
                 minesykmeldteDb
-                    .getMineSykmeldte("leder-2")
+                    .getMineSykmeldte("leder-2", scopeService.forLeder("leder-2"))
                     .flatMap { listOf(it.lestSoknad, it.lestSykmelding) }
                     .all { it } shouldBeEqualTo false
-                minesykmeldteDb.markAllSykmeldingAndSoknadAsRead("leder-2")
+                minesykmeldteDb.markAllSykmeldingAndSoknadAsRead(
+                    "leder-2",
+                    scopeService.forLeder("leder-2"),
+                )
                 minesykmeldteDb
-                    .getMineSykmeldte("leder-2")
+                    .getMineSykmeldte("leder-2", scopeService.forLeder("leder-2"))
                     .flatMap { listOf(it.lestSoknad, it.lestSykmelding) }
                     .all { it } shouldBeEqualTo true
             }

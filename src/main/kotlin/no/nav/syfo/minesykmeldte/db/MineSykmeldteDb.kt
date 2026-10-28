@@ -6,6 +6,7 @@ import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.hendelser.db.HendelseDbModel
+import no.nav.syfo.narmesteleder.model.RelationScope
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
@@ -28,22 +29,7 @@ class RelationHendelse(
 
 class MineSykmeldteDb(
     private val database: DatabaseInterface,
-    private val relationScopeResolver: RelationScopeResolver,
 ) {
-    suspend fun scopesForLeder(
-        lederFnr: String,
-        narmestelederId: String? = null,
-    ): List<RelationScope> = relationScopeResolver.forLeder(lederFnr, narmestelederId)
-
-    suspend fun getMineSykmeldteWithoutSoknad(
-        lederFnr: String,
-        narmestelederId: String?,
-    ): List<MinSykmeldtDbModel> =
-        getMineSykmeldte(lederFnr, scopesForLeder(lederFnr, narmestelederId), withSoknad = false)
-
-    suspend fun getMineSykmeldte(lederFnr: String): List<MinSykmeldtDbModel> =
-        getMineSykmeldte(lederFnr, scopesForLeder(lederFnr))
-
     suspend fun getMineSykmeldte(
         lederFnr: String,
         scopes: List<RelationScope>,
@@ -52,7 +38,7 @@ class MineSykmeldteDb(
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
                 connection
-                    .withScopes(
+                    .withRelationScopes(
                         """
                 SELECT nl.narmeste_leder_id,
                        nl.pasient_fnr,
@@ -77,7 +63,7 @@ class MineSykmeldteDb(
                 """,
                         scopes,
                         lederFnr,
-                    ) { ps ->
+                    ) { ps, _ ->
                         ps.executeQuery().toList { toMinSykmeldtDbModel(withSoknad) }
                     }
             }
@@ -86,11 +72,11 @@ class MineSykmeldteDb(
     suspend fun getSykmelding(
         sykmeldingId: String,
         lederFnr: String,
-    ): Pair<SykmeldtDbModel, SykmeldingDbModel>? {
-        val scope = documentScope(DocumentType.SYKMELDING, sykmeldingId, lederFnr) ?: return null
-        return withContext(Dispatchers.IO) {
+        scopes: List<RelationScope>,
+    ): Pair<SykmeldtDbModel, SykmeldingDbModel>? =
+        withContext(Dispatchers.IO) {
             database.connection.use { connection ->
-                connection.withScope(
+                connection.withRelationScopes(
                     """
                 SELECT s.sykmelding_id, s.pasient_fnr, s.orgnummer, s.orgnavn,
                        s.sykmelding, s.lest, s.timestamp, s.latest_tom,
@@ -105,24 +91,23 @@ class MineSykmeldteDb(
                     ) sm ON TRUE
                 WHERE s.sykmelding_id = ?
             """,
-                    scope,
+                    scopes,
                     lederFnr,
-                ) { ps ->
-                    ps.setString(7, sykmeldingId)
+                ) { ps, firstParameter ->
+                    ps.setString(firstParameter, sykmeldingId)
                     ps.executeQuery().toSykmeldtSykmelding()
                 }
             }
         }
-    }
 
     suspend fun getSoknad(
         soknadId: String,
         lederFnr: String,
-    ): Pair<SykmeldtDbModel, SoknadDbModel>? {
-        val scope = documentScope(DocumentType.SOKNAD, soknadId, lederFnr) ?: return null
-        return withContext(Dispatchers.IO) {
+        scopes: List<RelationScope>,
+    ): Pair<SykmeldtDbModel, SoknadDbModel>? =
+        withContext(Dispatchers.IO) {
             database.connection.use { connection ->
-                connection.withScope(
+                connection.withRelationScopes(
                     """
                 SELECT s.soknad_id,
                    s.sykmelding_id,
@@ -144,18 +129,14 @@ class MineSykmeldteDb(
                      ) sm ON TRUE
             WHERE s.soknad_id = ?
         """,
-                    scope,
+                    scopes,
                     lederFnr,
-                ) { ps ->
-                    ps.setString(7, soknadId)
+                ) { ps, firstParameter ->
+                    ps.setString(firstParameter, soknadId)
                     ps.executeQuery().toSykmeldtSoknad()
                 }
             }
         }
-    }
-
-    suspend fun getHendelser(lederFnr: String): List<RelationHendelse> =
-        getHendelser(lederFnr, scopesForLeder(lederFnr))
 
     suspend fun getHendelser(
         lederFnr: String,
@@ -164,7 +145,7 @@ class MineSykmeldteDb(
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
                 connection
-                    .withScopes(
+                    .withRelationScopes(
                         """
            SELECT n.narmeste_leder_id, h.pasient_fnr,
               h.orgnummer,
@@ -181,8 +162,8 @@ class MineSykmeldteDb(
         """,
                         scopes,
                         lederFnr,
-                    ) { ps ->
-                        ps.setTimestamp(7, Timestamp.from(Instant.now()))
+                    ) { ps, firstParameter ->
+                        ps.setTimestamp(firstParameter, Timestamp.from(Instant.now()))
                         ps.executeQuery().toList {
                             RelationHendelse(getString("narmeste_leder_id"), toHendelseDbModels())
                         }
@@ -193,57 +174,59 @@ class MineSykmeldteDb(
     suspend fun markSykmeldingRead(
         sykmeldingId: String,
         lederFnr: String,
-    ): List<String> = markDocumentRead(DocumentType.SYKMELDING, sykmeldingId, lederFnr)
+        scopes: List<RelationScope>,
+    ): List<String> = markDocumentRead(DocumentType.SYKMELDING, sykmeldingId, lederFnr, scopes)
 
     suspend fun markSoknadRead(
         soknadId: String,
         lederFnr: String,
-    ): List<String> = markDocumentRead(DocumentType.SOKNAD, soknadId, lederFnr)
+        scopes: List<RelationScope>,
+    ): List<String> = markDocumentRead(DocumentType.SOKNAD, soknadId, lederFnr, scopes)
 
     suspend fun markHendelseRead(
         hendelseId: UUID,
         lederFnr: String,
-    ): List<String> = markDocumentRead(DocumentType.HENDELSE, hendelseId, lederFnr)
+        scopes: List<RelationScope>,
+    ): List<String> = markDocumentRead(DocumentType.HENDELSE, hendelseId, lederFnr, scopes)
 
-    private suspend fun documentScope(
+    suspend fun getSykmeldingOrgnummer(sykmeldingId: String): String? =
+        getDocumentOrgnummer(DocumentType.SYKMELDING, sykmeldingId)
+
+    suspend fun getSoknadOrgnummer(soknadId: String): String? =
+        getDocumentOrgnummer(DocumentType.SOKNAD, soknadId)
+
+    suspend fun getHendelseOrgnummer(hendelseId: UUID): String? =
+        getDocumentOrgnummer(DocumentType.HENDELSE, hendelseId)
+
+    private suspend fun getDocumentOrgnummer(
         type: DocumentType,
         id: Any,
-        lederFnr: String,
-    ): RelationScope? {
-        val identity =
-            withContext(Dispatchers.IO) {
-                database.connection.use { connection ->
-                    // Table/column names come only from the closed enum, never request data.
-                    connection
-                        .prepareStatement(
-                            "SELECT pasient_fnr, orgnummer FROM ${type.table} WHERE ${type.idColumn} = ?",
-                        ).use { ps ->
-                            ps.setObject(1, id)
-                            ps.executeQuery().use { rs ->
-                                if (rs.next()) {
-                                    rs.getString(
-                                        "pasient_fnr",
-                                    ) to rs.getString("orgnummer")
-                                } else {
-                                    null
-                                }
-                            }
+    ): String? =
+        withContext(Dispatchers.IO) {
+            database.connection.use { connection ->
+                // Table/column names come only from the closed enum, never request data.
+                connection
+                    .prepareStatement(
+                        "SELECT orgnummer FROM ${type.table} WHERE ${type.idColumn} = ?",
+                    ).use { ps ->
+                        ps.setObject(1, id)
+                        ps.executeQuery().use { rs ->
+                            if (rs.next()) rs.getString("orgnummer") else null
                         }
-                }
-            } ?: return null
-        return relationScopeResolver.forDocument(identity.first, identity.second, lederFnr)
-    }
+                    }
+            }
+        }
 
     private suspend fun markDocumentRead(
         type: DocumentType,
         id: Any,
         lederFnr: String,
-    ): List<String> {
-        val scope = documentScope(type, id, lederFnr) ?: return emptyList()
-        return withContext(Dispatchers.IO) {
+        scopes: List<RelationScope>,
+    ): List<String> =
+        withContext(Dispatchers.IO) {
             database.connection.use { connection ->
                 val updated =
-                    connection.withScope(
+                    connection.withRelationScopes(
                         """
                         UPDATE ${type.table} d SET ${type.readAssignment}
                         FROM scope n
@@ -251,20 +234,20 @@ class MineSykmeldteDb(
                           AND d.pasient_fnr = ANY(n.identer)
                         RETURNING d.${type.idColumn}
                         """.trimIndent(),
-                        scope,
+                        scopes,
                         lederFnr,
-                    ) { ps ->
-                        ps.setObject(7, id)
+                    ) { ps, firstParameter ->
+                        var index = firstParameter
+                        if (type.hasReadTimestamp) {
+                            ps.setTimestamp(index++, Timestamp.from(Instant.now()))
+                        }
+                        ps.setObject(index, id)
                         ps.executeQuery().toList { getString(type.idColumn) }
                     }
                 connection.commit()
                 updated
             }
         }
-    }
-
-    suspend fun markAllSykmeldingAndSoknadAsRead(lederFnr: String): SykmeldingAndSoknadIds =
-        markAllSykmeldingAndSoknadAsRead(lederFnr, scopesForLeder(lederFnr))
 
     suspend fun markAllSykmeldingAndSoknadAsRead(
         lederFnr: String,
@@ -274,7 +257,7 @@ class MineSykmeldteDb(
             database.connection.use { connection ->
                 val sykmeldingIds =
                     connection
-                        .withScopes(
+                        .withRelationScopes(
                             """
                                  update sykmelding s set lest = TRUE 
                             FROM scope nl WHERE s.pasient_fnr = ANY(nl.identer)
@@ -283,12 +266,12 @@ class MineSykmeldteDb(
                             """.trimIndent(),
                             scopes,
                             lederFnr,
-                        ) { ps ->
+                        ) { ps, _ ->
                             ps.executeQuery().toList { getString("sykmelding_id") }
                         }
                 val soknadIds =
                     connection
-                        .withScopes(
+                        .withRelationScopes(
                             """
                             update soknad s set lest = TRUE
                             FROM scope nl WHERE s.pasient_fnr = ANY(nl.identer)
@@ -296,7 +279,7 @@ class MineSykmeldteDb(
                             """.trimIndent(),
                             scopes,
                             lederFnr,
-                        ) { ps ->
+                        ) { ps, _ ->
                             ps.executeQuery().toList { getString("soknad_id") }
                         }
 
@@ -313,13 +296,15 @@ private enum class DocumentType(
     val table: String,
     val idColumn: String,
     val readAssignment: String,
+    val hasReadTimestamp: Boolean = false,
 ) {
     SYKMELDING("sykmelding", "sykmelding_id", "lest = TRUE"),
     SOKNAD("soknad", "soknad_id", "lest = TRUE"),
     HENDELSE(
         "hendelser",
         "hendelse_id",
-        "ferdigstilt = TRUE, ferdigstilt_timestamp = CURRENT_TIMESTAMP",
+        "ferdigstilt = TRUE, ferdigstilt_timestamp = ?",
+        hasReadTimestamp = true,
     ),
 }
 

@@ -4,14 +4,16 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.minesykmeldte.db.RelationHendelse
-import no.nav.syfo.minesykmeldte.db.RelationScope
 import no.nav.syfo.minesykmeldte.model.AktivitetIkkeMulig
 import no.nav.syfo.minesykmeldte.model.ArbeidsrelatertArsakEnum
 import no.nav.syfo.minesykmeldte.model.Avventende
@@ -25,6 +27,8 @@ import no.nav.syfo.minesykmeldte.model.PreviewSendtSoknad
 import no.nav.syfo.minesykmeldte.model.Reisetilskudd
 import no.nav.syfo.minesykmeldte.model.SoknadStatus
 import no.nav.syfo.minesykmeldte.model.Svar
+import no.nav.syfo.narmesteleder.RelationScopeService
+import no.nav.syfo.narmesteleder.model.RelationScope
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.model.Soknad
 import no.nav.syfo.soknad.model.SoknadStatus.FREMTIDIG
@@ -70,30 +74,45 @@ class MineSykmeldteServiceTest :
     FunSpec(
         {
             val mineSykmeldteDb = mockk<MineSykmeldteDb>(relaxed = true)
-            val mineSykmeldtService = MineSykmeldteService(mineSykmeldteDb)
+            val scopeService = mockk<RelationScopeService>()
+            val scopes = listOf(RelationScope("relation", setOf("12345678910")))
+            val mineSykmeldtService = MineSykmeldteService(mineSykmeldteDb, scopeService)
 
             beforeEach {
-                coEvery { mineSykmeldteDb.scopesForLeder(any(), any()) } returns emptyList()
-                coEvery { mineSykmeldteDb.getMineSykmeldte(any(), any(), any()) } coAnswers {
-                    mineSykmeldteDb.getMineSykmeldte(firstArg<String>())
-                }
-                coEvery {
-                    mineSykmeldteDb.getHendelser(
-                        any(),
-                        any<List<RelationScope>>(),
-                    )
-                } coAnswers
-                    {
-                        mineSykmeldteDb.getHendelser(firstArg<String>())
-                    }
+                coEvery { scopeService.forLeder(any(), any(), any()) } returns scopes
+                coEvery { mineSykmeldteDb.getSykmeldingOrgnummer(any()) } returns "orgnummer"
+                coEvery { mineSykmeldteDb.getSoknadOrgnummer(any()) } returns "orgnummer"
             }
 
-            afterEach { clearMocks(mineSykmeldteDb) }
+            afterEach { clearMocks(mineSykmeldteDb, scopeService) }
 
             context("getMineSykmeldte") {
+                test("resolves scopes once before running both document queries in parallel") {
+                    val sykmeldteStarted = CompletableDeferred<Unit>()
+                    val hendelserStarted = CompletableDeferred<Unit>()
+                    coEvery { mineSykmeldteDb.getMineSykmeldte("leader", scopes, true) } coAnswers {
+                        sykmeldteStarted.complete(Unit)
+                        hendelserStarted.await()
+                        emptyList()
+                    }
+                    coEvery { mineSykmeldteDb.getHendelser("leader", scopes) } coAnswers {
+                        hendelserStarted.complete(Unit)
+                        sykmeldteStarted.await()
+                        emptyList()
+                    }
+                    withTimeout(5_000) {
+                        mineSykmeldtService.getMineSykmeldte("leader") shouldHaveSize 0
+                    }
+                    coVerify(exactly = 1) { scopeService.forLeder("leader", null, null) }
+                    coVerify(
+                        exactly = 1,
+                    ) { mineSykmeldteDb.getMineSykmeldte("leader", scopes, true) }
+                    coVerify(exactly = 1) { mineSykmeldteDb.getHendelser("leader", scopes) }
+                }
+
                 test("Should get mine sykmeldte with oppfolgingsplan hendelse") {
                     val hendelseid = UUID.randomUUID()
-                    coEvery { mineSykmeldteDb.getHendelser("1") } returns
+                    coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns
                         listOf(
                             RelationHendelse(
                                 "relation-prefix-0",
@@ -112,7 +131,7 @@ class MineSykmeldteServiceTest :
                                 ),
                             ),
                         )
-                    coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                    coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                         getSykmeldtData(1, sykmeldtFnrPrefix = "prefix")
                     val sykmeldte = runBlocking { mineSykmeldtService.getMineSykmeldte("1") }
                     sykmeldte.size shouldBeEqualTo 1
@@ -122,7 +141,7 @@ class MineSykmeldteServiceTest :
                     oppfolningsplaner.first().tekst shouldBeEqualTo "Ny oppfolgingsplan"
                 }
                 test("Should get mine sykmeldte with hendelser") {
-                    coEvery { mineSykmeldteDb.getHendelser("1") } returns
+                    coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns
                         listOf(
                             RelationHendelse(
                                 "relation-avdeling-1-0",
@@ -141,7 +160,7 @@ class MineSykmeldteServiceTest :
                                 ),
                             ),
                         )
-                    coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                    coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                         getSykmeldtData(
                             sykmeldte = 2,
                             sykmeldinger =
@@ -163,15 +182,15 @@ class MineSykmeldteServiceTest :
                 }
 
                 test("Should get empty list") {
-                    coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns emptyList()
-                    coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                    coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns emptyList()
+                    coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
                     runBlocking { mineSykmeldtService.getMineSykmeldte("1").size shouldBeEqualTo 0 }
                 }
 
                 test("should get one sykmeldt") {
-                    coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                    coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                         getSykmeldtData(1, sykmeldtFnrPrefix = "prefix")
-                    coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                    coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
                     runBlocking {
                         val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                         mineSykmeldte.size shouldBeEqualTo 1
@@ -192,7 +211,7 @@ class MineSykmeldteServiceTest :
                             it.copy(soknad = it.soknad!!.copy(status = NY))
                         }
 
-                    coEvery { mineSykmeldteDb.getHendelser("1") } returns
+                    coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns
                         listOf(
                             RelationHendelse(
                                 "relation-prefix-0",
@@ -212,7 +231,7 @@ class MineSykmeldteServiceTest :
                             ),
                         )
 
-                    coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns sykmeldtData
+                    coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns sykmeldtData
                     runBlocking {
                         val mineSykmeldte = mineSykmeldtService.getMineSykmeldte("1")
                         mineSykmeldte.size shouldBeEqualTo 1
@@ -229,8 +248,8 @@ class MineSykmeldteServiceTest :
                 }
 
                 test("should group sykmeldinger and søknader by sykmeldt") {
-                    coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                    coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                    coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
+                    coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                         getSykmeldtData(
                             sykmeldte = 3,
                             sykmeldinger =
@@ -261,8 +280,8 @@ class MineSykmeldteServiceTest :
 
                 context("sykmeldt") {
                     test("should not be friskmeldt if the latest sykmeldt period is tomorrow") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             getSykmeldtData(
                                 1,
                                 listOf(
@@ -290,8 +309,8 @@ class MineSykmeldteServiceTest :
                     }
 
                     test("should be friskmeldt if the latest sykmeldt period is 1 day ago") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             getSykmeldtData(
                                 1,
                                 listOf(
@@ -322,8 +341,8 @@ class MineSykmeldteServiceTest :
 
                 context("given different types") {
                     test("should get one sykmeldt with 50% type") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             getSykmeldtData(
                                 1,
                                 listOf(
@@ -357,8 +376,8 @@ class MineSykmeldteServiceTest :
                     }
 
                     test("should get one sykmeldt with 20% type") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             getSykmeldtData(
                                 1,
                                 listOf(
@@ -392,8 +411,8 @@ class MineSykmeldteServiceTest :
                     }
 
                     test("should get one sykmeldt with avventende") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             getSykmeldtData(
                                 1,
                                 listOf(
@@ -427,8 +446,8 @@ class MineSykmeldteServiceTest :
                     }
 
                     test("should get one sykmeldt with behandlingsdager") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             getSykmeldtData(
                                 1,
                                 listOf(
@@ -462,8 +481,8 @@ class MineSykmeldteServiceTest :
                     }
 
                     test("should get one sykmeldt with reisetilskudd") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             getSykmeldtData(
                                 1,
                                 listOf(
@@ -497,8 +516,8 @@ class MineSykmeldteServiceTest :
                     }
 
                     test("should pick the correct period when one period is now") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             getSykmeldtData(
                                 1,
                                 listOf(
@@ -547,8 +566,8 @@ class MineSykmeldteServiceTest :
                     }
 
                     test("should pick the correct period when now is end of period") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             getSykmeldtData(
                                 1,
                                 listOf(
@@ -597,8 +616,8 @@ class MineSykmeldteServiceTest :
                     }
 
                     test("should pick the correct period when now is start of period") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             getSykmeldtData(
                                 1,
                                 listOf(
@@ -649,8 +668,8 @@ class MineSykmeldteServiceTest :
                     test(
                         "should pick latest period when there are periods in the past, but one in the future",
                     ) {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             getSykmeldtData(
                                 1,
                                 listOf(
@@ -699,8 +718,8 @@ class MineSykmeldteServiceTest :
                     }
 
                     test("should pick the nearest future period, if all in the future") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             getSykmeldtData(
                                 1,
                                 listOf(
@@ -751,7 +770,7 @@ class MineSykmeldteServiceTest :
 
                 context("when mapping søknader") {
                     test("should map to a new søknad and use tom if date is latest") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
                         val soknad =
                             createSoknad("soknad-id", "sykmeldingId")
                                 .copy(
@@ -759,7 +778,7 @@ class MineSykmeldteServiceTest :
                                     tom = LocalDate.parse("2020-05-02"),
                                 )
 
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             listOf(
                                 MinSykmeldtDbModel(
                                     narmestelederId = UUID.randomUUID().toString(),
@@ -791,7 +810,7 @@ class MineSykmeldteServiceTest :
                     }
 
                     test("should map to a new søknad and use opprettet if date is latest") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
                         val soknad =
                             createSoknad("soknad-id", "sykmeldingId")
                                 .copy(
@@ -799,7 +818,7 @@ class MineSykmeldteServiceTest :
                                     tom = LocalDate.parse("2020-05-02"),
                                 )
 
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             listOf(
                                 MinSykmeldtDbModel(
                                     narmestelederId = UUID.randomUUID().toString(),
@@ -831,7 +850,7 @@ class MineSykmeldteServiceTest :
                     }
 
                     test("should map to a sendt søknad") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
                         val soknad =
                             createSoknad("soknad-id", "sykmeldingId")
                                 .copy(
@@ -841,7 +860,7 @@ class MineSykmeldteServiceTest :
                                         LocalDateTime.parse("2020-06-07T19:34:50.63"),
                                 )
 
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             listOf(
                                 MinSykmeldtDbModel(
                                     narmestelederId = UUID.randomUUID().toString(),
@@ -872,7 +891,7 @@ class MineSykmeldteServiceTest :
                     }
 
                     test("Should not get Korrigert soknad") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
                         val korrigertSoknad =
                             createSoknad("soknad-id-korrigert", "sykmeldingId")
                                 .copy(
@@ -906,7 +925,7 @@ class MineSykmeldteServiceTest :
                                 egenmeldingsdager = null,
                             )
 
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             listOf(
                                 mineSykmeldteModel,
                                 mineSykmeldteModel.copy(soknad = korrigererSoknad),
@@ -934,14 +953,14 @@ class MineSykmeldteServiceTest :
                     }
 
                     test("should map to a fremtidig søknad") {
-                        coEvery { mineSykmeldteDb.getHendelser("1") } returns emptyList()
+                        coEvery { mineSykmeldteDb.getHendelser("1", scopes) } returns emptyList()
                         val soknad =
                             createSoknad("soknad-id", "sykmeldingId")
                                 .copy(
                                     status = FREMTIDIG,
                                 )
 
-                        coEvery { mineSykmeldteDb.getMineSykmeldte("1") } returns
+                        coEvery { mineSykmeldteDb.getMineSykmeldte("1", scopes) } returns
                             listOf(
                                 MinSykmeldtDbModel(
                                     narmestelederId = UUID.randomUUID().toString(),
@@ -982,7 +1001,7 @@ class MineSykmeldteServiceTest :
                                 ),
                             ),
                         )
-                    coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1") } returns
+                    coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1", scopes) } returns
                         (
                             createSykmeldtDbModel() to
                                 createSykmeldingDbModel(
@@ -1014,7 +1033,7 @@ class MineSykmeldteServiceTest :
 
                 test("should map to avventende") {
                     val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
-                    coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1") } returns
+                    coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1", scopes) } returns
                         (
                             createSykmeldtDbModel() to
                                 createSykmeldingDbModel(
@@ -1044,7 +1063,7 @@ class MineSykmeldteServiceTest :
 
                 test("should map to behandlingsdager") {
                     val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
-                    coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1") } returns
+                    coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1", scopes) } returns
                         (
                             createSykmeldtDbModel() to
                                 createSykmeldingDbModel(
@@ -1073,7 +1092,7 @@ class MineSykmeldteServiceTest :
 
                 test("should map to gradert") {
                     val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
-                    coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1") } returns
+                    coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1", scopes) } returns
                         (
                             createSykmeldtDbModel() to
                                 createSykmeldingDbModel(
@@ -1108,7 +1127,7 @@ class MineSykmeldteServiceTest :
 
                 test("should map to reisetilskudd") {
                     val sykmeldingId = "c4df78c6-880a-4a47-bc4f-9df63584c009"
-                    coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1") } returns
+                    coEvery { mineSykmeldteDb.getSykmelding(sykmeldingId, "red-1", scopes) } returns
                         (
                             createSykmeldtDbModel() to
                                 createSykmeldingDbModel(
@@ -1149,7 +1168,13 @@ class MineSykmeldteServiceTest :
                             latestTom = LocalDate.now(),
                             sistOppdatert = null,
                         )
-                    coEvery { mineSykmeldteDb.getSoknad(soknadDbModel.soknadId, "red-2") } returns
+                    coEvery {
+                        mineSykmeldteDb.getSoknad(
+                            soknadDbModel.soknadId,
+                            "red-2",
+                            scopes,
+                        )
+                    } returns
                         (sykmeldtDbModel to soknadDbModel)
 
                     val result = mineSykmeldtService.getSoknad(soknadDbModel.soknadId, "red-2")
@@ -1158,7 +1183,7 @@ class MineSykmeldteServiceTest :
 
                 test("should map to Soknad") {
                     val soknadId = "e94a7c0f-3240-4a0c-8788-c4cc3ebcdac2"
-                    coEvery { mineSykmeldteDb.getSoknad(soknadId, "red-2") } returns
+                    coEvery { mineSykmeldteDb.getSoknad(soknadId, "red-2", scopes) } returns
                         (
                             createSykmeldtDbModel(
                                 pasientNavn = "Navn Navnesen",
@@ -1242,7 +1267,7 @@ class MineSykmeldteServiceTest :
                     "should filter out sporsmal tag BEKREFT_OPPLYSNINGER and VAER_KLAR_OVER_AT from Soknad",
                 ) {
                     val soknadId = "b8aa4075-7347-48c9-b006-a770ee023bf8"
-                    coEvery { mineSykmeldteDb.getSoknad(soknadId, "soknad-112") } returns
+                    coEvery { mineSykmeldteDb.getSoknad(soknadId, "soknad-112", scopes) } returns
                         (
                             createSykmeldtDbModel(
                                 pasientNavn = "Navn Navnesen",

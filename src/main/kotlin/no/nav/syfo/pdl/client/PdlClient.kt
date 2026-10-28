@@ -169,7 +169,6 @@ private fun GetIdenterResponse.toIdenterResults(
             "bad_request" -> IdenterResult.Failure(IdenterFailureReason.BAD_REQUEST)
             "ok" -> {
                 // PDL returns null when the person is not found or the ident is invalid.
-                // Only the explicit not_found code above is a cacheable singleton.
                 val entries = element.identer
                 val folkeregisteridenter =
                     entries.orEmpty().filterNotNull().filter {

@@ -31,6 +31,7 @@ import no.nav.syfo.minesykmeldte.model.Reisetilskudd
 import no.nav.syfo.minesykmeldte.model.Soknad
 import no.nav.syfo.minesykmeldte.model.Sykmelding
 import no.nav.syfo.minesykmeldte.model.UtenlandskSykmelding
+import no.nav.syfo.narmesteleder.RelationScopeService
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
@@ -44,10 +45,11 @@ import java.util.UUID
 
 class MineSykmeldteService(
     private val mineSykmeldteDb: MineSykmeldteDb,
+    private val relationScopeService: RelationScopeService,
 ) {
     suspend fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> =
         withContext(Dispatchers.IO) {
-            val scopes = mineSykmeldteDb.scopesForLeder(lederFnr)
+            val scopes = relationScopeService.forLeder(lederFnr)
             val hendelserJob =
                 async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr, scopes) }
             val sykmeldteMapJob =
@@ -152,18 +154,31 @@ class MineSykmeldteService(
     suspend fun getSykmelding(
         sykmeldingId: String,
         lederFnr: String,
-    ): Sykmelding? = mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr)?.toSykmelding()
+    ): Sykmelding? {
+        val orgnummer = mineSykmeldteDb.getSykmeldingOrgnummer(sykmeldingId) ?: return null
+        val scopes = relationScopeService.forLeder(lederFnr, orgnummer = orgnummer)
+        if (scopes.isEmpty()) return null
+        return mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr, scopes)?.toSykmelding()
+    }
 
     suspend fun getSoknad(
         soknadId: String,
         lederFnr: String,
-    ): Soknad? = mineSykmeldteDb.getSoknad(soknadId, lederFnr)?.toSoknad()
+    ): Soknad? {
+        val orgnummer = mineSykmeldteDb.getSoknadOrgnummer(soknadId) ?: return null
+        val scopes = relationScopeService.forLeder(lederFnr, orgnummer = orgnummer)
+        if (scopes.isEmpty()) return null
+        return mineSykmeldteDb.getSoknad(soknadId, lederFnr, scopes)?.toSoknad()
+    }
 
     suspend fun markSykmeldingRead(
         sykmeldingId: String,
         lederFnr: String,
     ): Boolean {
-        val ids = mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr)
+        val orgnummer = mineSykmeldteDb.getSykmeldingOrgnummer(sykmeldingId) ?: return false
+        val scopes = relationScopeService.forLeder(lederFnr, orgnummer = orgnummer)
+        if (scopes.isEmpty()) return false
+        val ids = mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr, scopes)
         return ids.isNotEmpty()
     }
 
@@ -171,7 +186,10 @@ class MineSykmeldteService(
         soknadId: String,
         lederFnr: String,
     ): Boolean {
-        val ids = mineSykmeldteDb.markSoknadRead(soknadId, lederFnr)
+        val orgnummer = mineSykmeldteDb.getSoknadOrgnummer(soknadId) ?: return false
+        val scopes = relationScopeService.forLeder(lederFnr, orgnummer = orgnummer)
+        if (scopes.isEmpty()) return false
+        val ids = mineSykmeldteDb.markSoknadRead(soknadId, lederFnr, scopes)
         return ids.isNotEmpty()
     }
 
@@ -179,12 +197,16 @@ class MineSykmeldteService(
         hendelseId: UUID,
         lederFnr: String,
     ): Boolean {
-        val ids = mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr)
+        val orgnummer = mineSykmeldteDb.getHendelseOrgnummer(hendelseId) ?: return false
+        val scopes = relationScopeService.forLeder(lederFnr, orgnummer = orgnummer)
+        if (scopes.isEmpty()) return false
+        val ids = mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr, scopes)
         return ids.isNotEmpty()
     }
 
     suspend fun markAllSykmeldingerAndSoknaderRead(lederFnr: String) {
-        mineSykmeldteDb.markAllSykmeldingAndSoknadAsRead(lederFnr)
+        val scopes = relationScopeService.forLeder(lederFnr)
+        mineSykmeldteDb.markAllSykmeldingAndSoknadAsRead(lederFnr, scopes)
     }
 }
 

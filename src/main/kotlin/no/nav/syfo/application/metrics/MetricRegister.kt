@@ -12,7 +12,7 @@ val IDENTER_LOOKUP_COUNTER: Counter =
         .name("identer_lookup_total")
         .labelNames(
             "outcome",
-        ).help("Identifier lookups per requested ident, including cache hits")
+        ).help("Identifier lookups per requested ident")
         .register()
 
 val IDENTER_FALLBACK_COUNTER: Counter =
@@ -22,15 +22,6 @@ val IDENTER_FALLBACK_COUNTER: Counter =
         .name("identer_fallback_total")
         .labelNames("reason")
         .help("Identifier lookups falling back to exact match")
-        .register()
-
-val IDENTER_CACHE_COUNTER: Counter =
-    Counter
-        .build()
-        .namespace(METRICS_NS)
-        .name("identer_cache_total")
-        .labelNames("result")
-        .help("Identifier cache hits, misses and errors")
         .register()
 
 val RELATION_SCOPE_DENIED_COUNTER: Counter =

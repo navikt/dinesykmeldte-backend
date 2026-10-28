@@ -4,7 +4,7 @@ import io.kotest.core.spec.style.FunSpec
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
-import no.nav.syfo.util.exactRelationScopeResolver
+import no.nav.syfo.util.exactRelationScopeService
 import no.nav.syfo.util.insertOrUpdate
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.shouldHaveSize
@@ -12,8 +12,8 @@ import java.util.UUID
 
 object VirksomhetDbTest :
     FunSpec({
-        val virksomhetDb =
-            VirksomhetDb(TestDb.database, exactRelationScopeResolver(TestDb.database))
+        val virksomhetDb = VirksomhetDb(TestDb.database)
+        val scopeService = exactRelationScopeService(TestDb.database)
 
         afterEach { TestDb.clearAllData() }
 
@@ -35,7 +35,11 @@ object VirksomhetDbTest :
                     sykmeldt,
                 )
 
-                val virksomheter = virksomhetDb.getVirksomheter("test-caller-fnr")
+                val virksomheter =
+                    virksomhetDb.getVirksomheter(
+                        "test-caller-fnr",
+                        scopeService.forLeder("test-caller-fnr"),
+                    )
 
                 virksomheter shouldHaveSize 1
                 virksomheter[0].orgnummer `should be equal to` "right-caller-org"
@@ -58,7 +62,11 @@ object VirksomhetDbTest :
                     sykmeldt,
                 )
 
-                val virksomheter = virksomhetDb.getVirksomheter("test-caller-fnr")
+                val virksomheter =
+                    virksomhetDb.getVirksomheter(
+                        "test-caller-fnr",
+                        scopeService.forLeder("test-caller-fnr"),
+                    )
 
                 virksomheter shouldHaveSize 0
             }

@@ -7,6 +7,9 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
+import no.nav.syfo.narmesteleder.RelationScopeService
+import no.nav.syfo.narmesteleder.db.NarmestelederDb
+import no.nav.syfo.narmesteleder.model.RelationScope
 import no.nav.syfo.pdl.service.PdlIdenterService
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSoknadDbModel
@@ -14,6 +17,7 @@ import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
 import no.nav.syfo.util.insertHendelse
 import no.nav.syfo.util.insertOrUpdate
+import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -27,21 +31,26 @@ class SingleItemIdenterDbTest :
     FunSpec({
         val database = TestDb.database
         val identer = mockk<PdlIdenterService>()
-        val resolver = RelationScopeResolver(database, identer)
-        val db = MineSykmeldteDb(database, resolver)
-        val service = MineSykmeldteService(db)
+        val scopeService = RelationScopeService(NarmestelederDb(database), identer)
+        val db = MineSykmeldteDb(database)
+        val service = MineSykmeldteService(db, scopeService)
         val old = "12345678910"
         val current = "12345678912"
         val leader = "12345678913"
         val former = "12345678914"
         val otherPerson = "12345678915"
+        val otherOld = "12345678916"
         val org = "orgnummer"
 
         beforeEach {
             clearMocks(identer)
             coEvery { identer.hentIdenter(any()) } coAnswers {
-                firstArg<Collection<String>>().associateWith {
-                    if (it == old || it == current) setOf(old, current) else setOf(it)
+                firstArg<Collection<String>>().reversed().associateWith {
+                    when (it) {
+                        old, current -> setOf(old, current)
+                        otherPerson, otherOld -> setOf(otherPerson, otherOld)
+                        else -> setOf(it)
+                    }
                 }
             }
         }
@@ -104,12 +113,16 @@ class SingleItemIdenterDbTest :
         ) {
             relation(current, leader)
             val ids = documents(old)
+            val markedAt = Instant.now()
             assertAccess(ids, leader, true)
             assertEquals(old, service.getSykmelding(ids.sykmelding, leader)?.fnr)
             assertEquals(old, service.getSoknad(ids.soknad, leader)?.fnr)
             assertTrue(TestDb.getSykmelding(ids.sykmelding)!!.lest)
             assertTrue(TestDb.getSoknad(ids.soknad)!!.lest)
-            assertTrue(TestDb.getHendelse(ids.hendelse.toString())!!.ferdigstilt)
+            val hendelse = assertNotNull(TestDb.getHendelse(ids.hendelse.toString()))
+            assertTrue(hendelse.ferdigstilt)
+            val ferdigstiltTimestamp = assertNotNull(hendelse.ferdigstiltTimestamp).toInstant()
+            assertTrue(ferdigstiltTimestamp in markedAt.minusSeconds(5)..markedAt.plusSeconds(5))
         }
 
         test("former and new leader retain only exact access while both relations exist") {
@@ -154,7 +167,7 @@ class SingleItemIdenterDbTest :
             relation(current, leader)
             relation(otherPerson, leader)
             val firstPersonDocuments = documents(old)
-            val secondPersonDocuments = documents(otherPerson)
+            val secondPersonDocuments = documents(otherOld)
             assertAccess(firstPersonDocuments, leader, true)
             assertAccess(secondPersonDocuments, leader, true)
             val firstRelationOnlyLeader = former
@@ -229,22 +242,37 @@ class SingleItemIdenterDbTest :
             relation(current, leader)
             assertAccess(Documents(), leader, false)
             assertAccess(documents(old), former, false)
+            coVerify(exactly = 0) { identer.hentIdenter(any()) }
+        }
+
+        test("single-document SQL with empty scopes reads and marks nothing") {
+            val relationId = relation(current, leader)
+            val ids = documents(old)
+            listOf(emptyList(), listOf(RelationScope(relationId, emptySet()))).forEach { scopes ->
+                assertNull(db.getSykmelding(ids.sykmelding, leader, scopes))
+                assertNull(db.getSoknad(ids.soknad, leader, scopes))
+                assertTrue(db.markSykmeldingRead(ids.sykmelding, leader, scopes).isEmpty())
+                assertTrue(db.markSoknadRead(ids.soknad, leader, scopes).isEmpty())
+                assertTrue(db.markHendelseRead(ids.hendelse, leader, scopes).isEmpty())
+            }
+            assertFalse(TestDb.getSykmelding(ids.sykmelding)!!.lest)
+            assertFalse(TestDb.getSoknad(ids.soknad)!!.lest)
+            assertFalse(TestDb.getHendelse(ids.hendelse.toString())!!.ferdigstilt)
+            coVerify(exactly = 0) { identer.hentIdenter(any()) }
         }
 
         listOf(
             "deleted",
             "different-leader",
             "different-org",
-            "second-relation",
+            "different-person",
             "mismatched-caller",
         ).forEach { change ->
             test("final SQL denies stale scope after relation becomes $change") {
                 val relationId = relation(current, leader)
                 val ids = documents(old)
-                val scope = assertNotNull(resolver.forDocument(old, org, leader))
-                val staleResolver = mockk<RelationScopeResolver>()
-                coEvery { staleResolver.forDocument(any(), any(), any()) } returns scope
-                val staleService = MineSykmeldteService(MineSykmeldteDb(database, staleResolver))
+                val scopes = scopeService.forLeder(leader, orgnummer = org)
+                assertNotNull(scopes.singleOrNull())
                 database.connection.use { connection ->
                     val sql =
                         when (change) {
@@ -254,6 +282,9 @@ class SingleItemIdenterDbTest :
                                     "WHERE narmeste_leder_id = ?"
                             "different-org" ->
                                 "UPDATE narmesteleder SET orgnummer = 'other-org' " +
+                                    "WHERE narmeste_leder_id = ?"
+                            "different-person" ->
+                                "UPDATE narmesteleder SET pasient_fnr = '12345678915' " +
                                     "WHERE narmeste_leder_id = ?"
                             else -> null
                         }
@@ -265,13 +296,12 @@ class SingleItemIdenterDbTest :
                     }
                     connection.commit()
                 }
-                if (change == "second-relation") relation(old, former)
                 val caller = if (change == "mismatched-caller") former else leader
-                assertNull(staleService.getSykmelding(ids.sykmelding, caller))
-                assertNull(staleService.getSoknad(ids.soknad, caller))
-                assertFalse(staleService.markSykmeldingRead(ids.sykmelding, caller))
-                assertFalse(staleService.markSoknadRead(ids.soknad, caller))
-                assertFalse(staleService.markHendelseRead(ids.hendelse, caller))
+                assertNull(db.getSykmelding(ids.sykmelding, caller, scopes))
+                assertNull(db.getSoknad(ids.soknad, caller, scopes))
+                assertTrue(db.markSykmeldingRead(ids.sykmelding, caller, scopes).isEmpty())
+                assertTrue(db.markSoknadRead(ids.soknad, caller, scopes).isEmpty())
+                assertTrue(db.markHendelseRead(ids.hendelse, caller, scopes).isEmpty())
             }
         }
     })

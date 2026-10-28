@@ -4,18 +4,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
-import no.nav.syfo.minesykmeldte.db.RelationScope
-import no.nav.syfo.minesykmeldte.db.RelationScopeResolver
-import no.nav.syfo.minesykmeldte.db.withScopes
+import no.nav.syfo.minesykmeldte.db.withRelationScopes
+import no.nav.syfo.narmesteleder.model.RelationScope
 import java.sql.ResultSet
 
 class VirksomhetDb(
     private val database: DatabaseInterface,
-    private val relationScopeResolver: RelationScopeResolver,
 ) {
-    suspend fun getVirksomheter(lederFnr: String): List<VirksomhetDbModel> =
-        getVirksomheter(lederFnr, relationScopeResolver.forLeder(lederFnr))
-
     suspend fun getVirksomheter(
         lederFnr: String,
         scopes: List<RelationScope>,
@@ -23,7 +18,7 @@ class VirksomhetDb(
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
                 connection
-                    .withScopes(
+                    .withRelationScopes(
                         """
                         SELECT s.orgnavn, s.orgnummer
                         FROM sykmelding s
@@ -32,7 +27,7 @@ class VirksomhetDb(
                         """.trimIndent(),
                         scopes,
                         lederFnr,
-                    ) { ps ->
+                    ) { ps, _ ->
                         ps.executeQuery().toList { toVirksomhetDbModel() }
                     }
             }

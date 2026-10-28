@@ -12,6 +12,8 @@ import no.nav.syfo.dinesykmeldte.service.DineSykmeldteService
 import no.nav.syfo.hendelser.db.HendelseDbModel
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
+import no.nav.syfo.narmesteleder.RelationScopeService
+import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.pdl.service.PdlIdenterService
 import no.nav.syfo.soknad.model.SoknadStatus
 import no.nav.syfo.util.TestDb
@@ -35,12 +37,12 @@ class ListIdenterDbTest :
     FunSpec({
         val database = TestDb.database
         val identer = mockk<PdlIdenterService>()
-        val resolver = RelationScopeResolver(database, identer)
-        val db = MineSykmeldteDb(database, resolver)
-        val service = MineSykmeldteService(db)
-        val v2 = DineSykmeldteService(db)
-        val virksomhetDb = VirksomhetDb(database, resolver)
-        val virksomhetService = VirksomhetService(virksomhetDb)
+        val scopeService = RelationScopeService(NarmestelederDb(database), identer)
+        val db = MineSykmeldteDb(database)
+        val service = MineSykmeldteService(db, scopeService)
+        val v2 = DineSykmeldteService(db, scopeService)
+        val virksomhetDb = VirksomhetDb(database)
+        val virksomhetService = VirksomhetService(virksomhetDb, scopeService)
         val old = "12345678910"
         val current = "12345678912"
         val leader = "12345678913"
@@ -216,7 +218,8 @@ class ListIdenterDbTest :
                 virksomhetService.getVirksomheter(leader).map { it.orgnummer },
             )
             clearMocks(identer, answers = false)
-            val marked = db.markAllSykmeldingAndSoknadAsRead(leader)
+            val marked =
+                db.markAllSykmeldingAndSoknadAsRead(leader, scopeService.forLeder(leader))
             coVerify(exactly = 1) { identer.hentIdenter(listOf(current)) }
             assertEquals(
                 setOf(oldDocs.sykmelding, currentDocs.sykmelding),
@@ -262,13 +265,14 @@ class ListIdenterDbTest :
             assertEquals(2, v2.getDineSykmeldte(leader).size)
             assertEquals(
                 setOf(org, otherOrg),
-                virksomhetDb
+                virksomhetService
                     .getVirksomheter(leader)
                     .map {
                         it.orgnummer
                     }.toSet(),
             )
-            val marked = db.markAllSykmeldingAndSoknadAsRead(leader)
+            val marked =
+                db.markAllSykmeldingAndSoknadAsRead(leader, scopeService.forLeder(leader))
             assertEquals(setOf(first.sykmelding, second.sykmelding), marked.sykmeldingIds.toSet())
             assertEquals(setOf(first.soknad, second.soknad), marked.soknadIds.toSet())
             decoys.forEach { assertMarked(it, false) }
@@ -307,8 +311,12 @@ class ListIdenterDbTest :
                 )
             }
             assertEquals(2, v2.getDineSykmeldte(leader).size)
-            assertEquals(listOf(org), virksomhetDb.getVirksomheter(leader).map { it.orgnummer })
-            val marked = db.markAllSykmeldingAndSoknadAsRead(leader)
+            assertEquals(
+                listOf(org),
+                virksomhetService.getVirksomheter(leader).map { it.orgnummer },
+            )
+            val marked =
+                db.markAllSykmeldingAndSoknadAsRead(leader, scopeService.forLeder(leader))
             assertEquals(setOf(first.sykmelding, second.sykmelding), marked.sykmeldingIds.toSet())
             assertEquals(setOf(first.soknad, second.soknad), marked.soknadIds.toSet())
             assertMarked(first, true)
@@ -339,12 +347,15 @@ class ListIdenterDbTest :
                         it.sykmeldingId
                     },
                 )
-                assertEquals(listOf(org), virksomhetDb.getVirksomheter(caller).map { it.orgnummer })
+                assertEquals(
+                    listOf(org),
+                    virksomhetService.getVirksomheter(caller).map { it.orgnummer },
+                )
             }
             assertEquals("Current exact row", service.getMineSykmeldte(leader).single().navn)
             assertEquals("Old exact row", service.getMineSykmeldte(former).single().navn)
             assertTrue(RELATION_SCOPE_DENIED_COUNTER.get() > before)
-            db.markAllSykmeldingAndSoknadAsRead(leader)
+            service.markAllSykmeldingerAndSoknaderRead(leader)
             assertMarked(currentDocs, true)
             assertMarked(oldDocs, false)
         }
@@ -356,11 +367,18 @@ class ListIdenterDbTest :
             val relationId = relation()
             val oldDocs = documents(old)
             assertTrue(service.getMineSykmeldte(leader).isEmpty())
-            assertTrue(db.getHendelser(leader).isEmpty())
+            assertTrue(db.getHendelser(leader, scopeService.forLeder(leader)).isEmpty())
             assertTrue(v2.getDineSykmeldte(leader).isEmpty())
             assertNull(v2.getSykmeldt(relationId, leader))
-            assertTrue(virksomhetDb.getVirksomheter(leader).isEmpty())
-            assertTrue(db.markAllSykmeldingAndSoknadAsRead(leader).sykmeldingIds.isEmpty())
+            assertTrue(virksomhetService.getVirksomheter(leader).isEmpty())
+            assertTrue(
+                db
+                    .markAllSykmeldingAndSoknadAsRead(
+                        leader,
+                        scopeService.forLeder(leader),
+                    ).sykmeldingIds
+                    .isEmpty(),
+            )
             assertMarked(oldDocs, false)
             val exactDocs = documents(current)
             assertEquals(
@@ -379,8 +397,11 @@ class ListIdenterDbTest :
                     it.sykmeldingId
                 },
             )
-            assertEquals(listOf(org), virksomhetDb.getVirksomheter(leader).map { it.orgnummer })
-            db.markAllSykmeldingAndSoknadAsRead(leader)
+            assertEquals(
+                listOf(org),
+                virksomhetService.getVirksomheter(leader).map { it.orgnummer },
+            )
+            service.markAllSykmeldingerAndSoknaderRead(leader)
             assertMarked(exactDocs, true)
             assertMarked(oldDocs, false)
         }
@@ -436,9 +457,7 @@ class ListIdenterDbTest :
             val readable = documents(old)
             val excluded =
                 listOf(documents(old, otherOrg), documents(current, otherOrg), documents(other))
-            val marked = db.markAllSykmeldingAndSoknadAsRead(leader)
-            assertEquals(listOf(readable.sykmelding), marked.sykmeldingIds)
-            assertEquals(listOf(readable.soknad), marked.soknadIds)
+            service.markAllSykmeldingerAndSoknaderRead(leader)
             assertMarked(readable, true)
             excluded.forEach { assertMarked(it, false) }
         }
@@ -452,7 +471,7 @@ class ListIdenterDbTest :
             }
             assertTrue(service.getMineSykmeldte(leader).isEmpty())
             assertTrue(v2.getDineSykmeldte(leader).isEmpty())
-            assertTrue(db.getHendelser(leader).isEmpty())
+            assertTrue(db.getHendelser(leader, scopeService.forLeder(leader)).isEmpty())
         }
 
         test("widened hendelser exclude completed and expired events while keeping future expiry") {
@@ -461,7 +480,7 @@ class ListIdenterDbTest :
             event(old, org, ferdigstilt = true)
             event(old, org, utlopstidspunkt = OffsetDateTime.now().minusDays(1))
             val future = event(current, org, utlopstidspunkt = OffsetDateTime.now().plusDays(1))
-            val events = db.getHendelser(leader)
+            val events = db.getHendelser(leader, scopeService.forLeder(leader))
             assertTrue(events.all { it.narmestelederId == relationId })
             assertEquals(
                 setOf(docs.plan, docs.dialog, docs.soknadEvent, future),
@@ -487,18 +506,37 @@ class ListIdenterDbTest :
 
         test("filtered v2 request never resolves another leader's or unknown relation") {
             val foreignRelation = relation(leder = former)
+            relation(other)
             documents(old)
             assertNull(v2.getSykmeldt(foreignRelation, leader))
             assertNull(v2.getSykmeldt(UUID.randomUUID().toString(), leader))
             coVerify(exactly = 0) { identer.hentIdenter(any()) }
         }
 
+        test("ties between sykmeldt rows are broken by pasient_fnr for the whole relation") {
+            val id = relation()
+            val latestTom = LocalDate.now()
+            documents(current, latestTom = latestTom, name = "Current row")
+            documents(old, latestTom = latestTom, name = "Old row")
+            val preview = service.getMineSykmeldte(leader).single()
+            assertEquals("Old row", preview.navn)
+            assertEquals("Old row", v2.getSykmeldt(id, leader)!!.navn)
+            assertTrue(preview.sykmeldinger.all { it.navn == "Old row" })
+        }
+
         test("no relations makes no PDL request and returns empty lists and updates") {
             documents(old)
             assertTrue(service.getMineSykmeldte(leader).isEmpty())
             assertTrue(v2.getDineSykmeldte(leader).isEmpty())
-            assertTrue(virksomhetDb.getVirksomheter(leader).isEmpty())
-            assertTrue(db.markAllSykmeldingAndSoknadAsRead(leader).soknadIds.isEmpty())
+            assertTrue(virksomhetService.getVirksomheter(leader).isEmpty())
+            assertTrue(
+                db
+                    .markAllSykmeldingAndSoknadAsRead(
+                        leader,
+                        scopeService.forLeder(leader),
+                    ).soknadIds
+                    .isEmpty(),
+            )
             coVerify(exactly = 0) { identer.hentIdenter(any()) }
         }
 
@@ -507,7 +545,6 @@ class ListIdenterDbTest :
             "different-leader",
             "different-org",
             "different-person",
-            "second-relation",
             "mismatched-caller",
         ).flatMap { change ->
             listOf(true, false).map { widened -> change to widened }
@@ -520,10 +557,7 @@ class ListIdenterDbTest :
                         firstArg<Collection<String>>().associateWith { setOf(it) }
                     }
                 }
-                val scopes = resolver.forLeder(leader)
-                val staleResolver = mockk<RelationScopeResolver>()
-                coEvery { staleResolver.forLeder(any(), any()) } returns scopes
-                val staleDb = MineSykmeldteDb(database, staleResolver)
+                val scopes = scopeService.forLeder(leader)
                 database.connection.use { connection ->
                     val sql =
                         when (change) {
@@ -547,48 +581,31 @@ class ListIdenterDbTest :
                     }
                     connection.commit()
                 }
-                if (change == "second-relation") relation(old, former)
                 val caller = if (change == "mismatched-caller") former else leader
-                if (change == "second-relation" && !widened) {
-                    // An exact scope remains readable: D2 only constrains widening.
-                    assertEquals(
-                        listOf(docs.sykmelding),
-                        staleDb.getMineSykmeldte(caller).map { it.sykmeldingId },
-                    )
-                    val marked = staleDb.markAllSykmeldingAndSoknadAsRead(caller)
-                    assertEquals(listOf(docs.sykmelding), marked.sykmeldingIds)
-                    assertEquals(listOf(docs.soknad), marked.soknadIds)
-                    assertMarked(docs, true)
-                    return@test
-                }
-                assertTrue(MineSykmeldteService(staleDb).getMineSykmeldte(caller).isEmpty())
-                assertTrue(DineSykmeldteService(staleDb).getDineSykmeldte(caller).isEmpty())
-                assertNull(DineSykmeldteService(staleDb).getSykmeldt(id, caller))
-                assertTrue(staleDb.getHendelser(caller).isEmpty())
-                assertTrue(VirksomhetDb(database, staleResolver).getVirksomheter(caller).isEmpty())
-                val marked = staleDb.markAllSykmeldingAndSoknadAsRead(caller)
+                assertTrue(db.getMineSykmeldte(caller, scopes).isEmpty())
+                assertTrue(db.getMineSykmeldte(caller, scopes, withSoknad = false).isEmpty())
+                assertTrue(db.getHendelser(caller, scopes).isEmpty())
+                assertTrue(virksomhetDb.getVirksomheter(caller, scopes).isEmpty())
+                val marked = db.markAllSykmeldingAndSoknadAsRead(caller, scopes)
                 assertTrue(marked.sykmeldingIds.isEmpty())
                 assertTrue(marked.soknadIds.isEmpty())
                 assertMarked(docs, false)
             }
         }
 
-        test("a stale widened relation does not suppress or broaden another person's scope") {
+        test("D2 denial does not suppress or broaden another person's scope") {
             relation()
             val otherRelation = relation(other)
             val denied = documents(old)
             val allowed = documents(otherOld)
-            val scopes = resolver.forLeder(leader)
-            val staleResolver = mockk<RelationScopeResolver>()
-            coEvery { staleResolver.forLeder(any(), any()) } returns scopes
-            val staleDb = MineSykmeldteDb(database, staleResolver)
             relation(old, former)
+            val scopes = scopeService.forLeder(leader)
 
             assertEquals(
                 listOf(
                     otherRelation,
                 ),
-                MineSykmeldteService(staleDb).getMineSykmeldte(leader).map {
+                service.getMineSykmeldte(leader).map {
                     it.narmestelederId
                 },
             )
@@ -596,7 +613,7 @@ class ListIdenterDbTest :
                 listOf(
                     otherRelation,
                 ),
-                DineSykmeldteService(staleDb).getDineSykmeldte(leader).map {
+                v2.getDineSykmeldte(leader).map {
                     it.narmestelederId
                 },
             )
@@ -606,8 +623,8 @@ class ListIdenterDbTest :
                     allowed.dialog,
                     allowed.soknadEvent,
                 ),
-                staleDb
-                    .getHendelser(leader)
+                db
+                    .getHendelser(leader, scopes)
                     .map {
                         it.hendelse.hendelseId
                     }.toSet(),
@@ -616,11 +633,11 @@ class ListIdenterDbTest :
                 listOf(
                     org,
                 ),
-                VirksomhetDb(database, staleResolver).getVirksomheter(leader).map {
+                virksomhetService.getVirksomheter(leader).map {
                     it.orgnummer
                 },
             )
-            val marked = staleDb.markAllSykmeldingAndSoknadAsRead(leader)
+            val marked = db.markAllSykmeldingAndSoknadAsRead(leader, scopes)
             assertEquals(listOf(allowed.sykmelding), marked.sykmeldingIds)
             assertEquals(listOf(allowed.soknad), marked.soknadIds)
             assertMarked(allowed, true)
