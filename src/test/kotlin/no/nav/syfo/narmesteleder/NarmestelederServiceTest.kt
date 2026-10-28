@@ -8,7 +8,6 @@ import io.mockk.mockk
 import no.nav.syfo.narmesteleder.client.EsyfoNarmestelederClient
 import no.nav.syfo.narmesteleder.client.EsyfoNarmestelederException
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
-import no.nav.syfo.narmesteleder.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.insertOrUpdate
@@ -22,11 +21,10 @@ import kotlin.test.assertFailsWith
 class NarmestelederServiceTest :
     FunSpec({
         val database = NarmestelederDb(TestDb.database)
-        val nlResponseProducer = mockk<NLResponseProducer>(relaxed = true)
         val esyfoClient = mockk<EsyfoNarmestelederClient>(relaxed = true)
         val narmestelederService =
-            NarmestelederService(database, nlResponseProducer, esyfoClient, false)
-        val restService = NarmestelederService(database, nlResponseProducer, esyfoClient, true)
+            NarmestelederService(database, esyfoClient)
+        val restService = NarmestelederService(database, esyfoClient)
 
         beforeEach {
             TestDb.clearAllData()
@@ -155,15 +153,9 @@ class NarmestelederServiceTest :
                     UUID.randomUUID(),
                     "test-user-token",
                 )
-
+                // TODO:
                 coVerify(exactly = 1) {
-                    nlResponseProducer.send(
-                        match {
-                            it.nlAvbrutt.orgnummer == "88888888" &&
-                                it.nlAvbrutt.sykmeldtFnr == "12345678910" &&
-                                it.kafkaMetadata.source == "leder"
-                        },
-                    )
+                    esyfoClient.deaktiverNarmesteLeder(id.toString(), "test-user-token", any())
                 }
                 TestDb.getNarmesteleder(pasientFnr = "12345678910").size shouldBeEqualTo 0
             }

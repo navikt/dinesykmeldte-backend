@@ -27,11 +27,6 @@ data class Environment(
     val texas: TexasEnvironment = TexasEnvironment.createFromEnvVars(),
     val esyfoNarmestelederUrl: String = getEnvVar("ESYFO_NARMESTELEDER_URL"),
     val esyfoNarmestelederAudience: String = getEnvVar("ESYFO_NARMESTELEDER_AUDIENCE"),
-    val sendNlBruddToEsyfoNarmesteleder: Boolean =
-        getEnvVar(
-            "SEND_NL_BRUDD_TO_ESYFO_NARMESTELEDER",
-            "false",
-        ).toBoolean(),
     val consumeTeamsykmeldingNlLeesahTopic: Boolean =
         getEnvVar(
             "CONSUME_TEAMSYKMELDING_NL_LEESAH_TOPIC",
