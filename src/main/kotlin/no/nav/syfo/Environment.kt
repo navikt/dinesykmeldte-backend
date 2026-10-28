@@ -8,7 +8,6 @@ data class Environment(
     val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
     val dineSykmeldteBackendTokenXClientId: String = getEnvVar("TOKEN_X_CLIENT_ID"),
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
-    val nlResponseTopic: String = "teamsykmelding.syfo-narmesteleder",
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val pdlScope: String = getEnvVar("PDL_SCOPE"),
     val clientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),

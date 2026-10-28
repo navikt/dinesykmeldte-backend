@@ -18,7 +18,6 @@ import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.isLocalEnv
 import no.nav.syfo.kafka.KafkaUtils
-import no.nav.syfo.kafka.createKafkaProducer
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb

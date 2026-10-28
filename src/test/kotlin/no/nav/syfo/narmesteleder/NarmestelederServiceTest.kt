@@ -22,17 +22,15 @@ class NarmestelederServiceTest :
     FunSpec({
         val database = NarmestelederDb(TestDb.database)
         val esyfoClient = mockk<EsyfoNarmestelederClient>(relaxed = true)
-        val narmestelederService =
-            NarmestelederService(database, esyfoClient)
-        val restService = NarmestelederService(database, esyfoClient)
+        val narmestelederService = NarmestelederService(database, esyfoClient)
 
         beforeEach {
             TestDb.clearAllData()
-            clearMocks(nlResponseProducer, esyfoClient)
+            clearMocks(esyfoClient)
         }
 
         context("REST revocation") {
-            test("revokes remotely before deleting local rows without Kafka") {
+            test("revokes remotely before deleting local rows") {
                 val id = UUID.randomUUID().toString()
                 val callId = UUID.randomUUID()
                 TestDb.database.insertOrUpdate(
@@ -48,16 +46,20 @@ class NarmestelederServiceTest :
                     relations.size shouldBeEqualTo 1
                 }
 
-                restService.deaktiverNarmesteLeder("01987654321", id, callId, "test-user-token")
+                narmestelederService.deaktiverNarmesteLeder(
+                    "01987654321",
+                    id,
+                    callId,
+                    "test-user-token",
+                )
 
                 coVerify(exactly = 1) {
                     esyfoClient.deaktiverNarmesteLeder(id, "test-user-token", callId)
                 }
-                coVerify(exactly = 0) { nlResponseProducer.send(any()) }
                 database.finnNarmestelederkoblinger("01987654321", id).size shouldBeEqualTo 0
             }
 
-            test("keeps local rows and propagates remote failure without Kafka") {
+            test("keeps local rows and propagates remote failure") {
                 val id = UUID.randomUUID().toString()
                 TestDb.database.insertOrUpdate(
                     id = id,
@@ -70,7 +72,7 @@ class NarmestelederServiceTest :
                 } throws EsyfoNarmestelederException()
 
                 assertFailsWith<EsyfoNarmestelederException> {
-                    restService.deaktiverNarmesteLeder(
+                    narmestelederService.deaktiverNarmesteLeder(
                         "01987654321",
                         id,
                         UUID.randomUUID(),
@@ -81,7 +83,6 @@ class NarmestelederServiceTest :
                 coVerify(exactly = 1) {
                     esyfoClient.deaktiverNarmesteLeder(id, "test-user-token", any())
                 }
-                coVerify(exactly = 0) { nlResponseProducer.send(any()) }
                 database.finnNarmestelederkoblinger("01987654321", id).size shouldBeEqualTo 1
             }
 
@@ -93,19 +94,18 @@ class NarmestelederServiceTest :
                     fnr = "12345678910",
                     narmesteLederFnr = "01987654321",
                 )
-                restService.deaktiverNarmesteLeder(
+                narmestelederService.deaktiverNarmesteLeder(
                     "01987654322",
                     id,
                     UUID.randomUUID(),
                     "test-user-token",
                 )
-                restService.deaktiverNarmesteLeder(
+                narmestelederService.deaktiverNarmesteLeder(
                     "01987654321",
                     UUID.randomUUID().toString(),
                     UUID.randomUUID(),
                     "test-user-token",
                 )
-                coVerify(exactly = 0) { nlResponseProducer.send(any()) }
                 coVerify(exactly = 0) {
                     esyfoClient.deaktiverNarmesteLeder(any(), any(), any())
                 }
@@ -153,7 +153,6 @@ class NarmestelederServiceTest :
                     UUID.randomUUID(),
                     "test-user-token",
                 )
-                // TODO:
                 coVerify(exactly = 1) {
                     esyfoClient.deaktiverNarmesteLeder(id.toString(), "test-user-token", any())
                 }
@@ -174,7 +173,6 @@ class NarmestelederServiceTest :
                     "test-user-token",
                 )
 
-                coVerify(exactly = 0) { nlResponseProducer.send(any()) }
                 coVerify(exactly = 0) {
                     esyfoClient.deaktiverNarmesteLeder(any(), any(), any())
                 }
