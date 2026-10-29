@@ -4,25 +4,30 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
+import no.nav.syfo.narmesteleder.db.withRelationScopes
+import no.nav.syfo.narmesteleder.model.RelationScope
 import java.sql.ResultSet
 
 class VirksomhetDb(
     private val database: DatabaseInterface,
 ) {
-    suspend fun getVirksomheter(lederFnr: String): List<VirksomhetDbModel> =
+    suspend fun getVirksomheter(
+        lederFnr: String,
+        scopes: List<RelationScope>,
+    ): List<VirksomhetDbModel> =
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
                 connection
-                    .prepareStatement(
+                    .withRelationScopes(
                         """
                         SELECT s.orgnavn, s.orgnummer
                         FROM sykmelding s
-                        JOIN narmesteleder n ON s.orgnummer = n.orgnummer and s.pasient_fnr = n.pasient_fnr
-                        WHERE n.leder_fnr = ?
+                        JOIN scope n ON s.orgnummer = n.orgnummer AND s.pasient_fnr = ANY(n.identer)
                         GROUP BY s.orgnavn, s.orgnummer
                         """.trimIndent(),
-                    ).use { ps ->
-                        ps.setString(1, lederFnr)
+                        scopes,
+                        lederFnr,
+                    ) { ps, _ ->
                         ps.executeQuery().toList { toVirksomhetDbModel() }
                     }
             }

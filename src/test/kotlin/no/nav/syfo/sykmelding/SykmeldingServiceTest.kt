@@ -14,6 +14,7 @@ import no.nav.syfo.pdl.exceptions.PdlPersonoppslagFailedException
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
+import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.getFileAsString
 import no.nav.syfo.soknad.kafka.model.FlexSoknad
@@ -32,7 +33,6 @@ import no.nav.syfo.sykmelding.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.sykmelding.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createArbeidsgiverSykmelding
-import no.nav.syfo.util.insertOrUpdate
 import no.nav.syfo.util.objectMapper
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeAfter
@@ -380,14 +380,16 @@ class SykmeldingServiceTest :
 
                     TestDb.getSykmelding(sykmeldingId) shouldBeEqualTo null
                 }
-                test("Oppdaterer fnr på søknad som tilhører oppdatert sykmelding") {
+                test("Beholder fnr på søknad når sykmeldingen sendes på nytt med nytt fnr") {
                     val sykmeldingId = UUID.randomUUID().toString()
                     val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
                     sykmeldingService.handleSendtSykmeldingKafkaMessage(
                         sykmeldingId,
                         sendtSykmelding,
                     )
-                    TestDb.database.insertOrUpdate(getSoknad(sykmeldingId = sykmeldingId))
+                    SoknadDb(TestDb.database).insertOrUpdate(
+                        getSoknad(sykmeldingId = sykmeldingId),
+                    )
 
                     val sykmelding = TestDb.getSykmelding(sykmeldingId)
                     sykmeldingService.handleSendtSykmeldingKafkaMessage(
@@ -403,7 +405,7 @@ class SykmeldingServiceTest :
                         sykmelding!!.timestamp.toLocalDateTime()
 
                     val oppdatertSoknad = TestDb.getSoknadForSykmelding(sykmeldingId)
-                    oppdatertSoknad?.pasientFnr shouldBeEqualTo "11223344556"
+                    oppdatertSoknad?.pasientFnr shouldBeEqualTo sendtSykmelding.kafkaMetadata.fnr
                 }
 
                 test("Oppdatert sykmelding skal inneholde nye egenmeldingsdager") {

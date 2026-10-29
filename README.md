@@ -69,6 +69,8 @@ Kafka-topicet `dinesykmeldte-hendelser-v2` er definert i [`nais/topics/dinesykme
 - De fleste API-ene ligger bak TokenX og krever nivå 4.
 - REST-kall for NL-brudd bruker lederens TokenX-token til OBO-tokenutveksling via Texas. `ESYFO_NARMESTELEDER_URL` angir tjenestens adresse, og `ESYFO_NARMESTELEDER_AUDIENCE` har formatet `<cluster>:team-esyfo:esyfo-narmesteleder`.
 - `POST /api/sykmelding/isActiveSykmelding` validerer Azure AD-token via Texas.
+- Lederen leser sykmeldinger, søknader og hendelser på alle personens folkeregisteridenter fra PDL (`hentIdenterBolk`). Det gjelder bare når relasjonen er den eneste aktive for personen i virksomheten. Ellers, og når oppslaget feiler, gjelder bare identen på relasjonen.
+- Personens identer slås opp i PDL ved hver forespørsel, uten caching.
 - NAIS `accessPolicy` åpner for innkommende kall fra verifiserte klienter i manifestene, blant annet `dinesykmeldte`, `esyfo-narmesteleder`, `oppfolgingsplan-frontend`, `dialogmote-frontend` og `syfo-oppfolgingsplan-backend`.
 
 ## Utvikling

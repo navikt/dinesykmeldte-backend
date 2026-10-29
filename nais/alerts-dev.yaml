@@ -7,6 +7,27 @@ metadata:
     team: team-esyfo
 spec:
   groups:
+    - name: dinesykmeldte-backend-pdl
+      rules:
+        - alert: DinesykmeldteIdenterFallback
+          expr: >
+            sum(increase(dinesykmeldte_backend_identer_fallback_total{app="dinesykmeldte-backend",namespace="team-esyfo"}[15m]))
+            / sum(increase(dinesykmeldte_backend_identer_lookup_total{app="dinesykmeldte-backend",namespace="team-esyfo"}[15m])) > 0.1
+            and sum(increase(dinesykmeldte_backend_identer_lookup_total{app="dinesykmeldte-backend",namespace="team-esyfo"}[15m])) > 20
+          for: 15m
+          labels:
+            namespace: team-esyfo
+            severity: warning
+          annotations:
+            summary: >-
+              Over 10 prosent av identoppslagene i dinesykmeldte-backend faller tilbake til eksakt
+              treff, med over 20 oppslag per 15 minutter, i minst 15 minutter.
+            consequence: >-
+              Ledere ser ikke sykmeldinger, søknader og hendelser som ligger på personens andre identer.
+            action: >-
+              Sjekk reason-labelen på dinesykmeldte_backend_identer_fallback_total for feil ved
+              access-token, timeout eller HTTP-feil. Sjekk PDL-status og Behandlingsnummer/tilgang B229
+              for hentIdenterBolk. Ikke logg eller del identer.
     - name: dinesykmeldte-backend-kafka
       rules:
         # CommonKafkaService melder seg av topicene, venter 10 sekunder og prøver på nytt når en

@@ -6,6 +6,7 @@ import no.nav.syfo.minesykmeldte.db.getSoknad
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSykmeldingDbModel
 import no.nav.syfo.util.createSykmeldtDbModel
+import no.nav.syfo.util.exactRelationScopeService
 import no.nav.syfo.util.insertOrUpdate
 import org.amshove.kluent.shouldBeEqualTo
 import java.time.OffsetDateTime
@@ -15,7 +16,8 @@ import java.util.UUID
 class MineSykmeldteServiceDbTest :
     FunSpec({
         val mineSykmeldteDb = MineSykmeldteDb(TestDb.database)
-        val mineSykmeldteService = MineSykmeldteService(mineSykmeldteDb)
+        val mineSykmeldteService =
+            MineSykmeldteService(mineSykmeldteDb, exactRelationScopeService(TestDb.database))
 
         afterEach { TestDb.clearAllData() }
 
