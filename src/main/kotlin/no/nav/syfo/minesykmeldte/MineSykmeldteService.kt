@@ -241,7 +241,7 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         id = soknadDb.soknadId,
         sykmeldingId = sykmeldingId,
         navn = sykmeldt.pasientNavn,
-        fnr = sykmeldt.pasientFnr,
+        fnr = soknadDb.pasientFnr,
         fom = soknadDb.sykepengesoknad.fom!!,
         tom = soknadDb.tom,
         lest = soknadDb.lest,

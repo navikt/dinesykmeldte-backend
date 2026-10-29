@@ -6,6 +6,7 @@ import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.hendelser.db.HendelseDbModel
+import no.nav.syfo.narmesteleder.db.withRelationScopes
 import no.nav.syfo.narmesteleder.model.RelationScope
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
@@ -59,7 +60,7 @@ class MineSykmeldteDb(
                         ORDER BY s.latest_tom DESC, s.pasient_fnr LIMIT 1
                     ) s ON TRUE
                     INNER JOIN sykmelding AS sm ON sm.pasient_fnr = ANY(nl.identer) AND sm.orgnummer = nl.orgnummer
-                    ${if (withSoknad) "LEFT JOIN soknad sk ON sk.sykmelding_id = sm.sykmelding_id AND sk.pasient_fnr = sm.pasient_fnr" else ""}
+                    ${if (withSoknad) "LEFT JOIN soknad sk ON sk.sykmelding_id = sm.sykmelding_id AND sk.pasient_fnr = ANY(nl.identer)" else ""}
                 """,
                         scopes,
                         lederFnr,
@@ -187,7 +188,8 @@ class MineSykmeldteDb(
         hendelseId: UUID,
         lederFnr: String,
         scopes: List<RelationScope>,
-    ): List<String> = markDocumentRead(DocumentType.HENDELSE, hendelseId, lederFnr, scopes)
+    ): List<String> =
+        markDocumentRead(DocumentType.HENDELSE, hendelseId.toString(), lederFnr, scopes)
 
     suspend fun getSykmeldingOrgnummer(sykmeldingId: String): String? =
         getDocumentOrgnummer(DocumentType.SYKMELDING, sykmeldingId)
@@ -196,20 +198,23 @@ class MineSykmeldteDb(
         getDocumentOrgnummer(DocumentType.SOKNAD, soknadId)
 
     suspend fun getHendelseOrgnummer(hendelseId: UUID): String? =
-        getDocumentOrgnummer(DocumentType.HENDELSE, hendelseId)
+        getDocumentOrgnummer(DocumentType.HENDELSE, hendelseId.toString())
 
     private suspend fun getDocumentOrgnummer(
         type: DocumentType,
-        id: Any,
+        id: String,
     ): String? =
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
                 // Table/column names come only from the closed enum, never request data.
                 connection
                     .prepareStatement(
-                        "SELECT orgnummer FROM ${type.table} WHERE ${type.idColumn} = ?",
+                        """
+                        SELECT orgnummer FROM ${type.table}
+                        WHERE ${type.idColumn} = ${type.idPlaceholder}
+                        """.trimIndent(),
                     ).use { ps ->
-                        ps.setObject(1, id)
+                        ps.setString(1, id)
                         ps.executeQuery().use { rs ->
                             if (rs.next()) rs.getString("orgnummer") else null
                         }
@@ -219,7 +224,7 @@ class MineSykmeldteDb(
 
     private suspend fun markDocumentRead(
         type: DocumentType,
-        id: Any,
+        id: String,
         lederFnr: String,
         scopes: List<RelationScope>,
     ): List<String> =
@@ -230,7 +235,7 @@ class MineSykmeldteDb(
                         """
                         UPDATE ${type.table} d SET ${type.readAssignment}
                         FROM scope n
-                        WHERE d.${type.idColumn} = ? AND d.orgnummer = n.orgnummer
+                        WHERE d.${type.idColumn} = ${type.idPlaceholder} AND d.orgnummer = n.orgnummer
                           AND d.pasient_fnr = ANY(n.identer)
                         RETURNING d.${type.idColumn}
                         """.trimIndent(),
@@ -241,7 +246,7 @@ class MineSykmeldteDb(
                         if (type.hasReadTimestamp) {
                             ps.setTimestamp(index++, Timestamp.from(Instant.now()))
                         }
-                        ps.setObject(index, id)
+                        ps.setString(index, id)
                         ps.executeQuery().toList { getString(type.idColumn) }
                     }
                 connection.commit()
@@ -296,6 +301,7 @@ private enum class DocumentType(
     val table: String,
     val idColumn: String,
     val readAssignment: String,
+    val idPlaceholder: String = "?",
     val hasReadTimestamp: Boolean = false,
 ) {
     SYKMELDING("sykmelding", "sykmelding_id", "lest = TRUE"),
@@ -304,6 +310,7 @@ private enum class DocumentType(
         "hendelser",
         "hendelse_id",
         "ferdigstilt = TRUE, ferdigstilt_timestamp = ?",
+        idPlaceholder = "?::uuid",
         hasReadTimestamp = true,
     ),
 }

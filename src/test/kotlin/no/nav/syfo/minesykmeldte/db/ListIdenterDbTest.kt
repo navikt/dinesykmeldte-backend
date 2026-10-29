@@ -15,7 +15,9 @@ import no.nav.syfo.minesykmeldte.model.PreviewNySoknad
 import no.nav.syfo.narmesteleder.RelationScopeService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.pdl.service.PdlIdenterService
+import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.soknad.model.SoknadStatus
+import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSoknadDbModel
 import no.nav.syfo.util.createSykmeldingDbModel
@@ -40,6 +42,8 @@ class ListIdenterDbTest :
         val scopeService = RelationScopeService(NarmestelederDb(database), identer)
         val db = MineSykmeldteDb(database)
         val service = MineSykmeldteService(db, scopeService)
+        val soknadDb = SoknadDb(database)
+        val sykmeldingDb = SykmeldingDb(database)
         val v2 = DineSykmeldteService(db, scopeService)
         val virksomhetDb = VirksomhetDb(database)
         val virksomhetService = VirksomhetService(virksomhetDb, scopeService)
@@ -141,6 +145,78 @@ class ListIdenterDbTest :
         ) {
             assertEquals(marked, TestDb.getSykmelding(docs.sykmelding)!!.lest)
             assertEquals(marked, TestDb.getSoknad(docs.soknad)!!.lest)
+        }
+
+        test("real ingestion keeps soknad ident when its sykmelding has an old ident") {
+            val relationId = relation()
+            val sykmeldingId = UUID.randomUUID().toString()
+            val soknadId = UUID.randomUUID().toString()
+            sykmeldingDb.insertOrUpdateSykmeldt(createSykmeldtDbModel(old))
+            sykmeldingDb.insertOrUpdateSykmelding(
+                createSykmeldingDbModel(sykmeldingId, old, org),
+            )
+            // The response ident must come from the stored column, not the JSON copy.
+            soknadDb.insertOrUpdate(
+                createSoknadDbModel(soknadId, sykmeldingId, old, org).copy(pasientFnr = current),
+            )
+
+            assertEquals(current, TestDb.getSoknad(soknadId)?.pasientFnr)
+            val preview = service.getMineSykmeldte(leader).single()
+            assertEquals(relationId, preview.narmestelederId)
+            assertEquals(current, preview.fnr)
+            assertEquals(listOf(soknadId), preview.previewSoknader.map { it.id })
+            assertEquals(sykmeldingId, preview.sykmeldinger.single().id)
+            assertEquals(old, preview.sykmeldinger.single().fnr)
+            assertEquals(current, service.getSoknad(soknadId, leader)?.fnr)
+            assertEquals(old, service.getSykmelding(sykmeldingId, leader)?.fnr)
+            assertTrue(service.markSoknadRead(soknadId, leader))
+            assertTrue(TestDb.getSoknad(soknadId)!!.lest)
+        }
+
+        test("soknad received before its sykmelding keeps its ident after real ingestion") {
+            val relationId = relation()
+            val sykmeldingId = UUID.randomUUID().toString()
+            val soknadId = UUID.randomUUID().toString()
+            soknadDb.insertOrUpdate(
+                createSoknadDbModel(soknadId, sykmeldingId, current, org),
+            )
+            assertEquals(current, TestDb.getSoknad(soknadId)?.pasientFnr)
+
+            sykmeldingDb.insertOrUpdateSykmeldt(createSykmeldtDbModel(old))
+            sykmeldingDb.insertOrUpdateSykmelding(
+                createSykmeldingDbModel(sykmeldingId, old, org),
+            )
+
+            assertEquals(current, TestDb.getSoknad(soknadId)?.pasientFnr)
+            val preview = service.getMineSykmeldte(leader).single()
+            assertEquals(relationId, preview.narmestelederId)
+            assertEquals(listOf(soknadId), preview.previewSoknader.map { it.id })
+            assertEquals(sykmeldingId, preview.sykmeldinger.single().id)
+            assertEquals(old, preview.sykmeldinger.single().fnr)
+            assertEquals(current, service.getSoknad(soknadId, leader)?.fnr)
+        }
+
+        test("D2 denies former leader the ingested soknad on the current ident") {
+            relation()
+            val formerRelation = relation(old, former)
+            val sykmeldingId = UUID.randomUUID().toString()
+            val soknadId = UUID.randomUUID().toString()
+            sykmeldingDb.insertOrUpdateSykmeldt(createSykmeldtDbModel(old))
+            sykmeldingDb.insertOrUpdateSykmelding(
+                createSykmeldingDbModel(sykmeldingId, old, org),
+            )
+            soknadDb.insertOrUpdate(
+                createSoknadDbModel(soknadId, sykmeldingId, current, org),
+            )
+
+            assertEquals(current, TestDb.getSoknad(soknadId)?.pasientFnr)
+            val preview = service.getMineSykmeldte(former).single()
+            assertEquals(formerRelation, preview.narmestelederId)
+            assertEquals(listOf(sykmeldingId), preview.sykmeldinger.map { it.id })
+            assertTrue(preview.previewSoknader.isEmpty())
+            assertNull(service.getSoknad(soknadId, former))
+            assertFalse(service.markSoknadRead(soknadId, former))
+            assertFalse(TestDb.getSoknad(soknadId)!!.lest)
         }
 
         test(

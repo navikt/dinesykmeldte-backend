@@ -10,7 +10,7 @@ class SoknadDb(
 ) {
     fun insertOrUpdate(soknadDbModel: SoknadDbModel) {
         database.connection.use { connection ->
-            val fnr =
+            val sykmeldtFnr =
                 connection.getFnr(soknadDbModel.sykmeldingId.toString()) ?: soknadDbModel.pasientFnr
             connection
                 .prepareStatement(
@@ -39,7 +39,7 @@ class SoknadDb(
                 ).use { preparedStatement ->
                     preparedStatement.setString(1, soknadDbModel.soknadId)
                     preparedStatement.setString(2, soknadDbModel.sykmeldingId)
-                    preparedStatement.setString(3, fnr)
+                    preparedStatement.setString(3, soknadDbModel.pasientFnr)
                     preparedStatement.setString(4, soknadDbModel.orgnummer)
                     preparedStatement.setObject(5, soknadDbModel.sykepengesoknad.toPGObject())
                     preparedStatement.setObject(6, soknadDbModel.sendtDato)
@@ -51,7 +51,7 @@ class SoknadDb(
                     preparedStatement.setObject(9, soknadDbModel.tom)
                     preparedStatement.executeUpdate()
                 }
-            connection.updateSistOppdatertForSykmeldt(fnr)
+            connection.updateSistOppdatertForSykmeldt(sykmeldtFnr)
             connection.commit()
         }
     }

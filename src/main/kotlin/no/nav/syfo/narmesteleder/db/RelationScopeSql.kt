@@ -1,4 +1,4 @@
-package no.nav.syfo.minesykmeldte.db
+package no.nav.syfo.narmesteleder.db
 
 import no.nav.syfo.narmesteleder.model.RelationScope
 import java.sql.Connection

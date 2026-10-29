@@ -4,7 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
-import no.nav.syfo.minesykmeldte.db.withRelationScopes
+import no.nav.syfo.narmesteleder.db.withRelationScopes
 import no.nav.syfo.narmesteleder.model.RelationScope
 import java.sql.ResultSet
 
