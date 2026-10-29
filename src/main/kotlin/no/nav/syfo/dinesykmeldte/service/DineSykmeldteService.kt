@@ -18,13 +18,12 @@ class DineSykmeldteService(
     ): Sykmeldt? {
         val scopes = relationScopeService.forLeder(fnr, narmestelederId = narmestelederId)
         val dineSykmeldte =
-            toDineSykmeldte(
-                sykmeldingDb.getMineSykmeldte(
+            sykmeldingDb
+                .getMineSykmeldte(
                     lederFnr = fnr,
                     scopes = scopes,
                     withSoknad = false,
-                ),
-            )
+                ).toDineSykmeldte()
         if (dineSykmeldte.size > 1) {
             throw RuntimeException("Fant flere sykmeldte med samme narmestelederId")
         }
@@ -33,13 +32,16 @@ class DineSykmeldteService(
 
     suspend fun getDineSykmeldte(fnr: String): List<Sykmeldt> {
         val scopes = relationScopeService.forLeder(fnr)
-        return toDineSykmeldte(
-            sykmeldingDb.getMineSykmeldte(lederFnr = fnr, scopes = scopes, withSoknad = false),
-        )
+        return sykmeldingDb
+            .getMineSykmeldte(
+                lederFnr = fnr,
+                scopes = scopes,
+                withSoknad = false,
+            ).toDineSykmeldte()
     }
 
-    private fun toDineSykmeldte(sykmeldinger: List<MinSykmeldtDbModel>) =
-        sykmeldinger
+    private fun List<MinSykmeldtDbModel>.toDineSykmeldte() =
+        this
             .groupBy { it.narmestelederId }
             .map { (narmestelederId, documents) ->
                 // SQL selects one sykmeldt row per relation, independent of the document ident.
