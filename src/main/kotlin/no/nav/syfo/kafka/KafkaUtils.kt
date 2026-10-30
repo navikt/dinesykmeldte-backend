@@ -1,16 +1,11 @@
 package no.nav.syfo.kafka
 
 import no.nav.syfo.isLocalEnv
-import no.nav.syfo.util.JacksonKafkaSerializer
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.Deserializer
-import org.apache.kafka.common.serialization.Serializer
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.apache.kafka.common.serialization.StringSerializer
 import java.util.Properties
 import kotlin.reflect.KClass
 
@@ -34,21 +29,9 @@ class KafkaUtils {
                     it[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = kafkaEnv.KAFKA_CREDSTORE_PASSWORD
                     it[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = ""
                 }
-                it[ProducerConfig.ACKS_CONFIG] = "all"
-                it[ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG] = "true"
             }
     }
 }
-
-fun <T> createKafkaProducer(clientId: String): KafkaProducer<String, T> =
-    KafkaProducer(
-        KafkaUtils
-            .getKafkaConfig(clientId)
-            .toProducerConfig(
-                JacksonKafkaSerializer::class,
-                StringSerializer::class,
-            ),
-    )
 
 fun Properties.toConsumerConfig(
     groupId: String,
@@ -61,14 +44,4 @@ fun Properties.toConsumerConfig(
         it[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = keyDeserializer.java
         it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = valueDeserializer.java
         it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
-    }
-
-fun Properties.toProducerConfig(
-    valueSerializer: KClass<out Serializer<out Any>>,
-    keySerializer: KClass<out Serializer<out Any>> = StringSerializer::class,
-): Properties =
-    Properties().also {
-        it.putAll(this)
-        it[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = valueSerializer.java
-        it[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = keySerializer.java
     }
