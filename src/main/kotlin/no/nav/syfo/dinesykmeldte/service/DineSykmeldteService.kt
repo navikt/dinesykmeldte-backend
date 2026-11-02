@@ -6,50 +6,62 @@ import no.nav.syfo.dinesykmeldte.util.isActive
 import no.nav.syfo.dinesykmeldte.util.toDineSykmeldteSykmelding
 import no.nav.syfo.minesykmeldte.db.MinSykmeldtDbModel
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
+import no.nav.syfo.narmesteleder.RelationScopeService
 
 class DineSykmeldteService(
     private val sykmeldingDb: MineSykmeldteDb,
+    private val relationScopeService: RelationScopeService,
 ) {
     suspend fun getSykmeldt(
         narmestelederId: String,
         fnr: String,
     ): Sykmeldt? {
+        val scopes = relationScopeService.forLeder(fnr, narmestelederId = narmestelederId)
         val dineSykmeldte =
-            toDineSykmeldte(
-                sykmeldingDb.getMineSykmeldteWithoutSoknad(
+            sykmeldingDb
+                .getMineSykmeldte(
                     lederFnr = fnr,
-                    narmestelederId = narmestelederId,
-                ),
-            )
+                    scopes = scopes,
+                    withSoknad = false,
+                ).toDineSykmeldte()
         if (dineSykmeldte.size > 1) {
             throw RuntimeException("Fant flere sykmeldte med samme narmestelederId")
         }
         return dineSykmeldte.singleOrNull()
     }
 
-    suspend fun getDineSykmeldte(fnr: String): List<Sykmeldt> =
-        toDineSykmeldte(
-            sykmeldingDb.getMineSykmeldteWithoutSoknad(lederFnr = fnr, narmestelederId = null),
-        )
+    suspend fun getDineSykmeldte(fnr: String): List<Sykmeldt> {
+        val scopes = relationScopeService.forLeder(fnr)
+        return sykmeldingDb
+            .getMineSykmeldte(
+                lederFnr = fnr,
+                scopes = scopes,
+                withSoknad = false,
+            ).toDineSykmeldte()
+    }
 
-    private fun toDineSykmeldte(sykmeldinger: List<MinSykmeldtDbModel>) =
-        sykmeldinger
-            .groupBy {
-                Ansatt(
-                    fnr = it.sykmeldtFnr,
-                    navn = it.sykmeldtNavn,
-                    orgnummer = it.orgnummer,
-                    narmestelederId = it.narmestelederId,
-                )
-            }.map { ansatt ->
+    private fun List<MinSykmeldtDbModel>.toDineSykmeldte() =
+        this
+            .groupBy { it.narmestelederId }
+            .map { (narmestelederId, documents) ->
+                // SQL selects one sykmeldt row per relation, independent of the document ident.
+                // The relation ID, not person metadata, is the grouping key.
+                val relation = documents.first()
+                val ansatt =
+                    Ansatt(
+                        fnr = relation.sykmeldtFnr,
+                        navn = relation.sykmeldtNavn,
+                        orgnummer = relation.orgnummer,
+                        narmestelederId = narmestelederId,
+                    )
                 Sykmeldt(
-                    narmestelederId = ansatt.key.narmestelederId,
-                    orgnummer = ansatt.key.orgnummer,
-                    fnr = ansatt.key.fnr,
-                    ansatt.key.navn,
-                    sykmeldinger = ansatt.value.map { it.toDineSykmeldteSykmelding(ansatt.key) },
+                    narmestelederId = narmestelederId,
+                    orgnummer = ansatt.orgnummer,
+                    fnr = ansatt.fnr,
+                    navn = ansatt.navn,
+                    sykmeldinger = documents.map { it.toDineSykmeldteSykmelding(ansatt) },
                     aktivSykmelding =
-                        ansatt.value.any { it.sykmelding.sykmeldingsperioder.isActive() },
+                        documents.any { it.sykmelding.sykmeldingsperioder.isActive() },
                 )
             }
 }

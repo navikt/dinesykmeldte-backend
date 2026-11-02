@@ -19,4 +19,5 @@ data class MinSykmeldtDbModel(
     val lestSoknad: Boolean,
     val sendtTilArbeidsgiverDato: OffsetDateTime?,
     val egenmeldingsdager: List<LocalDate>?,
+    val sykmeldingFnr: String = sykmeldtFnr,
 )

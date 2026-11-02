@@ -12,6 +12,7 @@ import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.TestDb
 import no.nav.syfo.util.createSoknadDbModel
 import no.nav.syfo.util.createSykmeldingDbModel
+import no.nav.syfo.util.createSykmeldtDbModel
 import no.nav.syfo.util.objectMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
@@ -229,28 +230,50 @@ class SoknadServiceTest :
                 }
             }
 
-            test("ikke oppdater fnr når sykmelding ikke er i db") {
+            test("beholder mottatt fnr når sykmelding ikke er i db") {
                 val soknadId = UUID.randomUUID().toString()
-                val soknadDbModel = createSoknadDbModel(soknadId = soknadId, pasientFnr = "OLD")
+                val mottattFnr = "12345678910"
+                sykmeldingDb.insertOrUpdateSykmeldt(
+                    createSykmeldtDbModel(mottattFnr).copy(
+                        sistOppdatert = LocalDate.now().minusDays(1),
+                    ),
+                )
+                val soknadDbModel =
+                    createSoknadDbModel(soknadId = soknadId, pasientFnr = mottattFnr)
                 database.insertOrUpdate(soknadDbModel)
                 val soknad = TestDb.getSoknad(soknadId)
-                soknad?.pasientFnr shouldBeEqualTo "OLD"
+                soknad?.pasientFnr shouldBeEqualTo mottattFnr
+                TestDb.getSykmeldt(mottattFnr)?.sistOppdatert shouldBeEqualTo LocalDate.now()
             }
-            test("oppdater fnr på søknad ved mottak av søknad ved gammel fnr") {
+            test("beholder mottatt fnr på søknad selv om sykmeldingen har et annet fnr") {
+                val sykmeldtFnr = "12345678912"
+                val mottattFnr = "12345678910"
+                val sistOppdatert = LocalDate.now().minusDays(1)
                 val sykmeldingId = UUID.randomUUID().toString()
-                val sykmelding = createSykmeldingDbModel(sykmeldingId, pasientFnr = "NEW")
+                val sykmelding = createSykmeldingDbModel(sykmeldingId, pasientFnr = sykmeldtFnr)
                 sykmeldingDb.insertOrUpdateSykmelding(sykmelding)
+                listOf(sykmeldtFnr, mottattFnr).forEach {
+                    sykmeldingDb.insertOrUpdateSykmeldt(
+                        createSykmeldtDbModel(it).copy(sistOppdatert = sistOppdatert),
+                    )
+                }
 
                 val soknadId = UUID.randomUUID().toString()
                 val soknadDbModel =
                     createSoknadDbModel(
                         soknadId = soknadId,
                         sykmeldingId = sykmeldingId,
-                        pasientFnr = "OLD",
+                        pasientFnr = mottattFnr,
                     )
                 database.insertOrUpdate(soknadDbModel)
                 val soknad = TestDb.getSoknad(soknadId)
-                soknad?.pasientFnr shouldBeEqualTo "NEW"
+                soknad?.pasientFnr shouldBeEqualTo mottattFnr
+                TestDb.getSykmeldt(sykmeldtFnr)?.sistOppdatert shouldBeEqualTo LocalDate.now()
+                TestDb.getSykmeldt(mottattFnr)?.sistOppdatert shouldBeEqualTo sistOppdatert
+
+                val oppdatertSoknad = soknadDbModel.copy(pasientFnr = "12345678914")
+                database.insertOrUpdate(oppdatertSoknad)
+                TestDb.getSoknad(soknadId)?.pasientFnr shouldBeEqualTo oppdatertSoknad.pasientFnr
             }
         }
     })

@@ -70,10 +70,6 @@ class SykmeldingDb(
                 preparedStatement.setObject(10, sykmeldingDbModel.egenmeldingsdager?.toPGObject())
                 preparedStatement.executeUpdate()
             }
-        this.updateSoknadFnr(
-            sykmeldingId = sykmeldingDbModel.sykmeldingId,
-            nyttFnr = sykmeldingDbModel.pasientFnr,
-        )
     }
 
     fun remove(sykmeldingId: String) {
@@ -116,22 +112,6 @@ class SykmeldingDb(
                 preparedStatement.setObject(8, sykmeldt.latestTom)
                 preparedStatement.setObject(9, sykmeldt.sistOppdatert)
                 preparedStatement.executeUpdate()
-            }
-    }
-
-    private fun Connection.updateSoknadFnr(
-        sykmeldingId: String,
-        nyttFnr: String,
-    ) {
-        this
-            .prepareStatement(
-                """
-                UPDATE soknad SET pasient_fnr =? WHERE sykmelding_id=?;
-                """,
-            ).use {
-                it.setString(1, nyttFnr)
-                it.setString(2, sykmeldingId)
-                it.executeUpdate()
             }
     }
 

@@ -31,6 +31,7 @@ import no.nav.syfo.minesykmeldte.model.Reisetilskudd
 import no.nav.syfo.minesykmeldte.model.Soknad
 import no.nav.syfo.minesykmeldte.model.Sykmelding
 import no.nav.syfo.minesykmeldte.model.UtenlandskSykmelding
+import no.nav.syfo.narmesteleder.RelationScopeService
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
@@ -44,20 +45,27 @@ import java.util.UUID
 
 class MineSykmeldteService(
     private val mineSykmeldteDb: MineSykmeldteDb,
+    private val relationScopeService: RelationScopeService,
 ) {
     suspend fun getMineSykmeldte(lederFnr: String): List<PreviewSykmeldt> =
         withContext(Dispatchers.IO) {
-            val hendelserJob = async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr) }
+            val scopes = relationScopeService.forLeder(lederFnr)
+            val hendelserJob =
+                async(Dispatchers.IO) { mineSykmeldteDb.getHendelser(lederFnr, scopes) }
             val sykmeldteMapJob =
                 async(Dispatchers.IO) {
-                    mineSykmeldteDb.getMineSykmeldte(lederFnr).groupBy { it.toMinSykmeldtKey() }
+                    mineSykmeldteDb
+                        .getMineSykmeldte(
+                            lederFnr,
+                            scopes,
+                        ).groupBy { it.toMinSykmeldtKey() }
                 }
 
             val hendelserMap =
                 hendelserJob
                     .await()
-                    .groupBy { it.pasientFnr }
-                    .mapValues { it.value.map { hendelse -> hendelse.toHendelse() } }
+                    .groupBy { it.narmestelederId }
+                    .mapValues { it.value.map { hendelse -> hendelse.hendelse.toHendelse() } }
 
             val sykmeldteMap = sykmeldteMapJob.await()
 
@@ -83,7 +91,7 @@ class MineSykmeldteService(
     private fun getOppfolgingsplaner(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-    ) = hendelserMap[sykmeldtEntry.key.fnr]
+    ) = hendelserMap[sykmeldtEntry.key.narmestelederId]
         ?.filter { OppfolgingsplanerHendelser.contains(it.oppgavetype) }
         ?.map {
             Oppfolgingsplan(
@@ -104,7 +112,7 @@ class MineSykmeldteService(
     private fun getDialogmoter(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
-    ) = hendelserMap[sykmeldtEntry.key.fnr]
+    ) = hendelserMap[sykmeldtEntry.key.narmestelederId]
         ?.filter { ma -> DialogmoteHendelser.contains(ma.oppgavetype) }
         ?.map {
             Dialogmote(
@@ -138,23 +146,39 @@ class MineSykmeldteService(
         hendelserMap: Map<String, List<Hendelse>>,
         sykmeldtEntry: Map.Entry<MinSykmeldtKey, List<MinSykmeldtDbModel>>,
         sykmeldt: MinSykmeldtDbModel,
-    ) = hendelserMap[sykmeldtEntry.key.fnr]?.filter { it.id == sykmeldt.soknad?.id }.orEmpty()
+    ) = hendelserMap[sykmeldtEntry.key.narmestelederId]
+        ?.filter {
+            it.id == sykmeldt.soknad?.id
+        }.orEmpty()
 
     suspend fun getSykmelding(
         sykmeldingId: String,
         lederFnr: String,
-    ): Sykmelding? = mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr)?.toSykmelding()
+    ): Sykmelding? {
+        val orgnummer = mineSykmeldteDb.getSykmeldingOrgnummer(sykmeldingId) ?: return null
+        val scopes = relationScopeService.forLeder(lederFnr, orgnummer = orgnummer)
+        if (scopes.isEmpty()) return null
+        return mineSykmeldteDb.getSykmelding(sykmeldingId, lederFnr, scopes)?.toSykmelding()
+    }
 
     suspend fun getSoknad(
         soknadId: String,
         lederFnr: String,
-    ): Soknad? = mineSykmeldteDb.getSoknad(soknadId, lederFnr)?.toSoknad()
+    ): Soknad? {
+        val orgnummer = mineSykmeldteDb.getSoknadOrgnummer(soknadId) ?: return null
+        val scopes = relationScopeService.forLeder(lederFnr, orgnummer = orgnummer)
+        if (scopes.isEmpty()) return null
+        return mineSykmeldteDb.getSoknad(soknadId, lederFnr, scopes)?.toSoknad()
+    }
 
     suspend fun markSykmeldingRead(
         sykmeldingId: String,
         lederFnr: String,
     ): Boolean {
-        val ids = mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr)
+        val orgnummer = mineSykmeldteDb.getSykmeldingOrgnummer(sykmeldingId) ?: return false
+        val scopes = relationScopeService.forLeder(lederFnr, orgnummer = orgnummer)
+        if (scopes.isEmpty()) return false
+        val ids = mineSykmeldteDb.markSykmeldingRead(sykmeldingId, lederFnr, scopes)
         return ids.isNotEmpty()
     }
 
@@ -162,7 +186,10 @@ class MineSykmeldteService(
         soknadId: String,
         lederFnr: String,
     ): Boolean {
-        val ids = mineSykmeldteDb.markSoknadRead(soknadId, lederFnr)
+        val orgnummer = mineSykmeldteDb.getSoknadOrgnummer(soknadId) ?: return false
+        val scopes = relationScopeService.forLeder(lederFnr, orgnummer = orgnummer)
+        if (scopes.isEmpty()) return false
+        val ids = mineSykmeldteDb.markSoknadRead(soknadId, lederFnr, scopes)
         return ids.isNotEmpty()
     }
 
@@ -170,12 +197,16 @@ class MineSykmeldteService(
         hendelseId: UUID,
         lederFnr: String,
     ): Boolean {
-        val ids = mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr)
+        val orgnummer = mineSykmeldteDb.getHendelseOrgnummer(hendelseId) ?: return false
+        val scopes = relationScopeService.forLeder(lederFnr, orgnummer = orgnummer)
+        if (scopes.isEmpty()) return false
+        val ids = mineSykmeldteDb.markHendelseRead(hendelseId, lederFnr, scopes)
         return ids.isNotEmpty()
     }
 
     suspend fun markAllSykmeldingerAndSoknaderRead(lederFnr: String) {
-        mineSykmeldteDb.markAllSykmeldingAndSoknadAsRead(lederFnr)
+        val scopes = relationScopeService.forLeder(lederFnr)
+        mineSykmeldteDb.markAllSykmeldingAndSoknadAsRead(lederFnr, scopes)
     }
 }
 
@@ -210,7 +241,7 @@ private fun Pair<SykmeldtDbModel, SoknadDbModel>.toSoknad(): Soknad {
         id = soknadDb.soknadId,
         sykmeldingId = sykmeldingId,
         navn = sykmeldt.pasientNavn,
-        fnr = sykmeldt.pasientFnr,
+        fnr = soknadDb.pasientFnr,
         fom = soknadDb.sykepengesoknad.fom!!,
         tom = soknadDb.tom,
         lest = soknadDb.lest,
@@ -240,7 +271,7 @@ private fun MinSykmeldtDbModel.toSykmelding(): Sykmelding {
     return Sykmelding(
         id = sykmelding.id,
         kontaktDato = sykmelding.kontaktMedPasient.kontaktDato,
-        fnr = this.sykmeldtFnr,
+        fnr = this.sykmeldingFnr,
         lest = this.lestSykmelding,
         behandletTidspunkt = this.sykmelding.behandletTidspunkt.toLocalDate(),
         arbeidsgiver =

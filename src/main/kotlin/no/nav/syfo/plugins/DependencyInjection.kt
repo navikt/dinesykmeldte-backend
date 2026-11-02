@@ -22,9 +22,11 @@ import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
 import no.nav.syfo.narmesteleder.NarmestelederService
+import no.nav.syfo.narmesteleder.RelationScopeService
 import no.nav.syfo.narmesteleder.client.EsyfoNarmestelederClient
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.pdl.client.PdlClient
+import no.nav.syfo.pdl.service.PdlIdenterService
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.soknad.SoknadService
 import no.nav.syfo.soknad.db.SoknadDb
@@ -86,6 +88,9 @@ private fun servicesModule() =
         }
         single { PdlClient(get(), env().pdlGraphqlPath) }
         single { PdlPersonService(get<PdlClient>(), get(), get<Environment>().pdlScope) }
+        single { PdlIdenterService(get(), get(), env().pdlScope) }
+        single { NarmestelederDb(get()) }
+        single { RelationScopeService(get(), get()) }
         single { SoknadService(SoknadDb(get()), env().cluster) }
         single { HendelserService(HendelserDb(get())) }
         single {
@@ -97,18 +102,18 @@ private fun servicesModule() =
             )
         }
         single { SykmeldingService(SykmeldingDb(get()), get(), get(), get<Environment>().cluster) }
-        single { VirksomhetService(VirksomhetDb(get())) }
+        single { VirksomhetService(VirksomhetDb(get()), get()) }
         single {
             NarmestelederService(
-                NarmestelederDb(get()),
+                get(),
                 get(),
             )
         }
         single { MineSykmeldteDb(get()) }
-        single { MineSykmeldteService(get()) }
+        single { MineSykmeldteService(get(), get()) }
         single { LeaderElection(get(), env().electorPath) }
         single { DeleteDataService(DeleteDataDb(get()), get()) }
-        single { DineSykmeldteService(get()) }
+        single { DineSykmeldteService(get(), get()) }
     }
 
 private fun Scope.env() = get<Environment>()
