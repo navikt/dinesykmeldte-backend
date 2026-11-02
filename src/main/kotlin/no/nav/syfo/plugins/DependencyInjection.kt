@@ -18,7 +18,6 @@ import no.nav.syfo.hendelser.HendelserService
 import no.nav.syfo.hendelser.db.HendelserDb
 import no.nav.syfo.isLocalEnv
 import no.nav.syfo.kafka.KafkaUtils
-import no.nav.syfo.kafka.createKafkaProducer
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.minesykmeldte.MineSykmeldteService
 import no.nav.syfo.minesykmeldte.db.MineSykmeldteDb
@@ -26,7 +25,6 @@ import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.RelationScopeService
 import no.nav.syfo.narmesteleder.client.EsyfoNarmestelederClient
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
-import no.nav.syfo.narmesteleder.kafka.NLResponseProducer
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.service.PdlIdenterService
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -106,16 +104,9 @@ private fun servicesModule() =
         single { SykmeldingService(SykmeldingDb(get()), get(), get(), get<Environment>().cluster) }
         single { VirksomhetService(VirksomhetDb(get()), get()) }
         single {
-            val nlResponseProducer =
-                NLResponseProducer(
-                    createKafkaProducer("syfo-narmesteleder-producer"),
-                    env().nlResponseTopic,
-                )
             NarmestelederService(
                 get(),
-                nlResponseProducer,
                 get(),
-                env().sendNlBruddToEsyfoNarmesteleder,
             )
         }
         single { MineSykmeldteDb(get()) }

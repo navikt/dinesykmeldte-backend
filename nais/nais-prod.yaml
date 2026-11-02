@@ -90,8 +90,6 @@ spec:
       value: http://esyfo-narmesteleder
     - name: ESYFO_NARMESTELEDER_AUDIENCE
       value: prod-gcp:team-esyfo:esyfo-narmesteleder
-    - name: SEND_NL_BRUDD_TO_ESYFO_NARMESTELEDER
-      value: "true"
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.prod-fss-pub.nais.io/graphql
     - name: PDL_SCOPE
