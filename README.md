@@ -21,8 +21,7 @@ flowchart LR
     B --> DB[(PostgreSQL)]
     B --> PDL[PDL]
     B --> F[flex-syketilfelle]
-    B -->|NL-brudd: toggle av| K5[teamsykmelding.syfo-narmesteleder]
-    B -->|NL-brudd: toggle på, REST med TokenX OBO| E[esyfo-narmesteleder]
+    B -->|NL-brudd: REST med TokenX OBO| E[esyfo-narmesteleder]
 ```
 
 ## API
@@ -56,11 +55,9 @@ Tjenesten konsumerer meldinger fra:
 - `flex.sykepengesoknad`
 - `team-esyfo.dinesykmeldte-hendelser-v2`
 
-Tjenesten produserer meldinger til:
+Tjenesten produserer ikke Kafka-meldinger.
 
-- `teamsykmelding.syfo-narmesteleder`
-
-Når `SEND_NL_BRUDD_TO_ESYFO_NARMESTELEDER` er `true`, sendes NL-brudd i stedet med `DELETE /internal/api/v1/linemanager/{id}` til `esyfo-narmesteleder`. Lokale koblinger slettes først etter svar med status 202. Ved feil beholdes koblingen, uten fallback til Kafka. Toggle er som standard `false`. Verdien per miljø står i NAIS-manifestene. Kafka-produsenten beholdes.
+NL-brudd sendes med `DELETE /internal/api/v1/linemanager/{id}` til `esyfo-narmesteleder`. Lokale koblinger slettes først etter svar med status 202. Ved feil beholdes koblingen.
 
 Kafka-topicet `dinesykmeldte-hendelser-v2` er definert i [`nais/topics/dinesykmeldte-hendelser-v2.yaml`](nais/topics/dinesykmeldte-hendelser-v2.yaml).
 

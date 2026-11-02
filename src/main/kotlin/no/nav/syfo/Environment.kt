@@ -8,7 +8,6 @@ data class Environment(
     val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
     val dineSykmeldteBackendTokenXClientId: String = getEnvVar("TOKEN_X_CLIENT_ID"),
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
-    val nlResponseTopic: String = "teamsykmelding.syfo-narmesteleder",
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val pdlScope: String = getEnvVar("PDL_SCOPE"),
     val clientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
@@ -27,11 +26,6 @@ data class Environment(
     val texas: TexasEnvironment = TexasEnvironment.createFromEnvVars(),
     val esyfoNarmestelederUrl: String = getEnvVar("ESYFO_NARMESTELEDER_URL"),
     val esyfoNarmestelederAudience: String = getEnvVar("ESYFO_NARMESTELEDER_AUDIENCE"),
-    val sendNlBruddToEsyfoNarmesteleder: Boolean =
-        getEnvVar(
-            "SEND_NL_BRUDD_TO_ESYFO_NARMESTELEDER",
-            "false",
-        ).toBoolean(),
     val consumeTeamsykmeldingNlLeesahTopic: Boolean =
         getEnvVar(
             "CONSUME_TEAMSYKMELDING_NL_LEESAH_TOPIC",

@@ -4,23 +4,15 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.syfo.application.metrics.NL_TOPIC_COUNTER
 import no.nav.syfo.narmesteleder.client.EsyfoNarmestelederClient
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
-import no.nav.syfo.narmesteleder.kafka.NLResponseProducer
-import no.nav.syfo.narmesteleder.kafka.model.KafkaMetadata
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
-import no.nav.syfo.narmesteleder.kafka.model.NlAvbrutt
-import no.nav.syfo.narmesteleder.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.util.logger
 import no.nav.syfo.util.objectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.util.UUID
 
 class NarmestelederService(
     private val narmestelederDb: NarmestelederDb,
-    private val nlResponseProducer: NLResponseProducer,
     private val esyfoNarmestelederClient: EsyfoNarmestelederClient,
-    private val sendNlBruddToEsyfoNarmesteleder: Boolean,
 ) {
     private val log = logger()
 
@@ -73,38 +65,11 @@ class NarmestelederService(
             )
         if (nlKoblinger.isNotEmpty()) {
             log.info("Deaktiverer ${nlKoblinger.size} NL-koblinger for $callId")
-            if (sendNlBruddToEsyfoNarmesteleder) {
-                esyfoNarmestelederClient.deaktiverNarmesteLeder(narmestelederId, userToken, callId)
-            } else {
-                deaktiverNarmesteLeder(
-                    orgnummer = nlKoblinger.first().orgnummer,
-                    fnrSykmeldt = nlKoblinger.first().pasientFnr,
-                )
-            }
+
+            esyfoNarmestelederClient.deaktiverNarmesteLeder(narmestelederId, userToken, callId)
             nlKoblinger.forEach { narmestelederDb.remove(it.narmestelederId) }
         } else {
             log.info("Ingen aktive koblinger å deaktivere $callId")
         }
-    }
-
-    private suspend fun deaktiverNarmesteLeder(
-        orgnummer: String,
-        fnrSykmeldt: String,
-    ) {
-        nlResponseProducer.send(
-            NlResponseKafkaMessage(
-                kafkaMetadata =
-                    KafkaMetadata(
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                        source = "leder",
-                    ),
-                nlAvbrutt =
-                    NlAvbrutt(
-                        orgnummer = orgnummer,
-                        sykmeldtFnr = fnrSykmeldt,
-                        aktivTom = OffsetDateTime.now(ZoneOffset.UTC),
-                    ),
-            ),
-        )
     }
 }
