@@ -419,7 +419,7 @@ private class IdenterFixture : AutoCloseable {
             requests++
             assertEquals("Bearer token", request.headers[HttpHeaders.Authorization])
             assertEquals("SYM", request.headers["TEMA"])
-            assertEquals("B229", request.headers["Behandlingsnummer"])
+            assertEquals("B426", request.headers["Behandlingsnummer"])
             val json = objectMapper.readTree(request.body.toByteArray())
             val query = json["query"].asText()
             assertTrue(query.contains("query(\$identer: [ID!]!)"))

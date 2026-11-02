@@ -26,7 +26,7 @@ spec:
               Ledere ser ikke sykmeldinger, søknader og hendelser som ligger på personens andre identer.
             action: >-
               Sjekk reason-labelen på dinesykmeldte_backend_identer_fallback_total for feil ved
-              access-token, timeout eller HTTP-feil. Sjekk PDL-status og Behandlingsnummer/tilgang B229
+              access-token, timeout eller HTTP-feil. Sjekk PDL-status og Behandlingsnummer/tilgang B426
               for hentIdenterBolk. Ikke logg eller del identer.
     - name: dinesykmeldte-backend-kafka
       rules:

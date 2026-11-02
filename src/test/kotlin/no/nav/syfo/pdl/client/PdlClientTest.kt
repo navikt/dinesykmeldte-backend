@@ -28,7 +28,7 @@ class PdlClientTest :
                     serializedRequest = request.body.toByteArray().toString(Charsets.UTF_8)
                     assertEquals("Bearer $token", request.headers[HttpHeaders.Authorization])
                     assertEquals("SYM", request.headers["TEMA"])
-                    assertEquals("B229", request.headers["Behandlingsnummer"])
+                    assertEquals("B426", request.headers["Behandlingsnummer"])
                     respond(
                         content =
                             """

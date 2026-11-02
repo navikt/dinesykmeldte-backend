@@ -95,7 +95,7 @@ class PdlClient(
                     setBody(GetIdenterRequest(getIdenterQuery, GetIdenterVariables(identer)))
                     header(HttpHeaders.Authorization, "Bearer $token")
                     header("TEMA", "SYM")
-                    header("Behandlingsnummer", "B229")
+                    header("Behandlingsnummer", "B426")
                     header(HttpHeaders.ContentType, "application/json")
                 }
             if (!response.status.isSuccess()) {
@@ -141,7 +141,7 @@ class PdlClient(
                     setBody(getPersonRequest)
                     header(HttpHeaders.Authorization, "Bearer $token")
                     header("TEMA", "SYM")
-                    header("Behandlingsnummer", "B229")
+                    header("Behandlingsnummer", "B426")
                     header(HttpHeaders.ContentType, "application/json")
                 }
         if (response.status.isSuccess()) {
