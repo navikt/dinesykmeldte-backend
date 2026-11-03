@@ -13,3 +13,6 @@
   inspect the actual route when changing an endpoint.
 - Person identifiers and sykmelding/søknad content belong outside ordinary
   logs; preserve the existing separation from restricted team logs.
+- Cache only complete PDL identer results, never fallback or authorization;
+  use fixed TTL <=300s without refreshing reads. Cache keys, values and exception
+  messages/causes may contain sensitive data and must stay out of ordinary logs.

@@ -5,7 +5,7 @@ docker-compose \
   -f docker-compose.yml \
   -f docker-compose.kafka.yml \
   up \
-  db authserver texas broker kafka-ui \
+  db authserver texas broker kafka-ui valkey \
   -d
 '''
 
@@ -32,6 +32,7 @@ run =  '''
     --network dinesykmeldte-backend_default \
     -e AUTH_SERVER=authserver:6969 \
     -e DB_SERVER=db:5432 \
+    -e VALKEY_LOCAL_HOST=valkey \
     esyfo/dine-sykmeldte:local
 '''
 

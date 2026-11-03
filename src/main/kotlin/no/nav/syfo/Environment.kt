@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import no.nav.syfo.pdl.cache.ValkeyConfig
 import no.nav.syfo.texas.TexasEnvironment
 
 data class Environment(
@@ -24,6 +25,7 @@ data class Environment(
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val dbUrl: String = getEnvVar("NAIS_DATABASE_JDBC_URL"),
     val texas: TexasEnvironment = TexasEnvironment.createFromEnvVars(),
+    val valkey: ValkeyConfig = ValkeyConfig.fromEnvironment(),
     val esyfoNarmestelederUrl: String = getEnvVar("ESYFO_NARMESTELEDER_URL"),
     val esyfoNarmestelederAudience: String = getEnvVar("ESYFO_NARMESTELEDER_AUDIENCE"),
     val consumeTeamsykmeldingNlLeesahTopic: Boolean =
@@ -59,6 +61,7 @@ data class Environment(
                 dbUrl = dbUrl,
                 syketilfelleScope = "syketilfelle-backend",
                 texas = TexasEnvironment.createForLocal(),
+                valkey = ValkeyConfig.local(),
                 esyfoNarmestelederUrl = "http://localhost:8081",
                 esyfoNarmestelederAudience = "local:team-esyfo:esyfo-narmesteleder",
             )

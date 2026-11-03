@@ -67,12 +67,32 @@ Kafka-topicet `dinesykmeldte-hendelser-v2` er definert i [`nais/topics/dinesykme
 - REST-kall for NL-brudd bruker lederens TokenX-token til OBO-tokenutveksling via Texas. `ESYFO_NARMESTELEDER_URL` angir tjenestens adresse, og `ESYFO_NARMESTELEDER_AUDIENCE` har formatet `<cluster>:team-esyfo:esyfo-narmesteleder`.
 - `POST /api/sykmelding/isActiveSykmelding` validerer Azure AD-token via Texas.
 - Lederen leser sykmeldinger, søknader og hendelser på alle personens folkeregisteridenter fra PDL (`hentIdenterBolk`). Det gjelder bare når relasjonen er den eneste aktive for personen i virksomheten. Ellers, og når oppslaget feiler, gjelder bare identen på relasjonen.
-- Personens identer slås opp i PDL ved hver forespørsel, uten caching.
+- Fullstendige svar fra PDL `hentIdenterBolk` mellomlagres i en dedikert Valkey-instans i høyst fem minutter. Utløpstiden forlenges ikke ved lesing. Feil og fallback mellomlagres ikke; ved cachefeil brukes PDL (fail-open). Navn, tilgangsbeslutninger og nærmeste leder-relasjoner mellomlagres ikke.
 - NAIS `accessPolicy` åpner for innkommende kall fra verifiserte klienter i manifestene, blant annet `dinesykmeldte`, `esyfo-narmesteleder`, `oppfolgingsplan-frontend`, `dialogmote-frontend` og `syfo-oppfolgingsplan-backend`.
 
 ## Utvikling
 
 Bruk `mise tasks` for oppdatert oversikt over tilgjengelige oppgaver.
+
+Start lokale avhengigheter, inkludert Valkey uten persistens, med `mise docker-up`,
+og appen med `mise start` (`./gradlew run`). Lokal Valkey bruker `localhost:6379`
+uten TLS eller innloggingsopplysninger. `VALKEY_LOCAL_HOST` kan overstyre verten;
+`mise docker-run-local-image` setter den til `valkey` på Compose-nettverket.
+
+I Nais brukes TLS med vertsnavnkontroll og de injiserte
+`VALKEY_*_DINESYKMELDTE_BACKEND_CACHE`-variablene mot primærnoden.
+Den dedikerte instansen `dinesykmeldte-backend-cache` må opprettes separat i hvert
+miljø **før appen deployes**. Infrastrukturprovisjonering inngår ikke i appens deploy.
+Valkey påvirker ikke readiness. Tilkoblings- og socket-timeout er 500 ms, og venting
+på ledig forbindelse er 100 ms. Cacheoperasjoner har også en coroutine-frist;
+innstillingene gir ikke en hard samlet svartidsgrense (blant annet DNS og blokkerende I/O).
+Token- og PDL-oppslag beholder sitt separate budsjett på fem sekunder.
+
+`dinesykmeldte_backend_pdl_cache_total{cache="identer",result="..."}`
+teller `hit`, `miss` og `invalid` per forespurt ident (ugyldig verdi er et cachemiss),
+og `read_error`/`write_error` per mislykket operasjon. Lesefeil teller ikke også
+som `miss`, og hindrer cacheskriving i samme oppslag. Cachetreff inngår i
+`identer_lookup_total`, slik at nevneren for fallback-varsling fortsatt dekker alle oppslag.
 
 ## Kontakt
 

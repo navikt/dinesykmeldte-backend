@@ -29,8 +29,12 @@ import kotlinx.coroutines.withTimeout
 import net.logstash.logback.encoder.LogstashEncoder
 import no.nav.syfo.application.metrics.IDENTER_FALLBACK_COUNTER
 import no.nav.syfo.application.metrics.IDENTER_LOOKUP_COUNTER
+import no.nav.syfo.application.metrics.PDL_CACHE_COUNTER
 import no.nav.syfo.azuread.AccessTokenClient
+import no.nav.syfo.pdl.cache.IdenterCache
+import no.nav.syfo.pdl.cache.NoIdenterCache
 import no.nav.syfo.pdl.client.PdlClient
+import no.nav.syfo.pdl.client.model.IdenterResult
 import no.nav.syfo.util.objectMapper
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
@@ -137,12 +141,15 @@ class PdlIdenterServiceTest :
         }
 
         test("HTTP 500 falls back with no retry despite global retry policy") {
-            IdenterFixture().use { f ->
+            val cache = MemoryIdenterCache()
+            IdenterFixture(cache).use { f ->
                 f.status = HttpStatusCode.InternalServerError
                 val before = IDENTER_FALLBACK_COUNTER.labels("pdl_http_error").get()
                 assertEquals(setOf(CURRENT), f.service.hentIdenter(listOf(CURRENT))[CURRENT])
                 assertEquals(1, f.requests)
                 assertEquals(before + 1, IDENTER_FALLBACK_COUNTER.labels("pdl_http_error").get())
+                assertEquals(0, cache.writes)
+                assertTrue(cache.entries.isEmpty())
             }
         }
 
@@ -165,13 +172,15 @@ class PdlIdenterServiceTest :
         }
 
         test("access token failure falls back for every requested ident") {
-            IdenterFixture().use { f ->
+            val cache = MemoryIdenterCache()
+            IdenterFixture(cache).use { f ->
                 coEvery { f.tokens.getAccessToken(any()) } throws IOException(CURRENT)
                 assertEquals(
                     mapOf(CURRENT to setOf(CURRENT), OLD to setOf(OLD)),
                     f.service.hentIdenter(listOf(CURRENT, OLD)),
                 )
                 assertEquals(0, f.requests)
+                assertEquals(0, cache.writes)
             }
         }
 
@@ -194,7 +203,7 @@ class PdlIdenterServiceTest :
             }
         }
 
-        test("every call looks up all requested identer again") {
+        test("explicit no-op cache looks up all requested identer again") {
             IdenterFixture().use { f ->
                 assertEquals(setOf(CURRENT, OLD), f.service.hentIdenter(listOf(CURRENT))[CURRENT])
                 f.response = { bolk(element(CURRENT, "not_found")) }
@@ -204,6 +213,164 @@ class PdlIdenterServiceTest :
                 )
                 assertEquals(listOf(listOf(CURRENT), listOf(CURRENT)), f.batches)
                 coVerify(exactly = 2) { f.tokens.getAccessToken("scope") }
+            }
+        }
+
+        test(
+            "warm hits skip token and PDL, count outcomes, do not refresh or fan out aliases",
+        ) {
+            val cache = MemoryIdenterCache()
+            IdenterFixture(cache).use { f ->
+                val foundBefore = IDENTER_LOOKUP_COUNTER.labels("found").get()
+                val hitBefore = PDL_CACHE_COUNTER.labels("identer", "hit").get()
+                val missBefore = PDL_CACHE_COUNTER.labels("identer", "miss").get()
+                assertEquals(
+                    setOf(CURRENT, OLD),
+                    f.service.hentIdenter(listOf(CURRENT))[CURRENT],
+                )
+                assertEquals(setOf(CURRENT), cache.entries.keys)
+                cache.now = 299
+                assertEquals(
+                    setOf(CURRENT, OLD),
+                    f.service.hentIdenter(listOf(CURRENT))[CURRENT],
+                )
+                assertEquals(300L, cache.entries.getValue(CURRENT).first)
+                assertEquals(1, cache.writes)
+                assertEquals(1, f.requests)
+                coVerify(exactly = 1) { f.tokens.getAccessToken(any()) }
+                assertEquals(foundBefore + 2, IDENTER_LOOKUP_COUNTER.labels("found").get())
+                assertEquals(hitBefore + 1, PDL_CACHE_COUNTER.labels("identer", "hit").get())
+                assertEquals(missBefore + 1, PDL_CACHE_COUNTER.labels("identer", "miss").get())
+                cache.now = 300
+                f.response = { bolk(element(CURRENT, "not_found")) }
+                assertEquals(setOf(CURRENT), f.service.hentIdenter(listOf(CURRENT))[CURRENT])
+                f.service.hentIdenter(listOf(CURRENT))
+                assertEquals(2, f.requests)
+                assertEquals(
+                    "not_found",
+                    cache.entries
+                        .getValue(CURRENT)
+                        .second.outcome,
+                )
+            }
+        }
+
+        test(
+            "partial cache hit sends only misses and retains completed PDL answers among failures",
+        ) {
+            val cache = MemoryIdenterCache()
+            IdenterFixture(cache).use { f ->
+                f.service.hentIdenter(listOf(CURRENT))
+                f.response = { bolk(element(OLD, "not_found"), element(OTHER, "bad_request")) }
+                val before = IDENTER_LOOKUP_COUNTER.labels("fallback").get()
+                assertEquals(
+                    mapOf(
+                        CURRENT to setOf(CURRENT, OLD),
+                        OLD to setOf(OLD),
+                        OTHER to setOf(OTHER),
+                    ),
+                    f.service.hentIdenter(listOf(CURRENT, OLD, OTHER)),
+                )
+                assertEquals(listOf(listOf(CURRENT), listOf(OLD, OTHER)), f.batches)
+                assertEquals(setOf(CURRENT, OLD), cache.entries.keys)
+                assertEquals(before + 1, IDENTER_LOOKUP_COUNTER.labels("fallback").get())
+                f.response = { bolk(element(OTHER, "not_found")) }
+                f.service.hentIdenter(listOf(CURRENT, OLD, OTHER))
+                assertEquals(listOf(OTHER), f.batches.last())
+            }
+        }
+
+        test("invalid entries are per-entry misses and do not discard other hits") {
+            val cache = MemoryIdenterCache()
+            cache.entries[CURRENT] =
+                300L to IdenterResult.Complete(setOf(CURRENT, OLD), "found")
+            cache.invalid = setOf(OTHER)
+            IdenterFixture(cache).use { f ->
+                f.response = { bolk(element(OTHER, "not_found")) }
+                val before = PDL_CACHE_COUNTER.labels("identer", "invalid").get()
+                val result = f.service.hentIdenter(listOf(CURRENT, OTHER))
+                assertEquals(setOf(CURRENT, OLD), result[CURRENT])
+                assertEquals(setOf(OTHER), result[OTHER])
+                assertEquals(listOf(listOf(OTHER)), f.batches)
+                assertEquals(before + 1, PDL_CACHE_COUNTER.labels("identer", "invalid").get())
+            }
+        }
+
+        test(
+            "read failure goes to PDL and suppresses writes, write failure keeps PDL success",
+        ) {
+            val cache = MemoryIdenterCache()
+            IdenterFixture(cache).use { f ->
+                cache.readFailure = IOException(CURRENT)
+                val readBefore = PDL_CACHE_COUNTER.labels("identer", "read_error").get()
+                assertEquals(
+                    setOf(CURRENT, OLD),
+                    f.service.hentIdenter(listOf(CURRENT))[CURRENT],
+                )
+                assertEquals(0, cache.writes)
+                assertEquals(
+                    readBefore + 1,
+                    PDL_CACHE_COUNTER.labels("identer", "read_error").get(),
+                )
+                cache.readFailure = null
+                cache.writeFailure = IOException(OLD)
+                val writeBefore = PDL_CACHE_COUNTER.labels("identer", "write_error").get()
+                assertEquals(
+                    setOf(CURRENT, OLD),
+                    f.service.hentIdenter(listOf(CURRENT))[CURRENT],
+                )
+                assertEquals(
+                    writeBefore + 1,
+                    PDL_CACHE_COUNTER.labels("identer", "write_error").get(),
+                )
+                assertTrue(cache.entries.isEmpty())
+            }
+        }
+
+        listOf("read", "write").forEach { boundary ->
+            test(
+                "cache $boundary suspension has a bounded overhead and caller cancellation propagates",
+            ) {
+                val cache = MemoryIdenterCache()
+                if (boundary == "read") {
+                    cache.beforeRead = { delay(10_000) }
+                } else {
+                    cache.beforeWrite = { delay(10_000) }
+                }
+                IdenterFixture(cache).use { f ->
+                    val started = TimeSource.Monotonic.markNow()
+                    assertEquals(
+                        setOf(CURRENT, OLD),
+                        withTimeout(3_000) { f.service.hentIdenter(listOf(CURRENT)) }[CURRENT],
+                    )
+                    assertTrue(started.elapsedNow().inWholeMilliseconds in 1_100..2_999)
+                    if (boundary == "read") assertEquals(0, cache.writes)
+                    val before = IDENTER_LOOKUP_COUNTER.labels("fallback").get()
+                    assertFailsWith<TimeoutCancellationException> {
+                        withTimeout(100) { f.service.hentIdenter(listOf(CURRENT)) }
+                    }
+                    assertEquals(before, IDENTER_LOOKUP_COUNTER.labels("fallback").get())
+                }
+            }
+        }
+
+        test("cache cancellation is never converted into miss or successful answer") {
+            val cache = MemoryIdenterCache()
+            IdenterFixture(cache).use { f ->
+                cache.readFailure = CancellationException("synthetic")
+                assertFailsWith<CancellationException> {
+                    f.service.hentIdenter(
+                        listOf(CURRENT),
+                    )
+                }
+                assertEquals(0, f.requests)
+                cache.readFailure = null
+                cache.writeFailure = CancellationException("synthetic")
+                assertFailsWith<CancellationException> {
+                    f.service.hentIdenter(
+                        listOf(CURRENT),
+                    )
+                }
             }
         }
 
@@ -231,7 +398,8 @@ class PdlIdenterServiceTest :
         test(
             "overall deadline includes token time and preserves completed chunks",
         ) {
-            IdenterFixture().use { f ->
+            val cache = MemoryIdenterCache()
+            IdenterFixture(cache).use { f ->
                 val requested = (0..200).map { (10000000000L + it).toString() }
                 coEvery { f.tokens.getAccessToken(any()) } coAnswers {
                     delay(1_500)
@@ -267,6 +435,7 @@ class PdlIdenterServiceTest :
                 assertEquals(before + 101, IDENTER_FALLBACK_COUNTER.labels("pdl_timeout").get())
                 assertEquals(2, f.requests)
                 assertEquals(listOf(100, 100), f.batches.map { it.size })
+                assertEquals(requested.take(100).toSet(), cache.entries.keys)
             }
         }
 
@@ -406,7 +575,9 @@ class PdlIdenterServiceTest :
         }
     })
 
-private class IdenterFixture : AutoCloseable {
+internal class IdenterFixture(
+    cache: IdenterCache = NoIdenterCache,
+) : AutoCloseable {
     val tokens = mockk<AccessTokenClient>()
     var requests = 0
     val batches = mutableListOf<List<String>>()
@@ -447,7 +618,7 @@ private class IdenterFixture : AutoCloseable {
             install(HttpTimeout) { requestTimeoutMillis = 40_000 }
         }
     val service =
-        PdlIdenterService(PdlClient(http, "https://pdl.test/graphql"), tokens, "scope")
+        PdlIdenterService(PdlClient(http, "https://pdl.test/graphql"), tokens, "scope", cache)
 
     init {
         coEvery { tokens.getAccessToken(any()) } returns "token"
