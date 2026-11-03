@@ -8,6 +8,8 @@ import io.mockk.mockk
 import no.nav.syfo.application.metrics.RELATION_SCOPE_DENIED_COUNTER
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
+import no.nav.syfo.pdl.service.IdenterFixture
+import no.nav.syfo.pdl.service.MemoryIdenterCache
 import no.nav.syfo.pdl.service.PdlIdenterService
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -133,5 +135,28 @@ class RelationScopeServiceTest :
                 )
             }
             assertEquals(before + 2, RELATION_SCOPE_DENIED_COUNTER.get())
+        }
+
+        test("warm identer cache never caches revocation or competing active relations") {
+            IdenterFixture(MemoryIdenterCache()).use { fixture ->
+                fixture.response = {
+                    """{"data":{"hentIdenterBolk":[{"ident":"$current","code":"ok","identer":[
+                    {"ident":"$current","historisk":false,"gruppe":"FOLKEREGISTERIDENT"},
+                    {"ident":"$old","historisk":true,"gruppe":"FOLKEREGISTERIDENT"}]}]}}"""
+                }
+                val warmService = RelationScopeService(db, fixture.service)
+                coEvery { db.finnNarmestelederkoblinger(leader.lederFnr, null, null) } returns
+                    listOf(leader)
+                coEvery { db.finnAktiveRelasjoner(identer, setOf("org")) } returns listOf(leader)
+                assertEquals(identer, warmService.forLeder(leader.lederFnr).single().identer)
+                coEvery { db.finnAktiveRelasjoner(identer, setOf("org")) } returns
+                    listOf(leader, former)
+                assertEquals(setOf(current), warmService.forLeder(leader.lederFnr).single().identer)
+                coEvery { db.finnNarmestelederkoblinger(leader.lederFnr, null, null) } returns
+                    emptyList()
+                assertTrue(warmService.forLeder(leader.lederFnr).isEmpty())
+                assertEquals(1, fixture.requests)
+                coVerify(exactly = 2) { db.finnAktiveRelasjoner(identer, setOf("org")) }
+            }
         }
     })

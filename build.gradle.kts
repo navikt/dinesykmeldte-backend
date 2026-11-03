@@ -21,6 +21,7 @@ val googlePostgresVersion = "1.30.2"
 val googleOauthVersion = "1.39.0"
 val kafkaVersion = "3.9.2"
 val koinVersion = "4.2.2"
+val valkeyVersion = "5.5.0"
 // Due to vulnerabilities
 val nettyCodecHttpVersion = "4.2.19.Final"
 val snappyJavaVersion = "1.1.10.12"
@@ -91,6 +92,7 @@ repositories {
         implementation("com.google.oauth-client:google-oauth-client:$googleOauthVersion")
         implementation("io.insert-koin:koin-ktor:$koinVersion")
         implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
+        implementation("io.valkey:valkey-java:$valkeyVersion")
 
         swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
         testImplementation("io.insert-koin:koin-test:$koinVersion")

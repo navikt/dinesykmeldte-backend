@@ -7,6 +7,9 @@ metadata:
     team: team-esyfo
 spec:
   image: {{ image }}
+  valkey:
+    - instance: dinesykmeldte-backend-cache
+      access: readwrite
   gcp:
     sqlInstances:
       - name: dinesykmeldte-backend-db-instance

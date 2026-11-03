@@ -5,6 +5,15 @@ import io.prometheus.client.Histogram
 
 const val METRICS_NS = "dinesykmeldte_backend"
 
+val PDL_CACHE_COUNTER: Counter =
+    Counter
+        .build()
+        .namespace(METRICS_NS)
+        .name("pdl_cache_total")
+        .labelNames("cache", "result")
+        .help("Identer cache: per-entry hit/miss/invalid; per-operation read_error/write_error")
+        .register()
+
 val IDENTER_LOOKUP_COUNTER: Counter =
     Counter
         .build()
