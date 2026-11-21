@@ -1,0 +1,10 @@
+version: v1
+type: Valkey
+name: dinesykmeldte-backend-cache
+spec:
+  memory: 1GB
+  tier: SingleNode
+  version: "9.1"
+  maxMemoryPolicy: allkeys-lru
+  persistence:
+    disabled: true
